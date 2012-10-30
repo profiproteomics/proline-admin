@@ -1,4 +1,4 @@
-package fr.proline.admin.service
+package fr.proline.admin.service.db
 
 /**
  * @author David Bouyssie
