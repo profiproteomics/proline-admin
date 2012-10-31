@@ -63,6 +63,31 @@
       <version>1.7.1</version>
     </dependency>
     
+    <!-- Logging -->
+    <dependency> 
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.0.7</version>
+    </dependency>
+    <dependency>
+      <groupId>com.weiglewilczek.slf4s</groupId>
+      <artifactId>slf4s_2.9.1</artifactId>
+      <version>1.0.7</version>
+    </dependency>
+    
+    <!-- Configuration -->
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>config</artifactId>
+      <version>1.0.0</version>
+		</dependency>
+    
+    <dependency>
+      <groupId>fr.proline</groupId>
+      <artifactId>Proline-Databases</artifactId>
+      <version>0.0.2-SNAPSHOT</version>
+    </dependency>
+    
   </dependencies>
   
   <build>
@@ -141,7 +166,7 @@
         <version>2.6</version>
         <configuration>
           <useFile>false</useFile>
-          <skipTests>true</skipTests>
+          <skipTests>false</skipTests>
           <disableXmlReport>true</disableXmlReport>
           <!-- If you have classpath issue like NoDefClassError,... -->
           <!-- useManifestOnlyJar>false</useManifestOnlyJar -->
