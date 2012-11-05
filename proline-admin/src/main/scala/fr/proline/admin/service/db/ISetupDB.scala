@@ -25,7 +25,7 @@ trait ISetupDB extends Logging {
   protected def initSchema( connector: DatabaseConnector, scriptDirectory: File ) {
     
     // If driver type is SQLite (flyway doesn't support SQLite at the moment)
-    if( config.driverType == "sqlite" ) {      
+    if( config.driverType == "sqlite" ) {
       val firstScript = scriptDirectory.listFiles.filter(_.getName.endsWith(".sql")).first
       createSQLiteDB(connector,firstScript)
     } else {
@@ -74,6 +74,8 @@ trait ISetupDB extends Logging {
   
 }
 
+// TODO: put in some_package.utils.io
+/** Source: http://asoftsea.tumblr.com/post/529750770/a-transitional-suitcase-for-source */
 class LineIterator(iter: BufferedIterator[Char], separator: String) extends Iterator[String] {
   require(separator.length < 3, "Line separator may be 1 or 2 characters only.")
   
