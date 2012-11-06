@@ -5,14 +5,15 @@ import scala.collection.mutable.ArrayBuffer
 import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
 import net.noerd.prequel.SQLFormatterImplicits._
-import net.noerd.prequel.Transaction
-import fr.proline.admin.service.DatabaseSetupConfig
-import fr.proline.admin.service.UdsDBDefaults
+import net.noerd.prequel.{StringFormattable,Transaction}
+
+import fr.proline.admin.service.{DatabaseSetupConfig,UdsDBDefaults}
+import fr.proline.admin.utils.resources._
 import fr.proline.core.dal.SQLFormatterImplicits._
-import fr.proline.core.dal.{UdsDb,UdsDbInstrumentTable,UdsDbInstrumentConfigTable,
-                            UdsDbSpecTitleParsingRuleTable}
-import net.noerd.prequel.StringFormattable
-import fr.proline.core.dal.NullFormattable
+import fr.proline.core.dal.{NullFormattable,UdsDb,UdsDbInstrumentTable,UdsDbInstrumentConfigTable,
+                            UdsDbSpecTitleParsingRuleTable,UdsDbEnzymeTable,UdsDbEnzymeCleavageTable}
+import fr.proline.core.utils.sql.BoolToSQLStr
+import fr.proline.module.parser.mascot.{EnzymeDefinition,MascotEnzymeParser}
 
 /**
  * @author David Bouyssie
@@ -27,13 +28,15 @@ class SetupUdsDB( val config: DatabaseSetupConfig,
     
     val udsDbTx = this.udsDB.getOrCreateTransaction()
     
+    // Retrieve Mascot configuration resources
+    val mascotResources = this.defaults.resources.getConfig("mascot-config")
+    val mascotEnzymeFilePath = mascotResources.getString("enzymes_file")    
+    val mascotEnzymeFile = pathToFileOrResourceToFile(mascotEnzymeFilePath,this.getClass())
+    
     // Load enzyme definitions
-    /*require Pairs::Msi::Parser::Mascot::Enzymes
-    val enzymeDefParser = new Pairs::Msi::Parser::Mascot::Enzymes()
-    val enzymeDefs = enzymeDefParser.getEnzymeDefinitions( enzymeConfigSource(file) )
-    this.importEnzymeDefinitions( enzymeDefs )
-
-    this.logger.info( "enzyme definitions imported !" )*/
+    val enzymeDefs = MascotEnzymeParser.getEnzymeDefinitions(mascotEnzymeFile)
+    this.importEnzymeDefinitions( udsDbTx, enzymeDefs )
+    this.logger.info( "enzyme definitions imported !" )    
     
     // Import fragmentation rules and instrument configurations
     /*val instrumentConfigSource = ParseConfig( this.instrumentConfigfile )
@@ -65,8 +68,55 @@ class SetupUdsDB( val config: DatabaseSetupConfig,
     
   }
   
-  def importEnzymeDefinitions( udsDbTx: Transaction ) {
+  def importEnzymeDefinitions( udsDbTx: Transaction, enzymeDefs: Iterable[EnzymeDefinition] ) {
     
+    // Build enzyme INSERT query
+    val EnzymeTable = UdsDbEnzymeTable    
+    val enzymeColsList = EnzymeTable.getColumnsAsStrList().filter { _ != "id" }
+    val enzymeInsertQuery = EnzymeTable.makeInsertQuery( enzymeColsList )
+    
+    // Store enzymes
+    val enzymeIds = new ArrayBuffer[Int]
+    udsDbTx.executeBatch( enzymeInsertQuery ) { stmt =>
+      for( enzymeDef <- enzymeDefs ) {        
+        stmt.executeWith( 
+          enzymeDef.name,
+          Option.empty[String],
+          BoolToSQLStr( enzymeDef.independent.getOrElse(false) ),
+          BoolToSQLStr( enzymeDef.semiSpecific.getOrElse(false) )
+        )
+        
+        enzymeIds += this.udsDB.extractGeneratedInt( stmt.wrapped )
+      }
+    }
+    
+    // Build enzyme cleavage INSERT query
+    val CleavageTable = UdsDbEnzymeCleavageTable
+    val cleavageColsList = CleavageTable.getColumnsAsStrList().filter { _ != "id" }
+    val cleavageInsertQuery = CleavageTable.makeInsertQuery( cleavageColsList )
+    
+    // Store enzyme cleavage sites
+    udsDbTx.executeBatch( cleavageInsertQuery ) { stmt =>
+      
+      var enzymeDefIdx = 0
+      for( enzymeDef <- enzymeDefs ) {
+        val enzymeId = enzymeIds(enzymeDefIdx)
+        
+        for( cleavage <- enzymeDef.cleavages) {          
+          val site = if( cleavage.isNterm ) "N-term" else "C-term"          
+          
+          stmt.executeWith( 
+            site,
+            cleavage.residues,
+            cleavage.restrict,
+            enzymeId
+          )
+        }
+        
+        enzymeDefIdx += 1        
+      }
+    }
+  
   }
   
   def importInstrumentConfigs( udsDbTx: Transaction, instruments: java.util.List[Config] ) {

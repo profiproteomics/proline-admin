@@ -1,11 +1,11 @@
 package fr.proline.admin.service
 
 import java.io.File
-import com.typesafe.config.ConfigFactory
-import com.typesafe.config.Config
-import fr.proline.repository.DatabaseConnector
+import com.typesafe.config.{Config,ConfigFactory,ConfigList}
+
 import fr.proline.admin.service.db._
-import com.typesafe.config.ConfigList
+import fr.proline.admin.utils.resources._
+import fr.proline.repository.DatabaseConnector
 
 /**
  * @author David Bouyssie
@@ -36,7 +36,7 @@ object SetupProline {
     // Load proline main settings
     val prolineConfig = config.getConfig("proline-config")
     val dataDirStr = prolineConfig.getString("data-directory")
-    val dataDir = this._pathToFileOrResourceToFile(dataDirStr)
+    val dataDir = pathToFileOrResourceToFile(dataDirStr,this.getClass())
     
     // Load shared settings
     val authConfig = config.getConfig("auth-config")
@@ -61,7 +61,7 @@ object SetupProline {
       val scriptDirStr = prolineConfig.getString("db-script-root") +
                          dbConfig.getString("script-directory") + 
                          driverConfig.getString("script-directory")
-      val scriptDir = this._pathToFileOrResourceToFile(scriptDirStr)
+      val scriptDir = pathToFileOrResourceToFile(scriptDirStr,classOf[DatabaseConnector])
       
       // Build the database setup configuration object
       ( dbType-> DatabaseSetupConfig( dbType, driverType, scriptDir, dataDir, fullConnConfig ) )
@@ -92,18 +92,6 @@ object SetupProline {
                                 .getConfigList("parsing_rules")
                                 .asInstanceOf[java.util.List[Config]]
                  )
-  }
-  
-  private def _pathToFileOrResourceToFile( path: String ): File = {
-    var file = new File(path)
-    if( file.exists() == false) {
-      val resource = classOf[DatabaseConnector].getResource(path)
-      if( resource != null ) {
-        file = new File( resource.toURI() )
-      }      
-    }
-    
-    file
   }
   
   /** Merge Config objects consecutively.
