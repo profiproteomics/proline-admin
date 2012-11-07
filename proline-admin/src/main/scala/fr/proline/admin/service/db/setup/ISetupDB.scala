@@ -1,25 +1,40 @@
-package fr.proline.admin.service.db
+package fr.proline.admin.service.db.setup
 
 import java.io.File
 import com.googlecode.flyway.core.Flyway
 import com.weiglewilczek.slf4s.Logging
 import fr.proline.admin.service.DatabaseSetupConfig
+import fr.proline.core.dal.DatabaseManagement
 import fr.proline.repository.DatabaseConnector
 
 /**
  * @author David Bouyssie
  *
  */
-trait ISetupDB extends Logging {
+trait ISetupDB extends Logging {  
   
   val config: DatabaseSetupConfig
+  val dbManager: DatabaseManagement
+  private var _executed = false
   
   // Interface
-  def loadDefaults()
+  protected def importDefaults()
   
+   /** Execution state. */
+  def isExecuted = this._executed
+  
+  /** Execute the setup of the database. */
   def run() {
+    if( _executed )
+      throw new IllegalStateException("the setup has been already executed")
+    
     this.initSchema( config.connector, config.scriptDirectory )
-    this.loadDefaults()
+    
+    // TODO: store Admin Information
+    
+    this.importDefaults()
+    
+    this._executed = true
   }
   
   protected def initSchema( connector: DatabaseConnector, scriptDirectory: File ) {
@@ -67,6 +82,7 @@ trait ISetupDB extends Logging {
         //val lines = block.split("\r\n")
       }
       
+      stmt.close()
       dbConn.close()
     }
           

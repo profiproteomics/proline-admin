@@ -3,8 +3,9 @@ package fr.proline.admin.service
 import java.io.File
 import com.typesafe.config.{Config,ConfigFactory,ConfigList}
 
-import fr.proline.admin.service.db._
+import fr.proline.admin.service.db.setup._
 import fr.proline.admin.utils.resources._
+import fr.proline.core.dal.DatabaseManagement
 import fr.proline.repository.DatabaseConnector
 
 /**
@@ -16,9 +17,13 @@ class SetupProline( config: ProlineSetupConfig ) {
   def run() {
     //val usdDBConnector = config.udsDBConfig.connector
     //println( usdDBConnector.getProperty(DatabaseConnector.PROPERTY_URL) )
-    val udsDbSetup = new SetupUdsDB( config.udsDBConfig, config.udsDBDefaults )
+    
+    val dbManager = new DatabaseManagement(config.udsDBConfig.connector)    
+    val udsDbSetup = new SetupUdsDB( dbManager, config.udsDBConfig, config.udsDBDefaults )
     udsDbSetup.run()
     
+    // Release database manager connections and resources
+    dbManager.closeAll()
   }
 
 }
@@ -88,8 +93,8 @@ object SetupProline {
                    ConfigFactory.load("./uds_db/quant_methods.conf")
                                 .getConfigList("quant_methods")
                                 .asInstanceOf[java.util.List[Config]],
-                   ConfigFactory.load("./uds_db/spectrum_parsing_rules.conf")
-                                .getConfigList("parsing_rules")
+                   ConfigFactory.load("./uds_db/peaklist_software.conf")
+                                .getConfigList("peaklist_software")
                                 .asInstanceOf[java.util.List[Config]]
                  )
   }

@@ -1,42 +1,52 @@
-package fr.proline.admin.service.db
+package fr.proline.admin.service.db.setup
 
+import javax.persistence.EntityManager
 import scala.collection.JavaConversions.collectionAsScalaIterable
+import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
-import net.noerd.prequel.SQLFormatterImplicits._
-import net.noerd.prequel.{StringFormattable,Transaction}
 
 import fr.proline.admin.service.{DatabaseSetupConfig,UdsDBDefaults}
 import fr.proline.admin.utils.resources._
-import fr.proline.core.dal.SQLFormatterImplicits._
-import fr.proline.core.dal.{NullFormattable,UdsDb,UdsDbInstrumentTable,UdsDbInstrumentConfigTable,
-                            UdsDbSpecTitleParsingRuleTable,UdsDbEnzymeTable,UdsDbEnzymeCleavageTable}
-import fr.proline.core.utils.sql.BoolToSQLStr
+import fr.proline.core.dal.{DatabaseManagement,
+                            UdsDbInstrumentTable,UdsDbInstrumentConfigTable,
+                            UdsDbPeaklistSoftwareTable,UdsDbSpecTitleParsingRuleTable}
+import fr.proline.core.orm.uds.{Activation,Instrument,InstrumentConfiguration,
+                                PeaklistSoftware,SpectrumTitleParsingRule,
+                                Enzyme,EnzymeCleavage}
+
 import fr.proline.module.parser.mascot.{EnzymeDefinition,MascotEnzymeParser}
 
 /**
  * @author David Bouyssie
  *
  */
-class SetupUdsDB( val config: DatabaseSetupConfig,
+class SetupUdsDB( val dbManager: DatabaseManagement,
+                  val config: DatabaseSetupConfig,
                   val defaults: UdsDBDefaults ) extends ISetupDB with Logging {
   
-  lazy val udsDB = UdsDb(config.connector)
-  
-  def loadDefaults() {
+  // Instantiate hte UDSdb entity manager
+  protected val udsEMF = dbManager.udsEMF
+  protected val udsEM = udsEMF.createEntityManager()
     
-    val udsDbTx = this.udsDB.getOrCreateTransaction()
+  protected def importDefaults() {
+    
+    // Begin transaction
+    udsEM.getTransaction().begin()
     
     // Retrieve Mascot configuration resources
     val mascotResources = this.defaults.resources.getConfig("mascot-config")
     val mascotEnzymeFilePath = mascotResources.getString("enzymes_file")    
     val mascotEnzymeFile = pathToFileOrResourceToFile(mascotEnzymeFilePath,this.getClass())
     
-    // Load enzyme definitions
+    // Import enzyme definitions
     val enzymeDefs = MascotEnzymeParser.getEnzymeDefinitions(mascotEnzymeFile)
-    this.importEnzymeDefinitions( udsDbTx, enzymeDefs )
-    this.logger.info( "enzyme definitions imported !" )    
+    this._importMascotEnzymeDefinitions( enzymeDefs )
+    this.logger.info( "enzyme definitions imported !" )
+    
+    // Import activation types
+    val udsActivationByType = this._importActivationTypes()
     
     // Import fragmentation rules and instrument configurations
     /*val instrumentConfigSource = ParseConfig( this.instrumentConfigfile )
@@ -56,238 +66,157 @@ class SetupUdsDB( val config: DatabaseSetupConfig,
     else { croak "! yet implemented !" }*/
     
     // Import other instrument configurations
-    this.importInstrumentConfigs( udsDbTx, this.defaults.instruments )
+    this._importInstrumentConfigs( this.defaults.instruments, udsActivationByType )
     this.logger.info( "instrument configurations imported !" )
     
     // Import spectrum title parsing rules
-    this.importSpectrumParsingRules( udsDbTx, this.defaults.spectrumParsingRules )
+    this._importPeaklistSoftware( this.defaults.peaklistSoftware )
     this.logger.info( "spectrum title parsing rules imported !" )
     
     // Commit transaction
-    udsDbTx.commit
+    udsEM.getTransaction().commit()
+    
+    // Close entity manager
+    udsEM.close()
     
   }
   
-  def importEnzymeDefinitions( udsDbTx: Transaction, enzymeDefs: Iterable[EnzymeDefinition] ) {
-    
-    // Build enzyme INSERT query
-    val EnzymeTable = UdsDbEnzymeTable    
-    val enzymeColsList = EnzymeTable.getColumnsAsStrList().filter { _ != "id" }
-    val enzymeInsertQuery = EnzymeTable.makeInsertQuery( enzymeColsList )
+  private def _importMascotEnzymeDefinitions( enzymeDefs: Iterable[EnzymeDefinition] ) {
     
     // Store enzymes
-    val enzymeIds = new ArrayBuffer[Int]
-    udsDbTx.executeBatch( enzymeInsertQuery ) { stmt =>
-      for( enzymeDef <- enzymeDefs ) {        
-        stmt.executeWith( 
-          enzymeDef.name,
-          Option.empty[String],
-          BoolToSQLStr( enzymeDef.independent.getOrElse(false) ),
-          BoolToSQLStr( enzymeDef.semiSpecific.getOrElse(false) )
-        )
-        
-        enzymeIds += this.udsDB.extractGeneratedInt( stmt.wrapped )
-      }
-    }
-    
-    // Build enzyme cleavage INSERT query
-    val CleavageTable = UdsDbEnzymeCleavageTable
-    val cleavageColsList = CleavageTable.getColumnsAsStrList().filter { _ != "id" }
-    val cleavageInsertQuery = CleavageTable.makeInsertQuery( cleavageColsList )
-    
-    // Store enzyme cleavage sites
-    udsDbTx.executeBatch( cleavageInsertQuery ) { stmt =>
+    for( enzymeDef <- enzymeDefs ) {
       
-      var enzymeDefIdx = 0
-      for( enzymeDef <- enzymeDefs ) {
-        val enzymeId = enzymeIds(enzymeDefIdx)
+      val udsEnzyme = new Enzyme()
+      udsEnzyme.setName(enzymeDef.name)
+      udsEnzyme.setIsIndependant( enzymeDef.independent )
+      udsEnzyme.setIsSemiSpecific( enzymeDef.semiSpecific )
+      
+      udsEM.persist(udsEnzyme)
+      
+      // Store enzyme cleavages
+      for( cleavage <- enzymeDef.cleavages) {          
+        val site = if( cleavage.isNterm ) "N-term" else "C-term"          
         
-        for( cleavage <- enzymeDef.cleavages) {          
-          val site = if( cleavage.isNterm ) "N-term" else "C-term"          
+        val udsEnzymeCleavage = new EnzymeCleavage()
+        udsEnzymeCleavage.setEnzyme(udsEnzyme)
+        udsEnzymeCleavage.setSite(site)
+        udsEnzymeCleavage.setResidues(cleavage.residues)
+        
+        if( cleavage.restrict != None )
+          udsEnzymeCleavage.setRestrictiveResidues(cleavage.restrict.get)
           
-          stmt.executeWith( 
-            site,
-            cleavage.residues,
-            cleavage.restrict,
-            enzymeId
-          )
-        }
-        
-        enzymeDefIdx += 1        
+        udsEM.persist(udsEnzymeCleavage)
       }
     }
   
   }
   
-  def importInstrumentConfigs( udsDbTx: Transaction, instruments: java.util.List[Config] ) {
+  private def _importActivationTypes(): Map[String,Activation] = {
     
-    // Build instrument INSERT query
-    val instrumentColsList = UdsDbInstrumentTable.getColumnsAsStrList( i => List(i.name,i.source)  )
-    val instrumentInsertQuery = UdsDbInstrumentTable.makeInsertQuery( instrumentColsList )
+    val activationTypes = Array("CID","HCD","ETD","ECD","PSD")
+    val activationByType = Map.newBuilder[String,Activation]
     
-    val instrumentIds = new ArrayBuffer[Int]
-    udsDbTx.executeBatch( instrumentInsertQuery ) { stmt =>
-    
-      // Store instruments
-      for( instrument <- instruments ) {
-    
-        // Create new instrument
-        stmt.executeWith( instrument.getString(instrumentColsList(0)),
-                          instrument.getString(instrumentColsList(1))
-                        )
-        instrumentIds += this.udsDB.extractGeneratedInt( stmt.wrapped )
-      }
+    for( activationType <- activationTypes ) {
+      val udsActivation = new Activation()
+      udsActivation.setType(activationType)
+      udsEM.persist(udsActivation)
+      
+      activationByType += activationType -> udsActivation
     }
     
-    // Build instrument_config INSERT query
+    activationByType.result
+  }
+  
+  private def _importMascotInstrumentConfigs(
+                 instruments: java.util.List[Config],
+                 udsActivationByType: Map[String,Activation] ) {
+    
+  }
+    
+  private def _importInstrumentConfigs( instruments: java.util.List[Config],
+                                        udsActivationByType: Map[String,Activation] ) {
+    
+    val instrumentCols = UdsDbInstrumentTable.columns
     val instConfigCols = UdsDbInstrumentConfigTable.columns
-    val instConfigColsList = UdsDbInstrumentConfigTable.getColumnsAsStrList().filter { _ != "id" }
-    val instConfigInsertQuery = UdsDbInstrumentConfigTable.makeInsertQuery( instConfigColsList )
     
-    udsDbTx.executeBatch( instConfigInsertQuery ) { stmt =>
-    
-      // Store instruments
-      var instrumentIdx = 0
-      for( instrument <- instruments ) {
-        val instrumentId = instrumentIds(instrumentIdx)
-        val instConfigs = instrument.getConfigList("configurations").asInstanceOf[java.util.List[Config]]
+    // Store instruments
+    for( instrument <- instruments ) {
+  
+      // Create new instrument
+      val udsInstrument = new Instrument()
+      udsInstrument.setName( instrument.getString(instrumentCols.name) )
+      udsInstrument.setSource( instrument.getString(instrumentCols.source) )   
+      udsEM.persist(udsInstrument)
+      
+      // Store instrument configurations
+      val instConfigs = instrument.getConfigList("configurations").asInstanceOf[java.util.List[Config]]
+      
+      for( instConfig <- instConfigs ) {
         
-        // Store property definitions
-        for( instConfig <- instConfigs ) {
-          
-          stmt.executeWith( instConfig.getString(instConfigCols.name),
-                            instConfig.getString(instConfigCols.ms1_analyzer),
-                            instConfig.getString(instConfigCols.msnAnalyzer),
-                            """{"is_hidden":false}""",
-                            instrumentId,
-                            instConfig.getString(instConfigCols.activationType)
-                          )
-        }
+        val udsActivation = udsActivationByType(instConfig.getString(instConfigCols.activationType))
         
-        instrumentIdx += 1
+        val udsInstrumentConfig = new InstrumentConfiguration()
+        udsInstrumentConfig.setName( instConfig.getString(instConfigCols.name) )
+        udsInstrumentConfig.setMs1Analyzer( instConfig.getString(instConfigCols.ms1_analyzer) )
+        udsInstrumentConfig.setMsnAnalyzer( instConfig.getString(instConfigCols.msnAnalyzer) )
+        udsInstrumentConfig.setSerializedProperties("""{"is_hidden":false}""")
+        udsInstrumentConfig.setActivation(udsActivation)
+        udsInstrumentConfig.setInstrument(udsInstrument)
+        
+        udsEM.persist(udsInstrumentConfig)
       }
     }
   
   }
 
-  def importSpectrumParsingRules( udsDbTx: Transaction, parsingRules: java.util.List[Config] ) {
+  private def _importPeaklistSoftware( peaklistSoftware: java.util.List[Config] ) {
     
-    // Build spec_title_parsing_rule INSERT query
-    val ParsingRuleTable = UdsDbSpecTitleParsingRuleTable
-    val parsingRuleColsList = ParsingRuleTable.getColumnsAsStrList().filter { _ != "id" }
-    val parsingRuleInsertQuery = ParsingRuleTable.makeInsertQuery( parsingRuleColsList )
+    val peaklistSoftCols = UdsDbPeaklistSoftwareTable.columns
+    val parsingRuleCols = UdsDbSpecTitleParsingRuleTable.columns
+    val parsingRuleColsList = UdsDbSpecTitleParsingRuleTable.getColumnsAsStrList().filter { _ != "id" }
     
-    udsDbTx.executeBatch( parsingRuleInsertQuery ) { stmt =>
-    
-      for( parsingRule <- parsingRules ) {
-        
-        val values = parsingRuleColsList.map { c =>
-                        if( parsingRule.hasPath(c)) StringFormattable(parsingRule.getString(c))
-                        else NullFormattable(Option(null))
-                      }
-        stmt.executeWith( values: _* )
+    for( peaklistSoft <- peaklistSoftware ) {
+      
+      // Create a peaklist software
+      val udsPeaklistSoft = new PeaklistSoftware()
+      var parsingRuleName = peaklistSoft.getString(peaklistSoftCols.name)
+      udsPeaklistSoft.setName(parsingRuleName)
+      
+      if( peaklistSoft.hasPath(peaklistSoftCols.version)) {
+        val version = peaklistSoft.getString(peaklistSoftCols.version)
+        udsPeaklistSoft.setVersion(version)
+        parsingRuleName += " " + version
       }
+      
+      // Store spectrum title parsing rule
+      val parsingRule = peaklistSoft.getConfig("parsing_rule")
+      
+      val valueByName = parsingRuleColsList.map { c =>
+                          if( parsingRule.hasPath(c)) c -> parsingRule.getString(c)
+                          else c -> null
+                        } toMap
+      
+      val udsParsingRule = new SpectrumTitleParsingRule()
+      udsParsingRule.setName(parsingRuleName)
+      udsParsingRule.setRawFileName(valueByName(parsingRuleCols.rawFileName))
+      udsParsingRule.setFirstCycle(valueByName(parsingRuleCols.firstCycle))
+      udsParsingRule.setLastCycle(valueByName(parsingRuleCols.lastCycle))
+      udsParsingRule.setFirstScan(valueByName(parsingRuleCols.firstScan))
+      udsParsingRule.setLastScan(valueByName(parsingRuleCols.lastScan))
+      udsParsingRule.setFirstTime(valueByName(parsingRuleCols.firstTime))
+      udsParsingRule.setLastTime(valueByName(parsingRuleCols.lastTime))
+      
+      udsEM.persist(udsParsingRule)
+      
+      // Store peaklist software
+      udsPeaklistSoft.setSpecTitleParsingRule(udsParsingRule)
+      udsEM.persist(udsPeaklistSoft)
+      
     }
   
   }
 
 /*
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Method: run()
-//
-def run (): Unit = {
-  val (this, arguments ) = _ ////// arguments contains aRGV
-  
-  ////// Retrieve application parameters
-  val verbose = this.verbose
-  
-  ////// Open a database connection
-  val sdbi = this.msiSdbi
-  
-  ////// Begin new transaction
-  sdbi.beginWork or die sdbi.error
-  
-  ////// Import enzyme definitions
-  val enzymeConfigSource = ParseConfig( this.enzymeConfigfile )
-  if( enzymeConfigSource(type) == 'mascot' ) {
-    require Pairs::Msi::Parser::Mascot::Enzymes
-    val enzymeDefParser = new Pairs::Msi::Parser::Mascot::Enzymes()
-    val enzymeDefs = enzymeDefParser.getEnzymeDefinitions( enzymeConfigSource(file) )
-    this.importEnzymeDefinitions( enzymeDefs )
-  }
-  else { croak "! yet implemented !" }
-  print "enzyme definitions imported !\n" if this.verbose
-  
-  ////// Import fragmentation rules and instrument configurations
-  val instrumentConfigSource = ParseConfig( this.instrumentConfigfile )
-  if( instrumentConfigSource(type) == 'mascot' )
-    {
-    require Pairs::Msi::Helper::Mascot
-    val mascotHelper = new Pairs::Msi::Helper::Mascot()
-    val fragRules = this.importFragmentationRules( mascotHelper.getFragmentationRules )
-    
-    require Pairs::Msi::Parser::Mascot::FragmentationRules
-    val fragRuleParser = new Pairs::Msi::Parser::Mascot::FragmentationRules()
-    val instrumentFragmentationRules = fragRuleParser.getInstrumentFragmentationRules( instrumentConfigSource(file) )  
-    this.importInstrumentConfigurations( instrumentFragmentationRules, fragRules )
-    
-    print "mascot instrument configurations imported !\n" if this.verbose
-    }
-  else { croak "! yet implemented !" }
-  
-  //////// Import other instrument configurations
-  val otherInstruments = ParseConfig( this.otherInstrumentsConfigfile )
-  otherInstruments(instrument) = ( otherInstruments(instrument) ) if ref(otherInstruments(instrument)) == 'HASH'
-  this.importOtherInstrumentConfigs( otherInstruments )
-  print "other instrument configurations imported !\n" if this.verbose
-  
-  ////// Import spectrum title parsing rules
-  val spectrumParsingConfig = ParseConfig( this.spectrumParsingConfigfile )
-  this.importSpectrumParsingRules( spectrumParsingConfig(parsing_rule) )
-  print "spectrum title parsing rules imported !\n" if this.verbose
-  
-  ////// Commit transaction
-  sdbi.commit
-  
-  return 1
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Method: import_enzyme_definitions()
-//
-def importEnzymeDefinitions (): Unit = {
-  val( this, enzymeDefs ) = _
-  
-  val sdbi = this.msiSdbi
-  
-  while( val( enzymeName, enzymeDef) = each(enzymeDefs) ) {
-    
-    ////// Create new enzyme
-    sdbi.query('INSERT INTO enzyme VALUES (??)',
-                  undef,
-                  enzymeName,
-                  '',
-                  enzymeDef(Independent) ? 't' : 'f',
-                  enzymeDef(SemiSpecific) ? 't' : 'f'
-                  ) or die sdbi.error
-    val enzymeId = sdbi.lastInsertId("","","","")
-    
-    ////// Iterate over enzyme cleavage definitions
-    foreach val enzymeCleavageDef (@{enzymeDef(cleavages)}) {
-      val cleavageSite = enzymeCleavageDef(Cterm) ? 'C-term' : 'N-term'
-      
-      ////// Create new enzyme cleavage
-      sdbi.query('INSERT INTO enzyme_cleavage VALUES (??)',
-                    undef,
-                    cleavageSite,
-                    enzymeCleavageDef(Cleavage),
-                    enzymeCleavageDef(Restrict),
-                    enzymeId
-                    ) or die sdbi.error
-    }
-  }
-
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Method: import_fragmentation_rules()

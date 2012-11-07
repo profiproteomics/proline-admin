@@ -125,5 +125,5 @@ case class UdsDBDefaults(
              resources: Config,
              instruments: java.util.List[Config],
              quantMethods: java.util.List[Config],
-             spectrumParsingRules: java.util.List[Config]
+             peaklistSoftware: java.util.List[Config]
             )
