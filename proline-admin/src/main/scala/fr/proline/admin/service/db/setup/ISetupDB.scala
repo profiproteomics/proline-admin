@@ -4,7 +4,6 @@ import java.io.File
 import scala.io.Source
 import com.googlecode.flyway.core.Flyway
 import com.weiglewilczek.slf4s.Logging
-import fr.proline.admin.service.DatabaseSetupConfig
 import fr.proline.core.dal.DatabaseManagement
 import fr.proline.core.utils.io._
 import fr.proline.repository.DatabaseConnector
@@ -64,6 +63,7 @@ trait ISetupDB extends Logging {
     if( config.connectionConfig.getString("connectionMode") == "FILE" ) {
       
       val dbPath = config.dataDirectory + "/"+ config.connectionConfig.getString("dbName")
+      
       if( new File(dbPath).exists == true ) {
         this.logger.warn("database file already exists")
         createDB = false

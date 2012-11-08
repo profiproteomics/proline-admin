@@ -1,21 +1,37 @@
 package fr.proline.admin.service.db.setup
 
 import javax.persistence.EntityManager
-import scala.collection.JavaConversions.collectionAsScalaIterable
-import scala.collection.JavaConversions._
+import scala.collection.JavaConversions.{collectionAsScalaIterable,setAsJavaSet}
 import scala.collection.mutable.ArrayBuffer
 import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
 
 import fr.proline.admin.utils.resources._
 import fr.proline.core.dal.{DatabaseManagement,
-                            UdsDbInstrumentTable,UdsDbInstrumentConfigTable,
-                            UdsDbPeaklistSoftwareTable,UdsDbSpecTitleParsingRuleTable}
-import fr.proline.core.orm.uds.{Activation,Instrument,InstrumentConfiguration,
-                                PeaklistSoftware,SpectrumTitleParsingRule,
-                                Enzyme,EnzymeCleavage}
-
-import fr.proline.module.parser.mascot.{EnzymeDefinition,MascotEnzymeParser}
+                            UdsDbInstrumentTable,
+                            UdsDbInstrumentConfigTable,
+                            UdsDbPeaklistSoftwareTable,
+                            UdsDbSpecTitleParsingRuleTable
+                            }
+import fr.proline.core.om.model.msi.{ChargeConstraint,
+                                     FragmentationSeriesRequirement,
+                                     InstrumentConfig,
+                                     Fragmentation,
+                                     FragmentationRule,
+                                     TheoreticalFragmentIon
+                                     }
+import fr.proline.core.orm.uds.{Activation => UdsActivation,
+                                Enzyme => UdsEnzyme,
+                                EnzymeCleavage => UdsEnzymeCleavage,
+                                FragmentationRule => UdsFragmentationRule,
+                                Instrument => UdsInstrument,
+                                InstrumentConfiguration => UdsInstrumentConfig,
+                                PeaklistSoftware => UdsPeaklistSoft,
+                                SpectrumTitleParsingRule => UdsSpecTitleParsingRule,
+                                TheoreticalFragment => UdsTheoFragment
+                                }
+import fr.proline.module.parser.mascot.{EnzymeDefinition,MascotEnzymeParser,
+                                        MascotFragmentation,MascotFragmentationRuleParser}
 
 /**
  * @author David Bouyssie
@@ -26,9 +42,9 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
                   val defaults: UdsDBDefaults ) extends ISetupDB with Logging {
   
   // Instantiate hte UDSdb entity manager
-  protected val udsEMF = dbManager.udsEMF
-  protected val udsEM = udsEMF.createEntityManager()
-    
+  protected lazy val udsEMF = dbManager.udsEMF
+  protected lazy val udsEM = udsEMF.createEntityManager()
+  
   protected def importDefaults() {
     
     // Begin transaction
@@ -38,39 +54,38 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     val mascotResources = this.defaults.resources.getConfig("mascot-config")
     val mascotEnzymeFilePath = mascotResources.getString("enzymes_file")    
     val mascotEnzymeFile = pathToFileOrResourceToFile(mascotEnzymeFilePath,this.getClass())
+    val mascotFragRuleFilePath = mascotResources.getString("fragmentation_rules_file")    
+    val mascotFragRuleFile = pathToFileOrResourceToFile(mascotFragRuleFilePath,this.getClass())
     
     // Import enzyme definitions
     val enzymeDefs = MascotEnzymeParser.getEnzymeDefinitions(mascotEnzymeFile)
     this._importMascotEnzymeDefinitions( enzymeDefs )
-    this.logger.info( "enzyme definitions imported !" )
+    this.logger.info( "Enzyme definitions imported !" )
     
     // Import activation types
     val udsActivationByType = this._importActivationTypes()
+    this.logger.info( "Activation types imported !" )
     
-    // Import fragmentation rules and instrument configurations
-    /*val instrumentConfigSource = ParseConfig( this.instrumentConfigfile )
-    if( instrumentConfigSource(type) == 'mascot' )
-      {
-      require Pairs::Msi::Helper::Mascot
-      val mascotHelper = new Pairs::Msi::Helper::Mascot()
-      val fragRules = this.importFragmentationRules( mascotHelper.getFragmentationRules )
-      
-      require Pairs::Msi::Parser::Mascot::FragmentationRules
-      val fragRuleParser = new Pairs::Msi::Parser::Mascot::FragmentationRules()
-      val instrumentFragmentationRules = fragRuleParser.getInstrumentFragmentationRules( instrumentConfigSource(file) )  
-      this.importInstrumentConfigurations( instrumentFragmentationRules, fragRules )
-      
-      print "mascot instrument configurations imported !\n" if this.verbose
-      }
-    else { croak "! yet implemented !" }*/
+    // Import theoretical fragments
+    val udsTheoFragByKey = this._importTheoreticalFragments()
+    this.logger.info( "Theoretical fragments imported !" )
     
-    // Import other instrument configurations
+    // Import Mascot fragmentation rules
+    val udsFragRuleByDesc = this._importMascotFragmentationRules( MascotFragmentation.rules, udsTheoFragByKey )
+    this.logger.info( "Mascot fragmentation rules imported !" )
+    
+    // Import Mascot instrument configurations
+    val mascotInstConfigs = MascotFragmentationRuleParser.getInstrumentConfigurations(mascotFragRuleFile)
+    this._importMascotInstrumentConfigs( mascotInstConfigs, udsActivationByType, udsFragRuleByDesc )
+    this.logger.info( "Mascot instrument configurations imported !" )
+    
+    // Import Proline instrument configurations
     this._importInstrumentConfigs( this.defaults.instruments, udsActivationByType )
-    this.logger.info( "instrument configurations imported !" )
+    this.logger.info( "Proline instrument configurations imported !" )
     
     // Import spectrum title parsing rules
     this._importPeaklistSoftware( this.defaults.peaklistSoftware )
-    this.logger.info( "spectrum title parsing rules imported !" )
+    this.logger.info( "Spectrum title parsing rules imported !" )
     
     // Commit transaction
     udsEM.getTransaction().commit()
@@ -85,7 +100,7 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     // Store enzymes
     for( enzymeDef <- enzymeDefs ) {
       
-      val udsEnzyme = new Enzyme()
+      val udsEnzyme = new UdsEnzyme()
       udsEnzyme.setName(enzymeDef.name)
       udsEnzyme.setIsIndependant( enzymeDef.independent )
       udsEnzyme.setIsSemiSpecific( enzymeDef.semiSpecific )
@@ -96,7 +111,7 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
       for( cleavage <- enzymeDef.cleavages) {          
         val site = if( cleavage.isNterm ) "N-term" else "C-term"          
         
-        val udsEnzymeCleavage = new EnzymeCleavage()
+        val udsEnzymeCleavage = new UdsEnzymeCleavage()
         udsEnzymeCleavage.setEnzyme(udsEnzyme)
         udsEnzymeCleavage.setSite(site)
         udsEnzymeCleavage.setResidues(cleavage.residues)
@@ -110,39 +125,146 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
   
   }
   
-  private def _importActivationTypes(): Map[String,Activation] = {
+  private def _importActivationTypes(): Map[String,UdsActivation] = {
     
-    val activationTypes = Array("CID","HCD","ETD","ECD","PSD")
-    val activationByType = Map.newBuilder[String,Activation]
+    val activationByType = Map.newBuilder[String,UdsActivation]
     
-    for( activationType <- activationTypes ) {
-      val udsActivation = new Activation()
-      udsActivation.setType(activationType)
+    for( activationType <- fr.proline.core.om.model.msi.Activation.values ) {
+      val udsActivation = new UdsActivation()
+      udsActivation.setType(activationType.toString)
       udsEM.persist(udsActivation)
       
-      activationByType += activationType -> udsActivation
+      activationByType += activationType.toString -> udsActivation
     }
     
     activationByType.result
   }
   
-  private def _importMascotInstrumentConfigs(
-                 instruments: java.util.List[Config],
-                 udsActivationByType: Map[String,Activation] ) {
+  private def _importTheoreticalFragments(): Map[String,UdsTheoFragment] = {
+    
+    val udsTheoFragByKey = Map.newBuilder[String,UdsTheoFragment]
+    
+    for( ionType <- Fragmentation.defaultIonTypes ) {
+      
+      val udsTheoFrag = new UdsTheoFragment()
+      udsTheoFrag.setType(ionType.ionSeries.toString)
+      if( ionType.neutralLoss != None )
+        udsTheoFrag.setNeutralLoss(ionType.neutralLoss.get.toString)
+      
+      udsEM.persist( udsTheoFrag )
+      
+      udsTheoFragByKey += ionType.toString -> udsTheoFrag
+    }
+    
+    udsTheoFragByKey.result
+  }
+  
+  private def _importMascotFragmentationRules(
+                fragRules: Seq[FragmentationRule],
+                udsTheoFragByKey: Map[String,UdsTheoFragment] ): Map[String,UdsFragmentationRule] = {
+    
+    val udsFragRuleByDesc = Map.newBuilder[String,UdsFragmentationRule]
+    
+    // Store fragmentation rules
+    for( fragRule <- fragRules ) {
+      
+      val udsFragRule = new UdsFragmentationRule()
+      udsFragRule.setDescription(fragRule.description)
+      
+      fragRule match {
+        // If fragmentation rule is a charge constraint
+        case cc: ChargeConstraint => {
+          udsFragRule.setFragmentCharge(cc.fragmentCharge)
+          if( cc.precursorMinCharge != None )
+            udsFragRule.setPrecursorMinCharge(cc.precursorMinCharge.get)
+        }
+        // If fragmentation rule contains a series requirement
+        case fsr: FragmentationSeriesRequirement => {
+          
+          if( fsr.requiredSeries != null ) {
+            val ionSeriesName = fsr.requiredSeries.toString
+            val requiredQualityLevel = fsr.requiredSeriesQualityLevel.toString
+            //ionFullName .= '-'.requiredSerie.neutralLoss if defined requiredSerie.neutralLoss
+            
+            val udsTheoFrag = udsTheoFragByKey(ionSeriesName)
+            udsFragRule.setRequiredSerieId(udsTheoFrag.getId)
+            udsFragRule.setRequiredSerieQualityLevel(requiredQualityLevel)
+          }
+          
+          // If fragmentation rule is a theoretical fragment ion
+          fsr match {
+            case theoFrag: TheoreticalFragmentIon => {
+              val ionType = theoFrag.ionType.toString
+              val udsTheoFrag = udsTheoFragByKey(ionType)
+              
+              udsFragRule.setTheoreticalFragment(udsTheoFrag)
+              
+              if( theoFrag.fragmentMaxMoz != None )
+                udsFragRule.setFragmentMaxMoz(theoFrag.fragmentMaxMoz.get)
+              
+              if( theoFrag.residueConstraint != None )
+                udsFragRule.setFragmentResidueConstraint(theoFrag.residueConstraint.get)  
+            }
+            case _ => {}
+          }
+        }
+      }
+      
+      udsEM.persist( udsFragRule )
+      
+      udsFragRuleByDesc += udsFragRule.getDescription -> udsFragRule
+    }
+    
+    udsFragRuleByDesc.result
+  }
+  
+  private def _importMascotInstrumentConfigs( instConfigs: Seq[InstrumentConfig],
+                                              udsActivationByType: Map[String,UdsActivation],
+                                              udsFragRuleByDesc: Map[String,UdsFragmentationRule]) {
+    
+    // Iterate over instrument configs
+    for( instConfig <- instConfigs ) {
+      
+      val instrument = instConfig.instrument
+      
+      // Create new instrument
+      val udsInstrument = new UdsInstrument()
+      udsInstrument.setName( instrument.name )
+      udsInstrument.setSource( instrument.source )
+      udsEM.persist(udsInstrument)      
+
+      // Retrieve activation type and fragmentation rules
+      val udsActivation = udsActivationByType(instConfig.activationType)
+      val udsFragRules = instConfig.fragmentationRules.get.map( fr => udsFragRuleByDesc(fr.description) ).toSet
+      
+      // Create new instrument config
+      val udsInstrumentConfig = new UdsInstrumentConfig()
+      udsInstrumentConfig.setName( instConfig.name )
+      udsInstrumentConfig.setMs1Analyzer( instConfig.ms1Analyzer )
+      udsInstrumentConfig.setMsnAnalyzer( instConfig.msnAnalyzer )
+      udsInstrumentConfig.setSerializedProperties("""{"is_hidden":true}""")
+      udsInstrumentConfig.setActivation(udsActivation)
+      udsInstrumentConfig.setInstrument(udsInstrument)
+      udsInstrumentConfig.setFragmentationRules( udsFragRules )
+      
+      udsEM.persist(udsInstrumentConfig)
+      
+      
+    }
     
   }
     
   private def _importInstrumentConfigs( instruments: java.util.List[Config],
-                                        udsActivationByType: Map[String,Activation] ) {
+                                        udsActivationByType: Map[String,UdsActivation] ) {
     
     val instrumentCols = UdsDbInstrumentTable.columns
     val instConfigCols = UdsDbInstrumentConfigTable.columns
     
     // Store instruments
     for( instrument <- instruments ) {
-  
+      
       // Create new instrument
-      val udsInstrument = new Instrument()
+      val udsInstrument = new UdsInstrument()
       udsInstrument.setName( instrument.getString(instrumentCols.name) )
       udsInstrument.setSource( instrument.getString(instrumentCols.source) )   
       udsEM.persist(udsInstrument)
@@ -154,7 +276,7 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
         
         val udsActivation = udsActivationByType(instConfig.getString(instConfigCols.activationType))
         
-        val udsInstrumentConfig = new InstrumentConfiguration()
+        val udsInstrumentConfig = new UdsInstrumentConfig()
         udsInstrumentConfig.setName( instConfig.getString(instConfigCols.name) )
         udsInstrumentConfig.setMs1Analyzer( instConfig.getString(instConfigCols.ms1_analyzer) )
         udsInstrumentConfig.setMsnAnalyzer( instConfig.getString(instConfigCols.msnAnalyzer) )
@@ -177,7 +299,7 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     for( peaklistSoft <- peaklistSoftware ) {
       
       // Create a peaklist software
-      val udsPeaklistSoft = new PeaklistSoftware()
+      val udsPeaklistSoft = new UdsPeaklistSoft()
       var parsingRuleName = peaklistSoft.getString(peaklistSoftCols.name)
       udsPeaklistSoft.setName(parsingRuleName)
       
@@ -195,7 +317,7 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
                           else c -> null
                         } toMap
       
-      val udsParsingRule = new SpectrumTitleParsingRule()
+      val udsParsingRule = new UdsSpecTitleParsingRule()
       udsParsingRule.setName(parsingRuleName)
       udsParsingRule.setRawFileName(valueByName(parsingRuleCols.rawFileName))
       udsParsingRule.setFirstCycle(valueByName(parsingRuleCols.firstCycle))
@@ -214,161 +336,5 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     }
   
   }
-
-/*
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Method: import_fragmentation_rules()
-//
-def importFragmentationRules (): Unit = {
-  val( this, fragmentationRules ) = _
-  
-  val sdbi = this.msiSdbi
-  
-  ////// Load MS2 observable ions
-  require Pairs::Msi::Helper::MassSpec
-  val massSpecHelper = new Pairs::Msi::Helper::MassSpec()
-  val ms2_observableIons = massSpecHelper.getMs2_observableIons()
-  
-  ////// Save MS2 observable ions
-  val theoFragIdByName
-  while( val( ionFullName, ms2_observableIon ) = each(ms2_observableIons) ) {
-    
-    sdbi.query('INSERT INTO theoretical_fragment VALUES (??)',
-                  undef,
-                  ms2_observableIon.type,
-                  ms2_observableIon.neutralLoss,
-                  undef
-                  ) or die sdbi.error    
-    
-    theoFragIdByName(ionFullName) = sdbi.lastInsertId("","","","")
-  }
-  
-  ////// Save fragmentation rules
-  val fragmentationRules
-  for( fragmentationRule <- fragmentationRules ) {
-    
-    val( fragRule ) = ( description = fragmentationRule.description )
-    val fragRuleClass = blessed( fragmentationRule )
-    
-    ////// Import rule paramaters 
-    if( fragRuleClass =~ /ChargeConstraint/ )
-      {
-      fragRule(precursor_min_charge) = fragmentationRule.precursorMinCharge
-      fragRule(fragment_charge) = fragmentationRule.fragmentCharge
-      }
-    else
-      {
-      val requiredSerie = fragmentationRule.requiredSerie
-      if( defined requiredSerie )
-        {
-        val ionSerieName = requiredSerie.asString
-        //ionFullName .= '-'.requiredSerie.neutralLoss if defined requiredSerie.neutralLoss
-        
-        val theoFragId = theoFragIdByName(ionSerieName)
-        fragRule(required_serie_id) = theoFragId
-        fragRule(required_serie_quality_level) = fragmentationRule.requiredSerieQualityLevel
-        }
-        
-      if( fragRuleClass =~ /TheoreticalMs2Ion/ )
-        {
-        val ionName = fragmentationRule.theoreticalIon.asString
-        val theoFragId = theoFragIdByName(ionName)
-        
-        fragRule(theoretical_fragment_id) = theoFragId      
-        fragRule(fragment_max_moz) = fragmentationRule.fragmentMaxMoz
-        fragRule(fragment_residue_constraint) = fragmentationRule.residueConstraint      
-        }
-      }
-      
-    //die Dumper fragRule
-    
-    sdbi.query('INSERT INTO fragmentation_rule VALUES (??)',
-                  undef,
-                  fragRule(description),
-                  fragRule(precursor_min_charge),
-                  fragRule(fragment_charge),
-                  fragRule(fragment_max_moz),
-                  fragRule(fragment_residue_constraint),
-                  fragRule(required_serie_quality_level),
-                  undef,
-                  fragRule(theoretical_fragment_id),
-                  fragRule(required_serie_id),
-                  ) or die sdbi.error
-      
-    fragRule(id) = sdbi.lastInsertId("","","","")
-    
-    push( fragmentationRules, fragRule )
-  }
-  
-  return fragmentationRules
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Method: import_instrument_configurations()
-//
-def importInstrumentConfigurations (): Unit = {
-  val( this, instrumentConfigs, fragmentationRules ) = _
-  
-  val sdbi = this.msiSdbi
-  
-  ////// Create activation types
-  sdbi.query('INSERT INTO activation VALUES (?)', _) for qw/CID HCD ETD ECD PSD/
-  
-  ////// Map fragmentation rules by their description
-  val fragRuleByDesc = map { _(description) = _ } fragmentationRules
-  
-  ////// Iterate over instrument fragmentation rules
-  while( val( instrumentType, fragRuleDefs ) = each(instrumentConfigs) ) {
-    val( instrumentSource, analyzer1, activationType, analyzer2 ) = ( 'ESI', undef, 'CID', undef )
-    
-    ////// Note: this is mascot specifc = TODO: put this in a Mascot class
-    ////// Retrieve source
-    val instrumentParts = split('-', instrumentType )
-    next if scalar(instrumentParts) == 1 ////// skip Default and All
-    
-    if( instrumentParts(0) == 'ESI' or instrumentParts(0) == 'MALDI' ) { instrumentSource = instrumentParts(0) }
-    else if( instrumentParts(0) == 'ETD' ) { activationType = 'ETD' }
-  
-    ////// Retrieve activation type
-    if( defined instrumentParts(1) and instrumentParts(1) == 'ECD' ) { activationType = 'ECD' }
-    else if( defined instrumentParts(2) and instrumentParts(2) == 'PSD' ) { activationType = 'PSD' }
-    
-    if( instrumentType =~ /TOF-TOF/ ) { ( analyzer1, analyzer2 ) = ( 'TOF', 'TOF') }
-    else if( instrumentType =~ /QUAD-TOF/ ) { ( analyzer1, analyzer2 ) = ( 'QUAD', 'TOF') }
-    else if( instrumentType == 'FTMS-ECD' ) { ( analyzer1, analyzer2 ) = ( 'FTMS', 'FTMS') }
-    else { ( analyzer1, analyzer2 ) = ( instrumentParts(1), instrumentParts(1)) }  
-    
-    ////// Create new instrument
-    sdbi.query('INSERT INTO instrument VALUES (??)', undef, instrumentType, instrumentSource, undef ) or die sdbi.error
-    val instrumentId = sdbi.lastInsertId("","","","")
-    
-    ////// Create new instrument config
-    val instrumentConfigName = sprintf("s (A1=s F=s A2=s)", instrumentType, analyzer1, activationType, analyzer2 )
-    sdbi.query('INSERT INTO instrument_config VALUES (??)',
-                 undef,
-                 instrumentConfigName,
-                 analyzer1,
-                 analyzer2,
-                 '{"is_hidden":true}',
-                 instrumentId,
-                 activationType                 
-                 ) or die sdbi.error
-    val instrumentConfigId = sdbi.lastInsertId("","","","")
-    
-    ////// Iterate over fragmentation rules
-    for( fragRuleDef <- fragRuleDefs ) {
-      val fragRule = fragRuleByDesc(fragRuleDef.description)
-      
-      sdbi.query('INSERT INTO instrument_config_fragmentation_rule_map VALUES (??)',
-                   instrumentConfigId,
-                   fragRule(id)
-                  ) or die sdbi.error
-    }
-  }
-  
-}
-
-*/
   
 }
