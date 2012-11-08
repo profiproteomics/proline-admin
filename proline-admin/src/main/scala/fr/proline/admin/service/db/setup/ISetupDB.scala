@@ -1,10 +1,12 @@
 package fr.proline.admin.service.db.setup
 
 import java.io.File
+import scala.io.Source
 import com.googlecode.flyway.core.Flyway
 import com.weiglewilczek.slf4s.Logging
 import fr.proline.admin.service.DatabaseSetupConfig
 import fr.proline.core.dal.DatabaseManagement
+import fr.proline.core.utils.io._
 import fr.proline.repository.DatabaseConnector
 
 /**
@@ -74,13 +76,9 @@ trait ISetupDB extends Logging {
       val dbConn = connector.getConnection
       val stmt = dbConn.createStatement
       
-      val source = scala.io.Source.fromFile(scriptFile)    
-      val blockIter = new LineIterator(source.buffered, ";")
-      while( blockIter.hasNext ) {
-        val block = blockIter.next()
-        stmt.executeUpdate(block)
-        //val lines = block.split("\r\n")
-      }
+      Source.fromFile(scriptFile).eachLine(";", sqlQuery => {
+        stmt.executeUpdate(sqlQuery)
+      })
       
       stmt.close()
       dbConn.close()
@@ -89,46 +87,3 @@ trait ISetupDB extends Logging {
   }
   
 }
-
-// TODO: put in some_package.utils.io
-/** Source: http://asoftsea.tumblr.com/post/529750770/a-transitional-suitcase-for-source */
-class LineIterator(iter: BufferedIterator[Char], separator: String) extends Iterator[String] {
-  require(separator.length < 3, "Line separator may be 1 or 2 characters only.")
-  
-  private[this] val isNewline: Char => Boolean =
-    separator.length match {
-      case 1 => _ == separator(0)
-      case 2 => {
-        _ == separator(0) && iter.hasNext && {
-          val res = iter.head == separator(1) // peek ahead
-          if (res) { iter.next } // incr iter
-            res
-          }
-        }
-      }
-  
-  private[this] val builder = new StringBuilder
-
-  private def buildingLine() = iter.next match {
-    case nl if(isNewline(nl)) => false
-    case ch =>  { 
-      builder append ch
-      true
-    }
-  }
-
-  def hasNext = iter.hasNext
-  def next = {
-    builder.clear
-    while (hasNext && buildingLine()) {}
-    builder.toString
-  }
-}
-
-/*object Transitioning {
-  import scala.io.Source
-  class TransitionalSource(src: Source) {    
-    def lines = new LineIterator(src.buffered, compat.Platform.EOL)
-  }
-  implicit def src2transitionalSrc(src: Source) = new TransitionalSource(src)
-}*/

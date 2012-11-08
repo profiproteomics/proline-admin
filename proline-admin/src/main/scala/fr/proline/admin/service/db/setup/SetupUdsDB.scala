@@ -7,7 +7,6 @@ import scala.collection.mutable.ArrayBuffer
 import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
 
-import fr.proline.admin.service.{DatabaseSetupConfig,UdsDBDefaults}
 import fr.proline.admin.utils.resources._
 import fr.proline.core.dal.{DatabaseManagement,
                             UdsDbInstrumentTable,UdsDbInstrumentConfigTable,

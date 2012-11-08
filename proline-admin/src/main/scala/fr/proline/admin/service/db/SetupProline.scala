@@ -1,4 +1,4 @@
-package fr.proline.admin.service
+package fr.proline.admin.service.db
 
 import java.io.File
 import com.typesafe.config.{Config,ConfigFactory,ConfigList}

@@ -1,6 +1,4 @@
-package fr.proline.admin.service.db
-
-import fr.proline.admin.service.DatabaseSetupConfig
+package fr.proline.admin.service.db.setup
 
 /**
  * @author David Bouyssie
