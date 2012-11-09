@@ -14,12 +14,12 @@ import fr.proline.repository.DatabaseConnector
  */
 trait ISetupDB extends Logging {  
   
-  val config: DatabaseSetupConfig
+  val dbConfig: DatabaseSetupConfig
   val dbManager: DatabaseManagement
   private var _executed = false
   
   // Interface
-  protected def importDefaults()
+  protected def importDefaults(): Unit
   
    /** Execution state. */
   def isExecuted = this._executed
@@ -29,40 +29,42 @@ trait ISetupDB extends Logging {
     if( _executed )
       throw new IllegalStateException("the setup has been already executed")
     
-    this.initSchema( config.connector, config.scriptDirectory )
-    
-    // TODO: store Admin Information
-    
-    this.importDefaults()
+    if( this.initSchema( dbConfig.connector, dbConfig.scriptDirectory ) ) {
+      // TODO: store Admin Information
+      
+      this.importDefaults()
+    }
     
     this._executed = true
   }
   
-  protected def initSchema( connector: DatabaseConnector, scriptDirectory: File ) {
+  protected def initSchema( connector: DatabaseConnector, scriptDirectory: File ): Boolean = {
     
     // If driver type is SQLite (flyway doesn't support SQLite at the moment)
-    if( config.driverType == "sqlite" ) {
+    if( dbConfig.driverType == "sqlite" ) {
       val firstScript = scriptDirectory.listFiles.filter(_.getName.endsWith(".sql")).first
-      createSQLiteDB(connector,firstScript)
+      createSQLiteDB(connector,firstScript)      
     } else {
       val flyway = new Flyway()
       flyway.setBaseDir(scriptDirectory.toString())
       flyway.setDataSource(connector.getDataSource)
       flyway.migrate()
+      
+      true
     }
 
   }
   
-  protected def createSQLiteDB( connector: DatabaseConnector, scriptFile: File ) {
+  protected def createSQLiteDB( connector: DatabaseConnector, scriptFile: File ): Boolean = {
     
     // Check that database script exists and as a valid extension
     require( scriptFile.exists && scriptFile.isFile() && scriptFile.getName.endsWith(".sql") )
     
     // If connection mode is file
     var createDB = true
-    if( config.connectionConfig.getString("connectionMode") == "FILE" ) {
+    if( dbConfig.connectionConfig.getString("connectionMode") == "FILE" ) {
       
-      val dbPath = config.dataDirectory + "/"+ config.connectionConfig.getString("dbName")
+      val dbPath = dbConfig.dataDirectory + "/"+ dbConfig.connectionConfig.getString("dbName")
       
       if( new File(dbPath).exists == true ) {
         this.logger.warn("database file already exists")
@@ -83,6 +85,8 @@ trait ISetupDB extends Logging {
       stmt.close()
       dbConn.close()
     }
+    
+    createDB
           
   }
   

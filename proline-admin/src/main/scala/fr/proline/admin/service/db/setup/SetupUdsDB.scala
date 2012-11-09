@@ -23,6 +23,7 @@ import fr.proline.core.om.model.msi.{ChargeConstraint,
 import fr.proline.core.orm.uds.{Activation => UdsActivation,
                                 Enzyme => UdsEnzyme,
                                 EnzymeCleavage => UdsEnzymeCleavage,
+                                ExternalDb => UdsExternalDb,
                                 FragmentationRule => UdsFragmentationRule,
                                 Instrument => UdsInstrument,
                                 InstrumentConfiguration => UdsInstrumentConfig,
@@ -38,10 +39,13 @@ import fr.proline.module.parser.mascot.{EnzymeDefinition,MascotEnzymeParser,
  *
  */
 class SetupUdsDB( val dbManager: DatabaseManagement,
-                  val config: DatabaseSetupConfig,
-                  val defaults: UdsDBDefaults ) extends ISetupDB with Logging {
+                  val dbConfig: DatabaseSetupConfig,
+                  val prolineConfig: ProlineSetupConfig ) extends ISetupDB with Logging {
   
-  // Instantiate hte UDSdb entity manager
+  // Retrieve defaults config
+  protected val defaults = prolineConfig.udsDBDefaults
+  
+  // Instantiate the UDSdb entity manager
   protected lazy val udsEMF = dbManager.udsEMF
   protected lazy val udsEM = udsEMF.createEntityManager()
   
@@ -49,6 +53,10 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     
     // Begin transaction
     udsEM.getTransaction().begin()
+    
+    // Import external DBs connections
+    this._importExternalDBs()
+    this.logger.info( "External databases connection settings imported !" )
     
     // Retrieve Mascot configuration resources
     val mascotResources = this.defaults.resources.getConfig("mascot-config")
@@ -93,6 +101,15 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     // Close entity manager
     udsEM.close()
     
+  }
+  
+  private def _importExternalDBs() {
+
+    // Store PSdb connection settings
+    this.udsEM.persist( prolineConfig.psDBConfig.toUdsExternalDb() )
+    
+    // Store PDIdb connection settings
+    this.udsEM.persist( prolineConfig.pdiDBConfig.toUdsExternalDb() )    
   }
   
   private def _importMascotEnzymeDefinitions( enzymeDefs: Iterable[EnzymeDefinition] ) {

@@ -1,29 +1,54 @@
 package fr.proline.admin.service.db
 
 import java.io.File
+import com.weiglewilczek.slf4s.Logging
 import com.typesafe.config.{Config,ConfigFactory,ConfigList}
-
 import fr.proline.admin.service.db.setup._
 import fr.proline.admin.utils.resources._
 import fr.proline.core.dal.DatabaseManagement
 import fr.proline.repository.DatabaseConnector
+import fr.proline.admin.service.db.setup.SetupPsDB
 
 /**
  * @author David Bouyssie
  *
  */
-class SetupProline( config: ProlineSetupConfig ) {
+class SetupProline( config: ProlineSetupConfig ) extends Logging {
   
   def run() {
-    //val usdDBConnector = config.udsDBConfig.connector
-    //println( usdDBConnector.getProperty(DatabaseConnector.PROPERTY_URL) )
     
-    val dbManager = new DatabaseManagement(config.udsDBConfig.connector)    
-    val udsDbSetup = new SetupUdsDB( dbManager, config.udsDBConfig, config.udsDBDefaults )
-    udsDbSetup.run()
+    // Instantiate a database manager
+    val dbManager = new DatabaseManagement(config.udsDBConfig.connector)
+    
+    // Set Up the UDSdb
+    this.logger.info("setting up the 'User Data Set' database...")
+    new SetupUdsDB( dbManager, config.udsDBConfig, config ).run()
+    
+    // Set Up the PSdb
+    this.logger.info("setting up the 'Peptide Sequence' database...")
+    new SetupPsDB( dbManager, config.psDBConfig ).run()
+    
+    // Close PSdb connections
+    // TODO: add this to the db manager closeAll method ?
+    if( dbManager.psEMF.isOpen ) {
+      dbManager.psEMF.close()
+      dbManager.psDBConnector.closeAll()
+    }
+    /*
+    // Set Up the PDIdb
+    this.logger.info("setting up the 'Protein Database Index' database...")
+    new SetupPdiDB( dbManager, config.pdiDBConfig ).run()
+    
+    // Close PDIdb connections
+    // TODO: add this to the db manager closeAll method ?
+    if( dbManager.pdiEMF.isOpen ) {
+      dbManager.pdiEMF.close()
+      dbManager.pdiDBConnector.closeAll()
+    }*/
     
     // Release database manager connections and resources
     dbManager.closeAll()
+
   }
 
 }
@@ -57,7 +82,8 @@ object SetupProline {
       // Retrieve settings relative to database connection
       val dbDriverSpecificConf = appDriverSpecificConf.getConfig(dbType)
       val dbConfig = config.getConfig(dbType).withFallback(dbDriverSpecificConf)
-      val connectionConfig = dbConfig.getConfig("connection-properties")      
+      val connectionConfig = dbConfig.getConfig("connection-properties")
+      val schemaVersion = dbConfig.getString("version")  
       
       // Merge connection settings with shared settings
       val fullConnConfig = this._mergeConfigs(connectionConfig,authConfig,hostConfig,driverConfig.getConfig("connection-properties"))
@@ -69,7 +95,7 @@ object SetupProline {
       val scriptDir = pathToFileOrResourceToFile(scriptDirStr,classOf[DatabaseConnector])
       
       // Build the database setup configuration object
-      ( dbType-> DatabaseSetupConfig( dbType, driverType, scriptDir, dataDir, fullConnConfig ) )
+      ( dbType-> DatabaseSetupConfig( dbType, driverType, schemaVersion, scriptDir, dataDir, fullConnConfig ) )
     } toMap
     
     ProlineSetupConfig(

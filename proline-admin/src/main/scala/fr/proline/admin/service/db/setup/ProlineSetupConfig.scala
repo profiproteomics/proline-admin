@@ -2,11 +2,10 @@ package fr.proline.admin.service.db.setup
 
 import java.io.File
 import scala.collection.JavaConversions.collectionAsScalaIterable
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import com.typesafe.config.ConfigList
-import fr.proline.repository.DatabaseConnector
+import com.typesafe.config.{Config,ConfigFactory,ConfigList}
 
+import fr.proline.core.orm.uds.{ExternalDb => UdsExternalDb}
+import fr.proline.repository.DatabaseConnector
 
 /** Configuration settings for Proline setup */
 case class ProlineSetupConfig(
@@ -41,7 +40,8 @@ object DatabaseSetupConfig {
 /** Configuration settings for database setup */
 case class DatabaseSetupConfig( dbType: String,
                                 driverType: String,
-                                scriptDirectory: File,
+                                schemaVersion: String,
+                                scriptDirectory: File,                                
                                 dataDirectory: File,
                                 connectionConfig: Config
                                 ) {
@@ -53,7 +53,7 @@ case class DatabaseSetupConfig( dbType: String,
   // Check configuration validity
   connectionConfig.checkValid(DatabaseSetupConfig.connectionConfigSchema)
   
-  lazy val connector = {
+  lazy val dbConnectorProps = {
     
     // Parse properties from Config object
     val dbConnProps = new java.util.HashMap[String,String]()
@@ -71,8 +71,37 @@ case class DatabaseSetupConfig( dbType: String,
     // Create the DB connection URL
     dbConnProps.put(DatabaseConnector.PROPERTY_URL, createURL(driverType,dbConnProps) )
     
+    dbConnProps
+  }
+  
+  lazy val connector = {
     // Instantiate the database connector
-    new DatabaseConnector(dbConnProps)
+    new DatabaseConnector(dbConnectorProps)
+  }
+  
+  def toUdsExternalDb(): UdsExternalDb = {
+    
+    val udsExtDb = new UdsExternalDb()
+    udsExtDb.setDbName( dbConnectorProps.get("database.dbName") )
+    udsExtDb.setType( this.dbType.split("-")(0) )
+    udsExtDb.setDbVersion( this.schemaVersion )
+    udsExtDb.setIsBusy( false )
+    
+    udsExtDb.setConnectionMode(dbConnectorProps.get("database.connectionMode"))
+    
+    val userName = dbConnectorProps.get(DatabaseConnector.PROPERTY_USERNAME)
+    if( userName.length > 0 ) udsExtDb.setDbUser(userName)
+    
+    val password = dbConnectorProps.get(DatabaseConnector.PROPERTY_PASSWORD)
+    if( password.length > 0 ) udsExtDb.setDbPassword(password)
+    
+    val host = dbConnectorProps.get("database.host")
+    if( host.length > 0 ) udsExtDb.setHost(host)
+    
+    val port = dbConnectorProps.get("database.port")
+    if( port.length > 0 ) udsExtDb.setPort(port.toInt)    
+    
+    udsExtDb
   }
   
   private def createURL(driverType: String, dbConnProps: java.util.HashMap[String,String]) : String = {
