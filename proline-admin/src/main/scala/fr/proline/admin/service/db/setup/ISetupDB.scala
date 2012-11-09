@@ -4,6 +4,8 @@ import java.io.File
 import scala.io.Source
 import com.googlecode.flyway.core.Flyway
 import com.weiglewilczek.slf4s.Logging
+
+import fr.proline.admin.utils.resources._
 import fr.proline.core.dal.DatabaseManagement
 import fr.proline.core.utils.io._
 import fr.proline.repository.DatabaseConnector
@@ -29,7 +31,7 @@ trait ISetupDB extends Logging {
     if( _executed )
       throw new IllegalStateException("the setup has been already executed")
     
-    if( this.initSchema( dbConfig.connector, dbConfig.scriptDirectory ) ) {
+    if( this.initSchema( dbConfig.connector, dbConfig.scriptResourcePath ) ) {
       // TODO: store Admin Information
       
       this.importDefaults()
@@ -38,19 +40,23 @@ trait ISetupDB extends Logging {
     this._executed = true
   }
   
-  protected def initSchema( connector: DatabaseConnector, scriptDirectory: File ): Boolean = {
+  protected def initSchema( connector: DatabaseConnector, scriptResourcePath: String ): Boolean = {
     
     // If driver type is SQLite (flyway doesn't support SQLite at the moment)
     if( dbConfig.driverType == "sqlite" ) {
-      val firstScript = scriptDirectory.listFiles.filter(_.getName.endsWith(".sql")).first
-      createSQLiteDB(connector,firstScript)      
-    } else {
-      val flyway = new Flyway()
-      flyway.setBaseDir(scriptDirectory.toString())
-      flyway.setDataSource(connector.getDataSource)
-      flyway.migrate()
       
-      true
+      val scriptDir = pathToFileOrResourceToFile(scriptResourcePath,classOf[DatabaseConnector])
+      val firstScript = scriptDir.listFiles.filter(_.getName.endsWith(".sql")).first
+      createSQLiteDB(connector,firstScript)
+      
+    } else {
+      
+      val flyway = new Flyway()
+      flyway.setLocations( scriptResourcePath.toString() + "/" )
+      flyway.setDataSource(connector.getDataSource)
+      
+      if( flyway.migrate() > 0 ) true
+      else false
     }
 
   }

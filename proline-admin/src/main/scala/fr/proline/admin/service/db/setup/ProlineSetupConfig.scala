@@ -5,7 +5,7 @@ import scala.collection.JavaConversions.collectionAsScalaIterable
 import com.typesafe.config.{Config,ConfigFactory,ConfigList}
 
 import fr.proline.core.orm.uds.{ExternalDb => UdsExternalDb}
-import fr.proline.repository.DatabaseConnector
+import fr.proline.repository.{ConnectionPrototype,DatabaseConnector,ProlineRepository}
 
 /** Configuration settings for Proline setup */
 case class ProlineSetupConfig(
@@ -41,19 +41,78 @@ object DatabaseSetupConfig {
 case class DatabaseSetupConfig( dbType: String,
                                 driverType: String,
                                 schemaVersion: String,
-                                scriptDirectory: File,                                
+                                scriptResourcePath: String,
                                 dataDirectory: File,
                                 connectionConfig: Config
                                 ) {
   
   // Check that directories exists
-  require( scriptDirectory.exists() && scriptDirectory.isDirectory(), "missing script directory:"+scriptDirectory )
+  //require( scriptDirectory.exists() && scriptDirectory.isDirectory(), "missing script directory:"+scriptDirectory )
   require( dataDirectory.exists() && dataDirectory.isDirectory(), "missing data directory:"+dataDirectory )
   
   // Check configuration validity
   connectionConfig.checkValid(DatabaseSetupConfig.connectionConfigSchema)
   
-  lazy val dbConnectorProps = {
+  val dbName = connectionConfig.getString("dbName")
+  
+  lazy val dbConnProperties = {
+    // Parse properties from Config object
+    val dbConnProps = new java.util.HashMap[String,String]()
+    for( entry <- connectionConfig.entrySet ) {
+      val key = entry.getKey
+      dbConnProps.put("database."+ key,connectionConfig.getString(key) )
+    }
+    
+    dbConnProps.put("database.drivertype",driverType.toUpperCase )
+    
+    val protocol = dbConnProps.get("database.connectionMode").toUpperCase
+    val protocolValue = if( protocol == "HOST" ) dbConnProps.get("database.host")
+                        else dataDirectory.toString()
+    
+    dbConnProps.put("database.protocol",protocol )
+    dbConnProps.put("database.protocolValue",protocolValue )
+    
+    dbConnProps
+  }
+  
+  lazy val dbConnPrototype = {
+    new ConnectionPrototype(dbConnProperties).namePrefix("")
+  }
+  
+  lazy val connector = {
+    // Instantiate the database connector
+    val db = ProlineRepository.Databases.valueOf(dbType.toUpperCase)
+    dbConnPrototype.toConnector( dbName )
+  }
+  
+  def toUdsExternalDb(): UdsExternalDb = {
+    
+    val dbConnProps = this.dbConnProperties
+    val connPrototype = this.dbConnPrototype    
+    
+    val udsExtDb = new UdsExternalDb()
+    udsExtDb.setDbName( dataDirectory + "/" + dbName )
+    udsExtDb.setType( this.dbType )
+    udsExtDb.setDbVersion( this.schemaVersion )
+    udsExtDb.setIsBusy( false )
+    udsExtDb.setConnectionMode(connPrototype.getProtocol.toString)
+    
+    val userName = dbConnProps.get(DatabaseConnector.PROPERTY_USERNAME)
+    if( userName.length > 0 ) udsExtDb.setDbUser(userName)
+    
+    val password = dbConnProps.get(DatabaseConnector.PROPERTY_PASSWORD)
+    if( password.length > 0 ) udsExtDb.setDbPassword(password)
+    
+    val host = dbConnProps.get("database.host")
+    if( host.length > 0 ) udsExtDb.setHost(host)
+    
+    val port = dbConnProps.get("database.port")
+    if( port.length > 0 ) udsExtDb.setPort(port.toInt)    
+    
+    udsExtDb
+  }
+  
+  /*lazy val dbConnectorProps = {
     
     // Parse properties from Config object
     val dbConnProps = new java.util.HashMap[String,String]()
@@ -74,7 +133,7 @@ case class DatabaseSetupConfig( dbType: String,
     dbConnProps
   }
   
-  lazy val connector = {
+  lazy val connectorV1 = {
     // Instantiate the database connector
     new DatabaseConnector(dbConnectorProps)
   }
@@ -83,7 +142,7 @@ case class DatabaseSetupConfig( dbType: String,
     
     val udsExtDb = new UdsExternalDb()
     udsExtDb.setDbName( dbConnectorProps.get("database.dbName") )
-    udsExtDb.setType( this.dbType.split("-")(0) )
+    udsExtDb.setType( this.dbType )
     udsExtDb.setDbVersion( this.schemaVersion )
     udsExtDb.setIsBusy( false )
     
@@ -146,7 +205,7 @@ case class DatabaseSetupConfig( dbType: String,
     }
     
     URLbuilder.toString   
-  }
+  }*/
   
 }
 

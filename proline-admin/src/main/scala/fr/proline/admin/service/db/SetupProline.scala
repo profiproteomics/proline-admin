@@ -76,12 +76,12 @@ object SetupProline {
     val appDriverSpecificConf = ConfigFactory.load("application-"+driverType)
     
     // Load database specific settings
-    val dbList = List("uds-db","pdi-db","ps-db","msi-db","lcms-db")
+    val dbList = List("uds","pdi","ps","msi","lcms")
     val dbSetupConfigByType = dbList.map { dbType =>
       
       // Retrieve settings relative to database connection
-      val dbDriverSpecificConf = appDriverSpecificConf.getConfig(dbType)
-      val dbConfig = config.getConfig(dbType).withFallback(dbDriverSpecificConf)
+      val dbDriverSpecificConf = appDriverSpecificConf.getConfig(dbType+"-db")
+      val dbConfig = config.getConfig(dbType+"-db").withFallback(dbDriverSpecificConf)
       val connectionConfig = dbConfig.getConfig("connection-properties")
       val schemaVersion = dbConfig.getString("version")  
       
@@ -92,20 +92,19 @@ object SetupProline {
       val scriptDirStr = prolineConfig.getString("db-script-root") +
                          dbConfig.getString("script-directory") + 
                          driverConfig.getString("script-directory")
-      val scriptDir = pathToFileOrResourceToFile(scriptDirStr,classOf[DatabaseConnector])
       
       // Build the database setup configuration object
-      ( dbType-> DatabaseSetupConfig( dbType, driverType, schemaVersion, scriptDir, dataDir, fullConnConfig ) )
+      ( dbType-> DatabaseSetupConfig( dbType, driverType, schemaVersion, scriptDirStr, dataDir, fullConnConfig ) )
     } toMap
     
     ProlineSetupConfig(
       dataDirectory = dataDir,
-      udsDBConfig = dbSetupConfigByType("uds-db"),
+      udsDBConfig = dbSetupConfigByType("uds"),
       udsDBDefaults = retrieveUdsDBDefaults(),
-      pdiDBConfig = dbSetupConfigByType("pdi-db"),
-      psDBConfig = dbSetupConfigByType("ps-db"),
-      msiDBConfig = dbSetupConfigByType("msi-db"),
-      lcmsDBConfig = dbSetupConfigByType("lcms-db")
+      pdiDBConfig = dbSetupConfigByType("pdi"),
+      psDBConfig = dbSetupConfigByType("ps"),
+      msiDBConfig = dbSetupConfigByType("msi"),
+      lcmsDBConfig = dbSetupConfigByType("lcms")
     )
     
   }
