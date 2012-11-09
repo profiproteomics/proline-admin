@@ -21,6 +21,7 @@ import fr.proline.core.om.model.msi.{ChargeConstraint,
                                      TheoreticalFragmentIon
                                      }
 import fr.proline.core.orm.uds.{Activation => UdsActivation,
+                                AdminInformation => UdsAdminInfos,
                                 Enzyme => UdsEnzyme,
                                 EnzymeCleavage => UdsEnzymeCleavage,
                                 ExternalDb => UdsExternalDb,
@@ -53,6 +54,10 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     
     // Begin transaction
     udsEM.getTransaction().begin()
+    
+    // Import Admin information
+    this._importAdminInformation()
+    this.logger.info( "Admin information imported !" )
     
     // Import external DBs connections
     this._importExternalDBs()
@@ -102,6 +107,19 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     udsEM.close()
     
   }
+ 
+  private def _importAdminInformation() {
+
+    val udsAdminInfos = new UdsAdminInfos()
+    udsAdminInfos.setModelVersion(dbConfig.schemaVersion)
+    udsAdminInfos.setDbCreationDate(new java.sql.Timestamp(new java.util.Date().getTime))
+    //udsAdminInfos.setModelUpdateDate()
+    udsAdminInfos.setConfiguration("""{}""")
+    
+    this.udsEM.persist( udsAdminInfos)
+
+  }
+  
   
   private def _importExternalDBs() {
 

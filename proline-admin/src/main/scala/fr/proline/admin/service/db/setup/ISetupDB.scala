@@ -32,8 +32,6 @@ trait ISetupDB extends Logging {
       throw new IllegalStateException("the setup has been already executed")
     
     if( this.initSchema( dbConfig.connector, dbConfig.scriptResourcePath ) ) {
-      // TODO: store Admin Information
-      
       this.importDefaults()
     }
     
@@ -52,6 +50,7 @@ trait ISetupDB extends Logging {
     } else {
       
       val flyway = new Flyway()
+      // TODO: find a workaround for absolute paths
       flyway.setLocations( scriptResourcePath.toString() + "/" )
       flyway.setDataSource(connector.getDataSource)
       
@@ -70,7 +69,7 @@ trait ISetupDB extends Logging {
     var createDB = true
     if( dbConfig.connectionConfig.getString("connectionMode") == "FILE" ) {
       
-      val dbPath = dbConfig.dataDirectory + "/"+ dbConfig.connectionConfig.getString("dbName")
+      val dbPath = dbConfig.dbDirectory + "/"+ dbConfig.connectionConfig.getString("dbName")
       
       if( new File(dbPath).exists == true ) {
         this.logger.warn("database file already exists")

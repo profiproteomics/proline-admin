@@ -34,17 +34,17 @@ class SetupProline( config: ProlineSetupConfig ) extends Logging {
       dbManager.psEMF.close()
       dbManager.psDBConnector.closeAll()
     }
-    /*
+    
     // Set Up the PDIdb
     this.logger.info("setting up the 'Protein Database Index' database...")
-    new SetupPdiDB( dbManager, config.pdiDBConfig ).run()
+    new SetupPdiDB( dbManager, config.pdiDBConfig, config ).run()
     
     // Close PDIdb connections
     // TODO: add this to the db manager closeAll method ?
     if( dbManager.pdiEMF.isOpen ) {
       dbManager.pdiEMF.close()
       dbManager.pdiDBConnector.closeAll()
-    }*/
+    }
     
     // Release database manager connections and resources
     dbManager.closeAll()
@@ -102,6 +102,7 @@ object SetupProline {
       udsDBConfig = dbSetupConfigByType("uds"),
       udsDBDefaults = retrieveUdsDBDefaults(),
       pdiDBConfig = dbSetupConfigByType("pdi"),
+      pdiDBDefaults = PdiDBDefaults( ConfigFactory.load("./pdi_db/resources.conf") ),
       psDBConfig = dbSetupConfigByType("ps"),
       msiDBConfig = dbSetupConfigByType("msi"),
       lcmsDBConfig = dbSetupConfigByType("lcms")

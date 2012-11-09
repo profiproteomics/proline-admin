@@ -2,6 +2,7 @@ package fr.proline.admin.service.db.setup
 
 import com.weiglewilczek.slf4s.Logging
 import fr.proline.core.dal.DatabaseManagement
+import fr.proline.core.orm.ps.{AdminInformation => PsAdminInfos}
 import fr.proline.module.rm.unimod.UnimodImporter
 
 /**
@@ -18,6 +19,14 @@ class SetupPsDB( val dbManager: DatabaseManagement,
     // Begin transaction
     val psTransaction = psEM.getTransaction()    
     psTransaction.begin()
+    
+    val psAdminInfos = new PsAdminInfos()
+    psAdminInfos.setModelVersion(dbConfig.schemaVersion)
+    psAdminInfos.setDbCreationDate(new java.sql.Timestamp(new java.util.Date().getTime))
+    //psAdminInfos.setModelUpdateDate()    
+    psEM.persist( psAdminInfos)
+    
+    this.logger.info("Admin information imported !")
   
     // Create Unimod file input stream
     val unimodIS = this.getClass().getResourceAsStream("/mascot_config/unimod.xml")

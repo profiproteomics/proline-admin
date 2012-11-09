@@ -13,6 +13,7 @@ case class ProlineSetupConfig(
              udsDBConfig: DatabaseSetupConfig,
              udsDBDefaults: UdsDBDefaults,
              pdiDBConfig: DatabaseSetupConfig,
+             pdiDBDefaults: PdiDBDefaults,
              psDBConfig: DatabaseSetupConfig,
              msiDBConfig: DatabaseSetupConfig,
              lcmsDBConfig: DatabaseSetupConfig
@@ -42,13 +43,13 @@ case class DatabaseSetupConfig( dbType: String,
                                 driverType: String,
                                 schemaVersion: String,
                                 scriptResourcePath: String,
-                                dataDirectory: File,
+                                dbDirectory: File,
                                 connectionConfig: Config
                                 ) {
   
   // Check that directories exists
   //require( scriptDirectory.exists() && scriptDirectory.isDirectory(), "missing script directory:"+scriptDirectory )
-  require( dataDirectory.exists() && dataDirectory.isDirectory(), "missing data directory:"+dataDirectory )
+  require( dbDirectory.exists() && dbDirectory.isDirectory(), "missing database directory:"+dbDirectory )
   
   // Check configuration validity
   connectionConfig.checkValid(DatabaseSetupConfig.connectionConfigSchema)
@@ -67,7 +68,7 @@ case class DatabaseSetupConfig( dbType: String,
     
     val protocol = dbConnProps.get("database.connectionMode").toUpperCase
     val protocolValue = if( protocol == "HOST" ) dbConnProps.get("database.host")
-                        else dataDirectory.toString()
+                        else dbDirectory.toString()
     
     dbConnProps.put("database.protocol",protocol )
     dbConnProps.put("database.protocolValue",protocolValue )
@@ -91,7 +92,7 @@ case class DatabaseSetupConfig( dbType: String,
     val connPrototype = this.dbConnPrototype    
     
     val udsExtDb = new UdsExternalDb()
-    udsExtDb.setDbName( dataDirectory + "/" + dbName )
+    udsExtDb.setDbName( dbDirectory + "/" + dbName )
     udsExtDb.setType( this.dbType )
     udsExtDb.setDbVersion( this.schemaVersion )
     udsExtDb.setIsBusy( false )
@@ -214,4 +215,8 @@ case class UdsDBDefaults(
              instruments: java.util.List[Config],
              quantMethods: java.util.List[Config],
              peaklistSoftware: java.util.List[Config]
+            )
+            
+case class PdiDBDefaults(
+             resources: Config
             )
