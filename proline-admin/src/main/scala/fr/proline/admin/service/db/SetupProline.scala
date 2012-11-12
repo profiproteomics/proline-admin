@@ -48,7 +48,9 @@ class SetupProline( config: ProlineSetupConfig ) extends Logging {
     
     // Release database manager connections and resources
     dbManager.closeAll()
-
+    
+    this.logger.info("Proline has been sucessfuly set up !")
+    
   }
 
 }

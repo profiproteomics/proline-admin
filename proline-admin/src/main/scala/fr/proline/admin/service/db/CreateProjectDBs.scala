@@ -4,11 +4,11 @@ import java.io.File
 import javax.persistence.EntityManager
 import com.weiglewilczek.slf4s.Logging
 import fr.proline.admin.service.db.setup.{DatabaseSetupConfig,ProlineSetupConfig}
+import fr.proline.admin.utils.sql._
 import fr.proline.core.dal.DatabaseManagement
 import fr.proline.core.orm.uds.{Project => UdsProject}
 import fr.proline.repository.ConnectionPrototype.{DatabaseProtocol => DbProtocols}
 import setup.{SetupLcmsDB,SetupMsiDB}
-
 
 /**
  * @author David Bouyssie
@@ -75,16 +75,30 @@ class CreateProjectDBs( dbManager: DatabaseManagement, config: ProlineSetupConfi
     config.msiDBConfig.dbConnPrototype.getProtocol match {
       case DbProtocols.FILE => {
         
+        // Create projects directory if not exists
+        val projectsDir = CreateProjectDBs.getProjectsDir( dbConfig.dbDirectory )
+        if( projectsDir.exists == false ) projectsDir.mkdir()
+        
         // Retrieve project directory
-        val projectDir = CreateProjectDBs.getProjectDir( dbConfig.dbDirectory, this.projectId )
+        val projectDir = CreateProjectDBs.getProjectDir( projectsDir, this.projectId )
         if( projectDir.exists == false ) projectDir.mkdir()
         
         // Update database config directory
         dbConfig.copy( dbDirectory = projectDir )
       }
       case DbProtocols.HOST => {
-        throw new Exception("NYI")
-        dbConfig
+        
+        val newDbConfig = dbConfig.copy()
+        newDbConfig.dbName = dbConfig.dbName + "_project_" + this.projectId
+        
+        if( dbConfig.driverType == "postgresql" ) {
+          val pgDbConnector = newDbConfig.dbConnPrototype.toConnector("postgres")
+          createPgDatabase( pgDbConnector, newDbConfig.dbName, Some(this.logger) )
+        } else {
+          throw new Exception("NYI")
+        }
+        
+        newDbConfig
       }
       case DbProtocols.MEMORY => {
         throw new Exception("NYI")
@@ -115,8 +129,12 @@ object CreateProjectDBs {
     
   }
   
-  def getProjectDir( dataDir: File, projectId: Int ): File = {
-    new File( dataDir.toString + "/project_" + projectId )
+  def getProjectsDir( dataDir: File ): File = {
+    new File( dataDir.toString + "/projects" )
+  }
+  
+  def getProjectDir( projectsDir: File, projectId: Int ): File = {    
+    new File( projectsDir.toString + "/project_" + projectId )
   }
   
 }

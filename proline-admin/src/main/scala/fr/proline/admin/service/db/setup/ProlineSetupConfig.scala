@@ -54,7 +54,7 @@ case class DatabaseSetupConfig( dbType: String,
   // Check configuration validity
   connectionConfig.checkValid(DatabaseSetupConfig.connectionConfigSchema)
   
-  val dbName = connectionConfig.getString("dbName")
+  var dbName = connectionConfig.getString("dbName")
   
   lazy val dbConnProperties = {
     // Parse properties from Config object
@@ -67,8 +67,10 @@ case class DatabaseSetupConfig( dbType: String,
     dbConnProps.put("database.drivertype",driverType.toUpperCase )
     
     val protocol = dbConnProps.get("database.connectionMode").toUpperCase
-    val protocolValue = if( protocol == "HOST" ) dbConnProps.get("database.host")
-                        else dbDirectory.toString()
+    val protocolValue = if( protocol == "HOST" ) dbConnProps.get("database.host") + ":" +
+                                                 dbConnProps.get("database.port")
+                        else if( protocol == "FILE" ) dbDirectory.toString()
+                        else ""
     
     dbConnProps.put("database.protocol",protocol )
     dbConnProps.put("database.protocolValue",protocolValue )
@@ -89,10 +91,13 @@ case class DatabaseSetupConfig( dbType: String,
   def toUdsExternalDb(): UdsExternalDb = {
     
     val dbConnProps = this.dbConnProperties
-    val connPrototype = this.dbConnPrototype    
+    val connPrototype = this.dbConnPrototype  
+    val connectionMode = connPrototype.getProtocol.toString
     
     val udsExtDb = new UdsExternalDb()
-    udsExtDb.setDbName( dbDirectory + "/" + dbName )
+    if( connectionMode == "FILE" ) udsExtDb.setDbName( dbDirectory + "/" + dbName )
+    else udsExtDb.setDbName( dbName )
+    
     udsExtDb.setType( this.dbType )
     udsExtDb.setDbVersion( this.schemaVersion )
     udsExtDb.setIsBusy( false )

@@ -6,6 +6,7 @@ import com.googlecode.flyway.core.Flyway
 import com.weiglewilczek.slf4s.Logging
 
 import fr.proline.admin.utils.resources._
+import fr.proline.admin.utils.sql._
 import fr.proline.core.dal.DatabaseManagement
 import fr.proline.core.utils.io._
 import fr.proline.repository.DatabaseConnector
@@ -49,6 +50,14 @@ trait ISetupDB extends Logging {
       
     } else {
       
+      // Create database if driver type is PostgreSQL
+      if( dbConfig.driverType == "postgresql" ) {
+        val pgDbConnector = dbConfig.dbConnPrototype.toConnector("postgres")
+        createPgDatabase( pgDbConnector, dbConfig.dbName, Some(this.logger) )
+      }
+      
+      this.logger.info("updating database schema...")
+      
       val flyway = new Flyway()
       // TODO: find a workaround for absolute paths
       flyway.setLocations( scriptResourcePath.toString() + "/" )
@@ -76,16 +85,15 @@ trait ISetupDB extends Logging {
         createDB = false
       }
       else
-        this.logger.info("create new database file: "+dbPath)        
+        this.logger.info("create new database file: "+dbPath)
     }
     
     if( createDB ) {
       val dbConn = connector.getConnection
       val stmt = dbConn.createStatement
       
-      Source.fromFile(scriptFile).eachLine(";", sqlQuery => {
-        stmt.executeUpdate(sqlQuery)
-      })
+      this.logger.info("creating database schema...")
+      Source.fromFile(scriptFile).eachLine(";", stmt.executeUpdate(_) )
       
       stmt.close()
       dbConn.close()
