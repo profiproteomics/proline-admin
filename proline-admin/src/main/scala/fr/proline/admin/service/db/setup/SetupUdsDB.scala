@@ -66,12 +66,12 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     // Retrieve Mascot configuration resources
     val mascotResources = this.defaults.resources.getConfig("mascot-config")
     val mascotEnzymeFilePath = mascotResources.getString("enzymes_file")    
-    val mascotEnzymeFile = pathToFileOrResourceToFile(mascotEnzymeFilePath,this.getClass())
+    val mascotEnzymeIS = pathToStreamOrResourceToStream(mascotEnzymeFilePath,this.getClass())
     val mascotFragRuleFilePath = mascotResources.getString("fragmentation_rules_file")    
-    val mascotFragRuleFile = pathToFileOrResourceToFile(mascotFragRuleFilePath,this.getClass())
+    val mascotFragRuleIS = pathToStreamOrResourceToStream(mascotFragRuleFilePath,this.getClass())
     
     // Import enzyme definitions
-    val enzymeDefs = MascotEnzymeParser.getEnzymeDefinitions(mascotEnzymeFile)
+    val enzymeDefs = MascotEnzymeParser.getEnzymeDefinitions(mascotEnzymeIS)
     this._importMascotEnzymeDefinitions( enzymeDefs )
     this.logger.info( "Enzyme definitions imported !" )
     
@@ -88,7 +88,7 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     this.logger.info( "Mascot fragmentation rules imported !" )
     
     // Import Mascot instrument configurations
-    val mascotInstConfigs = MascotFragmentationRuleParser.getInstrumentConfigurations(mascotFragRuleFile)
+    val mascotInstConfigs = MascotFragmentationRuleParser.getInstrumentConfigurations(mascotFragRuleIS)
     this._importMascotInstrumentConfigs( mascotInstConfigs, udsActivationByType, udsFragRuleByDesc )
     this.logger.info( "Mascot instrument configurations imported !" )
     

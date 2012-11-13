@@ -1,6 +1,6 @@
 package fr.proline.admin.service.db.setup
 
-import java.io.File
+import java.io.{File,InputStream}
 import scala.io.Source
 import com.googlecode.flyway.core.Flyway
 import com.weiglewilczek.slf4s.Logging
@@ -44,9 +44,8 @@ trait ISetupDB extends Logging {
     // If driver type is SQLite (flyway doesn't support SQLite at the moment)
     if( dbConfig.driverType == "sqlite" ) {
       
-      val scriptDir = pathToFileOrResourceToFile(scriptResourcePath,classOf[DatabaseConnector])
-      val firstScript = scriptDir.listFiles.filter(_.getName.endsWith(".sql")).first
-      createSQLiteDB(connector,firstScript)
+      val scriptIS = pathToStreamOrResourceToStream(scriptResourcePath,classOf[DatabaseConnector])
+      createSQLiteDB(connector,scriptIS)
       
     } else {
       
@@ -69,10 +68,7 @@ trait ISetupDB extends Logging {
 
   }
   
-  protected def createSQLiteDB( connector: DatabaseConnector, scriptFile: File ): Boolean = {
-    
-    // Check that database script exists and as a valid extension
-    require( scriptFile.exists && scriptFile.isFile() && scriptFile.getName.endsWith(".sql") )
+  protected def createSQLiteDB( connector: DatabaseConnector, scriptIS: InputStream ): Boolean = {
     
     // If connection mode is file
     var createDB = true
@@ -93,7 +89,7 @@ trait ISetupDB extends Logging {
       val stmt = dbConn.createStatement
       
       this.logger.info("creating database schema...")
-      Source.fromFile(scriptFile).eachLine(";", stmt.executeUpdate(_) )
+      Source.fromInputStream(scriptIS).eachLine(";", stmt.executeUpdate(_) )
       
       stmt.close()
       dbConn.close()
