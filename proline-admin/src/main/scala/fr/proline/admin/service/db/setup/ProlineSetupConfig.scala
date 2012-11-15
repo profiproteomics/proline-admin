@@ -16,6 +16,7 @@ case class ProlineSetupConfig(
              pdiDBDefaults: PdiDBDefaults,
              psDBConfig: DatabaseSetupConfig,
              msiDBConfig: DatabaseSetupConfig,
+             msiDBDefaults: MsiDBDefaults,
              lcmsDBConfig: DatabaseSetupConfig
              ) {
   
@@ -215,13 +216,18 @@ case class DatabaseSetupConfig( dbType: String,
   
 }
 
-case class UdsDBDefaults(
-             resources: Config,
-             instruments: java.util.List[Config],
-             quantMethods: java.util.List[Config],
-             peaklistSoftware: java.util.List[Config]
+case class MsiDBDefaults(
+             scorings: java.util.List[Config]
             )
             
 case class PdiDBDefaults(
              resources: Config
             )
+            
+case class UdsDBDefaults(
+             resources: Config,
+             instruments: java.util.List[Config],             
+             peaklistSoftware: java.util.List[Config],
+             quantMethods: java.util.List[Config]
+            )
+            

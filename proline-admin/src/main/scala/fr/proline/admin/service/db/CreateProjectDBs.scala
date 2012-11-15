@@ -46,7 +46,7 @@ class CreateProjectDBs( dbManager: DatabaseManagement, config: ProlineSetupConfi
     udsEM.getTransaction().commit()
     
     // Create MSI database
-    new SetupMsiDB( dbManager, msiDBConfig, projectId ).run()
+    new SetupMsiDB( dbManager, msiDBConfig, config.msiDBDefaults, projectId ).run()
     
     // Prepare LCMSdb creation
     val lcmsDBConfig = this._prepareDBCreation( config.lcmsDBConfig )

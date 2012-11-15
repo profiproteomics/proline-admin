@@ -108,6 +108,7 @@ object SetupProline {
       pdiDBDefaults = PdiDBDefaults( ConfigFactory.load("./pdi_db/resources.conf") ),
       psDBConfig = dbSetupConfigByType("ps"),
       msiDBConfig = dbSetupConfigByType("msi"),
+      msiDBDefaults = retrieveMsiDBDefaults(),
       lcmsDBConfig = dbSetupConfigByType("lcms")
     )
     
@@ -119,13 +120,19 @@ object SetupProline {
                    ConfigFactory.load("./uds_db/instruments.conf")
                                 .getConfigList("instruments")
                                 .asInstanceOf[java.util.List[Config]],
-                   ConfigFactory.load("./uds_db/quant_methods.conf")
-                                .getConfigList("quant_methods")
-                                .asInstanceOf[java.util.List[Config]],
                    ConfigFactory.load("./uds_db/peaklist_software.conf")
                                 .getConfigList("peaklist_software")
+                                .asInstanceOf[java.util.List[Config]],
+                   ConfigFactory.load("./uds_db/quant_methods.conf")
+                                .getConfigList("quant_methods")
                                 .asInstanceOf[java.util.List[Config]]
                  )
+  }
+  
+  def retrieveMsiDBDefaults(): MsiDBDefaults = {
+    MsiDBDefaults( ConfigFactory.load("./msi_db/scorings.conf")
+                                .getConfigList("scorings")
+                                .asInstanceOf[java.util.List[Config]] )
   }
   
   /** Merge Config objects consecutively.

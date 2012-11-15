@@ -11,6 +11,8 @@ import fr.proline.core.dal.{DatabaseManagement,
                             UdsDbInstrumentTable,
                             UdsDbInstrumentConfigTable,
                             UdsDbPeaklistSoftwareTable,
+                            UdsDbQuantLabelTable,
+                            UdsDbQuantMethodTable,
                             UdsDbSpecTitleParsingRuleTable
                             }
 import fr.proline.core.om.model.msi.{ChargeConstraint,
@@ -29,6 +31,8 @@ import fr.proline.core.orm.uds.{Activation => UdsActivation,
                                 Instrument => UdsInstrument,
                                 InstrumentConfiguration => UdsInstrumentConfig,
                                 PeaklistSoftware => UdsPeaklistSoft,
+                                QuantitationLabel => UdsQuantLabel,
+                                QuantitationMethod => UdsQuantMethod,
                                 SpectrumTitleParsingRule => UdsSpecTitleParsingRule,
                                 TheoreticalFragment => UdsTheoFragment
                                 }
@@ -96,9 +100,13 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     this._importInstrumentConfigs( this.defaults.instruments, udsActivationByType )
     this.logger.info( "Proline instrument configurations imported !" )
     
-    // Import spectrum title parsing rules
+    // Import Peaklist software
     this._importPeaklistSoftware( this.defaults.peaklistSoftware )
-    this.logger.info( "Spectrum title parsing rules imported !" )
+    this.logger.info( "Peaklist software imported !" )
+    
+    // Import quantitative methods
+    this._importQuantMethods( this.defaults.quantMethods )
+    this.logger.info( "Quantitative methods imported !" )
     
     // Commit transaction
     udsEM.getTransaction().commit()
@@ -371,5 +379,41 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
     }
   
   }
+  
+  private def _importQuantMethods( quantMethods: java.util.List[Config] ) {
+    
+    val quantMethodCols = UdsDbQuantMethodTable.columns
+    val quantLabelCols = UdsDbQuantLabelTable.columns
+    
+    // Store quantitative methods
+    for( quantMethod <- quantMethods ) {
+      
+      // Create new quantitative method
+      val udsQuantMethod = new UdsQuantMethod()
+      udsQuantMethod.setName( quantMethod.getString(quantMethodCols.name) )
+      udsQuantMethod.setType( quantMethod.getString(quantMethodCols.`type`) )
+      udsQuantMethod.setAbundanceUnit( quantMethod.getString(quantMethodCols.abundanceUnit) )      
+      
+      udsEM.persist(udsQuantMethod)
+      
+      // Store quant labels if they are defined
+      if( quantMethod.hasPath("quant_labels") ) {
+        val quantLabels = quantMethod.getConfigList("quant_labels").asInstanceOf[java.util.List[Config]]
+        
+        for( quantLabel <- quantLabels ) {
+          
+          val udsQuantLabel = new UdsQuantLabel()
+          udsQuantLabel.setName( quantLabel.getString(quantLabelCols.name) )
+          udsQuantLabel.setType( quantMethod.getString(quantMethodCols.`type`) )
+          udsQuantLabel.setSerializedProperties( quantLabel.getString(quantLabelCols.serializedProperties) )
+          udsQuantLabel.setMethod( udsQuantMethod )
+          
+          udsEM.persist(udsQuantLabel)
+        }
+      }
+    }
+  
+  }
+
   
 }
