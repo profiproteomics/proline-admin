@@ -6,13 +6,13 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>${project.artifactId}</name>
   <description>Proline Administration</description>
-  
+
   <properties>
   	<maven.compiler.source>1.6</maven.compiler.source>
   	<maven.compiler.target>1.6</maven.compiler.target>
   	<encoding>UTF-8</encoding>
   </properties>
-  
+
   <repositories>
     <repository>
       <id>scala-tools.org</id>
@@ -20,7 +20,7 @@
       <url>http://scala-tools.org/repo-releases</url>
     </repository>
     <repository>
-      <releases>           
+      <releases>
       </releases>
       <snapshots>
       </snapshots>
@@ -29,7 +29,7 @@
       <url>https://bioproj.extra.cea.fr/redmine/projects/proline-repo/repository/raw/maven2</url>
     </repository>
   </repositories>
-  
+
   <pluginRepositories>
     <pluginRepository>
       <id>scala-tools.org</id>
@@ -37,9 +37,9 @@
       <url>http://scala-tools.org/repo-releases</url>
     </pluginRepository>
   </pluginRepositories>
-  
+
   <dependencies>
-  
+
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
@@ -62,9 +62,9 @@
       <artifactId>scalatest_2.9.1</artifactId>
       <version>1.7.1</version>
     </dependency>
-    
+
     <!-- Logging -->
-    <dependency> 
+    <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>1.0.7</version>
@@ -74,34 +74,34 @@
       <artifactId>slf4s_2.9.1</artifactId>
       <version>1.0.7</version>
     </dependency>
-    
+
     <!-- Configuration -->
     <dependency>
       <groupId>com.typesafe</groupId>
       <artifactId>config</artifactId>
       <version>1.0.0</version>
 		</dependency>
-    
+
     <!-- <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>Proline-DAL</artifactId>
       <version>0.0.2-SNAPSHOT</version>
     </dependency> -->
-    
+
     <dependency>
 		  <groupId>fr.proline</groupId>
 		  <artifactId>PM-MascotParser</artifactId>
 		  <version>0.0.1</version>
     </dependency>
-    
+
     <dependency>
       <groupId>fr.proline</groupId>
 		  <artifactId>PM-ResourcesManager</artifactId>
 		  <version>0.0.1-SNAPSHOT</version>
     </dependency>
-    
+
   </dependencies>
-  
+
   <build>
       <pluginManagement>
       <plugins>
@@ -133,7 +133,7 @@
             <phase>test-compile</phase>
           </execution>
           <execution>
-           <id>scala-compile-first</id>            
+           <id>scala-compile-first</id>
             <phase>process-resources</phase>
             <goals><goal>add-source</goal><goal>compile</goal></goals>
           </execution>
@@ -158,7 +158,7 @@
                 <arg>-dependencyfile</arg>
                 <arg>${project.build.directory}/.scala_dependencies</arg>
               </args>
-        </configuration>        
+        </configuration>
       </plugin>
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -171,24 +171,31 @@
             </goals>
           </execution>
         </executions>
-      </plugin>      
+      </plugin>
+
+      <!-- Cobertura plugin, format xml -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.6</version>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.5.2</version>
+
         <configuration>
-          <useFile>false</useFile>
-          <skipTests>false</skipTests>
-          <disableXmlReport>true</disableXmlReport>
-          <!-- If you have classpath issue like NoDefClassError,... -->
-          <!-- useManifestOnlyJar>false</useManifestOnlyJar -->
-          <includes>
-            <include>**/*Test.*</include>
-            <include>**/*Suite.*</include>
-          </includes>
+          <formats>
+            <format>xml</format>
+          </formats>
         </configuration>
+
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>cobertura</goal>
+            </goals>
+          </execution>
+        </executions>
+
       </plugin>
     </plugins>
   </build>
-  
+
 </project>
