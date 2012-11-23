@@ -25,7 +25,7 @@ class SetupPdiDB( val dbManager: DatabaseManagement,
   
   protected def _importDefaultsUsingJPA() {
     
-    import fr.proline.module.rm.ncbi.JPATaxonomyImporter
+    import fr.proline.module.rm.taxonomy.JPATaxonomyImporter
     
     val pdiEM = dbManager.pdiEMF.createEntityManager()
     
@@ -42,7 +42,7 @@ class SetupPdiDB( val dbManager: DatabaseManagement,
   protected def _importDefaultsUsingPgCopyManager() {
     
     import org.postgresql.core.BaseConnection
-    import fr.proline.module.rm.ncbi.PGTaxonomyImporter
+    import fr.proline.module.rm.taxonomy.PGTaxonomyImporter
     
     val pdiDbConn = dbManager.pdiDBConnector.getConnection()
     PGTaxonomyImporter.importTaxonomy(nodesFilePath, namesFilePath, pdiDbConn.asInstanceOf[BaseConnection] )
