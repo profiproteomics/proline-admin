@@ -33,7 +33,7 @@ class SetupPdiDB( val dbManager: DatabaseManagement,
     val pdiTransaction = pdiEM.getTransaction()    
     pdiTransaction.begin()
     
-    JPATaxonomyImporter.importTaxonomy(nodesFilePath, namesFilePath, pdiEM)
+    JPATaxonomyImporter.importTaxonomy(nodesFilePath, namesFilePath, null, pdiEM)
     
     // Commit transaction
     pdiTransaction.commit()
