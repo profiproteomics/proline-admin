@@ -6,7 +6,7 @@ import scala.collection.mutable.ArrayBuffer
 import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
 
-import fr.proline.admin.utils.resources._
+import fr.proline.util.resources._
 import fr.proline.core.dal.{DatabaseManagement,
                             UdsDbInstrumentTable,
                             UdsDbInstrumentConfigTable,
@@ -20,7 +20,7 @@ import fr.proline.core.om.model.msi.{ChargeConstraint,
                                      InstrumentConfig,
                                      Fragmentation,
                                      FragmentationRule,
-                                     TheoreticalFragmentIon
+                                     FragmentIonRequirement
                                      }
 import fr.proline.core.orm.uds.{Activation => UdsActivation,
                                 AdminInformation => UdsAdminInfos,
@@ -234,19 +234,19 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
             udsFragRule.setRequiredSerieQualityLevel(requiredQualityLevel)
           }
           
-          // If fragmentation rule is a theoretical fragment ion
+          // If fragmentation rule is a fragment ion requirement
           fsr match {
-            case theoFrag: TheoreticalFragmentIon => {
-              val ionType = theoFrag.ionType.toString
+            case fragRequirement: FragmentIonRequirement => {
+              val ionType = fragRequirement.ionType.toString
               val udsTheoFrag = udsTheoFragByKey(ionType)
               
               udsFragRule.setTheoreticalFragment(udsTheoFrag)
               
-              if( theoFrag.fragmentMaxMoz != None )
-                udsFragRule.setFragmentMaxMoz(theoFrag.fragmentMaxMoz.get)
+              if( fragRequirement.fragmentMaxMoz != None )
+                udsFragRule.setFragmentMaxMoz(fragRequirement.fragmentMaxMoz.get)
               
-              if( theoFrag.residueConstraint != None )
-                udsFragRule.setFragmentResidueConstraint(theoFrag.residueConstraint.get)  
+              if( fragRequirement.residueConstraint != None )
+                udsFragRule.setFragmentResidueConstraint(fragRequirement.residueConstraint.get)  
             }
             case _ => {}
           }

@@ -1,4 +1,4 @@
-package fr.proline.admin.utils
+package fr.proline.admin.helper
 
 import javax.persistence.{EntityManagerFactory,Persistence}
 import com.weiglewilczek.slf4s.Logger

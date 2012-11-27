@@ -4,7 +4,7 @@ import java.io.File
 import javax.persistence.EntityManager
 import com.weiglewilczek.slf4s.Logging
 import fr.proline.admin.service.db.setup.{DatabaseSetupConfig,ProlineSetupConfig}
-import fr.proline.admin.utils.sql._
+import fr.proline.admin.helper.sql._
 import fr.proline.core.dal.DatabaseManagement
 import fr.proline.core.orm.uds.{Project => UdsProject}
 import fr.proline.repository.ConnectionPrototype.{DatabaseProtocol => DbProtocols}

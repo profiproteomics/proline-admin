@@ -87,11 +87,18 @@
       <artifactId>Proline-DAL</artifactId>
       <version>0.0.2-SNAPSHOT</version>
     </dependency> -->
-
+    
+    <!-- Proline -->
     <dependency>
 		  <groupId>fr.proline</groupId>
 		  <artifactId>PM-MascotParser</artifactId>
 		  <version>0.0.1</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>fr.proline.util</groupId>
+      <artifactId>ProFI-Commons-Scala</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
