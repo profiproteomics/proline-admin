@@ -4,6 +4,7 @@ import com.weiglewilczek.slf4s.Logging
 import fr.proline.core.dal.DatabaseManagement
 import fr.proline.core.orm.ps.{AdminInformation => PsAdminInfos}
 import fr.proline.module.rm.unimod.UnimodImporter
+import fr.proline.util.sql.getTimeAsSQLTimestamp
 
 /**
  * @author David Bouyssie
@@ -22,7 +23,7 @@ class SetupPsDB( val dbManager: DatabaseManagement,
     
     val psAdminInfos = new PsAdminInfos()
     psAdminInfos.setModelVersion(dbConfig.schemaVersion)
-    psAdminInfos.setDbCreationDate(new java.sql.Timestamp(new java.util.Date().getTime))
+    psAdminInfos.setDbCreationDate(getTimeAsSQLTimestamp)
     //psAdminInfos.setModelUpdateDate()    
     psEM.persist( psAdminInfos)
     

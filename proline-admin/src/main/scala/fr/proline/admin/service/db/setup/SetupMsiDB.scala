@@ -8,6 +8,7 @@ import com.weiglewilczek.slf4s.Logging
 import fr.proline.core.dal.{DatabaseManagement,MsiDbScoringTable}
 import fr.proline.core.orm.msi.{AdminInformation => MsiAdminInfos, Scoring => MsiScoring }
 import fr.proline.core.orm.utils.JPAUtil
+import fr.proline.util.sql.getTimeAsSQLTimestamp
 
 /**
  * @author David Bouyssie
@@ -47,7 +48,7 @@ class SetupMsiDB( val dbManager: DatabaseManagement,
 
     val udsAdminInfos = new MsiAdminInfos()
     udsAdminInfos.setModelVersion(dbConfig.schemaVersion)
-    udsAdminInfos.setDbCreationDate(new java.sql.Timestamp(new java.util.Date().getTime))
+    udsAdminInfos.setDbCreationDate(getTimeAsSQLTimestamp)
     //udsAdminInfos.setModelUpdateDate()
     msiEM.persist( udsAdminInfos)
 

@@ -7,6 +7,8 @@ import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
 
 import fr.proline.util.resources._
+import fr.proline.util.sql.getTimeAsSQLTimestamp
+
 import fr.proline.core.dal.{DatabaseManagement,
                             UdsDbInstrumentTable,
                             UdsDbInstrumentConfigTable,
@@ -120,7 +122,7 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
 
     val udsAdminInfos = new UdsAdminInfos()
     udsAdminInfos.setModelVersion(dbConfig.schemaVersion)
-    udsAdminInfos.setDbCreationDate(new java.sql.Timestamp(new java.util.Date().getTime))
+    udsAdminInfos.setDbCreationDate(getTimeAsSQLTimestamp)
     //udsAdminInfos.setModelUpdateDate()
     udsAdminInfos.setConfiguration("""{}""")
     

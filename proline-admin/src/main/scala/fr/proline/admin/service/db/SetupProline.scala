@@ -4,7 +4,7 @@ import java.io.File
 import com.weiglewilczek.slf4s.Logging
 import com.typesafe.config.{Config,ConfigFactory,ConfigList}
 import fr.proline.admin.service.db.setup._
-import fr.proline.admin.utils.resources._
+import fr.proline.util.resources._
 import fr.proline.core.dal.DatabaseManagement
 import fr.proline.repository.DatabaseConnector
 import fr.proline.admin.service.db.setup.SetupPsDB

@@ -5,11 +5,11 @@ import scala.io.Source
 import com.googlecode.flyway.core.Flyway
 import com.weiglewilczek.slf4s.Logging
 
-import fr.proline.util.resources._
 import fr.proline.admin.helper.sql._
 import fr.proline.core.dal.DatabaseManagement
-import fr.proline.core.utils.io._
 import fr.proline.repository.DatabaseConnector
+import fr.proline.util.io._
+import fr.proline.util.resources._
 
 /**
  * @author David Bouyssie
