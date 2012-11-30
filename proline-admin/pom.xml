@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>fr.proline</groupId>
   <artifactId>Proline-Admin</artifactId>
@@ -8,9 +9,9 @@
   <description>Proline Administration</description>
 
   <properties>
-  	<maven.compiler.source>1.6</maven.compiler.source>
-  	<maven.compiler.target>1.6</maven.compiler.target>
-  	<encoding>UTF-8</encoding>
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
+    <encoding>UTF-8</encoding>
   </properties>
 
   <repositories>
@@ -80,21 +81,25 @@
       <groupId>com.typesafe</groupId>
       <artifactId>config</artifactId>
       <version>1.0.0</version>
-		</dependency>
+    </dependency>
 
-    <!-- <dependency>
-      <groupId>fr.proline</groupId>
-      <artifactId>Proline-DAL</artifactId>
-      <version>0.0.2-SNAPSHOT</version>
-    </dependency> -->
-    
+    <!-- Command Line Interface -->
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>1.30</version>
+    </dependency>
+
+    <!-- <dependency> <groupId>fr.proline</groupId> <artifactId>Proline-DAL</artifactId> 
+      <version>0.0.2-SNAPSHOT</version> </dependency> -->
+
     <!-- Proline -->
     <dependency>
-		  <groupId>fr.proline</groupId>
-		  <artifactId>PM-MascotParser</artifactId>
-		  <version>0.0.1</version>
+      <groupId>fr.proline</groupId>
+      <artifactId>PM-MascotParser</artifactId>
+      <version>0.0.1</version>
     </dependency>
-    
+
     <dependency>
       <groupId>fr.proline.util</groupId>
       <artifactId>ProFI-Commons-Scala</artifactId>
@@ -103,14 +108,57 @@
 
     <dependency>
       <groupId>fr.proline</groupId>
-		  <artifactId>PM-ResourcesManager</artifactId>
-		  <version>0.0.1-SNAPSHOT</version>
+      <artifactId>PM-ResourcesManager</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
     </dependency>
 
   </dependencies>
 
   <build>
-      <pluginManagement>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <versionRange>[2.0,)</versionRange>
+                    <goals>
+                      <goal>copy-dependencies</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <execute />
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <versionRange>[1.6,)</versionRange>
+                    <goals>
+                      <goal>run</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <execute />
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+<!-- 
+    <pluginManagement>
       <plugins>
         <plugin>
           <groupId>org.scala-tools</groupId>
@@ -124,50 +172,75 @@
         </plugin>
       </plugins>
     </pluginManagement>
+ -->
     <plugins>
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
         <executions>
           <execution>
-            <id>compile</id>
-            <goals><goal>compile</goal></goals>
-            <phase>compile</phase>
-          </execution>
-          <execution>
-            <id>test-compile</id>
-            <goals><goal>testCompile</goal></goals>
-            <phase>test-compile</phase>
-          </execution>
-          <execution>
-           <id>scala-compile-first</id>
-            <phase>process-resources</phase>
-            <goals><goal>add-source</goal><goal>compile</goal></goals>
-          </execution>
-          <execution>
-            <id>scala-test-compile</id>
-            <phase>process-test-resources</phase>
             <goals>
+              <goal>compile</goal>
               <goal>testCompile</goal>
             </goals>
           </execution>
         </executions>
+
+        <!-- <executions> <execution> <id>compile</id> <goals> <goal>compile</goal> 
+          </goals> <phase>compile</phase> </execution> <execution> <id>test-compile</id> 
+          <goals> <goal>testCompile</goal> </goals> <phase>test-compile</phase> </execution> 
+          <execution> <id>scala-compile-first</id> <phase>process-resources</phase> 
+          <goals> <goal>add-source</goal> <goal>compile</goal> </goals> </execution> 
+          <execution> <id>scala-test-compile</id> <phase>process-test-resources</phase> 
+          <goals> <goal>testCompile</goal> </goals> </execution> </executions> -->
         <configuration>
           <scalaVersion>2.9.1</scalaVersion>
           <launchers>
             <launcher>
-              <id>myLauncher</id>
-              <mainClass>samples.AppJava</mainClass>
-          </launcher>
-        </launchers>
-            <args>
-                <arg>-make:transitivenocp</arg>
-                <arg>-dependencyfile</arg>
-                <arg>${project.build.directory}/.scala_dependencies</arg>
-              </args>
+              <id>RunCommand</id>
+              <mainClass>fr.proline.admin.RunCommand</mainClass>
+              <!-- args are optional <args> <arg>arg1</arg> </args> -->
+              <!-- jvmArgs are optional -->
+              <jvmArgs>
+                <jvmArg>-Xmx1024m</jvmArg>
+                <jvmArg>-Xms512m</jvmArg>
+                <jvmArg>-Duser.language=en</jvmArg>
+                <jvmArg>-Djava.library.path=./lib</jvmArg>
+              </jvmArgs>
+            </launcher>
+          </launchers>
+          <args>
+            <arg>-make:transitivenocp</arg>
+            <arg>-dependencyfile</arg>
+            <arg>${project.build.directory}/.scala_dependencies</arg>
+          </args>
         </configuration>
       </plugin>
-    <plugin>
+
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.4.1</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>resources</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <executions>
@@ -176,6 +249,43 @@
             <goals>
               <goal>compile</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <includeTypes>jar</includeTypes>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-dll</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <includeTypes>dll,exe</includeTypes>
+              <stripVersion>true</stripVersion>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
           </execution>
         </executions>
       </plugin>
