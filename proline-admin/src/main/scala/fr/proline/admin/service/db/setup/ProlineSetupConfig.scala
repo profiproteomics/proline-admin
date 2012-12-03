@@ -43,7 +43,8 @@ object DatabaseSetupConfig {
 case class DatabaseSetupConfig( dbType: String,
                                 driverType: String,
                                 schemaVersion: String,
-                                scriptResourcePath: String,
+                                scriptDirectory: String,
+                                scriptName: String,
                                 dbDirectory: File,
                                 connectionConfig: Config
                                 ) {

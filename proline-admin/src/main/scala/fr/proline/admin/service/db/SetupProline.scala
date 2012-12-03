@@ -91,13 +91,13 @@ object SetupProline {
       val fullConnConfig = this._mergeConfigs(connectionConfig,authConfig,hostConfig,driverConfig.getConfig("connection-properties"))
       
       // Build the script directory corresponding to the current database configuration
-      val scriptPath = prolineConfig.getString("db-script-root") +
+      val scriptDir = prolineConfig.getString("db-script-root") +
                        dbConfig.getString("script-directory") +
-                       driverConfig.getString("script-directory") + "/" +
-                       dbConfig.getString("script-name")
+                       driverConfig.getString("script-directory")
+      val scriptName = dbConfig.getString("script-name")
       
       // Build the database setup configuration object
-      ( dbType-> DatabaseSetupConfig( dbType, driverType, schemaVersion, scriptPath, dataDir, fullConnConfig ) )
+      ( dbType-> DatabaseSetupConfig( dbType, driverType, schemaVersion, scriptDir, scriptName, dataDir, fullConnConfig ) )
     } toMap
     
     ProlineSetupConfig(

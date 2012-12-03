@@ -32,19 +32,27 @@ trait ISetupDB extends Logging {
     if( _executed )
       throw new IllegalStateException("the setup has been already executed")
     
-    if( this.initSchema( dbConfig.connector, dbConfig.scriptResourcePath ) ) {
+    if( this.initSchema() ) {
       this.importDefaults()
+    } else {
+      this.logger.error("schema initialization failed")
     }
     
     this._executed = true
   }
   
-  protected def initSchema( connector: DatabaseConnector, scriptResourcePath: String ): Boolean = {
+  protected def initSchema(): Boolean = {
+    
+    // connector: DatabaseConnector, scriptResourcePath: String 
+    val connector = dbConfig.connector
     
     // If driver type is SQLite (flyway doesn't support SQLite at the moment)
     if( dbConfig.driverType == "sqlite" ) {
       
-      val scriptIS = pathToStreamOrResourceToStream(scriptResourcePath,classOf[DatabaseConnector])
+      val scriptPath = dbConfig.scriptDirectory + "/" + dbConfig.scriptName
+      println( scriptPath )
+      
+      val scriptIS = pathToStreamOrResourceToStream(scriptPath,classOf[DatabaseConnector])
       createSQLiteDB(connector,scriptIS)
       
     } else {
@@ -59,7 +67,7 @@ trait ISetupDB extends Logging {
       
       val flyway = new Flyway()
       // TODO: find a workaround for absolute paths
-      flyway.setLocations( scriptResourcePath.toString() + "/" )
+      flyway.setLocations( dbConfig.scriptDirectory + "/" )
       flyway.setDataSource(connector.getDataSource)
       
       if( flyway.migrate() > 0 ) true
