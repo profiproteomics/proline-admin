@@ -26,13 +26,13 @@ class CreateProject( dbManager: DatabaseManagement,
     val udsDb = UdsDb( dbManager.udsDBConnector )    
     val udsDbTx = udsDb.getOrCreateTransaction()
     
-    this.projectId = udsDbTx.executeBatch(
-    "INSERT INTO project (name,description,creation_timestamp,owner_id) VALUES (?,?,?,?)") { stmt =>
+    this.projectId = udsDbTx.executeBatch("INSERT INTO project (name,description,creation_timestamp,owner_id) VALUES (?,?,?,?)",true) { stmt =>
       stmt.executeWith( projectName,
                         projectDescription,
                         new java.util.Date(),
                         ownerId
                        )
+      //this.projectId = udsDb.extractGeneratedInt( stmt.wrapped )
       udsDb.extractGeneratedInt( stmt.wrapped )
     }
     

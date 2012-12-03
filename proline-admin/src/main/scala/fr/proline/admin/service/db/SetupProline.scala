@@ -105,7 +105,7 @@ object SetupProline {
       udsDBConfig = dbSetupConfigByType("uds"),
       udsDBDefaults = retrieveUdsDBDefaults(),
       pdiDBConfig = dbSetupConfigByType("pdi"),
-      pdiDBDefaults = PdiDBDefaults( ConfigFactory.load("./pdi_db/resources.conf") ),
+      pdiDBDefaults = PdiDBDefaults( ConfigFactory.load(ClassLoader.getSystemClassLoader(),"pdi_db/resources") ),
       psDBConfig = dbSetupConfigByType("ps"),
       msiDBConfig = dbSetupConfigByType("msi"),
       msiDBDefaults = retrieveMsiDBDefaults(),
@@ -116,21 +116,23 @@ object SetupProline {
   
   def retrieveUdsDBDefaults(): UdsDBDefaults = {
     
-    UdsDBDefaults( ConfigFactory.load("./uds_db/resources.conf"),
-                   ConfigFactory.load("./uds_db/instruments.conf")
+    val systemClassLoader = ClassLoader.getSystemClassLoader()
+    
+    UdsDBDefaults( ConfigFactory.load(systemClassLoader,"uds_db/resources"),
+                   ConfigFactory.load(systemClassLoader,"uds_db/instruments")
                                 .getConfigList("instruments")
                                 .asInstanceOf[java.util.List[Config]],
-                   ConfigFactory.load("./uds_db/peaklist_software.conf")
+                   ConfigFactory.load(systemClassLoader,"uds_db/peaklist_software")
                                 .getConfigList("peaklist_software")
                                 .asInstanceOf[java.util.List[Config]],
-                   ConfigFactory.load("./uds_db/quant_methods.conf")
+                   ConfigFactory.load(systemClassLoader,"uds_db/quant_methods")
                                 .getConfigList("quant_methods")
                                 .asInstanceOf[java.util.List[Config]]
                  )
   }
   
   def retrieveMsiDBDefaults(): MsiDBDefaults = {
-    MsiDBDefaults( ConfigFactory.load("./msi_db/scorings.conf")
+    MsiDBDefaults( ConfigFactory.load(ClassLoader.getSystemClassLoader(),"msi_db/scorings")
                                 .getConfigList("scorings")
                                 .asInstanceOf[java.util.List[Config]] )
   }
@@ -139,7 +141,7 @@ object SetupProline {
    * 
    */
   private def _mergeConfigs( configs: Config* ): Config = {
-    var mergedConfig = configs.first
+    var mergedConfig = configs.head
     
     configs.tail.foreach { config =>
       mergedConfig = mergedConfig.withFallback(config)
