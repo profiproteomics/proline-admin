@@ -50,7 +50,7 @@ trait ISetupDB extends Logging {
     if( dbConfig.driverType == "sqlite" ) {
       
       val scriptPath = dbConfig.scriptDirectory + "/" + dbConfig.scriptName
-      println( scriptPath )
+      this.logger.info( "executing SQL script '"+ scriptPath +"'")
       
       val scriptIS = pathToStreamOrResourceToStream(scriptPath,classOf[DatabaseConnector])
       createSQLiteDB(connector,scriptIS)

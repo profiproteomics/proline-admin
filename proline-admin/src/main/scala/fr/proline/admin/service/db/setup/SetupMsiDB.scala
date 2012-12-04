@@ -4,24 +4,25 @@ import javax.persistence.Persistence
 import scala.collection.JavaConversions.{collectionAsScalaIterable}
 import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
-
 import fr.proline.core.dal.{DatabaseManagement,MsiDbScoringTable}
 import fr.proline.core.orm.msi.{AdminInformation => MsiAdminInfos, Scoring => MsiScoring }
 import fr.proline.core.orm.utils.JPAUtil
 import fr.proline.util.sql.getTimeAsSQLTimestamp
+import fr.proline.repository.DatabaseConnector
 
 /**
  * @author David Bouyssie
  *
  */
-class SetupMsiDB( val dbManager: DatabaseManagement,
+class SetupMsiDB( val dbManager: DatabaseManagement,  
                   val dbConfig: DatabaseSetupConfig,
                   val defaults: MsiDBDefaults,
                   val projectId: Int ) extends ISetupDB with Logging {
   
+  lazy val msiDbConnector = dbManager.getMSIDatabaseConnector( projectId )
   lazy val msiEMF = Persistence.createEntityManagerFactory(
                         JPAUtil.PersistenceUnitNames.MSI_Key.getPersistenceUnitName(),
-                        dbManager.getMSIDatabaseConnector( projectId ).getEntityManagerSettings
+                        msiDbConnector.getEntityManagerSettings
                      )
   lazy val msiEM = msiEMF.createEntityManager()
     
@@ -42,15 +43,19 @@ class SetupMsiDB( val dbManager: DatabaseManagement,
     // Commit transaction
     msiTransaction.commit()
     
+    // Close entity manager and factory
+    this.msiEM.close()
+    this.msiEMF.close()
+    this.msiDbConnector.closeAll()
   }
   
   private def _importAdminInformation() {
 
-    val udsAdminInfos = new MsiAdminInfos()
-    udsAdminInfos.setModelVersion(dbConfig.schemaVersion)
-    udsAdminInfos.setDbCreationDate(getTimeAsSQLTimestamp)
+    val msiAdminInfos = new MsiAdminInfos()
+    msiAdminInfos.setModelVersion(dbConfig.schemaVersion)
+    msiAdminInfos.setDbCreationDate(getTimeAsSQLTimestamp)
     //udsAdminInfos.setModelUpdateDate()
-    msiEM.persist( udsAdminInfos)
+    msiEM.persist( msiAdminInfos)
 
   }
   

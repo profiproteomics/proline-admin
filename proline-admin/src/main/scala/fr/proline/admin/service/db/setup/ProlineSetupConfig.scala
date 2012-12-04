@@ -84,7 +84,9 @@ case class DatabaseSetupConfig( dbType: String,
     new ConnectionPrototype(dbConnProperties).namePrefix("")
   }
   
-  lazy val connector = {
+  lazy val connector = this.toNewConnector
+  
+  def toNewConnector() = {
     // Instantiate the database connector
     val db = ProlineRepository.Databases.valueOf(dbType.toUpperCase)
     dbConnPrototype.toConnector( dbName )

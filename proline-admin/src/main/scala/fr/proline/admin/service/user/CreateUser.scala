@@ -19,23 +19,6 @@ class CreateUser( dbManager: DatabaseManagement,
   var userId = 0
   
   def run() {
-    /*
-    // Instantiate a database manager
-    val udsDb = UdsDb( dbManager.udsDBConnector )
-    
-    val udsDbTx = udsDb.getOrCreateTransaction()
-    this.projectId = udsDbTx.executeBatch(
-    "INSERT INTO project (name,description,creation_timestamp,owner_id) VALUES (?,?,?,?)") { stmt =>
-      stmt.executeWith( projectName,
-                        projectDescription,
-                        new java.util.Date(),
-                        ownerId
-                       )
-      udsDb.extractGeneratedInt( stmt.wrapped )
-    }
-    
-    udsDbTx.commit()
-*/
 
     import fr.proline.core.orm.uds.{UserAccount => UdsUser}
     

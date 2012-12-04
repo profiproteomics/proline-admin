@@ -74,22 +74,31 @@ object RunCommand extends App with Logging {
           val prolineConf = SetupProline.parseProlineSetupConfig( SetupProline.appConf )
           
           // Instantiate a database manager
-          val dbManager = new DatabaseManagement(prolineConf.udsDBConfig.connector)
+          val udsDBConfig = prolineConf.udsDBConfig
+          val udsDbConnector = udsDBConfig.toNewConnector
           
           // Create project
           val projectCreator = new CreateProject(
-            dbManager,
+            udsDbConnector,
             CreateProjectCommand.projectName,
             CreateProjectCommand.projectDescription,
             CreateProjectCommand.ownerId
           )
           projectCreator.run()
           
+          // Close the database manager
+          udsDbConnector.closeAll()
+          
+          // Create a new database manager to avoid any conflict
+          val udsDbConnector2 = udsDBConfig.toNewConnector
+          val dbManager2 = new DatabaseManagement( udsDbConnector2 )
+          
           // Create project databases
-          new CreateProjectDBs( dbManager, prolineConf, projectCreator.projectId ).run()          
+          new CreateProjectDBs( dbManager2, prolineConf, projectCreator.projectId ).run()          
           
           // Close the database manager
-          dbManager.closeAll()
+          udsDbConnector2.closeAll()
+          dbManager2.closeAll()
           
           this.logger.info("project with id='"+ projectCreator.projectId +"' has been created !")
         }

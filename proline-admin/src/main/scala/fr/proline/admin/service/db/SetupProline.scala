@@ -61,6 +61,9 @@ class SetupProline( config: ProlineSetupConfig ) extends Logging {
  */
 object SetupProline {
   
+  var classLoader = this.getClass().getClassLoader()
+  //ClassLoadergetSystemClassLoader()
+  
   val appConf = ConfigFactory.load("application")
   
   def parseProlineSetupConfig( config: Config ): ProlineSetupConfig = {
@@ -105,7 +108,7 @@ object SetupProline {
       udsDBConfig = dbSetupConfigByType("uds"),
       udsDBDefaults = retrieveUdsDBDefaults(),
       pdiDBConfig = dbSetupConfigByType("pdi"),
-      pdiDBDefaults = PdiDBDefaults( ConfigFactory.load(ClassLoader.getSystemClassLoader(),"pdi_db/resources") ),
+      pdiDBDefaults = PdiDBDefaults( ConfigFactory.load(classLoader,"pdi_db/resources") ),
       psDBConfig = dbSetupConfigByType("ps"),
       msiDBConfig = dbSetupConfigByType("msi"),
       msiDBDefaults = retrieveMsiDBDefaults(),
@@ -116,23 +119,21 @@ object SetupProline {
   
   def retrieveUdsDBDefaults(): UdsDBDefaults = {
     
-    val systemClassLoader = ClassLoader.getSystemClassLoader()
-    
-    UdsDBDefaults( ConfigFactory.load(systemClassLoader,"uds_db/resources"),
-                   ConfigFactory.load(systemClassLoader,"uds_db/instruments")
+    UdsDBDefaults( ConfigFactory.load(classLoader,"uds_db/resources"),
+                   ConfigFactory.load(classLoader,"uds_db/instruments")
                                 .getConfigList("instruments")
                                 .asInstanceOf[java.util.List[Config]],
-                   ConfigFactory.load(systemClassLoader,"uds_db/peaklist_software")
+                   ConfigFactory.load(classLoader,"uds_db/peaklist_software")
                                 .getConfigList("peaklist_software")
                                 .asInstanceOf[java.util.List[Config]],
-                   ConfigFactory.load(systemClassLoader,"uds_db/quant_methods")
+                   ConfigFactory.load(classLoader,"uds_db/quant_methods")
                                 .getConfigList("quant_methods")
                                 .asInstanceOf[java.util.List[Config]]
                  )
   }
   
   def retrieveMsiDBDefaults(): MsiDBDefaults = {
-    MsiDBDefaults( ConfigFactory.load(ClassLoader.getSystemClassLoader(),"msi_db/scorings")
+    MsiDBDefaults( ConfigFactory.load(classLoader,"msi_db/scorings")
                                 .getConfigList("scorings")
                                 .asInstanceOf[java.util.List[Config]] )
   }

@@ -2,18 +2,18 @@ package fr.proline.admin.service.user
 
 import com.weiglewilczek.slf4s.Logging
 import net.noerd.prequel.SQLFormatterImplicits._
-
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.core.dal.DatabaseManagement
 import fr.proline.core.dal.UdsDb
 import fr.proline.core.orm.uds.{Project => UdsProject,UserAccount => UdsUser}
+import fr.proline.repository.DatabaseConnector
     
 
 /**
  * @author David Bouyssie
  *
  */
-class CreateProject( dbManager: DatabaseManagement,
+class CreateProject( udsDbConnector: DatabaseConnector,
                      projectName: String,
                      projectDescription: String,
                      ownerId: Int ) extends Logging {
@@ -23,7 +23,7 @@ class CreateProject( dbManager: DatabaseManagement,
   def run() {
     
     // Create a database transaction
-    val udsDb = UdsDb( dbManager.udsDBConnector )    
+    val udsDb = UdsDb( udsDbConnector )
     val udsDbTx = udsDb.getOrCreateTransaction()
     
     this.projectId = udsDbTx.executeBatch("INSERT INTO project (name,description,creation_timestamp,owner_id) VALUES (?,?,?,?)",true) { stmt =>
@@ -36,8 +36,8 @@ class CreateProject( dbManager: DatabaseManagement,
       udsDb.extractGeneratedInt( stmt.wrapped )
     }
     
-    udsDbTx.commit()
-    //udsDb.closeConnection()    
+    udsDb.commitTransaction()
+    udsDb.closeConnection()
 
     // import fr.proline.core.orm.uds.{Project => UdsProject,UserAccount => UdsUser}
     // Creation UDS entity manager
@@ -75,14 +75,16 @@ object CreateProject {
     val prolineConf = SetupProline.parseProlineSetupConfig( SetupProline.appConf )
     
     // Instantiate a database manager
-    val dbManager = new DatabaseManagement(prolineConf.udsDBConfig.connector)
+    //val dbManager = new DatabaseManagement(prolineConf.udsDBConfig.connector)
+    val udsDbConnector = prolineConf.udsDBConfig.toNewConnector
     
     // Create project
-    val projectCreator = new CreateProject( dbManager, name, description, ownerId )
+    val projectCreator = new CreateProject( udsDbConnector, name, description, ownerId )
     projectCreator.run()
     
     // Close the database manager
-    dbManager.closeAll()
+    //dbManager.closeAll()
+    udsDbConnector.closeAll()
     
     projectCreator.projectId
     
