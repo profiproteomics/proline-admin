@@ -3,9 +3,10 @@ package fr.proline.admin.service.db.setup
 import java.io.File
 import scala.collection.JavaConversions.collectionAsScalaIterable
 import com.typesafe.config.{Config,ConfigFactory,ConfigList}
-
-import fr.proline.core.orm.uds.{ExternalDb => UdsExternalDb}
-import fr.proline.repository.{ConnectionPrototype,DatabaseConnector,ProlineRepository}
+import fr.proline.core.orm.uds.{ExternalDb => UdsExternalDb,
+                                ExternalDbPropertiesSerializer => UdsExtDbPropsSerializer }
+import fr.proline.repository._
+import fr.proline.core.orm.util.DatabaseManager
 
 /** Configuration settings for Proline setup */
 case class ProlineSetupConfig(
@@ -29,19 +30,19 @@ object DatabaseSetupConfig {
   private val connectionProperties = new java.util.HashMap[String,String]()
   connectionProperties.put("dbName","")
   connectionProperties.put("connectionMode","")
-  connectionProperties.put("userName","")
+  connectionProperties.put("user","")
   connectionProperties.put("password","")
   connectionProperties.put("host","")
   connectionProperties.put("port","")
-  connectionProperties.put("driverClassName","")
-  connectionProperties.put("hibernate.dialect","")
+  connectionProperties.put("driver","")
+  //connectionProperties.put("hibernate.dialect","")
   
   val connectionConfigSchema = ConfigFactory.parseMap(connectionProperties)
 }
 
 /** Configuration settings for database setup */
-case class DatabaseSetupConfig( dbType: String,
-                                driverType: String,
+case class DatabaseSetupConfig( dbType: Database,
+                                driverType: DriverType,
                                 schemaVersion: String,
                                 scriptDirectory: String,
                                 scriptName: String,
@@ -57,16 +58,21 @@ case class DatabaseSetupConfig( dbType: String,
   connectionConfig.checkValid(DatabaseSetupConfig.connectionConfigSchema)
   
   var dbName = connectionConfig.getString("dbName")
+  var connectionMode = ConnectionMode.valueOf( connectionConfig.getString("connectionMode") )
   
-  lazy val dbConnProperties = {
-    // Parse properties from Config object
+  lazy val dbConnProperties = {    
+    this.toUdsExternalDb.toPropertiesMap()
+    
+    /*// Parse properties from Config object
     val dbConnProps = new java.util.HashMap[String,String]()
     for( entry <- connectionConfig.entrySet ) {
       val key = entry.getKey
-      dbConnProps.put("database."+ key,connectionConfig.getString(key) )
+      dbConnProps.put("javax.persistence.jdbc."+ key,connectionConfig.getString(key) )
     }
     
-    dbConnProps.put("database.drivertype",driverType.toUpperCase )
+    val urlKey = AbstractDatabaseConnector.PERSISTENCE_JDBC_URL_KEY
+    val url = "jdbc:"+driverType+":"
+    //dbConnProps.put("database.drivertype",driverType.toUpperCase )
     
     val protocol = dbConnProps.get("database.connectionMode").toUpperCase
     val protocolValue = if( protocol == "HOST" ) dbConnProps.get("database.host") + ":" +
@@ -77,47 +83,56 @@ case class DatabaseSetupConfig( dbType: String,
     dbConnProps.put("database.protocol",protocol )
     dbConnProps.put("database.protocolValue",protocolValue )
     
-    dbConnProps
+    dbConnProps*/
   }
   
-  lazy val dbConnPrototype = {
+  /*lazy val dbConnPrototype = {
     new ConnectionPrototype(dbConnProperties).namePrefix("")
-  }
+  }*/
   
   lazy val connector = this.toNewConnector
   
   def toNewConnector() = {
     // Instantiate the database connector
-    val db = ProlineRepository.Databases.valueOf(dbType.toUpperCase)
-    dbConnPrototype.toConnector( dbName )
+    //val db = ProlineRepository.Databases.valueOf(dbType.toUpperCase)
+    //dbConnPrototype.toConnector( dbName )
+    
+    val dbConnProps = dbConnProperties.asInstanceOf[java.util.Map[Object,Object]]
+    DatabaseConnectorFactory.createDatabaseConnectorInstance( dbType, dbConnProps)
   }
   
   def toUdsExternalDb(): UdsExternalDb = {
     
-    val dbConnProps = this.dbConnProperties
-    val connPrototype = this.dbConnPrototype  
-    val connectionMode = connPrototype.getProtocol.toString
+    //val dbConnProps = this.dbConnProperties
     
     val udsExtDb = new UdsExternalDb()
-    if( connectionMode == "FILE" ) udsExtDb.setDbName( dbDirectory + "/" + dbName )
+    if( connectionMode == ConnectionMode.FILE ) udsExtDb.setDbName( dbDirectory + "/" + dbName )
     else udsExtDb.setDbName( dbName )
     
     udsExtDb.setType( this.dbType )
     udsExtDb.setDbVersion( this.schemaVersion )
     udsExtDb.setIsBusy( false )
-    udsExtDb.setConnectionMode(connPrototype.getProtocol.toString)
+    udsExtDb.setConnectionMode(connectionMode)
     
-    val userName = dbConnProps.get(DatabaseConnector.PROPERTY_USERNAME)
+    val userName = connectionConfig.getString("user")
     if( userName.length > 0 ) udsExtDb.setDbUser(userName)
+    else if( driverType != DriverType.SQLITE ) {
+      throw new Exception("a user name is required in database authentification configuration")
+    }
     
-    val password = dbConnProps.get(DatabaseConnector.PROPERTY_PASSWORD)
+    val password = connectionConfig.getString("password")
     if( password.length > 0 ) udsExtDb.setDbPassword(password)
     
-    val host = dbConnProps.get("database.host")
+    val host = connectionConfig.getString("host")
     if( host.length > 0 ) udsExtDb.setHost(host)
     
-    val port = dbConnProps.get("database.port")
-    if( port.length > 0 ) udsExtDb.setPort(port.toInt)    
+    val port = connectionConfig.getString("port")
+    if( port.length > 0 ) udsExtDb.setPort(port.toInt)
+    
+    udsExtDb.setDriverType(driverType)
+    
+    // Serialize properties
+    UdsExtDbPropsSerializer.serialize(udsExtDb)
     
     udsExtDb
   }

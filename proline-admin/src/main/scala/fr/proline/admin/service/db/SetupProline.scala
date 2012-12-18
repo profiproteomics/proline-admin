@@ -4,10 +4,93 @@ import java.io.File
 import com.weiglewilczek.slf4s.Logging
 import com.typesafe.config.{Config,ConfigFactory,ConfigList}
 import fr.proline.admin.service.db.setup._
+import fr.proline.core.orm.util.DatabaseManager
+import fr.proline.repository.{IDatabaseConnector,Database,DriverType}
 import fr.proline.util.resources._
-import fr.proline.core.dal.DatabaseManagement
-import fr.proline.repository.DatabaseConnector
-import fr.proline.admin.service.db.setup.SetupPsDB
+
+class DatabaseConnectionContext( val dbConnector: IDatabaseConnector ) {
+  
+  import fr.proline.core.dal.SQLQueryHelper
+  
+  // Entity Manager
+  private var _emOpened: Boolean = false
+  def isEmOpened() = _emOpened
+    
+  lazy val entityManager = {
+    if( dbConnector == null )
+      throw new Exception("can't create an entity manager creation with a null database connector")
+    
+    if( _emOpened == true )
+      throw new Exception("can't create an entity manager after opening a JDBC connection")
+    
+    _emOpened = true
+    dbConnector.getEntityManagerFactory.createEntityManager()
+  }
+  
+  def closeEM() = if( _emOpened && entityManager.isOpen() == true ) {
+    entityManager.close()
+    _emOpened = false
+  }
+  
+  // JDBC connection
+  private var _connectionOpened: Boolean = false
+  def isConnectionOpened() = _connectionOpened
+  
+  lazy val connection = {
+    if( dbConnector == null )
+      throw new Exception("can't open a JDBC connection with a null database connector")
+    
+    if( _emOpened == true )
+      throw new Exception("can't open a JDBC connection after creation of an entity manager")
+    
+    _connectionOpened = true
+    dbConnector.getDataSource().getConnection()
+  }
+  
+  lazy val ezDBC = new SQLQueryHelper(connection,dbConnector.getDriverType).ezDBC
+  
+  def closeConnection() = if( _connectionOpened && connection.isClosed() == false ) {
+    connection.close
+    _connectionOpened = false
+  }
+  
+  def closeAll() = {
+    this.closeEM()
+    this.closeConnection()
+  }
+  
+}
+
+class ProlineDatabaseContext(
+  val udsDbContext: DatabaseConnectionContext,
+  val psDbContext: DatabaseConnectionContext,
+  val pdiDbContext: DatabaseConnectionContext,
+  val msiDbContext: DatabaseConnectionContext,
+  val lcmsDbContext: DatabaseConnectionContext
+  ) {
+
+  def this( dbManager: DatabaseManager,
+            msiDbConnector: IDatabaseConnector = null,
+            lcmsDbConnector: IDatabaseConnector = null ) {
+  this( new DatabaseConnectionContext(dbManager.getUdsDbConnector),
+        new DatabaseConnectionContext(dbManager.getPsDbConnector),
+        new DatabaseConnectionContext(dbManager.getPdiDbConnector),
+        new DatabaseConnectionContext(msiDbConnector),
+        new DatabaseConnectionContext(lcmsDbConnector)
+      )
+  }
+
+  
+  def closeAll() {
+    udsDbContext.closeAll()
+    psDbContext.closeAll()
+    pdiDbContext.closeAll()
+    msiDbContext.closeAll()
+    lcmsDbContext.closeAll()
+  }
+  
+}
+
 
 /**
  * @author David Bouyssie
@@ -18,36 +101,44 @@ class SetupProline( config: ProlineSetupConfig ) extends Logging {
   def run() {
     
     // Instantiate a database manager
-    val dbManager = new DatabaseManagement(config.udsDBConfig.connector)
+    //val dbManager = DatabaseManager.getInstance()
+    //dbManager.initialize(config.udsDBConfig.connector)
     
     // Set Up the UDSdb
     this.logger.info("setting up the 'User Data Set' database...")
-    new SetupUdsDB( dbManager, config.udsDBConfig, config ).run()
+    val udsDbContext = new DatabaseConnectionContext( config.udsDBConfig.toNewConnector )
+    new SetupUdsDB( udsDbContext, config.udsDBConfig, config ).run()
+    udsDbContext.closeAll()
     
     // Set Up the PSdb
     this.logger.info("setting up the 'Peptide Sequence' database...")
-    new SetupPsDB( dbManager, config.psDBConfig ).run()
+    val psDbContext = new DatabaseConnectionContext( config.psDBConfig.toNewConnector )
+    new SetupPsDB( psDbContext, config.psDBConfig ).run()
+    psDbContext.closeAll()
     
     // Close PSdb connections
     // TODO: add this to the db manager closeAll method ?
-    if( dbManager.psEMF.isOpen ) {
+    /*if( dbManager.psEMF.isOpen ) {
       dbManager.psEMF.close()
       dbManager.psDBConnector.closeAll()
-    }
+    }*/
     
     // Set Up the PDIdb
     this.logger.info("setting up the 'Protein Database Index' database...")
-    new SetupPdiDB( dbManager, config.pdiDBConfig, config ).run()
+    val pdiDbContext = new DatabaseConnectionContext( config.psDBConfig.toNewConnector )
+    new SetupPdiDB( pdiDbContext, config.pdiDBConfig, config ).run()
+    pdiDbContext.closeAll()
     
     // Close PDIdb connections
     // TODO: add this to the db manager closeAll method ?
-    if( dbManager.pdiEMF.isOpen ) {
+    /*if( dbManager.pdiEMF.isOpen ) {
       dbManager.pdiEMF.close()
       dbManager.pdiDBConnector.closeAll()
-    }
+    }*/
     
-    // Release database manager connections and resources
-    dbManager.closeAll()
+    // Release all connections and resources
+    pdiDbContext.closeAll()
+    //dbManager.closeAll()
     
     this.logger.info("Proline has been sucessfuly set up !")
     
@@ -76,9 +167,9 @@ object SetupProline {
     // Load shared settings
     val authConfig = config.getConfig("auth-config")
     val hostConfig = config.getConfig("host-config")
-    val driverType = prolineConfig.getString("driver-type")
-    val driverConfig = config.getConfig(driverType + "-config")
-    val appDriverSpecificConf = ConfigFactory.load("application-"+driverType)
+    val driverAlias = prolineConfig.getString("driver-type")
+    val driverConfig = config.getConfig(driverAlias + "-config")
+    val appDriverSpecificConf = ConfigFactory.load("application-"+driverAlias)
     
     // Load database specific settings
     val dbList = List("uds","pdi","ps","msi","lcms")
@@ -99,8 +190,11 @@ object SetupProline {
                        driverConfig.getString("script-directory")
       val scriptName = dbConfig.getString("script-name")
       
+      val db = Database.withPersistenceUnitName(dbType + "db_production")
+      val driver = DriverType.valueOf( driverAlias.toUpperCase() ) //fullConnConfig.getString("driver")
+      
       // Build the database setup configuration object
-      ( dbType-> DatabaseSetupConfig( dbType, driverType, schemaVersion, scriptDir, scriptName, dataDir, fullConnConfig ) )
+      ( dbType-> DatabaseSetupConfig( db, driver, schemaVersion, scriptDir, scriptName, dataDir, fullConnConfig ) )
     } toMap
     
     ProlineSetupConfig(

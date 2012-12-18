@@ -1,13 +1,14 @@
 package fr.proline.admin.service.db.setup
 
 import com.weiglewilczek.slf4s.Logging
-import fr.proline.core.dal.DatabaseManagement
+import fr.proline.admin.service.db.DatabaseConnectionContext
+import fr.proline.repository.DriverType
 
 /**
  * @author David Bouyssie
  *
  */
-class SetupPdiDB( val dbManager: DatabaseManagement,
+class SetupPdiDB( val pdiDbContext: DatabaseConnectionContext,
                   val dbConfig: DatabaseSetupConfig,
                   val prolineConfig: ProlineSetupConfig ) extends ISetupDB with Logging {
   
@@ -18,7 +19,7 @@ class SetupPdiDB( val dbManager: DatabaseManagement,
     
   protected def importDefaults() {
     
-    if( dbConfig.driverType == "postgresql" ) _importDefaultsUsingPgCopyManager()
+    if( dbConfig.driverType == DriverType.POSTGRESQL ) _importDefaultsUsingPgCopyManager()
     else _importDefaultsUsingJPA()
     
   }
@@ -27,7 +28,7 @@ class SetupPdiDB( val dbManager: DatabaseManagement,
     
     import fr.proline.module.rm.taxonomy.JPATaxonomyImporter
     
-    val pdiEM = dbManager.pdiEMF.createEntityManager()
+    val pdiEM = pdiDbContext.entityManager
     
     // Begin transaction
     val pdiTransaction = pdiEM.getTransaction()    
@@ -44,7 +45,7 @@ class SetupPdiDB( val dbManager: DatabaseManagement,
     import org.postgresql.core.BaseConnection
     import fr.proline.module.rm.taxonomy.PGTaxonomyImporter
     
-    val pdiDbConn = dbManager.pdiDBConnector.getConnection()
+    val pdiDbConn = pdiDbContext.connection
     PGTaxonomyImporter.importTaxonomy(nodesFilePath, namesFilePath, pdiDbConn.asInstanceOf[BaseConnection] )
   }
   

@@ -3,8 +3,7 @@ package fr.proline.admin.helper
 import javax.persistence.{EntityManagerFactory,Persistence}
 import com.weiglewilczek.slf4s.Logger
 
-import fr.proline.core.orm.utils.JPAUtil
-import fr.proline.repository.{DatabaseConnector,ProlineRepository}
+import fr.proline.repository.IDatabaseConnector
 
 /**
  * @author David Bouyssie
@@ -26,10 +25,10 @@ package object sql {
     )
   }*/
   
-  def createPgDatabase( pgDbConnector: DatabaseConnector, dbName: String, logger: Option[Logger] = None ) {
+  def createPgDatabase( pgDbConnector: IDatabaseConnector, dbName: String, logger: Option[Logger] = None ) {
     
     // Create database connection and statement
-    val pgDbConn = pgDbConnector.getConnection
+    val pgDbConn = pgDbConnector.getDataSource.getConnection
     val stmt = pgDbConn.createStatement
     
     // Create database if it doesn't exists

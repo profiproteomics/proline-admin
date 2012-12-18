@@ -1,19 +1,19 @@
 package fr.proline.admin.service.user
 
 import com.weiglewilczek.slf4s.Logging
-import net.noerd.prequel.SQLFormatterImplicits._
+
+import fr.profi.jdbc.easy._
 import fr.proline.admin.service.db.SetupProline
-import fr.proline.core.dal.DatabaseManagement
-import fr.proline.core.dal.UdsDb
+import fr.proline.admin.service.db.DatabaseConnectionContext
 import fr.proline.core.orm.uds.{Project => UdsProject,UserAccount => UdsUser}
-import fr.proline.repository.DatabaseConnector
-    
+
+import fr.proline.core.orm.util.DatabaseManager
 
 /**
  * @author David Bouyssie
  *
  */
-class CreateProject( udsDbConnector: DatabaseConnector,
+class CreateProject( udsDbContext: DatabaseConnectionContext,
                      projectName: String,
                      projectDescription: String,
                      ownerId: Int ) extends Logging {
@@ -22,22 +22,28 @@ class CreateProject( udsDbConnector: DatabaseConnector,
   
   def run() {
     
-    // Create a database transaction
-    val udsDb = UdsDb( udsDbConnector )
-    val udsDbTx = udsDb.getOrCreateTransaction()
+    // Get EasyDBC object    
+    val udsEzDBC = udsDbContext.ezDBC
     
-    this.projectId = udsDbTx.executeBatch("INSERT INTO project (name,description,creation_timestamp,owner_id) VALUES (?,?,?,?)",true) { stmt =>
+    // Check connection and transaction
+    val wasConnOpened = udsDbContext.isConnectionOpened()
+    val wasInTx = udsEzDBC.isInTransaction()
+    
+    if( !wasInTx ) udsEzDBC.beginTransaction()
+    
+    this.projectId = udsEzDBC.executePrepared("INSERT INTO project (name,description,creation_timestamp,owner_id) VALUES (?,?,?,?)",true) { stmt =>
       stmt.executeWith( projectName,
                         projectDescription,
                         new java.util.Date(),
                         ownerId
                        )
       //this.projectId = udsDb.extractGeneratedInt( stmt.wrapped )
-      udsDb.extractGeneratedInt( stmt.wrapped )
+      stmt.generatedInt
     }
     
-    udsDb.commitTransaction()
-    udsDb.closeConnection()
+    // Manage connection and transaction
+    if( !wasInTx ) udsEzDBC.commitTransaction()
+    if( !wasConnOpened ) udsDbContext.closeConnection()
 
     // import fr.proline.core.orm.uds.{Project => UdsProject,UserAccount => UdsUser}
     // Creation UDS entity manager
@@ -71,20 +77,42 @@ object CreateProject {
   
   def apply( name: String, description: String, ownerId: Int ): Int = {
     
+    import fr.proline.admin.service.db.{CreateProjectDBs,DatabaseConnectionContext,ProlineDatabaseContext}
+    
     // Retrieve Proline configuration
     val prolineConf = SetupProline.parseProlineSetupConfig( SetupProline.appConf )
     
     // Instantiate a database manager
-    //val dbManager = new DatabaseManagement(prolineConf.udsDBConfig.connector)
-    val udsDbConnector = prolineConf.udsDBConfig.toNewConnector
+    val udsDBConfig = prolineConf.udsDBConfig
+    val udsDbConnector = udsDBConfig.toNewConnector
+    val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
     
     // Create project
-    val projectCreator = new CreateProject( udsDbConnector, name, description, ownerId )
+    val projectCreator = new CreateProject(
+      udsDbContext,
+      name,
+      description,
+      ownerId
+    )
     projectCreator.run()
     
+    // Close the database resources
+    udsDbContext.closeAll()
+    //udsDbConnector.close()
+    
+    // Create a new database manager to avoid any conflict
+    val dbManager = DatabaseManager.getInstance()
+    dbManager.initialize(udsDbConnector)
+    
+    val prolineDbContext = new ProlineDatabaseContext(dbManager)
+    //val dbManager2 = new DatabaseManagement( udsDbConnector2 )
+    
+    // Create project databases
+    new CreateProjectDBs( prolineDbContext, prolineConf, projectCreator.projectId ).run()          
+    
     // Close the database manager
-    //dbManager.closeAll()
-    udsDbConnector.closeAll()
+    prolineDbContext.closeAll()
+    dbManager.closeAll()
     
     projectCreator.projectId
     

@@ -6,8 +6,8 @@ import com.googlecode.flyway.core.Flyway
 import com.weiglewilczek.slf4s.Logging
 
 import fr.proline.admin.helper.sql._
-import fr.proline.core.dal.DatabaseManagement
-import fr.proline.repository.DatabaseConnector
+import fr.proline.core.orm.util.DatabaseManager
+import fr.proline.repository.{IDatabaseConnector,DriverType}
 import fr.proline.util.io._
 import fr.proline.util.resources._
 
@@ -18,7 +18,6 @@ import fr.proline.util.resources._
 trait ISetupDB extends Logging {  
   
   val dbConfig: DatabaseSetupConfig
-  val dbManager: DatabaseManagement
   private var _executed = false
   
   // Interface
@@ -47,19 +46,19 @@ trait ISetupDB extends Logging {
     val connector = dbConfig.connector
     
     // If driver type is SQLite (flyway doesn't support SQLite at the moment)
-    if( dbConfig.driverType == "sqlite" ) {
+    if( dbConfig.driverType == DriverType.SQLITE ) {
       
       val scriptPath = dbConfig.scriptDirectory + "/" + dbConfig.scriptName
       this.logger.info( "executing SQL script '"+ scriptPath +"'")
       
-      val scriptIS = pathToStreamOrResourceToStream(scriptPath,classOf[DatabaseConnector])
+      val scriptIS = pathToStreamOrResourceToStream(scriptPath,classOf[IDatabaseConnector])
       createSQLiteDB(connector,scriptIS)
       
     } else {
       
       // Create database if driver type is PostgreSQL
-      if( dbConfig.driverType == "postgresql" ) {
-        val pgDbConnector = dbConfig.dbConnPrototype.toConnector("postgres")
+      if( dbConfig.driverType == DriverType.POSTGRESQL ) {
+        val pgDbConnector = dbConfig.toNewConnector
         createPgDatabase( pgDbConnector, dbConfig.dbName, Some(this.logger) )
       }
       
@@ -76,7 +75,7 @@ trait ISetupDB extends Logging {
 
   }
   
-  protected def createSQLiteDB( connector: DatabaseConnector, scriptIS: InputStream ): Boolean = {
+  protected def createSQLiteDB( connector: IDatabaseConnector, scriptIS: InputStream ): Boolean = {
     
     // If connection mode is file
     var createDB = true
@@ -93,7 +92,7 @@ trait ISetupDB extends Logging {
     }
     
     if( createDB ) {
-      val dbConn = connector.getConnection
+      val dbConn = connector.getDataSource.getConnection
       val stmt = dbConn.createStatement
       
       this.logger.info("creating database schema...")

@@ -3,20 +3,20 @@ package fr.proline.admin.service.db
 import java.io.File
 import javax.persistence.EntityManager
 import com.weiglewilczek.slf4s.Logging
-
+import fr.profi.jdbc.easy.EasyDBC
 import fr.proline.admin.service.db.setup.{DatabaseSetupConfig,ProlineSetupConfig}
 import fr.proline.admin.helper.sql._
-import fr.proline.core.dal.DatabaseManagement
-import fr.proline.core.dal.UdsDb
 import fr.proline.core.orm.uds.{Project => UdsProject}
-import fr.proline.repository.ConnectionPrototype.{DatabaseProtocol => DbProtocols}
+import fr.proline.core.orm.util.DatabaseManager
+import fr.proline.repository.ConnectionMode
 import setup.{SetupLcmsDB,SetupMsiDB}
+import fr.proline.repository.DriverType
 
 /**
  * @author David Bouyssie
  *
  */
-class CreateProjectDBs( dbManager: DatabaseManagement, config: ProlineSetupConfig, projectId: Int ) extends Logging {
+class CreateProjectDBs( dbContext: ProlineDatabaseContext, config: ProlineSetupConfig, projectId: Int ) extends Logging {
   
   /*def run() {
     
@@ -75,44 +75,55 @@ class CreateProjectDBs( dbManager: DatabaseManagement, config: ProlineSetupConfi
   def run() {
     
     // Retrieve UDSdb connection
-    val udsDb = new UdsDb( dbManager.udsDBConnector )    
-    val udsDbTx = udsDb.getOrCreateTransaction()
+    //val dbManager = dbContext.dbManager
+    val udsDbContext = dbContext.udsDbContext
+    val wasUdsDbConnectionOpened = udsDbContext.isConnectionOpened
+    val udsEzDBC = udsDbContext.ezDBC
     
     // Check that there are no external DBs attached to this project
-    val nbExtDbs = udsDbTx.selectInt( "SELECT count(*) FROM external_db, project_db_map " +
-                                      "WHERE project_db_map.external_db_id = external_db.id " +
-                                      "AND project_db_map.project_id = " + projectId )
+    val nbExtDbs = udsEzDBC.selectInt( "SELECT count(*) FROM external_db, project_db_map " +
+                                       "WHERE project_db_map.external_db_id = external_db.id " +
+                                       "AND project_db_map.project_id = " + projectId )
     if( nbExtDbs > 0 )
       throw new Exception("project of id='%d' is already associated to external databases !".format(projectId))
     
     // Close connection to avoid any conflict
-    udsDb.commitTransaction()
-    udsDb.closeConnection()
+    //udsEzDBC.commitTransaction()
     
     // Prepare MSIdb creation
     val msiDBConfig = this._prepareDBCreation( config.msiDBConfig )
     
     // Store MSIdb connection settings
-    this._insertExtDb( udsDb, msiDBConfig.toUdsExternalDb )
-    
-    // Create MSI database
-    new SetupMsiDB( dbManager, msiDBConfig, config.msiDBDefaults, projectId ).run()
+    this._insertExtDb( udsEzDBC, msiDBConfig.toUdsExternalDb )
     
     // Prepare LCMSdb creation
     val lcmsDBConfig = this._prepareDBCreation( config.lcmsDBConfig )
     
     // Store LCMSdb connection settings
-    this._insertExtDb( udsDb, lcmsDBConfig.toUdsExternalDb )
+    this._insertExtDb( udsEzDBC, lcmsDBConfig.toUdsExternalDb )
+    
+    // Release UDSdb connection
+    if( wasUdsDbConnectionOpened == false ) udsDbContext.closeConnection()
+    
+    // Instantiate a database manager
+    val dbManager = DatabaseManager.getInstance()
+    //dbManager.initialize(udsDbContext.dbConnector)
+    
+    // Create MSI database
+    val msiDbContext = new DatabaseConnectionContext( dbManager.getMsiDbConnector(projectId) )
+    new SetupMsiDB( msiDbContext, msiDBConfig, config.msiDBDefaults ).run()
+    msiDbContext.closeAll()
     
     // Create LCMS database
-    new SetupLcmsDB( dbManager, lcmsDBConfig, projectId ).run()
+    val lcmsDbContext = new DatabaseConnectionContext( dbManager.getLcMsDbConnector(projectId) )
+    new SetupLcmsDB( lcmsDbContext, lcmsDBConfig ).run()
+    lcmsDbContext.closeAll()
     
   }
   
-  private def _insertExtDb( udsDb: UdsDb, extDb: fr.proline.core.orm.uds.ExternalDb ) {
+  private def _insertExtDb( udsEzDBC: EasyDBC, extDb: fr.proline.core.orm.uds.ExternalDb ) {
     
-    import net.noerd.prequel.SQLFormatterImplicits._
-    import fr.proline.core.dal.SQLFormatterImplicits._
+    import fr.profi.jdbc.easy._
     import fr.proline.core.dal.{UdsDbExternalDbTable,UdsDbProjectDbMapTable}
     
     val extDbInsertQuery = UdsDbExternalDbTable.makeInsertQuery(
@@ -120,18 +131,19 @@ class CreateProjectDBs( dbManager: DatabaseManagement, config: ProlineSetupConfi
                            )
     val projectDbMapInsertQuery = UdsDbProjectDbMapTable.makeInsertQuery()
     
-    val udsDbTx = udsDb.getOrCreateTransaction()
-    val extDbId = udsDbTx.executeBatch( extDbInsertQuery, true ) { stmt =>
+    udsEzDBC.beginTransaction()
+    
+    val extDbId = udsEzDBC.executePrepared( extDbInsertQuery, true ) { stmt =>
       stmt.executeWith( extDb.getDbName,
-                        extDb.getConnectionMode,
+                        extDb.getConnectionMode.toString(),
                         Option(extDb.getDbUser),
                         Option(extDb.getDbPassword),
                         Option(extDb.getHost),
-                        Option(extDb.getPort.toInt),
-                        extDb.getType,
+                        if( extDb.getPort != null) Some(extDb.getPort.toInt) else Option.empty[Int],
+                        extDb.getType.toString(),
                         extDb.getDbVersion(),
                         false,
-                        Option.empty[String]
+                        Option(extDb.getSerializedProperties)
                        )
       /*stmt.executeWith( "D:/proline/data/test/projects/project_1/msi-db.sqlite",
                         "FILE",
@@ -144,22 +156,21 @@ class CreateProjectDBs( dbManager: DatabaseManagement, config: ProlineSetupConfi
                         false,
                         Option.empty[String]
                        )*/
-      udsDb.extractGeneratedInt( stmt.wrapped )
+      stmt.generatedInt
     }
     
     // Link external db to the project
-    udsDbTx.execute( projectDbMapInsertQuery, extDbId, projectId )
+    udsEzDBC.execute( projectDbMapInsertQuery, extDbId, projectId )
     
     // Commit the transaction
-    udsDb.commitTransaction()
-    udsDb.closeConnection()
+    udsEzDBC.commitTransaction()
     
   }
 
   private def _prepareDBCreation( dbConfig: DatabaseSetupConfig ): DatabaseSetupConfig = {
-    
-    config.msiDBConfig.dbConnPrototype.getProtocol match {
-      case DbProtocols.FILE => {
+   
+   dbConfig.connectionMode match {
+      case ConnectionMode.FILE => {
         
         // Create projects directory if not exists
         val projectsDir = CreateProjectDBs.getProjectsDir( dbConfig.dbDirectory )
@@ -172,13 +183,14 @@ class CreateProjectDBs( dbManager: DatabaseManagement, config: ProlineSetupConfi
         // Update database config directory
         dbConfig.copy( dbDirectory = projectDir )
       }
-      case DbProtocols.HOST => {
+      case ConnectionMode.HOST => {
         
         val newDbConfig = dbConfig.copy()
         newDbConfig.dbName = dbConfig.dbName + "_project_" + this.projectId
         
-        if( dbConfig.driverType == "postgresql" ) {
-          val pgDbConnector = newDbConfig.dbConnPrototype.toConnector("postgres")
+        if( dbConfig.driverType == DriverType.POSTGRESQL ) {
+          //val pgDbConnector = newDbConfig.dbConnPrototype.toConnector("postgres")
+          val pgDbConnector = newDbConfig.toNewConnector()
           createPgDatabase( pgDbConnector, newDbConfig.dbName, Some(this.logger) )
         } else {
           throw new Exception("NYI")
@@ -186,7 +198,7 @@ class CreateProjectDBs( dbManager: DatabaseManagement, config: ProlineSetupConfi
         
         newDbConfig
       }
-      case DbProtocols.MEMORY => {
+      case ConnectionMode.MEMORY => {
         throw new Exception("NYI")
         dbConfig
       }
@@ -205,10 +217,14 @@ object CreateProjectDBs {
     val prolineConf = SetupProline.parseProlineSetupConfig( SetupProline.appConf )
     
     // Instantiate a database manager
-    val dbManager = new DatabaseManagement(prolineConf.udsDBConfig.toNewConnector)
+    val dbManager = DatabaseManager.getInstance()
+    dbManager.initialize(prolineConf.udsDBConfig.toNewConnector)
+    
+    // Instantiate a database context
+    val dbContext = new ProlineDatabaseContext( dbManager )
     
     // Create databases
-    new CreateProjectDBs( dbManager, prolineConf, projectId ).run()
+    new CreateProjectDBs( dbContext, prolineConf, projectId ).run()
     
     // Close the database manager
     dbManager.closeAll()

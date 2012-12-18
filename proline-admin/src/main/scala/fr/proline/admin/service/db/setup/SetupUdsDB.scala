@@ -5,12 +5,10 @@ import scala.collection.JavaConversions.{collectionAsScalaIterable,setAsJavaSet}
 import scala.collection.mutable.ArrayBuffer
 import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
-
+import fr.proline.admin.service.db.DatabaseConnectionContext
 import fr.proline.util.resources._
 import fr.proline.util.sql.getTimeAsSQLTimestamp
-
-import fr.proline.core.dal.{DatabaseManagement,
-                            UdsDbInstrumentTable,
+import fr.proline.core.dal.{UdsDbInstrumentTable,
                             UdsDbInstrumentConfigTable,
                             UdsDbPeaklistSoftwareTable,
                             UdsDbQuantLabelTable,
@@ -45,7 +43,7 @@ import fr.proline.module.parser.mascot.{EnzymeDefinition,MascotEnzymeParser,
  * @author David Bouyssie
  *
  */
-class SetupUdsDB( val dbManager: DatabaseManagement,
+class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
                   val dbConfig: DatabaseSetupConfig,
                   val prolineConfig: ProlineSetupConfig ) extends ISetupDB with Logging {
   
@@ -53,8 +51,7 @@ class SetupUdsDB( val dbManager: DatabaseManagement,
   protected val defaults = prolineConfig.udsDBDefaults
   
   // Instantiate the UDSdb entity manager
-  protected lazy val udsEMF = dbManager.udsEMF
-  protected lazy val udsEM = udsEMF.createEntityManager()
+  protected lazy val udsEM = udsDbContext.entityManager
   
   protected def importDefaults() {
     

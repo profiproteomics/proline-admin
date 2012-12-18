@@ -4,10 +4,9 @@ import java.io.File
 import com.weiglewilczek.slf4s.Logging
 import com.beust.jcommander.{JCommander,MissingCommandException,Parameter,ParameterException,Parameters}
 import collection.JavaConversions._
-
 import fr.proline.admin.service.db.SetupProline
-import fr.proline.core.dal.DatabaseManagement
-
+import fr.proline.admin.service.db.{DatabaseConnectionContext,ProlineDatabaseContext}
+import fr.proline.core.orm.util.DatabaseManager
 
 object RunCommand extends App with Logging {
   
@@ -67,40 +66,16 @@ object RunCommand extends App with Logging {
         }
         case CreateProjectCommand.Parameters.firstName => {
           
-          import fr.proline.admin.service.db.CreateProjectDBs
           import fr.proline.admin.service.user.CreateProject
           
-          // Retrieve Proline configuration
-          val prolineConf = SetupProline.parseProlineSetupConfig( SetupProline.appConf )
-          
-          // Instantiate a database manager
-          val udsDBConfig = prolineConf.udsDBConfig
-          val udsDbConnector = udsDBConfig.toNewConnector
-          
-          // Create project
-          val projectCreator = new CreateProject(
-            udsDbConnector,
+          val projectId = CreateProject(
             CreateProjectCommand.projectName,
             CreateProjectCommand.projectDescription,
             CreateProjectCommand.ownerId
           )
-          projectCreator.run()
           
-          // Close the database manager
-          udsDbConnector.closeAll()
+          this.logger.info("project with id='"+ projectId +"' has been created !")
           
-          // Create a new database manager to avoid any conflict
-          val udsDbConnector2 = udsDBConfig.toNewConnector
-          val dbManager2 = new DatabaseManagement( udsDbConnector2 )
-          
-          // Create project databases
-          new CreateProjectDBs( dbManager2, prolineConf, projectCreator.projectId ).run()          
-          
-          // Close the database manager
-          udsDbConnector2.closeAll()
-          dbManager2.closeAll()
-          
-          this.logger.info("project with id='"+ projectCreator.projectId +"' has been created !")
         }
         case CreateUserCommand.Parameters.firstName => {          
           import fr.proline.admin.service.user.CreateUser
@@ -126,4 +101,11 @@ object RunCommand extends App with Logging {
     }
     
   }
+  
+  /*def createProject( projectName: String,
+                     projectDescription: String,
+                     ownerId: Int ) {
+    
+
+  }*/
 }

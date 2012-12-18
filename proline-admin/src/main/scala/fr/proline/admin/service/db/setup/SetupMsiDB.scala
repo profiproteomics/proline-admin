@@ -4,29 +4,26 @@ import javax.persistence.Persistence
 import scala.collection.JavaConversions.{collectionAsScalaIterable}
 import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
-import fr.proline.core.dal.{DatabaseManagement,MsiDbScoringTable}
+
+import fr.proline.admin.service.db.DatabaseConnectionContext
+import fr.proline.core.dal.MsiDbScoringTable
 import fr.proline.core.orm.msi.{AdminInformation => MsiAdminInfos, Scoring => MsiScoring }
-import fr.proline.core.orm.utils.JPAUtil
 import fr.proline.util.sql.getTimeAsSQLTimestamp
-import fr.proline.repository.DatabaseConnector
 
 /**
  * @author David Bouyssie
  *
  */
-class SetupMsiDB( val dbManager: DatabaseManagement,  
+class SetupMsiDB( val msiDbContext: DatabaseConnectionContext,  
                   val dbConfig: DatabaseSetupConfig,
-                  val defaults: MsiDBDefaults,
-                  val projectId: Int ) extends ISetupDB with Logging {
+                  val defaults: MsiDBDefaults
+                 ) extends ISetupDB with Logging {
   
-  lazy val msiDbConnector = dbManager.getMSIDatabaseConnector( projectId )
-  lazy val msiEMF = Persistence.createEntityManagerFactory(
-                        JPAUtil.PersistenceUnitNames.MSI_Key.getPersistenceUnitName(),
-                        msiDbConnector.getEntityManagerSettings
-                     )
-  lazy val msiEM = msiEMF.createEntityManager()
+  lazy val msiEM = msiDbContext.entityManager
     
   protected def importDefaults() {
+    
+    val wasEmOpened = msiDbContext.isEmOpened
     
     // Begin transaction
     val msiTransaction = msiEM.getTransaction()    
@@ -43,10 +40,8 @@ class SetupMsiDB( val dbManager: DatabaseManagement,
     // Commit transaction
     msiTransaction.commit()
     
-    // Close entity manager and factory
-    this.msiEM.close()
-    this.msiEMF.close()
-    this.msiDbConnector.closeAll()
+    // Close entity manager
+    if( !wasEmOpened ) msiDbContext.closeEM()
   }
   
   private def _importAdminInformation() {
