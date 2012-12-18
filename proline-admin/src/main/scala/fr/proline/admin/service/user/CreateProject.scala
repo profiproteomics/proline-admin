@@ -102,7 +102,7 @@ object CreateProject {
     
     // Create a new database manager to avoid any conflict
     val dbManager = DatabaseManager.getInstance()
-    dbManager.initialize(udsDbConnector)
+    if( dbManager.isInitialized == false ) dbManager.initialize(udsDbConnector)
     
     val prolineDbContext = new ProlineDatabaseContext(dbManager)
     //val dbManager2 = new DatabaseManagement( udsDbConnector2 )
@@ -112,7 +112,7 @@ object CreateProject {
     
     // Close the database manager
     prolineDbContext.closeAll()
-    dbManager.closeAll()
+    //dbManager.closeAll()
     
     projectCreator.projectId
     

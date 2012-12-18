@@ -218,7 +218,7 @@ object CreateProjectDBs {
     
     // Instantiate a database manager
     val dbManager = DatabaseManager.getInstance()
-    dbManager.initialize(prolineConf.udsDBConfig.toNewConnector)
+    if( dbManager.isInitialized == false ) dbManager.initialize(prolineConf.udsDBConfig.toNewConnector)
     
     // Instantiate a database context
     val dbContext = new ProlineDatabaseContext( dbManager )
@@ -227,7 +227,7 @@ object CreateProjectDBs {
     new CreateProjectDBs( dbContext, prolineConf, projectId ).run()
     
     // Close the database manager
-    dbManager.closeAll()
+    //dbManager.closeAll()
     
   }
   

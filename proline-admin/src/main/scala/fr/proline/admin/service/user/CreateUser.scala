@@ -54,7 +54,7 @@ object CreateUser {
     
     // Instantiate a database manager
     val dbManager = DatabaseManager.getInstance()
-    dbManager.initialize(prolineConf.udsDBConfig.toNewConnector)
+    if( dbManager.isInitialized == false ) dbManager.initialize(prolineConf.udsDBConfig.toNewConnector)
     
     val udsDbContext = new DatabaseConnectionContext(dbManager.getUdsDbConnector)
     
@@ -64,7 +64,7 @@ object CreateUser {
     
     // Close the database manager
     udsDbContext.closeAll()
-    dbManager.closeAll()
+    //dbManager.closeAll()
     
     userCreator.userId
     

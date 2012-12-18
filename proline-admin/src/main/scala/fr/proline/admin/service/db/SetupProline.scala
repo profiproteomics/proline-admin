@@ -138,7 +138,8 @@ class SetupProline( config: ProlineSetupConfig ) extends Logging {
     
     // Release all connections and resources
     pdiDbContext.closeAll()
-    //dbManager.closeAll()
+    
+    // TODO: close connectors ?
     
     this.logger.info("Proline has been sucessfuly set up !")
     
@@ -152,10 +153,10 @@ class SetupProline( config: ProlineSetupConfig ) extends Logging {
  */
 object SetupProline {
   
-  var classLoader = this.getClass().getClassLoader()
+  var classLoader = SetupProline.getClass().getClassLoader()
   //ClassLoadergetSystemClassLoader()
   
-  val appConf = ConfigFactory.load("application")
+  val appConf = ConfigFactory.load(classLoader,"application")
   
   def parseProlineSetupConfig( config: Config ): ProlineSetupConfig = {
     
@@ -169,7 +170,7 @@ object SetupProline {
     val hostConfig = config.getConfig("host-config")
     val driverAlias = prolineConfig.getString("driver-type")
     val driverConfig = config.getConfig(driverAlias + "-config")
-    val appDriverSpecificConf = ConfigFactory.load("application-"+driverAlias)
+    val appDriverSpecificConf = ConfigFactory.load(classLoader,"application-"+driverAlias)
     
     // Load database specific settings
     val dbList = List("uds","pdi","ps","msi","lcms")
