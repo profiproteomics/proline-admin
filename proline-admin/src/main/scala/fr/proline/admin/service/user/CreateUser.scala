@@ -36,7 +36,7 @@ class CreateUser( udsDbContext: DatabaseConnectionContext,
     udsEM.persist( udsUser )
     udsEM.getTransaction().commit()
     
-    val userId = udsUser.getId
+    this.userId = udsUser.getId
     this.logger.info("user with id='"+ userId +"' has been created !")
     
     // Close entity manager
