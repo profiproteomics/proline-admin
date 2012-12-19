@@ -6,7 +6,7 @@ import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
 
 import fr.proline.admin.service.db.DatabaseConnectionContext
-import fr.proline.core.dal.MsiDbScoringTable
+import fr.proline.core.dal.tables.msi.MsiDbScoringTable
 import fr.proline.core.orm.msi.{AdminInformation => MsiAdminInfos, Scoring => MsiScoring }
 import fr.proline.util.sql.getTimeAsSQLTimestamp
 

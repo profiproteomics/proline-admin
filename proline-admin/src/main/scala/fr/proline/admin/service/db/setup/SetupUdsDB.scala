@@ -8,13 +8,7 @@ import com.weiglewilczek.slf4s.Logging
 import fr.proline.admin.service.db.DatabaseConnectionContext
 import fr.proline.util.resources._
 import fr.proline.util.sql.getTimeAsSQLTimestamp
-import fr.proline.core.dal.{UdsDbInstrumentTable,
-                            UdsDbInstrumentConfigTable,
-                            UdsDbPeaklistSoftwareTable,
-                            UdsDbQuantLabelTable,
-                            UdsDbQuantMethodTable,
-                            UdsDbSpecTitleParsingRuleTable
-                            }
+import fr.proline.core.dal.tables.uds._
 import fr.proline.core.om.model.msi.{ChargeConstraint,
                                      FragmentationSeriesRequirement,
                                      InstrumentConfig,
