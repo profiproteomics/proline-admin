@@ -7,7 +7,7 @@ import com.weiglewilczek.slf4s.Logging
 
 import fr.proline.admin.helper.sql._
 import fr.proline.core.orm.util.DatabaseManager
-import fr.proline.repository.{IDatabaseConnector,DriverType}
+import fr.proline.repository.{IDatabaseConnector,DatabaseUpgrader,DriverType}
 import fr.proline.util.io._
 import fr.proline.util.resources._
 
@@ -31,10 +31,15 @@ trait ISetupDB extends Logging {
     if( _executed )
       throw new IllegalStateException("the setup has been already executed")
     
-    if( this.initSchema() ) {
-      this.importDefaults()
-    } else {
-      this.logger.error("schema initialization failed")
+    try {
+      if( this.initSchema() ) {
+        this.importDefaults()
+        this.logger.info("database '"+dbConfig.dbName +"' successfully set up !")
+      }
+    } catch {
+      case e: Throwable => {
+        this.logger.error(dbConfig.dbName + " schema initialization failed")
+      }
     }
     
     this._executed = true
@@ -42,9 +47,17 @@ trait ISetupDB extends Logging {
   
   protected def initSchema(): Boolean = {
     
-    // connector: DatabaseConnector, scriptResourcePath: String 
-    val connector = dbConfig.connector
+    val dbConnector = dbConfig.connector
     
+    // Create database if driver type is PostgreSQL
+    if( dbConfig.driverType == DriverType.POSTGRESQL ) {
+      createPgDatabase( dbConnector, dbConfig.dbName, Some(this.logger) )
+    }
+    
+    // Initialize database schema
+    if( DatabaseUpgrader.upgradeDatabase(dbConnector) > 0 ) true else false
+    
+   /*    
     // If driver type is SQLite (flyway doesn't support SQLite at the moment)
     if( dbConfig.driverType == DriverType.SQLITE ) {
       
@@ -71,11 +84,11 @@ trait ISetupDB extends Logging {
       
       if( flyway.migrate() > 0 ) true
       else false
-    }
+    }*/
 
   }
   
-  protected def createSQLiteDB( connector: IDatabaseConnector, scriptIS: InputStream ): Boolean = {
+  /*protected def createSQLiteDB( connector: IDatabaseConnector, scriptIS: InputStream ): Boolean = {
     
     // If connection mode is file
     var createDB = true
@@ -104,6 +117,6 @@ trait ISetupDB extends Logging {
     
     createDB
           
-  }
+  }*/
   
 }

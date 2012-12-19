@@ -125,7 +125,7 @@ class SetupProline( config: ProlineSetupConfig ) extends Logging {
     
     // Set Up the PDIdb
     this.logger.info("setting up the 'Protein Database Index' database...")
-    val pdiDbContext = new DatabaseConnectionContext( config.psDBConfig.toNewConnector )
+    val pdiDbContext = new DatabaseConnectionContext( config.pdiDBConfig.toNewConnector )
     new SetupPdiDB( pdiDbContext, config.pdiDBConfig, config ).run()
     pdiDbContext.closeAll()
     

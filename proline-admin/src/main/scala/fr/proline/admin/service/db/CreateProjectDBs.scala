@@ -105,17 +105,13 @@ class CreateProjectDBs( dbContext: ProlineDatabaseContext, config: ProlineSetupC
     // Release UDSdb connection
     if( wasUdsDbConnectionOpened == false ) udsDbContext.closeConnection()
     
-    // Instantiate a database manager
-    val dbManager = DatabaseManager.getInstance()
-    //dbManager.initialize(udsDbContext.dbConnector)
-    
     // Create MSI database
-    val msiDbContext = new DatabaseConnectionContext( dbManager.getMsiDbConnector(projectId) )
+    val msiDbContext = new DatabaseConnectionContext( msiDBConfig.connector )
     new SetupMsiDB( msiDbContext, msiDBConfig, config.msiDBDefaults ).run()
     msiDbContext.closeAll()
     
     // Create LCMS database
-    val lcmsDbContext = new DatabaseConnectionContext( dbManager.getLcMsDbConnector(projectId) )
+    val lcmsDbContext = new DatabaseConnectionContext( lcmsDBConfig.connector )
     new SetupLcmsDB( lcmsDbContext, lcmsDBConfig ).run()
     lcmsDbContext.closeAll()
     
@@ -189,9 +185,8 @@ class CreateProjectDBs( dbContext: ProlineDatabaseContext, config: ProlineSetupC
         newDbConfig.dbName = dbConfig.dbName + "_project_" + this.projectId
         
         if( dbConfig.driverType == DriverType.POSTGRESQL ) {
-          //val pgDbConnector = newDbConfig.dbConnPrototype.toConnector("postgres")
-          val pgDbConnector = newDbConfig.toNewConnector()
-          createPgDatabase( pgDbConnector, newDbConfig.dbName, Some(this.logger) )
+          //val pgDbConnector = newDbConfig.toNewConnector()
+          //createPgDatabase( pgDbConnector, newDbConfig.dbName, Some(this.logger) )
         } else {
           throw new Exception("NYI")
         }
