@@ -126,10 +126,10 @@ class CreateProjectDBs( dbContext: ProlineDatabaseContext, config: ProlineSetupC
     import fr.profi.jdbc.easy._
     import fr.proline.core.dal.tables.uds.{UdsDbExternalDbTable,UdsDbProjectDbMapTable}
     
-    val extDbInsertQuery = UdsDbExternalDbTable.makeInsertQuery(
-                             UdsDbExternalDbTable.getColumnsAsStrList().filter( _ != "id" )
+    val extDbInsertQuery = UdsDbExternalDbTable.mkInsertQuery( (c,colsList) =>
+                             colsList.filter( _ != c.id )
                            )
-    val projectDbMapInsertQuery = UdsDbProjectDbMapTable.makeInsertQuery()
+    val projectDbMapInsertQuery = UdsDbProjectDbMapTable.mkInsertQuery()
     
     udsEzDBC.beginTransaction()
     

@@ -330,7 +330,7 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
     
     val peaklistSoftCols = UdsDbPeaklistSoftwareTable.columns
     val parsingRuleCols = UdsDbSpecTitleParsingRuleTable.columns
-    val parsingRuleColsList = UdsDbSpecTitleParsingRuleTable.getColumnsAsStrList().filter { _ != "id" }
+    val parsingRuleColsList = UdsDbSpecTitleParsingRuleTable.columnsAsStrList.filter { _ != "id" }
     
     for( peaklistSoft <- peaklistSoftware ) {
       
