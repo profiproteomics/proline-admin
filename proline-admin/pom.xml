@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>fr.proline</groupId>
   <artifactId>Proline-Admin</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <name>${project.artifactId}</name>
   <description>Proline Administration</description>
 
@@ -80,7 +80,7 @@
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-MascotParser</artifactId>
-      <version>0.0.2-SNAPSHOT</version>
+      <version>0.0.3-SNAPSHOT</version>
     </dependency>
 
     <dependency>
@@ -92,7 +92,7 @@
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-ResourcesManager</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.2-SNAPSHOT</version>
     </dependency>
 
   </dependencies>

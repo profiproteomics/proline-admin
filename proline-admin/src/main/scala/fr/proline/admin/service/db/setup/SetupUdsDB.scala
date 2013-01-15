@@ -301,8 +301,8 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
       
       // Create new instrument
       val udsInstrument = new UdsInstrument()
-      udsInstrument.setName( instrument.getString(instrumentCols.name) )
-      udsInstrument.setSource( instrument.getString(instrumentCols.source) )   
+      udsInstrument.setName( instrument.getString(instrumentCols.NAME) )
+      udsInstrument.setSource( instrument.getString(instrumentCols.SOURCE) )   
       udsEM.persist(udsInstrument)
       
       // Store instrument configurations
@@ -310,12 +310,12 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
       
       for( instConfig <- instConfigs ) {
         
-        val udsActivation = udsActivationByType(instConfig.getString(instConfigCols.activationType))
+        val udsActivation = udsActivationByType(instConfig.getString(instConfigCols.ACTIVATION_TYPE))
         
         val udsInstrumentConfig = new UdsInstrumentConfig()
-        udsInstrumentConfig.setName( instConfig.getString(instConfigCols.name) )
-        udsInstrumentConfig.setMs1Analyzer( instConfig.getString(instConfigCols.ms1_analyzer) )
-        udsInstrumentConfig.setMsnAnalyzer( instConfig.getString(instConfigCols.msnAnalyzer) )
+        udsInstrumentConfig.setName( instConfig.getString(instConfigCols.NAME) )
+        udsInstrumentConfig.setMs1Analyzer( instConfig.getString(instConfigCols.MS1_ANALYZER) )
+        udsInstrumentConfig.setMsnAnalyzer( instConfig.getString(instConfigCols.MSN_ANALYZER) )
         udsInstrumentConfig.setSerializedProperties("""{"is_hidden":false}""")
         udsInstrumentConfig.setActivation(udsActivation)
         udsInstrumentConfig.setInstrument(udsInstrument)
@@ -336,11 +336,11 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
       
       // Create a peaklist software
       val udsPeaklistSoft = new UdsPeaklistSoft()
-      var parsingRuleName = peaklistSoft.getString(peaklistSoftCols.name)
+      var parsingRuleName = peaklistSoft.getString(peaklistSoftCols.NAME)
       udsPeaklistSoft.setName(parsingRuleName)
       
-      if( peaklistSoft.hasPath(peaklistSoftCols.version)) {
-        val version = peaklistSoft.getString(peaklistSoftCols.version)
+      if( peaklistSoft.hasPath(peaklistSoftCols.VERSION)) {
+        val version = peaklistSoft.getString(peaklistSoftCols.VERSION)
         udsPeaklistSoft.setVersion(version)
         parsingRuleName += " " + version
       }
@@ -355,13 +355,13 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
       
       val udsParsingRule = new UdsSpecTitleParsingRule()
       udsParsingRule.setName(parsingRuleName)
-      udsParsingRule.setRawFileName(valueByName(parsingRuleCols.rawFileName))
-      udsParsingRule.setFirstCycle(valueByName(parsingRuleCols.firstCycle))
-      udsParsingRule.setLastCycle(valueByName(parsingRuleCols.lastCycle))
-      udsParsingRule.setFirstScan(valueByName(parsingRuleCols.firstScan))
-      udsParsingRule.setLastScan(valueByName(parsingRuleCols.lastScan))
-      udsParsingRule.setFirstTime(valueByName(parsingRuleCols.firstTime))
-      udsParsingRule.setLastTime(valueByName(parsingRuleCols.lastTime))
+      udsParsingRule.setRawFileName(valueByName(parsingRuleCols.RAW_FILE_NAME))
+      udsParsingRule.setFirstCycle(valueByName(parsingRuleCols.FIRST_CYCLE))
+      udsParsingRule.setLastCycle(valueByName(parsingRuleCols.LAST_CYCLE))
+      udsParsingRule.setFirstScan(valueByName(parsingRuleCols.FIRST_SCAN))
+      udsParsingRule.setLastScan(valueByName(parsingRuleCols.LAST_SCAN))
+      udsParsingRule.setFirstTime(valueByName(parsingRuleCols.FIRST_TIME))
+      udsParsingRule.setLastTime(valueByName(parsingRuleCols.LAST_TIME))
       
       udsEM.persist(udsParsingRule)
       
@@ -383,9 +383,9 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
       
       // Create new quantitative method
       val udsQuantMethod = new UdsQuantMethod()
-      udsQuantMethod.setName( quantMethod.getString(quantMethodCols.name) )
-      udsQuantMethod.setType( quantMethod.getString(quantMethodCols.`type`) )
-      udsQuantMethod.setAbundanceUnit( quantMethod.getString(quantMethodCols.abundanceUnit) )      
+      udsQuantMethod.setName( quantMethod.getString(quantMethodCols.NAME) )
+      udsQuantMethod.setType( quantMethod.getString(quantMethodCols.TYPE) )
+      udsQuantMethod.setAbundanceUnit( quantMethod.getString(quantMethodCols.ABUNDANCE_UNIT) )      
       
       udsEM.persist(udsQuantMethod)
       
@@ -396,9 +396,9 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
         for( quantLabel <- quantLabels ) {
           
           val udsQuantLabel = new UdsQuantLabel()
-          udsQuantLabel.setName( quantLabel.getString(quantLabelCols.name) )
-          udsQuantLabel.setType( quantMethod.getString(quantMethodCols.`type`) )
-          udsQuantLabel.setSerializedProperties( quantLabel.getString(quantLabelCols.serializedProperties) )
+          udsQuantLabel.setName( quantLabel.getString(quantLabelCols.NAME) )
+          udsQuantLabel.setType( quantMethod.getString(quantMethodCols.TYPE) )
+          udsQuantLabel.setSerializedProperties( quantLabel.getString(quantLabelCols.SERIALIZED_PROPERTIES) )
           udsQuantLabel.setMethod( udsQuantMethod )
           
           udsEM.persist(udsQuantLabel)

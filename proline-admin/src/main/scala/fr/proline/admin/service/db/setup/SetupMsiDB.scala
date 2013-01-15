@@ -63,9 +63,9 @@ class SetupMsiDB( val msiDbContext: DatabaseConnectionContext,
       
       // Create new scoring
       val msiScoring = new MsiScoring()
-      msiScoring.setSearchEngine( scoring.getString(scoringCols.searchEngine) )
-      msiScoring.setName( scoring.getString(scoringCols.name) )
-      msiScoring.setDescription( scoring.getString(scoringCols.description) )   
+      msiScoring.setSearchEngine( scoring.getString(scoringCols.SEARCH_ENGINE) )
+      msiScoring.setName( scoring.getString(scoringCols.NAME) )
+      msiScoring.setDescription( scoring.getString(scoringCols.DESCRIPTION) )   
       
       msiEM.persist(msiScoring)
       
