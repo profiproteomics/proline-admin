@@ -11,7 +11,8 @@
   <properties>
     <maven.compiler.source>1.6</maven.compiler.source>
     <maven.compiler.target>1.6</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>    
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>        
+    <core.version>0.0.3.2-SNAPSHOT</core.version>
   </properties>
 
   <pluginRepositories>
@@ -52,6 +53,7 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>1.0.7</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.weiglewilczek.slf4s</groupId>
@@ -84,6 +86,36 @@
     </dependency>
 
     <dependency>
+        <groupId>fr.proline</groupId>
+        <artifactId>Proline-OM</artifactId>
+        <version>${core.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>fr.proline</groupId>
+        <artifactId>Proline-DAL</artifactId>
+        <version>${core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>fr.proline</groupId>
+      <artifactId>Proline-OMP</artifactId>
+      <version>${core.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>fr.proline</groupId>
+        <artifactId>Proline-Databases</artifactId>
+        <version>${core.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>fr.proline</groupId>
+        <artifactId>Proline-DAL</artifactId>
+        <version>${core.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>fr.proline.util</groupId>
       <artifactId>ProFI-Commons-Scala</artifactId>
       <version>0.0.1-SNAPSHOT</version>
@@ -92,7 +124,7 @@
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-ResourcesManager</artifactId>
-      <version>0.0.2-SNAPSHOT</version>
+      <version>0.0.1-SNAPSHOT</version>
     </dependency>
 
   </dependencies>
@@ -196,10 +228,10 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}</outputDirectory>
+              <outputDirectory>${project.build.directory}/config</outputDirectory>
               <resources>
                 <resource>
-                  <directory>resources</directory>
+                  <directory>src/main/resources</directory>
                   <filtering>true</filtering>
                 </resource>
               </resources>
@@ -244,7 +276,19 @@
           </execution>
         </executions>
       </plugin>
-
+      
+	  <plugin>
+		  <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <configuration>
+            <excludes>
+              <exclude>**/logback.xml</exclude>
+              <exclude>**/*.conf</exclude>
+              <exclude>*_db/</exclude>
+              <exclude>mascot_config/</exclude>
+            </excludes>
+          </configuration>
+       </plugin>
     </plugins>
   </build>
 
