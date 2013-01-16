@@ -38,7 +38,7 @@ trait ISetupDB extends Logging {
       }
     } catch {
       case e: Throwable => {
-        this.logger.error(dbConfig.dbName + " schema initialization failed")
+        this.logger.error(dbConfig.dbName + " schema initialization failed", e)
       }
     }
     
@@ -51,10 +51,13 @@ trait ISetupDB extends Logging {
     
     // Create database if driver type is PostgreSQL
     if( dbConfig.driverType == DriverType.POSTGRESQL ) {
-      createPgDatabase( dbConnector, dbConfig.dbName, Some(this.logger) )
+      createPgDatabase( dbConfig, Some(this.logger) )
     }
     
     // Initialize database schema
+//    dbConfig.schemaVersion = DatabaseUpgrader.upgradeDatabase(dbConnector);    
+//    if ((dbConfig.schemaVersion == null) || (dbConfig.schemaVersion.isEmpty()) || dbConfig.schemaVersion.equals("no.version")) false else true
+    dbConfig.schemaVersion = "0.1"
     if( DatabaseUpgrader.upgradeDatabase(dbConnector) > 0 ) true else false
     
    /*    
