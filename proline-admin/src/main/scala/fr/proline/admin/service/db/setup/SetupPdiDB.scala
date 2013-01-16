@@ -3,6 +3,8 @@ package fr.proline.admin.service.db.setup
 import com.weiglewilczek.slf4s.Logging
 import fr.proline.admin.service.db.DatabaseConnectionContext
 import fr.proline.repository.DriverType
+import javax.sql.PooledConnection
+import java.sql.Connection
 
 /**
  * @author David Bouyssie
@@ -19,8 +21,10 @@ class SetupPdiDB( val pdiDbContext: DatabaseConnectionContext,
     
   protected def importDefaults() {
     
-    if( dbConfig.driverType == DriverType.POSTGRESQL ) _importDefaultsUsingPgCopyManager()
-    else _importDefaultsUsingJPA()
+//    if( dbConfig.driverType == DriverType.POSTGRESQL ) _importDefaultsUsingPgCopyManager()
+//    else _importDefaultsUsingJPA()
+
+    _importDefaultsUsingJPA()
     
   }
   
