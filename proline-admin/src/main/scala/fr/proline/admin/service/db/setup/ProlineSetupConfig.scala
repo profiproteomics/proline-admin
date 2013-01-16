@@ -43,9 +43,6 @@ object DatabaseSetupConfig {
 /** Configuration settings for database setup */
 case class DatabaseSetupConfig( dbType: Database,
                                 driverType: DriverType,
-                                schemaVersion: String,
-                                scriptDirectory: String,
-                                scriptName: String,
                                 dbDirectory: File,
                                 connectionConfig: Config
                                 ) {
@@ -59,6 +56,7 @@ case class DatabaseSetupConfig( dbType: Database,
   
   var dbName = connectionConfig.getString("dbName")
   var connectionMode = ConnectionMode.valueOf( connectionConfig.getString("connectionMode") )
+  var schemaVersion = "no.version"
   
   lazy val dbConnProperties = {    
     this.toUdsExternalDb.toPropertiesMap()
