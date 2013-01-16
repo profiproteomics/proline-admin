@@ -180,22 +180,22 @@ object SetupProline {
       val dbDriverSpecificConf = appDriverSpecificConf.getConfig(dbType+"-db")
       val dbConfig = config.getConfig(dbType+"-db").withFallback(dbDriverSpecificConf)
       val connectionConfig = dbConfig.getConfig("connection-properties")
-      val schemaVersion = dbConfig.getString("version")  
+//      val schemaVersion = dbConfig.getString("version")  
       
       // Merge connection settings with shared settings
       val fullConnConfig = this._mergeConfigs(connectionConfig,authConfig,hostConfig,driverConfig.getConfig("connection-properties"))
       
       // Build the script directory corresponding to the current database configuration
-      val scriptDir = prolineConfig.getString("db-script-root") +
-                       dbConfig.getString("script-directory") +
-                       driverConfig.getString("script-directory")
-      val scriptName = dbConfig.getString("script-name")
+//      val scriptDir = prolineConfig.getString("db-script-root") +
+//                       dbConfig.getString("script-directory") +
+//                       driverConfig.getString("script-directory")
+//      val scriptName = dbConfig.getString("script-name")
       
       val db = Database.withPersistenceUnitName(dbType + "db_production")
       val driver = DriverType.valueOf( driverAlias.toUpperCase() ) //fullConnConfig.getString("driver")
       
       // Build the database setup configuration object
-      ( dbType-> DatabaseSetupConfig( db, driver, schemaVersion, scriptDir, scriptName, dataDir, fullConnConfig ) )
+      ( dbType-> DatabaseSetupConfig( db, driver, dataDir, fullConnConfig ) )
     } toMap
     
     ProlineSetupConfig(
