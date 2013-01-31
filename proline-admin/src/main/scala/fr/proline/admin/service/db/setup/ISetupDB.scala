@@ -6,7 +6,6 @@ import com.googlecode.flyway.core.Flyway
 import com.weiglewilczek.slf4s.Logging
 
 import fr.proline.admin.helper.sql._
-import fr.proline.core.orm.util.DatabaseManager
 import fr.proline.repository.{IDatabaseConnector,DatabaseUpgrader,DriverType}
 import fr.proline.util.io._
 import fr.proline.util.resources._

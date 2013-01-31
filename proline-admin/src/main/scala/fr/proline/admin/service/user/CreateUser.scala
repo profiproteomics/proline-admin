@@ -5,7 +5,7 @@ import com.weiglewilczek.slf4s.Logging
 import fr.proline.admin.service.db.DatabaseConnectionContext
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.core.orm.uds.{Project => UdsProject,UserAccount => UdsUser}
-import fr.proline.core.orm.util.DatabaseManager
+import fr.proline.core.orm.util.DataStoreConnectorFactory
 
 /**
  * @author David Bouyssie
@@ -53,10 +53,10 @@ object CreateUser {
     val prolineConf = SetupProline.parseProlineSetupConfig( SetupProline.appConf )
     
     // Instantiate a database manager
-    val dbManager = DatabaseManager.getInstance()
-    if( dbManager.isInitialized == false ) dbManager.initialize(prolineConf.udsDBConfig.toNewConnector)
+    val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
+    if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(prolineConf.udsDBConfig.toNewConnector)
     
-    val udsDbContext = new DatabaseConnectionContext(dbManager.getUdsDbConnector)
+    val udsDbContext = new DatabaseConnectionContext(dsConnectorFactory.getUdsDbConnector)
     
     // Create user
     val userCreator = new CreateUser( udsDbContext, login )

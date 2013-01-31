@@ -4,10 +4,9 @@ import javax.persistence.Persistence
 import scala.collection.JavaConversions.{collectionAsScalaIterable}
 import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
-
 import fr.proline.admin.service.db.DatabaseConnectionContext
-import fr.proline.core.dal.tables.msi.MsiDbScoringTable
-import fr.proline.core.orm.msi.{AdminInformation => MsiAdminInfos, Scoring => MsiScoring }
+import fr.proline.core.dal.tables.msi.{MsiDbScoringTable,MsiDbObjectTreeSchemaColumns}
+import fr.proline.core.orm.msi.{AdminInformation => MsiAdminInfos, Scoring => MsiScoring, ObjectTreeSchema => MsiSchema }
 import fr.proline.util.sql.getTimeAsSQLTimestamp
 
 /**
@@ -36,6 +35,10 @@ class SetupMsiDB( val msiDbContext: DatabaseConnectionContext,
     // Import scoring definitions
     this._importScorings( this.defaults.scorings )
     this.logger.info( "Scoring definitions imported !" )
+    
+    // Import schemata
+    this._importSchemata( this.defaults.schemata )
+    this.logger.info( "Schemata imported !" )
     
     // Commit transaction
     msiTransaction.commit()
@@ -68,6 +71,27 @@ class SetupMsiDB( val msiDbContext: DatabaseConnectionContext,
       msiScoring.setDescription( scoring.getString(scoringCols.DESCRIPTION) )   
       
       msiEM.persist(msiScoring)
+      
+    }
+  
+  }
+  
+  private def _importSchemata( schemata: java.util.List[Config] ) {
+    
+    val otsCols = MsiDbObjectTreeSchemaColumns
+    
+    // Store schemata
+    for( schema <- schemata ) {
+      
+      // Create new scoring
+      val msiSchema = new MsiSchema()
+      msiSchema.setName(schema.getString(otsCols.NAME))
+      msiSchema.setType(schema.getString(otsCols.TYPE))
+      msiSchema.setVersion(schema.getString(otsCols.VERSION))
+      msiSchema.setSchema("")
+      msiSchema.setSerializedProperties(schema.getString(otsCols.SERIALIZED_PROPERTIES))
+      
+      msiEM.persist(msiSchema)
       
     }
   

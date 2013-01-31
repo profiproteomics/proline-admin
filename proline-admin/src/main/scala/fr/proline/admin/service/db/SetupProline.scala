@@ -4,8 +4,8 @@ import java.io.File
 import com.weiglewilczek.slf4s.Logging
 import com.typesafe.config.{Config,ConfigFactory,ConfigList}
 import fr.proline.admin.service.db.setup._
-import fr.proline.core.orm.util.DatabaseManager
-import fr.proline.repository.{IDatabaseConnector,Database,DriverType}
+import fr.proline.core.orm.util.DataStoreConnectorFactory
+import fr.proline.repository.{IDatabaseConnector,ProlineDatabaseType,DriverType}
 import fr.proline.util.resources._
 
 class DatabaseConnectionContext( val dbConnector: IDatabaseConnector ) {
@@ -69,12 +69,12 @@ class ProlineDatabaseContext(
   val lcmsDbContext: DatabaseConnectionContext
   ) {
 
-  def this( dbManager: DatabaseManager,
+  def this( dsConnectorFactory: DataStoreConnectorFactory,
             msiDbConnector: IDatabaseConnector = null,
             lcmsDbConnector: IDatabaseConnector = null ) {
-  this( new DatabaseConnectionContext(dbManager.getUdsDbConnector),
-        new DatabaseConnectionContext(dbManager.getPsDbConnector),
-        new DatabaseConnectionContext(dbManager.getPdiDbConnector),
+  this( new DatabaseConnectionContext(dsConnectorFactory.getUdsDbConnector),
+        new DatabaseConnectionContext(dsConnectorFactory.getPsDbConnector),
+        new DatabaseConnectionContext(dsConnectorFactory.getPdiDbConnector),
         new DatabaseConnectionContext(msiDbConnector),
         new DatabaseConnectionContext(lcmsDbConnector)
       )
@@ -191,7 +191,7 @@ object SetupProline {
 //                       driverConfig.getString("script-directory")
 //      val scriptName = dbConfig.getString("script-name")
       
-      val db = Database.withPersistenceUnitName(dbType + "db_production")
+      val db = ProlineDatabaseType.withPersistenceUnitName(dbType + "db_production")
       val driver = DriverType.valueOf( driverAlias.toUpperCase() ) //fullConnConfig.getString("driver")
       
       // Build the database setup configuration object
@@ -214,23 +214,29 @@ object SetupProline {
   
   def retrieveUdsDBDefaults(): UdsDBDefaults = {
     
-    UdsDBDefaults( ConfigFactory.load(classLoader,"uds_db/resources"),
-                   ConfigFactory.load(classLoader,"uds_db/instruments")
-                                .getConfigList("instruments")
-                                .asInstanceOf[java.util.List[Config]],
-                   ConfigFactory.load(classLoader,"uds_db/peaklist_software")
-                                .getConfigList("peaklist_software")
-                                .asInstanceOf[java.util.List[Config]],
-                   ConfigFactory.load(classLoader,"uds_db/quant_methods")
-                                .getConfigList("quant_methods")
-                                .asInstanceOf[java.util.List[Config]]
-                 )
+    UdsDBDefaults(
+      ConfigFactory.load(classLoader,"uds_db/resources"),
+      ConfigFactory.load(classLoader,"uds_db/instruments")
+                   .getConfigList("instruments")
+                   .asInstanceOf[java.util.List[Config]],
+      ConfigFactory.load(classLoader,"uds_db/peaklist_software")
+                   .getConfigList("peaklist_software")
+                   .asInstanceOf[java.util.List[Config]],
+      ConfigFactory.load(classLoader,"uds_db/quant_methods")
+                   .getConfigList("quant_methods")
+                   .asInstanceOf[java.util.List[Config]]
+   )
   }
   
   def retrieveMsiDBDefaults(): MsiDBDefaults = {
-    MsiDBDefaults( ConfigFactory.load(classLoader,"msi_db/scorings")
-                                .getConfigList("scorings")
-                                .asInstanceOf[java.util.List[Config]] )
+    MsiDBDefaults(
+      ConfigFactory.load(classLoader,"msi_db/scorings")
+                   .getConfigList("scorings")
+                   .asInstanceOf[java.util.List[Config]],
+      ConfigFactory.load(classLoader,"msi_db/schemata")
+                   .getConfigList("schemata")
+                   .asInstanceOf[java.util.List[Config]]
+    )
   }
   
   /** Merge Config objects consecutively.

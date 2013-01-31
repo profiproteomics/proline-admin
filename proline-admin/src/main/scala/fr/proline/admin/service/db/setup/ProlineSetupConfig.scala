@@ -6,7 +6,6 @@ import com.typesafe.config.{Config,ConfigFactory,ConfigList}
 import fr.proline.core.orm.uds.{ExternalDb => UdsExternalDb,
                                 ExternalDbPropertiesSerializer => UdsExtDbPropsSerializer }
 import fr.proline.repository._
-import fr.proline.core.orm.util.DatabaseManager
 
 /** Configuration settings for Proline setup */
 case class ProlineSetupConfig(
@@ -41,7 +40,7 @@ object DatabaseSetupConfig {
 }
 
 /** Configuration settings for database setup */
-case class DatabaseSetupConfig( dbType: Database,
+case class DatabaseSetupConfig( dbType: ProlineDatabaseType,
                                 driverType: DriverType,
                                 dbDirectory: File,
                                 connectionConfig: Config
@@ -233,7 +232,8 @@ case class DatabaseSetupConfig( dbType: Database,
 }
 
 case class MsiDBDefaults(
-             scorings: java.util.List[Config]
+             scorings: java.util.List[Config],
+             schemata: java.util.List[Config]
             )
             
 case class PdiDBDefaults(

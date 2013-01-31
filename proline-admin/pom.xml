@@ -12,7 +12,7 @@
     <maven.compiler.source>1.6</maven.compiler.source>
     <maven.compiler.target>1.6</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>        
-    <core.version>0.0.5-SNAPSHOT</core.version>
+    <core.version>0.0.7-SNAPSHOT</core.version>
   </properties>
 
   <pluginRepositories>
@@ -82,7 +82,7 @@
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-MascotParser</artifactId>
-      <version>0.0.4-SNAPSHOT</version>
+      <version>0.0.6-SNAPSHOT</version>
     </dependency>
 
     <dependency>

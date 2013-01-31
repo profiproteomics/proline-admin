@@ -6,8 +6,7 @@ import fr.profi.jdbc.easy._
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.DatabaseConnectionContext
 import fr.proline.core.orm.uds.{Project => UdsProject,UserAccount => UdsUser}
-
-import fr.proline.core.orm.util.DatabaseManager
+import fr.proline.core.orm.util.DataStoreConnectorFactory
 
 /**
  * @author David Bouyssie
@@ -101,10 +100,10 @@ object CreateProject {
     //udsDbConnector.close()
     
     // Create a new database manager to avoid any conflict
-    val dbManager = DatabaseManager.getInstance()
-    if( dbManager.isInitialized == false ) dbManager.initialize(udsDbConnector)
+    val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
+    if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(udsDbConnector)
     
-    val prolineDbContext = new ProlineDatabaseContext(dbManager)
+    val prolineDbContext = new ProlineDatabaseContext(dsConnectorFactory)
     //val dbManager2 = new DatabaseManagement( udsDbConnector2 )
     
     // Create project databases

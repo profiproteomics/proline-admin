@@ -22,13 +22,13 @@ import fr.proline.core.orm.uds.{Activation => UdsActivation,
                                 EnzymeCleavage => UdsEnzymeCleavage,
                                 ExternalDb => UdsExternalDb,
                                 FragmentationRule => UdsFragmentationRule,
+                                FragmentationSeries => UdsFragmentationSeries,
                                 Instrument => UdsInstrument,
                                 InstrumentConfiguration => UdsInstrumentConfig,
                                 PeaklistSoftware => UdsPeaklistSoft,
                                 QuantitationLabel => UdsQuantLabel,
                                 QuantitationMethod => UdsQuantMethod,
-                                SpectrumTitleParsingRule => UdsSpecTitleParsingRule,
-                                TheoreticalFragment => UdsTheoFragment
+                                SpectrumTitleParsingRule => UdsSpecTitleParsingRule
                                 }
 import fr.proline.module.parser.mascot.{EnzymeDefinition,MascotEnzymeParser,
                                         MascotFragmentation,MascotFragmentationRuleParser}
@@ -76,12 +76,12 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
     val udsActivationByType = this._importActivationTypes()
     this.logger.info( "Activation types imported !" )
     
-    // Import theoretical fragments
-    val udsTheoFragByKey = this._importTheoreticalFragments()
-    this.logger.info( "Theoretical fragments imported !" )
+    // Import fragmentataion series
+    val udsFragSeriesByKey = this._importFragmentationSeries()
+    this.logger.info( "Fragmentation series imported !" )
     
     // Import Mascot fragmentation rules
-    val udsFragRuleByDesc = this._importMascotFragmentationRules( MascotFragmentation.rules, udsTheoFragByKey )
+    val udsFragRuleByDesc = this._importMascotFragmentationRules( MascotFragmentation.rules, udsFragSeriesByKey )
     this.logger.info( "Mascot fragmentation rules imported !" )
     
     // Import Mascot instrument configurations
@@ -176,28 +176,28 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
     activationByType.result
   }
   
-  private def _importTheoreticalFragments(): Map[String,UdsTheoFragment] = {
+  private def _importFragmentationSeries(): Map[String,UdsFragmentationSeries] = {
     
-    val udsTheoFragByKey = Map.newBuilder[String,UdsTheoFragment]
+    val udsFragSeriesByKey = Map.newBuilder[String,UdsFragmentationSeries]
     
     for( ionType <- Fragmentation.defaultIonTypes ) {
       
-      val udsTheoFrag = new UdsTheoFragment()
-      udsTheoFrag.setType(ionType.ionSeries.toString)
+      val udsFragSeries = new UdsFragmentationSeries()
+      udsFragSeries.setName(ionType.ionSeries.toString)
       if( ionType.neutralLoss != None )
-        udsTheoFrag.setNeutralLoss(ionType.neutralLoss.get.toString)
+        udsFragSeries.setNeutralLoss(ionType.neutralLoss.get.toString)
       
-      udsEM.persist( udsTheoFrag )
+      udsEM.persist( udsFragSeries )
       
-      udsTheoFragByKey += ionType.toString -> udsTheoFrag
+      udsFragSeriesByKey += ionType.toString -> udsFragSeries
     }
     
-    udsTheoFragByKey.result
+    udsFragSeriesByKey.result
   }
   
   private def _importMascotFragmentationRules(
                 fragRules: Seq[FragmentationRule],
-                udsTheoFragByKey: Map[String,UdsTheoFragment] ): Map[String,UdsFragmentationRule] = {
+                udsFragSeriesByKey: Map[String,UdsFragmentationSeries] ): Map[String,UdsFragmentationRule] = {
     
     val udsFragRuleByDesc = Map.newBuilder[String,UdsFragmentationRule]
     
@@ -222,18 +222,18 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
             val requiredQualityLevel = fsr.requiredSeriesQualityLevel.toString
             //ionFullName .= '-'.requiredSerie.neutralLoss if defined requiredSerie.neutralLoss
             
-            val udsTheoFrag = udsTheoFragByKey(ionSeriesName)
-            udsFragRule.setRequiredSerieId(udsTheoFrag.getId)
-            udsFragRule.setRequiredSerieQualityLevel(requiredQualityLevel)
+            val udsFragSeries = udsFragSeriesByKey(ionSeriesName)
+            udsFragRule.setRequiredSeriesId(udsFragSeries.getId)
+            udsFragRule.setRequiredSeriesQualityLevel(requiredQualityLevel)
           }
           
           // If fragmentation rule is a fragment ion requirement
           fsr match {
             case fragRequirement: FragmentIonRequirement => {
               val ionType = fragRequirement.ionType.toString
-              val udsTheoFrag = udsTheoFragByKey(ionType)
+              val udsFragSeries = udsFragSeriesByKey(ionType)
               
-              udsFragRule.setTheoreticalFragment(udsTheoFrag)
+              udsFragRule.setFragmentationSeries(udsFragSeries)
               
               if( fragRequirement.fragmentMaxMoz != None )
                 udsFragRule.setFragmentMaxMoz(fragRequirement.fragmentMaxMoz.get)

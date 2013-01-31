@@ -7,7 +7,7 @@ import fr.profi.jdbc.easy.EasyDBC
 import fr.proline.admin.service.db.setup.{DatabaseSetupConfig,ProlineSetupConfig}
 import fr.proline.admin.helper.sql._
 import fr.proline.core.orm.uds.{Project => UdsProject}
-import fr.proline.core.orm.util.DatabaseManager
+import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.ConnectionMode
 import setup.{SetupLcmsDB,SetupMsiDB}
 import fr.proline.repository.DriverType
@@ -212,11 +212,11 @@ object CreateProjectDBs {
     val prolineConf = SetupProline.parseProlineSetupConfig( SetupProline.appConf )
     
     // Instantiate a database manager
-    val dbManager = DatabaseManager.getInstance()
-    if( dbManager.isInitialized == false ) dbManager.initialize(prolineConf.udsDBConfig.toNewConnector)
+    val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
+    if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(prolineConf.udsDBConfig.toNewConnector)
     
     // Instantiate a database context
-    val dbContext = new ProlineDatabaseContext( dbManager )
+    val dbContext = new ProlineDatabaseContext( dsConnectorFactory )
     
     // Create databases
     new CreateProjectDBs( dbContext, prolineConf, projectId ).run()

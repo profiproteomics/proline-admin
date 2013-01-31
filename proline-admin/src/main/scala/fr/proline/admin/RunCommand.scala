@@ -6,7 +6,6 @@ import com.beust.jcommander.{JCommander,MissingCommandException,Parameter,Parame
 import collection.JavaConversions._
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.{DatabaseConnectionContext,ProlineDatabaseContext}
-import fr.proline.core.orm.util.DatabaseManager
 
 object RunCommand extends App with Logging {
   
