@@ -18,9 +18,11 @@ import fr.proline.core.om.model.msi.{ChargeConstraint,
                                      }
 import fr.proline.core.orm.uds.{Activation => UdsActivation,
                                 AdminInformation => UdsAdminInfos,
+                                Aggregation => UdsAggregation,
                                 Enzyme => UdsEnzyme,
                                 EnzymeCleavage => UdsEnzymeCleavage,
                                 ExternalDb => UdsExternalDb,
+                                Fractionation => UdsFractionation,
                                 FragmentationRule => UdsFragmentationRule,
                                 FragmentationSeries => UdsFragmentationSeries,
                                 Instrument => UdsInstrument,
@@ -67,14 +69,17 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
     val mascotFragRuleFilePath = mascotResources.getString("fragmentation_rules_file")    
     val mascotFragRuleIS = pathToStreamOrResourceToStream(mascotFragRuleFilePath,this.getClass())
     
-    // Import enzyme definitions
-    val enzymeDefs = MascotEnzymeParser.getEnzymeDefinitions(mascotEnzymeIS)
-    this._importMascotEnzymeDefinitions( enzymeDefs )
-    this.logger.info( "Enzyme definitions imported !" )
-    
     // Import activation types
     val udsActivationByType = this._importActivationTypes()
     this.logger.info( "Activation types imported !" )
+    
+    // Import fractionation types
+    this._importFractionationTypes()
+    this.logger.info( "Fractionation types imported !" )
+    
+    // Import aggregation child natures 
+    this._importAggregationChildNatures()
+    this.logger.info( "Aggregation child natures imported !" )
     
     // Import fragmentataion series
     val udsFragSeriesByKey = this._importFragmentationSeries()
@@ -83,6 +88,11 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
     // Import Mascot fragmentation rules
     val udsFragRuleByDesc = this._importMascotFragmentationRules( MascotFragmentation.rules, udsFragSeriesByKey )
     this.logger.info( "Mascot fragmentation rules imported !" )
+    
+    // Import enzyme definitions
+    val enzymeDefs = MascotEnzymeParser.getEnzymeDefinitions(mascotEnzymeIS)
+    this._importMascotEnzymeDefinitions( enzymeDefs )
+    this.logger.info( "Enzyme definitions imported !" )
     
     // Import Mascot instrument configurations
     val mascotInstConfigs = MascotFragmentationRuleParser.getInstrumentConfigurations(mascotFragRuleIS)
@@ -131,49 +141,41 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
     this.udsEM.persist( prolineConfig.pdiDBConfig.toUdsExternalDb() )    
   }
   
-  private def _importMascotEnzymeDefinitions( enzymeDefs: Iterable[EnzymeDefinition] ) {
-    
-    // Store enzymes
-    for( enzymeDef <- enzymeDefs ) {
-      
-      val udsEnzyme = new UdsEnzyme()
-      udsEnzyme.setName(enzymeDef.name)
-      udsEnzyme.setIsIndependant( enzymeDef.independent )
-      udsEnzyme.setIsSemiSpecific( enzymeDef.semiSpecific )
-      
-      udsEM.persist(udsEnzyme)
-      
-      // Store enzyme cleavages
-      for( cleavage <- enzymeDef.cleavages) {          
-        val site = if( cleavage.isNterm ) "N-term" else "C-term"          
-        
-        val udsEnzymeCleavage = new UdsEnzymeCleavage()
-        udsEnzymeCleavage.setEnzyme(udsEnzyme)
-        udsEnzymeCleavage.setSite(site)
-        udsEnzymeCleavage.setResidues(cleavage.residues)
-        
-        if( cleavage.restrict != None )
-          udsEnzymeCleavage.setRestrictiveResidues(cleavage.restrict.get)
-          
-        udsEM.persist(udsEnzymeCleavage)
-      }
-    }
-  
-  }
+
   
   private def _importActivationTypes(): Map[String,UdsActivation] = {
     
     val activationByType = Map.newBuilder[String,UdsActivation]
     
-    for( activationType <- fr.proline.core.om.model.msi.Activation.values ) {
+    for( activationType <- UdsActivation.ActivationType.values ) {
       val udsActivation = new UdsActivation()
-      udsActivation.setType(activationType.toString)
+      udsActivation.setType(activationType)
       udsEM.persist(udsActivation)
       
       activationByType += activationType.toString -> udsActivation
     }
     
     activationByType.result
+  }
+  
+  private def _importFractionationTypes() {
+    
+    for( fractionationType <- UdsFractionation.FractionationType.values ) {
+      val udsFractionation = new UdsFractionation()
+      udsFractionation.setType(fractionationType)
+      udsEM.persist(udsFractionation)
+    }
+    
+  }
+  
+  private def _importAggregationChildNatures() {
+    
+    for( aggregationChildNature <- UdsAggregation.ChildNature.values ) {
+      val udsAggregation = new UdsAggregation()
+      udsAggregation.setChildNature(aggregationChildNature)
+      udsEM.persist(udsAggregation)
+    }
+    
   }
   
   private def _importFragmentationSeries(): Map[String,UdsFragmentationSeries] = {
@@ -252,6 +254,36 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
     }
     
     udsFragRuleByDesc.result
+  }
+  
+  private def _importMascotEnzymeDefinitions( enzymeDefs: Iterable[EnzymeDefinition] ) {
+    
+    // Store enzymes
+    for( enzymeDef <- enzymeDefs ) {
+      
+      val udsEnzyme = new UdsEnzyme()
+      udsEnzyme.setName(enzymeDef.name)
+      udsEnzyme.setIsIndependant( enzymeDef.independent )
+      udsEnzyme.setIsSemiSpecific( enzymeDef.semiSpecific )
+      
+      udsEM.persist(udsEnzyme)
+      
+      // Store enzyme cleavages
+      for( cleavage <- enzymeDef.cleavages) {          
+        val site = if( cleavage.isNterm ) "N-term" else "C-term"          
+        
+        val udsEnzymeCleavage = new UdsEnzymeCleavage()
+        udsEnzymeCleavage.setEnzyme(udsEnzyme)
+        udsEnzymeCleavage.setSite(site)
+        udsEnzymeCleavage.setResidues(cleavage.residues)
+        
+        if( cleavage.restrict != None )
+          udsEnzymeCleavage.setRestrictiveResidues(cleavage.restrict.get)
+          
+        udsEM.persist(udsEnzymeCleavage)
+      }
+    }
+  
   }
   
   private def _importMascotInstrumentConfigs( instConfigs: Seq[InstrumentConfig],
