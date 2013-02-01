@@ -156,7 +156,7 @@ class CreateProjectDBs( dbContext: ProlineDatabaseContext, config: ProlineSetupC
     }
     
     // Link external db to the project
-    udsEzDBC.execute( projectDbMapInsertQuery, extDbId, projectId )
+    udsEzDBC.execute( projectDbMapInsertQuery, projectId, extDbId )
     
     // Commit the transaction
     udsEzDBC.commitTransaction()
