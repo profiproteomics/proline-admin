@@ -10,7 +10,7 @@ import fr.proline.util.resources._
 
 class DatabaseConnectionContext( val dbConnector: IDatabaseConnector ) {
   
-  import fr.proline.core.dal.SQLQueryHelper
+  import fr.proline.core.dal.ProlineEzDBC
   
   // Entity Manager
   private var _emOpened: Boolean = false
@@ -47,7 +47,7 @@ class DatabaseConnectionContext( val dbConnector: IDatabaseConnector ) {
     dbConnector.getDataSource().getConnection()
   }
   
-  lazy val ezDBC = new SQLQueryHelper(connection,dbConnector.getDriverType).ezDBC
+  lazy val ezDBC = ProlineEzDBC(connection,dbConnector.getDriverType)
   
   def closeConnection() = if( _connectionOpened && connection.isClosed() == false ) {
     connection.close
