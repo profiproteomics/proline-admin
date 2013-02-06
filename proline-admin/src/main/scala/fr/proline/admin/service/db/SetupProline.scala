@@ -106,13 +106,13 @@ class SetupProline( config: ProlineSetupConfig ) extends Logging {
     
     // Set Up the UDSdb
     this.logger.info("setting up the 'User Data Set' database...")
-    val udsDbContext = new DatabaseConnectionContext( config.udsDBConfig.toNewConnector )
+    val udsDbContext = new DatabaseConnectionContext( config.udsDBConfig.connector )
     new SetupUdsDB( udsDbContext, config.udsDBConfig, config ).run()
     udsDbContext.closeAll()
     
     // Set Up the PSdb
     this.logger.info("setting up the 'Peptide Sequence' database...")
-    val psDbContext = new DatabaseConnectionContext( config.psDBConfig.toNewConnector )
+    val psDbContext = new DatabaseConnectionContext( config.psDBConfig.connector )
     new SetupPsDB( psDbContext, config.psDBConfig ).run()
     psDbContext.closeAll()
     
@@ -125,7 +125,7 @@ class SetupProline( config: ProlineSetupConfig ) extends Logging {
     
     // Set Up the PDIdb
     this.logger.info("setting up the 'Protein Database Index' database...")
-    val pdiDbContext = new DatabaseConnectionContext( config.pdiDBConfig.toNewConnector )
+    val pdiDbContext = new DatabaseConnectionContext( config.pdiDBConfig.connector )
     new SetupPdiDB( pdiDbContext, config.pdiDBConfig, config ).run()
     pdiDbContext.closeAll()
     
@@ -158,7 +158,9 @@ object SetupProline {
   
   val appConf = ConfigFactory.load(classLoader,"application")
   
-  def parseProlineSetupConfig( config: Config ): ProlineSetupConfig = {
+  lazy val config = parseProlineSetupConfig(appConf)
+  
+  private def parseProlineSetupConfig( config: Config ): ProlineSetupConfig = {
     
     // Load proline main settings
     val prolineConfig = config.getConfig("proline-config")

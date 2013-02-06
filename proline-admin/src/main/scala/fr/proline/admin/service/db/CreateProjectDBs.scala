@@ -209,11 +209,11 @@ object CreateProjectDBs {
   def apply( projectId: Int ) {
     
     // Retrieve Proline configuration
-    val prolineConf = SetupProline.parseProlineSetupConfig( SetupProline.appConf )
+    val prolineConf = SetupProline.config
     
     // Instantiate a database manager
     val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
-    if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(prolineConf.udsDBConfig.toNewConnector)
+    if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(prolineConf.udsDBConfig.connector)
     
     // Instantiate a database context
     val dbContext = new ProlineDatabaseContext( dsConnectorFactory )

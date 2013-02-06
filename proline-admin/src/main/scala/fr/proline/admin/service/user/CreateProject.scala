@@ -79,11 +79,11 @@ object CreateProject {
     import fr.proline.admin.service.db.{CreateProjectDBs,DatabaseConnectionContext,ProlineDatabaseContext}
     
     // Retrieve Proline configuration
-    val prolineConf = SetupProline.parseProlineSetupConfig( SetupProline.appConf )
+    val prolineConf = SetupProline.config
     
     // Instantiate a database manager
     val udsDBConfig = prolineConf.udsDBConfig
-    val udsDbConnector = udsDBConfig.toNewConnector
+    val udsDbConnector = udsDBConfig.connector
     val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
     
     // Create project
@@ -97,21 +97,18 @@ object CreateProject {
     
     // Close the database resources
     udsDbContext.closeAll()
-    //udsDbConnector.close()
     
     // Create a new database manager to avoid any conflict
     val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
     if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(udsDbConnector)
     
     val prolineDbContext = new ProlineDatabaseContext(dsConnectorFactory)
-    //val dbManager2 = new DatabaseManagement( udsDbConnector2 )
     
     // Create project databases
     new CreateProjectDBs( prolineDbContext, prolineConf, projectCreator.projectId ).run()          
     
     // Close the database manager
     prolineDbContext.closeAll()
-    //dbManager.closeAll()
     
     projectCreator.projectId
     

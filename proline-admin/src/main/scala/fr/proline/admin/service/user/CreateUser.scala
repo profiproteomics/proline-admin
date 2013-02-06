@@ -40,7 +40,7 @@ class CreateUser( udsDbContext: DatabaseConnectionContext,
     this.logger.info("user with id='"+ userId +"' has been created !")
     
     // Close entity manager
-    udsEM.close()
+    udsDbContext.closeAll
   }
   
 }
@@ -50,11 +50,11 @@ object CreateUser {
   def apply( login: String ): Int = {
     
     // Retrieve Proline configuration
-    val prolineConf = SetupProline.parseProlineSetupConfig( SetupProline.appConf )
+    val prolineConf = SetupProline.config
     
     // Instantiate a database manager
     val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
-    if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(prolineConf.udsDBConfig.toNewConnector)
+    if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(prolineConf.udsDBConfig.connector)
     
     val udsDbContext = new DatabaseConnectionContext(dsConnectorFactory.getUdsDbConnector)
     
