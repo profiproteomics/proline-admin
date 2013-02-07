@@ -42,9 +42,9 @@ class SetupProlineTest extends Logging {
     var classLoader = SetupProline.getClass().getClassLoader()
     val appConf = inMemoryConfig.withFallback(ConfigFactory.load(classLoader, "application"))
 
-    val prolineSetupConfig = SetupProline.config
-
-    new SetupProline(prolineSetupConfig).run()
+    SetupProline.setConfigParams(appConf)
+    
+    SetupProline()
   }
 
 }

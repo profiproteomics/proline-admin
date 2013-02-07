@@ -156,9 +156,28 @@ object SetupProline {
   var classLoader = SetupProline.getClass().getClassLoader()
   //ClassLoadergetSystemClassLoader()
   
-  val appConf = ConfigFactory.load(classLoader,"application")
+  private var _appConfParams: Config = null
   
-  lazy val config = parseProlineSetupConfig(appConf)
+  protected def getConfigParams(): Config = {
+    
+    // Parse config if it not already done
+    if(_appConfParams == null) {
+      this.synchronized {
+        this._appConfParams = ConfigFactory.load(classLoader,"application")
+      }
+    }
+      
+    this._appConfParams
+  }
+  
+  def setConfigParams(newConf: Config) {
+    this.synchronized {
+      this._appConfParams = newConf
+    }
+  }
+  
+  // Parse config if it not already done
+  lazy val config = this.parseProlineSetupConfig(this.getConfigParams)
   
   private def parseProlineSetupConfig( config: Config ): ProlineSetupConfig = {
     
@@ -256,7 +275,7 @@ object SetupProline {
   
   /** Instantiates a SetupProline object and call the run() method. */
   def apply() {
-    new SetupProline( parseProlineSetupConfig(appConf) ).run()    
+    new SetupProline( this.config ).run()    
   }
   
 }
