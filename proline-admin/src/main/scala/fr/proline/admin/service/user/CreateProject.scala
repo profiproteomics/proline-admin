@@ -96,19 +96,19 @@ object CreateProject {
     projectCreator.run()
     
     // Close the database resources
-    udsDbContext.closeAll()
+    //udsDbContext.closeAll()
     
     // Create a new database manager to avoid any conflict
-    val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
-    if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(udsDbConnector)
+    //val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
+    //if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(udsDbConnector)
     
-    val prolineDbContext = new ProlineDatabaseContext(dsConnectorFactory)
+    //val prolineDbContext = new ProlineDatabaseContext(dsConnectorFactory)
     
     // Create project databases
-    new CreateProjectDBs( prolineDbContext, prolineConf, projectCreator.projectId ).run()          
+    new CreateProjectDBs( udsDbContext, prolineConf, projectCreator.projectId ).run()          
     
     // Close the database manager
-    prolineDbContext.closeAll()
+    udsDbContext.closeAll()
     
     projectCreator.projectId
     

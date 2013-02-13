@@ -16,7 +16,7 @@ import fr.proline.repository.DriverType
  * @author David Bouyssie
  *
  */
-class CreateProjectDBs( dbContext: ProlineDatabaseContext, config: ProlineSetupConfig, projectId: Int ) extends Logging {
+class CreateProjectDBs( udsDbContext: DatabaseConnectionContext, config: ProlineSetupConfig, projectId: Int ) extends Logging {
   
   /*def run() {
     
@@ -76,7 +76,7 @@ class CreateProjectDBs( dbContext: ProlineDatabaseContext, config: ProlineSetupC
     
     // Retrieve UDSdb connection
     //val dbManager = dbContext.dbManager
-    val udsDbContext = dbContext.udsDbContext
+    //val udsDbContext = dbContext.udsDbContext
     val wasUdsDbConnectionOpened = udsDbContext.isConnectionOpened
     val udsEzDBC = udsDbContext.ezDBC
     
@@ -212,14 +212,16 @@ object CreateProjectDBs {
     val prolineConf = SetupProline.config
     
     // Instantiate a database manager
-    val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
-    if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(prolineConf.udsDBConfig.connector)
+    //val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
+    //if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(prolineConf.udsDBConfig.connector)
     
     // Instantiate a database context
-    val dbContext = new ProlineDatabaseContext( dsConnectorFactory )
+    //val dbContext = new ProlineDatabaseContext( dsConnectorFactory )
+    
+    val udsDbContext = new DatabaseConnectionContext(prolineConf.udsDBConfig.connector)
     
     // Create databases
-    new CreateProjectDBs( dbContext, prolineConf, projectId ).run()
+    new CreateProjectDBs( udsDbContext, prolineConf, projectId ).run()
     
     // Close the database manager
     //dbManager.closeAll()
