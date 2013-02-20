@@ -184,11 +184,11 @@ class CreateProjectDBs( udsDbContext: DatabaseConnectionContext, config: Proline
         val newDbConfig = dbConfig.copy()
         newDbConfig.dbName = dbConfig.dbName + "_project_" + this.projectId
         
-        if( dbConfig.driverType == DriverType.POSTGRESQL ) {
+        if( (dbConfig.driverType == DriverType.POSTGRESQL) || (dbConfig.driverType == DriverType.H2)) {
           //val pgDbConnector = newDbConfig.toNewConnector()
           //createPgDatabase( pgDbConnector, newDbConfig.dbName, Some(this.logger) )
         } else {
-          throw new Exception("NYI")
+          throw new Exception("NYI : Host db creation is supported only for Postgresql or H2")
         }
         
         newDbConfig
