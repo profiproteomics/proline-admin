@@ -60,17 +60,22 @@
 
     <dependency>
       <groupId>fr.proline</groupId>
+      <artifactId>Proline-Databases</artifactId>
+      <version>${core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>fr.proline</groupId>
+      <artifactId>Proline-ORM</artifactId>
+      <version>${core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>fr.proline</groupId>
       <artifactId>Proline-OM</artifactId>
       <version>${core.version}</version>
     </dependency>
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>Proline-DAL</artifactId>
-      <version>${core.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>fr.proline</groupId>
-      <artifactId>Proline-OMP</artifactId>
       <version>${core.version}</version>
     </dependency>
 
@@ -86,7 +91,13 @@
       <version>0.0.6-SNAPSHOT</version>
     </dependency>
 
-     <!-- Tests -->
+    <!-- Datbase drivers -->
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>
+
+    <!-- Tests -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
