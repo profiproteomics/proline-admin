@@ -27,13 +27,15 @@ trait ISetupDB extends Logging {
 
   /** Execute the setup of the database. */
   def run() {
-    if (_executed)
-      throw new IllegalStateException("the setup has been already executed")
+
+    if (_executed) {
+      throw new IllegalStateException("The setup has been already executed")
+    }
 
     val currentThread = Thread.currentThread
 
     if (!currentThread.isInstanceOf[ThreadLogger]) {
-      currentThread.setUncaughtExceptionHandler(new ThreadLogger("fr.proline.admin.service.db.setup.ISetupDB"))
+      currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.name))
     }
 
     try {

@@ -43,8 +43,7 @@ object RunCommand extends App with Logging {
   }
 
   override def main(args: Array[String]): Unit = {
-
-    Thread.currentThread.setUncaughtExceptionHandler(new ThreadLogger("fr.proline.admin.RunCommand"))
+    Thread.currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.name))
 
     // Instantiate a JCommander object and affect some commands
     val jCmd = new JCommander()
