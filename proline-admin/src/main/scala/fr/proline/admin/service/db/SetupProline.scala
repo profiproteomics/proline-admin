@@ -158,7 +158,7 @@ object SetupProline {
   
   private var _appConfParams: Config = null
   
-  protected def getConfigParams(): Config = {
+  def getConfigParams(): Config = {
     
     // Parse config if it not already done
     if(_appConfParams == null) {
