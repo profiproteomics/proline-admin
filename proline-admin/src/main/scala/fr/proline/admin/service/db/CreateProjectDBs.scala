@@ -4,6 +4,7 @@ import java.io.File
 import javax.persistence.EntityManager
 import com.weiglewilczek.slf4s.Logging
 import fr.profi.jdbc.easy.EasyDBC
+import fr.proline.admin.service.ICommandWork
 import fr.proline.admin.service.db.setup.{DatabaseSetupConfig,ProlineSetupConfig}
 import fr.proline.admin.helper.sql._
 import fr.proline.core.orm.uds.{Project => UdsProject}
@@ -12,11 +13,12 @@ import fr.proline.repository.ConnectionMode
 import setup.{SetupLcmsDB,SetupMsiDB}
 import fr.proline.repository.DriverType
 
+
 /**
  * @author David Bouyssie
  *
  */
-class CreateProjectDBs( udsDbContext: DatabaseConnectionContext, config: ProlineSetupConfig, projectId: Int ) extends Logging {
+class CreateProjectDBs( udsDbContext: DatabaseConnectionContext, config: ProlineSetupConfig, projectId: Int ) extends ICommandWork with Logging {
   
   /*def run() {
     
@@ -72,7 +74,7 @@ class CreateProjectDBs( udsDbContext: DatabaseConnectionContext, config: Proline
     
   }*/
   
-  def run() {
+  def doWork() {
     
     // Retrieve UDSdb connection
     //val dbManager = dbContext.dbManager
@@ -221,7 +223,7 @@ object CreateProjectDBs {
     val udsDbContext = new DatabaseConnectionContext(prolineConf.udsDBConfig.connector)
     
     // Create databases
-    new CreateProjectDBs( udsDbContext, prolineConf, projectId ).run()
+    new CreateProjectDBs( udsDbContext, prolineConf, projectId ).doWork()
     
     // Close the database manager
     //dbManager.closeAll()

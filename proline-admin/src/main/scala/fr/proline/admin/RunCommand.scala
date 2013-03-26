@@ -41,6 +41,16 @@ object RunCommand extends App with Logging {
     @Parameter(names = Array("--login", "-l"), description = "The user account login", required = true)
     var userLogin: String = ""
   }
+  
+  @Parameters(commandNames = Array("dump_msi_db"), commandDescription = "Dump MSIdb content into an XML file", separators = "=")
+  private object DumpMsiDbCommand extends JCommandReflection {
+    
+    @Parameter(names = Array("--project_id", "-p"), description = "The id of the project corresponding to this MSIdb", required = true)
+    var projectId: Int = 0
+    
+    @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
+    var filePath: String = ""
+  }
 
   override def main(args: Array[String]): Unit = {
     Thread.currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.name))
@@ -50,6 +60,7 @@ object RunCommand extends App with Logging {
     jCmd.addCommand(SetupProlineCommand)
     jCmd.addCommand(CreateProjectCommand)
     jCmd.addCommand(CreateUserCommand)
+    jCmd.addCommand(DumpMsiDbCommand)
 
     // Try to parse the command line
     var parsedCommand = ""
@@ -81,6 +92,10 @@ object RunCommand extends App with Logging {
         case CreateUserCommand.Parameters.firstName => {
           import fr.proline.admin.service.user.CreateUser
           CreateUser(CreateUserCommand.userLogin)
+        }        
+        case DumpMsiDbCommand.Parameters.firstName => {
+          import fr.proline.admin.service.db.maintenance.DumpDatabase          
+          DumpDatabase(DumpMsiDbCommand.projectId,DumpMsiDbCommand.filePath)
         }
         case _ => {
           throw new MissingCommandException("unknown command '" + jCmd.getParsedCommand() + "'")

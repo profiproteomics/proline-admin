@@ -1,9 +1,9 @@
 package fr.proline.admin.service.user
 
 import com.weiglewilczek.slf4s.Logging
-
 import fr.profi.jdbc.easy.{ date2Formattable, int2Formattable, string2Formattable }
 import fr.proline.admin.service.db.{ CreateProjectDBs, DatabaseConnectionContext, SetupProline }
+import fr.proline.admin.service.ICommandWork
 
 /**
  * @author David Bouyssie
@@ -12,11 +12,11 @@ import fr.proline.admin.service.db.{ CreateProjectDBs, DatabaseConnectionContext
 class CreateProject(udsDbContext: DatabaseConnectionContext,
                     projectName: String,
                     projectDescription: String,
-                    ownerId: Int) extends Logging {
+                    ownerId: Int) extends ICommandWork with Logging {
 
   var projectId = 0
 
-  def run() {
+  def doWork() {
 
     // Get EasyDBC object    
     val udsEzDBC = udsDbContext.ezDBC
@@ -94,7 +94,7 @@ object CreateProject extends Logging {
         description,
         ownerId
       )
-      projectCreator.run()
+      projectCreator.doWork()
 
       // Close the database resources
       //udsDbContext.closeAll()
@@ -106,7 +106,7 @@ object CreateProject extends Logging {
       //val prolineDbContext = new ProlineDatabaseContext(dsConnectorFactory)
 
       // Create project databases
-      new CreateProjectDBs(udsDbContext, prolineConf, projectCreator.projectId).run()
+      new CreateProjectDBs(udsDbContext, prolineConf, projectCreator.projectId).doWork()
 
       // Close the database manager
 
