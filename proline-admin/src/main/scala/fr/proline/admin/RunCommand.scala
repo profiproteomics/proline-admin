@@ -51,6 +51,18 @@ object RunCommand extends App with Logging {
     @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
     var filePath: String = ""
   }
+  
+  @Parameters(commandNames = Array("dump_ps_db"), commandDescription = "Dump PSdb content into an XML file", separators = "=")
+  private object DumpPsDbCommand extends JCommandReflection {    
+    @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
+    var filePath: String = ""
+  }
+  
+  @Parameters(commandNames = Array("dump_uds_db"), commandDescription = "Dump PSdb content into an XML file", separators = "=")
+  private object DumpUdsDbCommand extends JCommandReflection {    
+    @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
+    var filePath: String = ""
+  }
 
   override def main(args: Array[String]): Unit = {
     Thread.currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.name))
@@ -61,6 +73,8 @@ object RunCommand extends App with Logging {
     jCmd.addCommand(CreateProjectCommand)
     jCmd.addCommand(CreateUserCommand)
     jCmd.addCommand(DumpMsiDbCommand)
+    jCmd.addCommand(DumpPsDbCommand)
+    jCmd.addCommand(DumpUdsDbCommand)
 
     // Try to parse the command line
     var parsedCommand = ""
@@ -94,8 +108,16 @@ object RunCommand extends App with Logging {
           CreateUser(CreateUserCommand.userLogin)
         }        
         case DumpMsiDbCommand.Parameters.firstName => {
-          import fr.proline.admin.service.db.maintenance.DumpDatabase          
-          DumpDatabase(DumpMsiDbCommand.projectId,DumpMsiDbCommand.filePath)
+          import fr.proline.admin.service.db.maintenance.DatabaseDumper
+          DatabaseDumper.dumpMsiDb(DumpMsiDbCommand.projectId,DumpMsiDbCommand.filePath)
+        }
+        case DumpPsDbCommand.Parameters.firstName => {
+          import fr.proline.admin.service.db.maintenance.DatabaseDumper
+          DatabaseDumper.dumpPsDb(DumpPsDbCommand.filePath)
+        }
+        case DumpUdsDbCommand.Parameters.firstName => {
+          import fr.proline.admin.service.db.maintenance.DatabaseDumper
+          DatabaseDumper.dumpUdsDb(DumpUdsDbCommand.filePath)
         }
         case _ => {
           throw new MissingCommandException("unknown command '" + jCmd.getParsedCommand() + "'")
