@@ -50,6 +50,12 @@
       <artifactId>jcommander</artifactId>
       <version>1.30</version>
     </dependency>
+    
+    <!-- Database dumps -->
+    <dependency>
+      <groupId>org.dbunit</groupId>
+      <artifactId>dbunit</artifactId>
+    </dependency>
 
     <!-- Proline -->
     <dependency>
