@@ -5,7 +5,7 @@
   <parent>
     <artifactId>ProFI-Pom</artifactId>
     <groupId>fr.proline</groupId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>Proline-Admin</artifactId>
@@ -50,7 +50,7 @@
       <artifactId>jcommander</artifactId>
       <version>1.30</version>
     </dependency>
-    
+
     <!-- Database dumps -->
     <dependency>
       <groupId>org.dbunit</groupId>
