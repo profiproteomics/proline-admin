@@ -216,7 +216,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>2.4.1</version>
+        <!-- Version inherited from ProFI-Pom -->
         <executions>
           <execution>
             <id>copy-config</id>
@@ -307,7 +307,7 @@
 
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.4</version>
+        <!-- Version inherited from ProFI-Pom -->
         <configuration>
           <descriptors>
             <descriptor>src/main/assembly/assembly.xml</descriptor>
