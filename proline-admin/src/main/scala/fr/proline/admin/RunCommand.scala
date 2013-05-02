@@ -7,6 +7,7 @@ import collection.JavaConversions._
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.{ DatabaseConnectionContext, ProlineDatabaseContext }
 import fr.proline.util.ThreadLogger
+import fr.proline.core.orm.util.DataStoreConnectorFactory
 
 object RunCommand extends App with Logging {
 
@@ -63,6 +64,18 @@ object RunCommand extends App with Logging {
     @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
     var filePath: String = ""
   }
+  
+  var hasDsConnectorFactory = false
+  lazy val dsConnectorFactory: DataStoreConnectorFactory = {
+    
+    // Instantiate a database manager
+    val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
+    if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(SetupProline.config.udsDBConfig.toNewConnector)
+    
+    hasDsConnectorFactory = true
+    
+    dsConnectorFactory
+  }
 
   override def main(args: Array[String]): Unit = {
     Thread.currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.name))
@@ -106,18 +119,19 @@ object RunCommand extends App with Logging {
         case CreateUserCommand.Parameters.firstName => {
           import fr.proline.admin.service.user.CreateUser
           CreateUser(CreateUserCommand.userLogin)
-        }        
+        }
         case DumpMsiDbCommand.Parameters.firstName => {
-          import fr.proline.admin.service.db.maintenance.DatabaseDumper
-          DatabaseDumper.dumpMsiDb(DumpMsiDbCommand.projectId,DumpMsiDbCommand.filePath)
+          import fr.proline.admin.service.db.maintenance.DumpDatabase
+          val msiDbConnector = dsConnectorFactory.getMsiDbConnector(DumpMsiDbCommand.projectId)
+          DumpDatabase(msiDbConnector,DumpMsiDbCommand.filePath)
         }
         case DumpPsDbCommand.Parameters.firstName => {
-          import fr.proline.admin.service.db.maintenance.DatabaseDumper
-          DatabaseDumper.dumpPsDb(DumpPsDbCommand.filePath)
+          import fr.proline.admin.service.db.maintenance.DumpDatabase
+          DumpDatabase(dsConnectorFactory.getPsDbConnector,DumpPsDbCommand.filePath)
         }
         case DumpUdsDbCommand.Parameters.firstName => {
-          import fr.proline.admin.service.db.maintenance.DatabaseDumper
-          DatabaseDumper.dumpUdsDb(DumpUdsDbCommand.filePath)
+          import fr.proline.admin.service.db.maintenance.DumpDatabase
+          DumpDatabase(dsConnectorFactory.getUdsDbConnector,DumpUdsDbCommand.filePath)
         }
         case _ => {
           throw new MissingCommandException("unknown command '" + jCmd.getParsedCommand() + "'")
@@ -137,14 +151,11 @@ object RunCommand extends App with Logging {
         logger.error("Execution of command '" + parsedCommand + "' failed", ex)
       }
 
+    } finally {
+      if( hasDsConnectorFactory ) dsConnectorFactory.closeAll()
     }
 
   }
 
-  /*def createProject( projectName: String,
-                     projectDescription: String,
-                     ownerId: Int ) {
-    
 
-  }*/
 }

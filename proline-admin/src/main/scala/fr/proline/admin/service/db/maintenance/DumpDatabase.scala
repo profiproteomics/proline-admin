@@ -34,25 +34,10 @@ class DumpDatabase( dbConnector: IDatabaseConnector, outputFilePath: String ) ex
 
 }
 
-object DatabaseDumper {
+object DumpDatabase {
   
-  // Retrieve Proline configuration
-  val prolineConf = SetupProline.config
-  
-  // Instantiate a database manager
-  val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
-  if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(prolineConf.udsDBConfig.connector)
-  
-  def dumpMsiDb( projectId: Int, filePath: String ): Unit = {
-    new DumpDatabase(dsConnectorFactory.getMsiDbConnector(projectId),filePath).doWork()
-  }
-  
-  def dumpPsDb( filePath: String ): Unit = {
-    new DumpDatabase(dsConnectorFactory.getPsDbConnector(),filePath).doWork()    
-  }
-  
-  def dumpUdsDb( filePath: String ): Unit = {
-    new DumpDatabase(dsConnectorFactory.getUdsDbConnector(),filePath).doWork()    
+  def apply( dbConnector: IDatabaseConnector, filePath: String ): Unit = {
+    new DumpDatabase(dbConnector,filePath).doWork()
   }
 
 }

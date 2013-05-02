@@ -106,40 +106,27 @@ class SetupProline( config: ProlineSetupConfig ) extends Logging {
     
     // Set Up the UDSdb
     this.logger.info("setting up the 'User Data Set' database...")
-    val udsDbContext = new DatabaseConnectionContext( config.udsDBConfig.connector )
+    val udsDbConnector = config.udsDBConfig.toNewConnector()
+    val udsDbContext = new DatabaseConnectionContext( udsDbConnector )
     new SetupUdsDB( udsDbContext, config.udsDBConfig, config ).run()
     udsDbContext.closeAll()
+    udsDbConnector.close()
     
     // Set Up the PSdb
     this.logger.info("setting up the 'Peptide Sequence' database...")
-    val psDbContext = new DatabaseConnectionContext( config.psDBConfig.connector )
+    val psDbConnector = config.psDBConfig.toNewConnector()
+    val psDbContext = new DatabaseConnectionContext( psDbConnector )
     new SetupPsDB( psDbContext, config.psDBConfig ).run()
     psDbContext.closeAll()
-    
-    // Close PSdb connections
-    // TODO: add this to the db manager closeAll method ?
-    /*if( dbManager.psEMF.isOpen ) {
-      dbManager.psEMF.close()
-      dbManager.psDBConnector.closeAll()
-    }*/
+    psDbConnector.close()
     
     // Set Up the PDIdb
     this.logger.info("setting up the 'Protein Database Index' database...")
-    val pdiDbContext = new DatabaseConnectionContext( config.pdiDBConfig.connector )
+    val pdiDbConnector = config.pdiDBConfig.toNewConnector()
+    val pdiDbContext = new DatabaseConnectionContext( pdiDbConnector )
     new SetupPdiDB( pdiDbContext, config.pdiDBConfig, config ).run()
     pdiDbContext.closeAll()
-    
-    // Close PDIdb connections
-    // TODO: add this to the db manager closeAll method ?
-    /*if( dbManager.pdiEMF.isOpen ) {
-      dbManager.pdiEMF.close()
-      dbManager.pdiDBConnector.closeAll()
-    }*/
-    
-    // Release all connections and resources
-    pdiDbContext.closeAll()
-    
-    // TODO: close connectors ?
+    pdiDbConnector.close()
     
     this.logger.info("Proline has been sucessfuly set up !")
     

@@ -108,14 +108,18 @@ class CreateProjectDBs( udsDbContext: DatabaseConnectionContext, config: Proline
     if( wasUdsDbConnectionOpened == false ) udsDbContext.closeConnection()
     
     // Create MSI database
-    val msiDbContext = new DatabaseConnectionContext( msiDBConfig.connector )
+    val msiDbConnector = msiDBConfig.toNewConnector
+    val msiDbContext = new DatabaseConnectionContext( msiDbConnector )
     new SetupMsiDB( msiDbContext, msiDBConfig, config.msiDBDefaults ).run()
     msiDbContext.closeAll()
+    msiDbConnector.close()
     
     // Create LCMS database
-    val lcmsDbContext = new DatabaseConnectionContext( lcmsDBConfig.connector )
+    val lcmsDbConnector = lcmsDBConfig.toNewConnector
+    val lcmsDbContext = new DatabaseConnectionContext( lcmsDbConnector )
     new SetupLcmsDB( lcmsDbContext, lcmsDBConfig ).run()
     lcmsDbContext.closeAll()
+    lcmsDbConnector.close()
     
   }
   
@@ -220,13 +224,14 @@ object CreateProjectDBs {
     // Instantiate a database context
     //val dbContext = new ProlineDatabaseContext( dsConnectorFactory )
     
-    val udsDbContext = new DatabaseConnectionContext(prolineConf.udsDBConfig.connector)
+    val udsDbConnector = prolineConf.udsDBConfig.toNewConnector()
+    val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
     
     // Create databases
     new CreateProjectDBs( udsDbContext, prolineConf, projectId ).doWork()
     
-    // Close the database manager
-    //dbManager.closeAll()
+    // Close the database connector
+    udsDbConnector.close()
     
   }
   

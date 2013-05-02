@@ -80,7 +80,7 @@ object CreateProject extends Logging {
 
     // Instantiate a database manager
     val udsDBConfig = prolineConf.udsDBConfig
-    val udsDbConnector = udsDBConfig.connector
+    val udsDbConnector = udsDBConfig.toNewConnector
     val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
 
     var projectCreator: CreateProject = null
@@ -115,6 +115,7 @@ object CreateProject extends Logging {
 
       try {
         udsDbContext.closeAll()
+        udsDbConnector.close()
       } catch {
         case exClose: Exception => logger.error("Error closing UDS Db Context", exClose)
       }

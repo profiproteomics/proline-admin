@@ -30,7 +30,7 @@ package object sql {
 
   def createPgDatabase(dbConfig: DatabaseSetupConfig, logger: Option[Logger] = None) {
 
-    val pgDbConnector = dbConfig.connector
+    val pgDbConnector = dbConfig.toNewConnector
     
     // Create database connection and statement
     val pgDbConn = {
@@ -69,6 +69,7 @@ package object sql {
     // Close database connection and statement
     stmt.close()
     pgDbConn.close()
+    pgDbConnector.close()
   }
 
   private def _checkDbExists(stmt: java.sql.Statement, dbName: String): Boolean = {

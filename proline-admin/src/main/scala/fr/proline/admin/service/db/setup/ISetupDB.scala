@@ -56,8 +56,6 @@ trait ISetupDB extends Logging {
 
   protected def initSchema(): Boolean = {
 
-    val dbConnector = dbConfig.connector
-
     // Create database if driver type is PostgreSQL
     if (dbConfig.driverType == DriverType.POSTGRESQL) {
       createPgDatabase(dbConfig, Some(this.logger))
@@ -67,68 +65,15 @@ trait ISetupDB extends Logging {
     //    dbConfig.schemaVersion = DatabaseUpgrader.upgradeDatabase(dbConnector);    
     //    if ((dbConfig.schemaVersion == null) || (dbConfig.schemaVersion.isEmpty()) || dbConfig.schemaVersion.equals("no.version")) false else true
     dbConfig.schemaVersion = "0.1"
-    if (DatabaseUpgrader.upgradeDatabase(dbConnector) > 0) true else false
-
-    /*    
-    // If driver type is SQLite (flyway doesn't support SQLite at the moment)
-    if( dbConfig.driverType == DriverType.SQLITE ) {
+    
+    val dbConnector = dbConfig.toNewConnector
       
-      val scriptPath = dbConfig.scriptDirectory + "/" + dbConfig.scriptName
-      this.logger.info( "executing SQL script '"+ scriptPath +"'")
-      
-      val scriptIS = pathToStreamOrResourceToStream(scriptPath,classOf[IDatabaseConnector])
-      createSQLiteDB(connector,scriptIS)
-      
-    } else {
-      
-      // Create database if driver type is PostgreSQL
-      if( dbConfig.driverType == DriverType.POSTGRESQL ) {
-        val pgDbConnector = dbConfig.toNewConnector
-        createPgDatabase( pgDbConnector, dbConfig.dbName, Some(this.logger) )
-      }
-      
-      this.logger.info("updating database schema...")
-      
-      val flyway = new Flyway()
-      // TODO: find a workaround for absolute paths
-      flyway.setLocations( dbConfig.scriptDirectory + "/" )
-      flyway.setDataSource(connector.getDataSource)
-      
-      if( flyway.migrate() > 0 ) true
-      else false
-    }*/
+    val upgradeStatus = if (DatabaseUpgrader.upgradeDatabase(dbConnector) > 0) true else false
+    
+    dbConnector.close()
+    
+    upgradeStatus
 
   }
-
-  /*protected def createSQLiteDB( connector: IDatabaseConnector, scriptIS: InputStream ): Boolean = {
-    
-    // If connection mode is file
-    var createDB = true
-    if( dbConfig.connectionConfig.getString("connectionMode") == "FILE" ) {
-      
-      val dbPath = dbConfig.dbDirectory + "/"+ dbConfig.connectionConfig.getString("dbName")
-      
-      if( new File(dbPath).exists == true ) {
-        this.logger.warn("database file already exists")
-        createDB = false
-      }
-      else
-        this.logger.info("create new database file: "+dbPath)
-    }
-    
-    if( createDB ) {
-      val dbConn = connector.getDataSource.getConnection
-      val stmt = dbConn.createStatement
-      
-      this.logger.info("creating database schema...")
-      Source.fromInputStream(scriptIS).eachLine(";", stmt.executeUpdate(_) )
-      
-      stmt.close()
-      dbConn.close()
-    }
-    
-    createDB
-          
-  }*/
 
 }

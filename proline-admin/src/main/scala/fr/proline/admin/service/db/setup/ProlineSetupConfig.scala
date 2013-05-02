@@ -62,26 +62,14 @@ case class DatabaseSetupConfig(dbType: ProlineDatabaseType,
     this.toUdsExternalDb.toPropertiesMap()
   }
 
-  /*lazy val dbConnPrototype = {
-    new ConnectionPrototype(dbConnProperties).namePrefix("")
-  }*/
-
-  // FIXME This Admin Connector is never closed : conflicting with DataStoreConnectorFactory
-  lazy val connector = this.toNewConnector
-
-  private def toNewConnector() = {
-    // Instantiate the database connector
-    //val db = ProlineRepository.Databases.valueOf(dbType.toUpperCase)
-    //dbConnPrototype.toConnector( dbName )
-
+  def toNewConnector() = {
+    
+    // Instantiate a database connector
     val dbConnProps = dbConnProperties.asInstanceOf[java.util.Map[Object, Object]]
-
     val databaseConnector = DatabaseConnectorFactory.createDatabaseConnectorInstance(dbType, dbConnProps)
-
-    val ex = new Exception("Raw DatabaseConnector creation")
-
-    logger.warn("Creation of raw DatabaseConnector [" + databaseConnector + "] without DataStoreConnectorFactory", ex)
-
+    
+    logger.warn("Creation of raw DatabaseConnector [" + databaseConnector + "] without DataStoreConnectorFactory")
+    
     databaseConnector
   }
 
