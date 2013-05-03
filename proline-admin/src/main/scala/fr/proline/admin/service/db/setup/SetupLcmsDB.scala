@@ -7,7 +7,7 @@ import fr.proline.admin.service.db.DatabaseConnectionContext
  * @author David Bouyssie
  *
  */
-class SetupLcmsDB( val lcmsDbContext: DatabaseConnectionContext,
+class SetupLcmsDB( val dbContext: DatabaseConnectionContext,
                    val dbConfig: DatabaseSetupConfig
                  ) extends ISetupDB with Logging {
   

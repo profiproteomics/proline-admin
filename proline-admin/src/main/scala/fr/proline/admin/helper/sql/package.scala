@@ -1,12 +1,15 @@
 package fr.proline.admin.helper
 
-import javax.persistence.{ EntityManagerFactory, Persistence }
-import com.weiglewilczek.slf4s.Logger
-import fr.proline.repository.IDatabaseConnector
-import org.postgresql.util.PSQLException
 import java.sql.Connection
 import java.sql.DriverManager
+
+import org.postgresql.Driver
+import org.postgresql.util.PSQLException
+
+import com.weiglewilczek.slf4s.Logger
+
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
+import fr.proline.repository.IDatabaseConnector
 
 /**
  * @author David Bouyssie
@@ -28,9 +31,7 @@ package object sql {
     )
   }*/
 
-  def createPgDatabase(dbConfig: DatabaseSetupConfig, logger: Option[Logger] = None) {
-
-    val pgDbConnector = dbConfig.toNewConnector
+  def createPgDatabase(pgDbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, logger: Option[Logger] = None) {
     
     // Create database connection and statement
     val pgDbConn = {
@@ -69,7 +70,6 @@ package object sql {
     // Close database connection and statement
     stmt.close()
     pgDbConn.close()
-    pgDbConnector.close()
   }
 
   private def _checkDbExists(stmt: java.sql.Statement, dbName: String): Boolean = {

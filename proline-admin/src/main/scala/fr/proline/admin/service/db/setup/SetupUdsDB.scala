@@ -39,7 +39,7 @@ import fr.proline.module.parser.mascot.{EnzymeDefinition,MascotEnzymeParser,
  * @author David Bouyssie
  *
  */
-class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
+class SetupUdsDB( val dbContext: DatabaseConnectionContext,
                   val dbConfig: DatabaseSetupConfig,
                   val prolineConfig: ProlineSetupConfig ) extends ISetupDB with Logging {
   
@@ -47,7 +47,7 @@ class SetupUdsDB( val udsDbContext: DatabaseConnectionContext,
   protected val defaults = prolineConfig.udsDBDefaults
   
   // Instantiate the UDSdb entity manager
-  protected lazy val udsEM = udsDbContext.entityManager
+  protected lazy val udsEM = dbContext.entityManager
   
   protected def importDefaults() {
     

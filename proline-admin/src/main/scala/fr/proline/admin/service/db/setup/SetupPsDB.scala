@@ -11,13 +11,13 @@ import fr.proline.util.sql.getTimeAsSQLTimestamp
  * @author David Bouyssie
  *
  */
-class SetupPsDB( val psDbContext: DatabaseConnectionContext,
+class SetupPsDB( val dbContext: DatabaseConnectionContext,
                  val dbConfig: DatabaseSetupConfig ) extends ISetupDB with Logging {
 
   protected def importDefaults() {
     
-    val wasEmOpened = psDbContext.isEmOpened
-    val psEM = psDbContext.entityManager
+    val wasEmOpened = dbContext.isEmOpened
+    val psEM = dbContext.entityManager
     
     // Begin transaction
     val psTransaction = psEM.getTransaction()    
@@ -43,7 +43,7 @@ class SetupPsDB( val psDbContext: DatabaseConnectionContext,
     this.logger.info("Unimod definitions imported !")
     
     // Close entity manager
-    if( !wasEmOpened ) psDbContext.closeEM()
+    if( !wasEmOpened ) dbContext.closeEM()
     
   }
   

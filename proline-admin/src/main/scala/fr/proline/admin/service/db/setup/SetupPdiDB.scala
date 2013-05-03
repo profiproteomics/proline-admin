@@ -10,7 +10,7 @@ import java.sql.Connection
  * @author David Bouyssie
  *
  */
-class SetupPdiDB( val pdiDbContext: DatabaseConnectionContext,
+class SetupPdiDB( val dbContext: DatabaseConnectionContext,
                   val dbConfig: DatabaseSetupConfig,
                   val prolineConfig: ProlineSetupConfig ) extends ISetupDB with Logging {
   
@@ -32,7 +32,7 @@ class SetupPdiDB( val pdiDbContext: DatabaseConnectionContext,
     
     import fr.proline.module.rm.taxonomy.JPATaxonomyImporter
     
-    val pdiEM = pdiDbContext.entityManager
+    val pdiEM = dbContext.entityManager
     
     // Begin transaction
     val pdiTransaction = pdiEM.getTransaction()    
@@ -49,7 +49,7 @@ class SetupPdiDB( val pdiDbContext: DatabaseConnectionContext,
     import org.postgresql.core.BaseConnection
     import fr.proline.module.rm.taxonomy.PGTaxonomyImporter
     
-    val pdiDbConn = pdiDbContext.connection
+    val pdiDbConn = dbContext.connection
     PGTaxonomyImporter.importTaxonomy(nodesFilePath, namesFilePath, pdiDbConn.asInstanceOf[BaseConnection] )
   }
   

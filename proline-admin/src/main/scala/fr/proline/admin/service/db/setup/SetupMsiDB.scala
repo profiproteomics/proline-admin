@@ -13,16 +13,16 @@ import fr.proline.util.sql.getTimeAsSQLTimestamp
  * @author David Bouyssie
  *
  */
-class SetupMsiDB( val msiDbContext: DatabaseConnectionContext,  
+class SetupMsiDB( val dbContext: DatabaseConnectionContext,  
                   val dbConfig: DatabaseSetupConfig,
                   val defaults: MsiDBDefaults
                  ) extends ISetupDB with Logging {
   
-  lazy val msiEM = msiDbContext.entityManager
+  lazy val msiEM = dbContext.entityManager
     
   protected def importDefaults() {
     
-    val wasEmOpened = msiDbContext.isEmOpened
+    val wasEmOpened = dbContext.isEmOpened
     
     // Begin transaction
     val msiTransaction = msiEM.getTransaction()    
@@ -44,7 +44,7 @@ class SetupMsiDB( val msiDbContext: DatabaseConnectionContext,
     msiTransaction.commit()
     
     // Close entity manager
-    if( !wasEmOpened ) msiDbContext.closeEM()
+    if( !wasEmOpened ) dbContext.closeEM()
   }
   
   private def _importAdminInformation() {

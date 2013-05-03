@@ -4,7 +4,9 @@ import java.io.{ File, InputStream }
 import scala.io.Source
 import com.googlecode.flyway.core.Flyway
 import com.weiglewilczek.slf4s.Logging
+
 import fr.proline.admin.helper.sql._
+import fr.proline.admin.service.db.DatabaseConnectionContext
 import fr.proline.repository.{ IDatabaseConnector, DatabaseUpgrader, DriverType }
 import fr.proline.util.io._
 import fr.proline.util.resources._
@@ -17,6 +19,7 @@ import fr.proline.util.ThreadLogger
 trait ISetupDB extends Logging {
 
   val dbConfig: DatabaseSetupConfig
+  val dbContext: DatabaseConnectionContext
   private var _executed = false
 
   // Interface
@@ -58,19 +61,15 @@ trait ISetupDB extends Logging {
 
     // Create database if driver type is PostgreSQL
     if (dbConfig.driverType == DriverType.POSTGRESQL) {
-      createPgDatabase(dbConfig, Some(this.logger))
+      createPgDatabase(dbContext.dbConnector,dbConfig, Some(this.logger))
     }
 
     // Initialize database schema
     //    dbConfig.schemaVersion = DatabaseUpgrader.upgradeDatabase(dbConnector);    
     //    if ((dbConfig.schemaVersion == null) || (dbConfig.schemaVersion.isEmpty()) || dbConfig.schemaVersion.equals("no.version")) false else true
     dbConfig.schemaVersion = "0.1"
-    
-    val dbConnector = dbConfig.toNewConnector
       
-    val upgradeStatus = if (DatabaseUpgrader.upgradeDatabase(dbConnector) > 0) true else false
-    
-    dbConnector.close()
+    val upgradeStatus = if (DatabaseUpgrader.upgradeDatabase(dbContext.dbConnector) > 0) true else false
     
     upgradeStatus
 
