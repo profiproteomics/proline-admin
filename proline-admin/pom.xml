@@ -61,7 +61,7 @@
     <dependency>
       <groupId>fr.proline.util</groupId>
       <artifactId>ProFI-Commons-Scala</artifactId>
-      <version>0.0.3</version> <!-- Snapshot Trunk version -->
+      <version>0.0.3</version>
     </dependency>
 
     <dependency>
@@ -88,13 +88,13 @@
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-ResourcesManager</artifactId>
-      <version>0.0.4</version> <!-- Snapshot Trunk version -->
+      <version>0.0.5-SNAPSHOT</version> <!-- Snapshot Trunk version -->
     </dependency>
 
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-MascotParser</artifactId>
-      <version>0.0.7</version> <!-- Snapshot Trunk version -->
+      <version>0.0.8-SNAPSHOT</version> <!-- Snapshot Trunk version -->
     </dependency>
 
     <!-- Datbase drivers -->
