@@ -1,13 +1,13 @@
 package fr.proline.admin
 
-import java.io.File
+import com.beust.jcommander.{JCommander, MissingCommandException, Parameter, ParameterException, Parameters}
 import com.weiglewilczek.slf4s.Logging
-import com.beust.jcommander.{ JCommander, MissingCommandException, Parameter, ParameterException, Parameters }
-import collection.JavaConversions._
+
 import fr.proline.admin.service.db.SetupProline
-import fr.proline.admin.service.db.{ DatabaseConnectionContext, ProlineDatabaseContext }
+import fr.proline.admin.service.db.maintenance.DumpDatabase
+import fr.proline.admin.service.user.{CreateProject, CreateUser}
+import fr.proline.core.orm.util.{DataStoreConnectorFactory, DataStoreUpgrader}
 import fr.proline.util.ThreadLogger
-import fr.proline.core.orm.util.DataStoreConnectorFactory
 
 object RunCommand extends App with Logging {
 
@@ -42,38 +42,50 @@ object RunCommand extends App with Logging {
     @Parameter(names = Array("--login", "-l"), description = "The user account login", required = true)
     var userLogin: String = ""
   }
-  
+
   @Parameters(commandNames = Array("dump_msi_db"), commandDescription = "Dump MSIdb content into an XML file", separators = "=")
   private object DumpMsiDbCommand extends JCommandReflection {
-    
+
     @Parameter(names = Array("--project_id", "-p"), description = "The id of the project corresponding to this MSIdb", required = true)
     var projectId: Int = 0
-    
+
     @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
     var filePath: String = ""
   }
-  
+
   @Parameters(commandNames = Array("dump_ps_db"), commandDescription = "Dump PSdb content into an XML file", separators = "=")
-  private object DumpPsDbCommand extends JCommandReflection {    
+  private object DumpPsDbCommand extends JCommandReflection {
     @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
     var filePath: String = ""
   }
-  
+
   @Parameters(commandNames = Array("dump_uds_db"), commandDescription = "Dump PSdb content into an XML file", separators = "=")
-  private object DumpUdsDbCommand extends JCommandReflection {    
+  private object DumpUdsDbCommand extends JCommandReflection {
     @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
     var filePath: String = ""
   }
-  
+
   var hasDsConnectorFactory = false
   lazy val dsConnectorFactory: DataStoreConnectorFactory = {
-    
+
     // Instantiate a database manager
     val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
-    if( dsConnectorFactory.isInitialized == false ) dsConnectorFactory.initialize(SetupProline.config.udsDBConfig.toNewConnector)
-    
+    if (dsConnectorFactory.isInitialized == false) {
+      dsConnectorFactory.initialize(SetupProline.config.udsDBConfig.toNewConnector)
+
+      if (dsConnectorFactory.isInitialized) {
+
+        // FIXME LMN : Remove call to DataStoreUpgrader when specific command is available in Proline-Admin
+        logger.debug("Upgrading all Proline Databases")
+        DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory)
+      } else {
+        logger.error("Unable to initialize DataStoreConnectorFactory instance")
+      }
+
+    }
+
     hasDsConnectorFactory = true
-    
+
     dsConnectorFactory
   }
 
@@ -123,15 +135,15 @@ object RunCommand extends App with Logging {
         case DumpMsiDbCommand.Parameters.firstName => {
           import fr.proline.admin.service.db.maintenance.DumpDatabase
           val msiDbConnector = dsConnectorFactory.getMsiDbConnector(DumpMsiDbCommand.projectId)
-          DumpDatabase(msiDbConnector,DumpMsiDbCommand.filePath)
+          DumpDatabase(msiDbConnector, DumpMsiDbCommand.filePath)
         }
         case DumpPsDbCommand.Parameters.firstName => {
           import fr.proline.admin.service.db.maintenance.DumpDatabase
-          DumpDatabase(dsConnectorFactory.getPsDbConnector,DumpPsDbCommand.filePath)
+          DumpDatabase(dsConnectorFactory.getPsDbConnector, DumpPsDbCommand.filePath)
         }
         case DumpUdsDbCommand.Parameters.firstName => {
           import fr.proline.admin.service.db.maintenance.DumpDatabase
-          DumpDatabase(dsConnectorFactory.getUdsDbConnector,DumpUdsDbCommand.filePath)
+          DumpDatabase(dsConnectorFactory.getUdsDbConnector, DumpUdsDbCommand.filePath)
         }
         case _ => {
           throw new MissingCommandException("unknown command '" + jCmd.getParsedCommand() + "'")
@@ -152,10 +164,9 @@ object RunCommand extends App with Logging {
       }
 
     } finally {
-      if( hasDsConnectorFactory ) dsConnectorFactory.closeAll()
+      if (hasDsConnectorFactory) dsConnectorFactory.closeAll()
     }
 
   }
-
 
 }
