@@ -64,6 +64,9 @@ object RunCommand extends App with Logging {
     @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
     var filePath: String = ""
   }
+  
+  @Parameters(commandNames = Array("upgrade_dbs"), commandDescription = "Upgrade all databases to the lastest format", separators = "=")
+  private object UpgradeDatabasesCommand extends JCommandReflection
 
   var hasDsConnectorFactory = false
   lazy val dsConnectorFactory: DataStoreConnectorFactory = {
@@ -72,16 +75,6 @@ object RunCommand extends App with Logging {
     val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
     if (dsConnectorFactory.isInitialized == false) {
       dsConnectorFactory.initialize(SetupProline.config.udsDBConfig.toNewConnector)
-
-      if (dsConnectorFactory.isInitialized) {
-
-        // FIXME LMN : Remove call to DataStoreUpgrader when specific command is available in Proline-Admin
-        logger.debug("Upgrading all Proline Databases")
-        DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory)
-      } else {
-        logger.error("Unable to initialize DataStoreConnectorFactory instance")
-      }
-
     }
 
     hasDsConnectorFactory = true
@@ -100,6 +93,7 @@ object RunCommand extends App with Logging {
     jCmd.addCommand(DumpMsiDbCommand)
     jCmd.addCommand(DumpPsDbCommand)
     jCmd.addCommand(DumpUdsDbCommand)
+    jCmd.addCommand(UpgradeDatabasesCommand)
 
     // Try to parse the command line
     var parsedCommand = ""
@@ -144,6 +138,14 @@ object RunCommand extends App with Logging {
         case DumpUdsDbCommand.Parameters.firstName => {
           import fr.proline.admin.service.db.maintenance.DumpDatabase
           DumpDatabase(dsConnectorFactory.getUdsDbConnector, DumpUdsDbCommand.filePath)
+        }
+        case UpgradeDatabasesCommand.Parameters.firstName => {
+          if (dsConnectorFactory.isInitialized) {
+            logger.debug("Upgrading all Proline Databases")
+            DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory)
+          } else {
+            logger.error("Unable to initialize DataStoreConnectorFactory instance")
+          }
         }
         case _ => {
           throw new MissingCommandException("unknown command '" + jCmd.getParsedCommand() + "'")
