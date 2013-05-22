@@ -87,6 +87,7 @@ class SetupMsiDB( val dbContext: DatabaseConnectionContext,
       val msiSchema = new MsiSchema()
       msiSchema.setName(schema.getString(otsCols.NAME))
       msiSchema.setType(schema.getString(otsCols.TYPE))
+      msiSchema.setIsBinaryMode(schema.getBoolean(otsCols.IS_BINARY_MODE))
       msiSchema.setVersion(schema.getString(otsCols.VERSION))
       msiSchema.setSchema("")
       msiSchema.setSerializedProperties(schema.getString(otsCols.SERIALIZED_PROPERTIES))
