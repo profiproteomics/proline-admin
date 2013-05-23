@@ -4,11 +4,12 @@ import java.io.File
 import com.weiglewilczek.slf4s.Logging
 import com.typesafe.config.{Config,ConfigFactory,ConfigList}
 import fr.proline.admin.service.db.setup._
+import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.{IDatabaseConnector,ProlineDatabaseType,DriverType}
 import fr.proline.util.resources._
 
-class DatabaseConnectionContext( val dbConnector: IDatabaseConnector ) {
+/*class DatabaseConnectionContext( val dbConnector: IDatabaseConnector ) {
   
   import fr.proline.core.dal.ProlineEzDBC
   
@@ -59,7 +60,7 @@ class DatabaseConnectionContext( val dbConnector: IDatabaseConnector ) {
     this.closeConnection()
   }
   
-}
+}*/
 
 class ProlineDatabaseContext(
   val udsDbContext: DatabaseConnectionContext,
@@ -80,13 +81,12 @@ class ProlineDatabaseContext(
       )
   }
 
-  
   def closeAll() {
-    udsDbContext.closeAll()
-    psDbContext.closeAll()
-    pdiDbContext.closeAll()
-    msiDbContext.closeAll()
-    lcmsDbContext.closeAll()
+    udsDbContext.close()
+    psDbContext.close()
+    pdiDbContext.close()
+    msiDbContext.close()
+    lcmsDbContext.close()
   }
   
 }
@@ -108,24 +108,27 @@ class SetupProline( config: ProlineSetupConfig ) extends Logging {
     this.logger.info("setting up the 'User Data Set' database...")
     val udsDbConnector = config.udsDBConfig.toNewConnector()
     val udsDbContext = new DatabaseConnectionContext( udsDbConnector )
-    new SetupUdsDB( udsDbContext, config.udsDBConfig, config ).run()
-    udsDbContext.closeAll()
+    new SetupUdsDB( udsDbConnector, udsDbContext, config.udsDBConfig, config ).run()
+    udsDbContext.close()
     udsDbConnector.close()
     
     // Set Up the PSdb
     this.logger.info("setting up the 'Peptide Sequence' database...")
     val psDbConnector = config.psDBConfig.toNewConnector()
     val psDbContext = new DatabaseConnectionContext( psDbConnector )
-    new SetupPsDB( psDbContext, config.psDBConfig ).run()
-    psDbContext.closeAll()
+    new SetupPsDB( psDbConnector, psDbContext, config.psDBConfig ).run()
+    psDbContext.close()
     psDbConnector.close()
+    
+    //psDbConnector.pdiDbContext.close
+    //psDbConnector.
     
     // Set Up the PDIdb
     this.logger.info("setting up the 'Protein Database Index' database...")
     val pdiDbConnector = config.pdiDBConfig.toNewConnector()
     val pdiDbContext = new DatabaseConnectionContext( pdiDbConnector )
-    new SetupPdiDB( pdiDbContext, config.pdiDBConfig, config ).run()
-    pdiDbContext.closeAll()
+    new SetupPdiDB( pdiDbConnector, pdiDbContext, config.pdiDBConfig, config ).run()
+    pdiDbContext.close()
     pdiDbConnector.close()
     
     this.logger.info("Proline has been sucessfuly set up !")

@@ -1,23 +1,24 @@
 package fr.proline.admin.service.db.setup
 
 import com.weiglewilczek.slf4s.Logging
-
-import fr.proline.admin.service.db.DatabaseConnectionContext
+import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.ps.{AdminInformation => PsAdminInfos}
 import fr.proline.module.rm.unimod.UnimodImporter
 import fr.proline.util.sql.getTimeAsSQLTimestamp
+import fr.proline.repository.IDatabaseConnector
 
 /**
  * @author David Bouyssie
  *
  */
-class SetupPsDB( val dbContext: DatabaseConnectionContext,
+class SetupPsDB( val dbConnector: IDatabaseConnector,
+                 val dbContext: DatabaseConnectionContext,
                  val dbConfig: DatabaseSetupConfig ) extends ISetupDB with Logging {
 
   protected def importDefaults() {
     
-    val wasEmOpened = dbContext.isEmOpened
-    val psEM = dbContext.entityManager
+    val psEM = dbContext.getEntityManager()
+    //val wasEmOpened = psEM.isOpen    
     
     // Begin transaction
     val psTransaction = psEM.getTransaction()    
@@ -43,7 +44,7 @@ class SetupPsDB( val dbContext: DatabaseConnectionContext,
     this.logger.info("Unimod definitions imported !")
     
     // Close entity manager
-    if( !wasEmOpened ) dbContext.closeEM()
+    //if( !wasEmOpened ) psEM.close()
     
   }
   

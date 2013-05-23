@@ -1,16 +1,17 @@
 package fr.proline.admin.service.db.setup
 
-import com.weiglewilczek.slf4s.Logging
-import fr.proline.admin.service.db.DatabaseConnectionContext
-import fr.proline.repository.DriverType
-import javax.sql.PooledConnection
 import java.sql.Connection
+import com.weiglewilczek.slf4s.Logging
+import fr.proline.context.DatabaseConnectionContext
+import fr.proline.repository.DriverType
+import fr.proline.repository.IDatabaseConnector
 
 /**
  * @author David Bouyssie
  *
  */
-class SetupPdiDB( val dbContext: DatabaseConnectionContext,
+class SetupPdiDB( val dbConnector: IDatabaseConnector,
+                  val dbContext: DatabaseConnectionContext,
                   val dbConfig: DatabaseSetupConfig,
                   val prolineConfig: ProlineSetupConfig ) extends ISetupDB with Logging {
   
@@ -21,10 +22,9 @@ class SetupPdiDB( val dbContext: DatabaseConnectionContext,
     
   protected def importDefaults() {
     
-//    if( dbConfig.driverType == DriverType.POSTGRESQL ) _importDefaultsUsingPgCopyManager()
-//    else _importDefaultsUsingJPA()
-
-    _importDefaultsUsingJPA()
+     if (dbContext.isJPA) _importDefaultsUsingJPA()
+     else if (dbContext.getDriverType() == DriverType.POSTGRESQL ) _importDefaultsUsingPgCopyManager()
+     else throw new Exception("unsupported driver type for PDI defaults importation")    
     
   }
   
@@ -32,7 +32,7 @@ class SetupPdiDB( val dbContext: DatabaseConnectionContext,
     
     import fr.proline.module.rm.taxonomy.JPATaxonomyImporter
     
-    val pdiEM = dbContext.entityManager
+    val pdiEM = dbContext.getEntityManager
     
     // Begin transaction
     val pdiTransaction = pdiEM.getTransaction()    
@@ -49,7 +49,7 @@ class SetupPdiDB( val dbContext: DatabaseConnectionContext,
     import org.postgresql.core.BaseConnection
     import fr.proline.module.rm.taxonomy.PGTaxonomyImporter
     
-    val pdiDbConn = dbContext.connection
+    val pdiDbConn = dbContext.getConnection()
     PGTaxonomyImporter.importTaxonomy(nodesFilePath, namesFilePath, pdiDbConn.asInstanceOf[BaseConnection] )
   }
   

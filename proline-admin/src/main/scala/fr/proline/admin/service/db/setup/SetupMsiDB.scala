@@ -4,25 +4,27 @@ import javax.persistence.Persistence
 import scala.collection.JavaConversions.{collectionAsScalaIterable}
 import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
-import fr.proline.admin.service.db.DatabaseConnectionContext
+import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.tables.msi.{MsiDbScoringTable,MsiDbObjectTreeSchemaColumns}
 import fr.proline.core.orm.msi.{AdminInformation => MsiAdminInfos, Scoring => MsiScoring, ObjectTreeSchema => MsiSchema }
 import fr.proline.util.sql.getTimeAsSQLTimestamp
+import fr.proline.repository.IDatabaseConnector
 
 /**
  * @author David Bouyssie
  *
  */
-class SetupMsiDB( val dbContext: DatabaseConnectionContext,  
+class SetupMsiDB( val dbConnector: IDatabaseConnector,
+                  val dbContext: DatabaseConnectionContext,  
                   val dbConfig: DatabaseSetupConfig,
                   val defaults: MsiDBDefaults
                  ) extends ISetupDB with Logging {
   
-  lazy val msiEM = dbContext.entityManager
+  lazy val msiEM = dbContext.getEntityManager()
     
   protected def importDefaults() {
     
-    val wasEmOpened = dbContext.isEmOpened
+    //val wasEmOpened = msiEM.isOpen()
     
     // Begin transaction
     val msiTransaction = msiEM.getTransaction()    
@@ -44,7 +46,7 @@ class SetupMsiDB( val dbContext: DatabaseConnectionContext,
     msiTransaction.commit()
     
     // Close entity manager
-    if( !wasEmOpened ) dbContext.closeEM()
+    //if( !wasEmOpened ) msiEM.close()
   }
   
   private def _importAdminInformation() {

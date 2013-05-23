@@ -5,7 +5,7 @@ import scala.collection.JavaConversions.{collectionAsScalaIterable,setAsJavaSet}
 import scala.collection.mutable.ArrayBuffer
 import com.typesafe.config.Config
 import com.weiglewilczek.slf4s.Logging
-import fr.proline.admin.service.db.DatabaseConnectionContext
+import fr.proline.context.DatabaseConnectionContext
 import fr.proline.util.resources._
 import fr.proline.util.sql.getTimeAsSQLTimestamp
 import fr.proline.core.dal.tables.uds._
@@ -34,12 +34,14 @@ import fr.proline.core.orm.uds.{Activation => UdsActivation,
                                 }
 import fr.proline.module.parser.mascot.{EnzymeDefinition,MascotEnzymeParser,
                                         MascotFragmentation,MascotFragmentationRuleParser}
+import fr.proline.repository.IDatabaseConnector
 
 /**
  * @author David Bouyssie
  *
  */
-class SetupUdsDB( val dbContext: DatabaseConnectionContext,
+class SetupUdsDB( val dbConnector: IDatabaseConnector,
+                  val dbContext: DatabaseConnectionContext,
                   val dbConfig: DatabaseSetupConfig,
                   val prolineConfig: ProlineSetupConfig ) extends ISetupDB with Logging {
   
@@ -47,7 +49,7 @@ class SetupUdsDB( val dbContext: DatabaseConnectionContext,
   protected val defaults = prolineConfig.udsDBDefaults
   
   // Instantiate the UDSdb entity manager
-  protected lazy val udsEM = dbContext.entityManager
+  protected lazy val udsEM = dbContext.getEntityManager
   
   protected def importDefaults() {
     
@@ -113,9 +115,6 @@ class SetupUdsDB( val dbContext: DatabaseConnectionContext,
     
     // Commit transaction
     udsEM.getTransaction().commit()
-    
-    // Close entity manager
-    udsEM.close()
     
   }
  

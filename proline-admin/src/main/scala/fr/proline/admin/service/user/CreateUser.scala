@@ -2,8 +2,8 @@ package fr.proline.admin.service.user
 
 import com.weiglewilczek.slf4s.Logging
 
-import fr.proline.admin.service.db.DatabaseConnectionContext
 import fr.proline.admin.service.db.SetupProline
+import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.uds.{Project => UdsProject,UserAccount => UdsUser}
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 
@@ -21,7 +21,7 @@ class CreateUser( udsDbContext: DatabaseConnectionContext,
     import fr.proline.core.orm.uds.{UserAccount => UdsUser}
     
     // Creation UDS entity manager
-    val udsEM = udsDbContext.entityManager
+    val udsEM = udsDbContext.getEntityManager
     
     // Begin transaction
     udsEM.getTransaction().begin()
@@ -40,7 +40,7 @@ class CreateUser( udsDbContext: DatabaseConnectionContext,
     this.logger.info("user with id='"+ userId +"' has been created !")
     
     // Close entity manager
-    udsDbContext.closeAll
+    //udsDbContext.close()
   }
   
 }
@@ -59,7 +59,7 @@ object CreateUser {
     userCreator.run()
     
     // Close the database manager
-    udsDbContext.closeAll()
+    udsDbContext.close()
     udsDbConnector.close()
     
     userCreator.userId

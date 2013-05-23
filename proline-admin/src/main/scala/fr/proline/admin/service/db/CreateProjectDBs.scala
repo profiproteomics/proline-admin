@@ -3,15 +3,18 @@ package fr.proline.admin.service.db
 import java.io.File
 import javax.persistence.EntityManager
 import com.weiglewilczek.slf4s.Logging
+
 import fr.profi.jdbc.easy.EasyDBC
 import fr.proline.admin.service.ICommandWork
 import fr.proline.admin.service.db.setup.{DatabaseSetupConfig,ProlineSetupConfig}
 import fr.proline.admin.helper.sql._
+import fr.proline.context.DatabaseConnectionContext
+import fr.proline.core.dal.DoJDBCWork
 import fr.proline.core.orm.uds.{Project => UdsProject}
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.ConnectionMode
-import setup.{SetupLcmsDB,SetupMsiDB}
 import fr.proline.repository.DriverType
+import setup.{SetupLcmsDB,SetupMsiDB}
 
 
 /**
@@ -79,46 +82,47 @@ class CreateProjectDBs( udsDbContext: DatabaseConnectionContext, config: Proline
     // Retrieve UDSdb connection
     //val dbManager = dbContext.dbManager
     //val udsDbContext = dbContext.udsDbContext
-    val wasUdsDbConnectionOpened = udsDbContext.isConnectionOpened
-    val udsEzDBC = udsDbContext.ezDBC
-    
-    // Check that there are no external DBs attached to this project
-    val nbExtDbs = udsEzDBC.selectInt( "SELECT count(*) FROM external_db, project_db_map " +
-                                       "WHERE project_db_map.external_db_id = external_db.id " +
-                                       "AND project_db_map.project_id = " + projectId )
-    if( nbExtDbs > 0 )
-      throw new Exception("project of id='%d' is already associated to external databases !".format(projectId))
-    
-    // Close connection to avoid any conflict
-    //udsEzDBC.commitTransaction()
-    
+    //val wasUdsDbConnectionOpened = udsDbContext.isConnectionOpened
+
     // Prepare MSIdb creation
     val msiDBConfig = this._prepareDBCreation( config.msiDBConfig )
     
-    // Store MSIdb connection settings
-    this._insertExtDb( udsEzDBC, msiDBConfig.toUdsExternalDb )
-    
     // Prepare LCMSdb creation
     val lcmsDBConfig = this._prepareDBCreation( config.lcmsDBConfig )
-    
-    // Store LCMSdb connection settings
-    this._insertExtDb( udsEzDBC, lcmsDBConfig.toUdsExternalDb )
-    
-    // Release UDSdb connection
-    if( wasUdsDbConnectionOpened == false ) udsDbContext.closeConnection()
+      
+    DoJDBCWork.withEzDBC( udsDbContext, { udsEzDBC =>
+      // Check that there are no external DBs attached to this project
+      val nbExtDbs = udsEzDBC.selectInt( "SELECT count(*) FROM external_db, project_db_map " +
+                                         "WHERE project_db_map.external_db_id = external_db.id " +
+                                         "AND project_db_map.project_id = " + projectId )
+      if( nbExtDbs > 0 )
+        throw new Exception("project of id='%d' is already associated to external databases !".format(projectId))
+      
+      // Close connection to avoid any conflict
+      //udsEzDBC.commitTransaction()      
+      
+      // Store MSIdb connection settings
+      this._insertExtDb( udsEzDBC, msiDBConfig.toUdsExternalDb )
+      
+      // Store LCMSdb connection settings
+      this._insertExtDb( udsEzDBC, lcmsDBConfig.toUdsExternalDb )
+      
+      // Release UDSdb connection
+      //if( wasUdsDbConnectionOpened == false ) udsDbContext.closeConnection()
+    })
     
     // Create MSI database
     val msiDbConnector = msiDBConfig.toNewConnector
     val msiDbContext = new DatabaseConnectionContext( msiDbConnector )
-    new SetupMsiDB( msiDbContext, msiDBConfig, config.msiDBDefaults ).run()
-    msiDbContext.closeAll()
+    new SetupMsiDB( msiDbConnector, msiDbContext, msiDBConfig, config.msiDBDefaults ).run()
+    msiDbContext.close()
     msiDbConnector.close()
     
     // Create LCMS database
     val lcmsDbConnector = lcmsDBConfig.toNewConnector
     val lcmsDbContext = new DatabaseConnectionContext( lcmsDbConnector )
-    new SetupLcmsDB( lcmsDbContext, lcmsDBConfig ).run()
-    lcmsDbContext.closeAll()
+    new SetupLcmsDB( lcmsDbConnector, lcmsDbContext, lcmsDBConfig ).run()
+    lcmsDbContext.close()
     lcmsDbConnector.close()
     
   }
