@@ -5,6 +5,7 @@ import fr.profi.jdbc.easy.{ date2Formattable, int2Formattable, string2Formattabl
 import fr.proline.admin.service.db.{ CreateProjectDBs, SetupProline }
 import fr.proline.admin.service.ICommandWork
 import fr.proline.context.DatabaseConnectionContext
+import fr.proline.core.orm.uds.{Dataset=> UdsDataset,Project => UdsProject,UserAccount => UdsUser}
 
 /**
  * @author David Bouyssie
@@ -42,8 +43,6 @@ class CreateProject(udsDbContext: DatabaseConnectionContext,
     // Manage connection and transaction
     if (!wasInTx) udsEzDBC.commitTransaction()
     if (!wasConnOpened) udsDbContext.closeConnection()*/
-
-    import fr.proline.core.orm.uds.{Project => UdsProject,UserAccount => UdsUser}
     
     // Retrieve UDS entity manager
     val udsEM = udsDbContext.getEntityManager
@@ -67,14 +66,22 @@ class CreateProject(udsDbContext: DatabaseConnectionContext,
     
     udsEM.persist( udsProject )
     
+    // Create an empty TRASH dataset for this project
+    val udsDataset = new UdsDataset(udsProject)
+    udsDataset.setNumber(1)
+    udsDataset.setName(UdsDataset.DatasetType.TRASH.toString)
+    udsDataset.setType(UdsDataset.DatasetType.TRASH)
+    udsDataset.setCreationTimestamp(fr.proline.util.sql.getTimeAsSQLTimestamp)
+    udsDataset.setChildrenCount(0)
+    
+    udsEM.persist( udsDataset )
+    
     // Commit transaction
     udsEM.getTransaction().commit()
 
     this.projectId = udsProject.getId
     //println("project with id='"+ projectId +"' has been created !")
-
-    // Close entity manager
-    //udsEM.close()
+    
   }
 
 }
