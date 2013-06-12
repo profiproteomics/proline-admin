@@ -103,7 +103,7 @@
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-ResourcesManager</artifactId>
-      <version>0.0.5</version>
+      <version>0.0.6-SNAPSHOT</version> <!-- Latest Trunk SNAPSHOT version -->
     </dependency>
 
     <dependency>
