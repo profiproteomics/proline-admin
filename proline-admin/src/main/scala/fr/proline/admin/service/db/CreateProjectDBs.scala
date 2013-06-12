@@ -21,7 +21,7 @@ import setup.{SetupLcmsDB,SetupMsiDB}
  * @author David Bouyssie
  *
  */
-class CreateProjectDBs( udsDbContext: DatabaseConnectionContext, config: ProlineSetupConfig, projectId: Int ) extends ICommandWork with Logging {
+class CreateProjectDBs( udsDbContext: DatabaseConnectionContext, config: ProlineSetupConfig, projectId: Long ) extends ICommandWork with Logging {
   
   /*def run() {
     
@@ -216,7 +216,7 @@ class CreateProjectDBs( udsDbContext: DatabaseConnectionContext, config: Proline
 
 object CreateProjectDBs {
   
-  def apply( projectId: Int ) {
+  def apply( projectId: Long ) {
     
     // Retrieve Proline configuration
     val prolineConf = SetupProline.config
@@ -243,7 +243,7 @@ object CreateProjectDBs {
     new File( dataDir.toString + "/projects" )
   }
   
-  def getProjectDir( projectsDir: File, projectId: Int ): File = {    
+  def getProjectDir( projectsDir: File, projectId: Long ): File = {    
     new File( projectsDir.toString + "/project_" + projectId )
   }
   

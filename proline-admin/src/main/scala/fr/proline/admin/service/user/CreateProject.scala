@@ -14,9 +14,9 @@ import fr.proline.core.orm.uds.{Dataset=> UdsDataset,Project => UdsProject,UserA
 class CreateProject(udsDbContext: DatabaseConnectionContext,
                     projectName: String,
                     projectDescription: String,
-                    ownerId: Int) extends ICommandWork with Logging {
+                    ownerId: Long) extends ICommandWork with Logging {
 
-  var projectId = 0
+  var projectId: Long = 0L
 
   def doWork() {
 
@@ -88,7 +88,7 @@ class CreateProject(udsDbContext: DatabaseConnectionContext,
 
 object CreateProject extends Logging {
 
-  def apply(name: String, description: String, ownerId: Int): Int = {
+  def apply(name: String, description: String, ownerId: Long): Long = {
 
     import fr.proline.admin.service.db.{ CreateProjectDBs, ProlineDatabaseContext }
 

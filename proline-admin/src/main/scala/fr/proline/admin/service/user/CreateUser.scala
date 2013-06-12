@@ -14,7 +14,7 @@ import fr.proline.core.orm.util.DataStoreConnectorFactory
 class CreateUser( udsDbContext: DatabaseConnectionContext,
                   login: String ) extends Logging {
   
-  var userId = 0
+  var userId: Long = 0L
   
   def run() {
 
@@ -47,7 +47,7 @@ class CreateUser( udsDbContext: DatabaseConnectionContext,
 
 object CreateUser {
   
-  def apply( login: String ): Int = {
+  def apply( login: String ): Long = {
     
     // Retrieve Proline configuration
     val prolineConf = SetupProline.config    
