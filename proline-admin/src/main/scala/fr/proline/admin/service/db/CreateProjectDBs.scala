@@ -162,7 +162,7 @@ class CreateProjectDBs( udsDbContext: DatabaseConnectionContext, config: Proline
                         false,
                         Option.empty[String]
                        )*/
-      stmt.generatedInt
+      stmt.generatedLong
     }
     
     // Link external db to the project

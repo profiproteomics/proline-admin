@@ -16,7 +16,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <core.version>0.1.1-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
+    <core.version>0.1.1-SNAPSHOT</core.version> <!-- Latest Trunk SNAPSHOT version -->
   </properties>
 
   <dependencies>
@@ -76,7 +76,7 @@
     <dependency>
       <groupId>fr.proline.util</groupId>
       <artifactId>ProFI-Commons-Scala</artifactId>
-      <version>0.0.4</version>
+      <version>0.0.5-SNAPSHOT</version> <!-- Latest Trunk SNAPSHOT version -->
     </dependency>
 
     <dependency>
