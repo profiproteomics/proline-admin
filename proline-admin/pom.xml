@@ -9,14 +9,14 @@
   </parent>
 
   <artifactId>Proline-Admin</artifactId>
-  <version>0.0.7-SNAPSHOT</version>
+  <version>0.0.7</version>
 
   <name>${project.artifactId}</name>
   <description>Proline Administration</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <core.version>0.1.1-SNAPSHOT</core.version> <!-- Latest Trunk SNAPSHOT version -->
+    <core.version>0.1.1</core.version> <!-- Latest Trunk SNAPSHOT version -->
   </properties>
 
   <dependencies>
@@ -76,7 +76,7 @@
     <dependency>
       <groupId>fr.proline.util</groupId>
       <artifactId>ProFI-Commons-Scala</artifactId>
-      <version>0.0.5-SNAPSHOT</version> <!-- Latest Trunk SNAPSHOT version -->
+      <version>0.0.5</version> <!-- Latest Trunk SNAPSHOT version -->
     </dependency>
 
     <dependency>
@@ -103,13 +103,13 @@
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-ResourcesManager</artifactId>
-      <version>0.0.6-SNAPSHOT</version> <!-- Latest Trunk SNAPSHOT version -->
+      <version>0.0.6</version> <!-- Latest Trunk SNAPSHOT version -->
     </dependency>
 
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-MascotParser</artifactId>
-      <version>0.0.9-SNAPSHOT</version>
+      <version>0.0.9</version>
     </dependency>
 
     <!-- Datbase drivers -->
