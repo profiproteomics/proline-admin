@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>Proline-Admin</artifactId>
-  <version>0.0.7</version>
+  <version>0.0.8-SNAPSHOT</version>
 
   <name>${project.artifactId}</name>
   <description>Proline Administration</description>
