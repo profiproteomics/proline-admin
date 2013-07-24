@@ -16,7 +16,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <core.version>0.1.1</core.version> <!-- Latest Trunk SNAPSHOT version -->
+    <core.version>0.1.2-SNAPSHOT</core.version> <!-- Latest Trunk SNAPSHOT version -->
   </properties>
 
   <dependencies>
