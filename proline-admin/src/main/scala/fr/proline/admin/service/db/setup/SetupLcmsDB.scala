@@ -54,6 +54,7 @@ class SetupLcmsDB( val dbConnector: IDatabaseConnector,
       ezDBC.executePrepared(LcmsDbFeatureScoringTable.mkInsertQuery,false) { statement =>
         statement.executeWith(
           lcmsFtScoring.id,
+          lcmsFtScoring.name,
           lcmsFtScoring.description,
           lcmsFtScoring.properties.map( Json.generate(_) )
         )
