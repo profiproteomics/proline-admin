@@ -30,7 +30,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <scope>test</scope>
+      <!-- Compile scope (Proline-Admin can be used as a stand-alone program) -->
     </dependency>
     <dependency>
       <groupId>com.weiglewilczek.slf4s</groupId>
@@ -76,7 +76,7 @@
     <dependency>
       <groupId>fr.proline.util</groupId>
       <artifactId>ProFI-Commons-Scala</artifactId>
-      <version>0.0.5</version> <!-- Snapshot Trunk version -->
+      <version>0.0.6-SNAPSHOT</version> <!-- Snapshot Trunk version -->
     </dependency>
 
     <dependency>
@@ -109,7 +109,7 @@
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-MascotParser</artifactId>
-      <version>0.0.9</version>
+      <version>0.0.10-SNAPSHOT</version> <!-- Snapshot Trunk version -->
     </dependency>
 
     <!-- Datbase drivers -->
@@ -122,14 +122,17 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scala-tools.testing</groupId>
       <artifactId>specs_2.9.1</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_2.9.1</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -152,8 +155,8 @@
   <build>
 
     <pluginManagement>
-      <plugins> <!-- Are these plugins needed ? ? -->
-
+      <plugins>
+        <!-- For Eclipse build -->
         <plugin>
           <groupId>org.eclipse.m2e</groupId>
           <artifactId>lifecycle-mapping</artifactId>
@@ -165,22 +168,9 @@
                   <pluginExecutionFilter>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <versionRange>[2.0,)</versionRange>
+                    <versionRange>[2.8,)</versionRange>
                     <goals>
                       <goal>copy-dependencies</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <execute />
-                  </action>
-                </pluginExecution>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <versionRange>[1.6,)</versionRange>
-                    <goals>
-                      <goal>run</goal>
                     </goals>
                   </pluginExecutionFilter>
                   <action>
@@ -215,8 +205,8 @@
               <!-- args are optional <args> <arg>arg1</arg> </args> -->
               <!-- jvmArgs are optional -->
               <jvmArgs>
-                <jvmArg>-Xmx1024m</jvmArg>
                 <jvmArg>-Xms512m</jvmArg>
+                <jvmArg>-Xmx1024m</jvmArg>
                 <jvmArg>-Duser.language=en</jvmArg>
                 <jvmArg>-Djava.library.path=./lib</jvmArg>
               </jvmArgs>
@@ -229,10 +219,12 @@
           </args>
         </configuration>
       </plugin>
+
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
         <!-- Version inherited from ProFI-Pom -->
         <executions>
+
           <execution>
             <id>copy-config</id>
             <phase>validate</phase>
@@ -249,6 +241,7 @@
               </resources>
             </configuration>
           </execution>
+
           <execution>
             <id>copy-scripts</id>
             <phase>validate</phase>
@@ -266,15 +259,16 @@
               </resources>
             </configuration>
           </execution>
+
         </executions>
       </plugin>
 
       <!-- Is this plugin still used with assembly plugin ? ? -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <!-- Version inherited from ProFI-Pom -->
         <executions>
+
           <execution>
             <id>copy-dependencies</id>
             <phase>package</phase>
@@ -289,6 +283,7 @@
               <overWriteIfNewer>true</overWriteIfNewer>
             </configuration>
           </execution>
+
           <execution>
             <id>copy-dll</id>
             <phase>compile</phase>
@@ -304,11 +299,11 @@
               <overWriteIfNewer>true</overWriteIfNewer>
             </configuration>
           </execution>
+
         </executions>
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <excludes>
