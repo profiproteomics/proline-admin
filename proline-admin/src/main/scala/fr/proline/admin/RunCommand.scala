@@ -59,13 +59,13 @@ object RunCommand extends App with Logging {
     var filePath: String = ""
   }
 
-  @Parameters(commandNames = Array("dump_uds_db"), commandDescription = "Dump PSdb content into an XML file", separators = "=")
+  @Parameters(commandNames = Array("dump_uds_db"), commandDescription = "Dump UDSdb content into an XML file", separators = "=")
   private object DumpUdsDbCommand extends JCommandReflection {
     @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
     var filePath: String = ""
   }
   
-  @Parameters(commandNames = Array("upgrade_dbs"), commandDescription = "Upgrade all databases to the lastest format", separators = "=")
+  @Parameters(commandNames = Array("upgrade_dbs"), commandDescription = "Upgrade all databases to the latest format", separators = "=")
   private object UpgradeDatabasesCommand extends JCommandReflection
 
   var hasDsConnectorFactory = false
