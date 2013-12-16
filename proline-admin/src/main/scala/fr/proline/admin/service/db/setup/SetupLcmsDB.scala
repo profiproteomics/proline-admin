@@ -1,9 +1,9 @@
 package fr.proline.admin.service.db.setup
 
-import com.codahale.jerkson.Json
 import com.weiglewilczek.slf4s.Logging
 
 import fr.profi.jdbc.easy._
+import fr.profi.util.serialization.ProfiJson
 
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.DoJDBCWork
@@ -56,7 +56,7 @@ class SetupLcmsDB( val dbConnector: IDatabaseConnector,
           lcmsFtScoring.id,
           lcmsFtScoring.name,
           lcmsFtScoring.description,
-          lcmsFtScoring.properties.map( Json.generate(_) )
+          lcmsFtScoring.properties.map( ProfiJson.serialize(_) )
         )
       }
       
@@ -64,7 +64,7 @@ class SetupLcmsDB( val dbConnector: IDatabaseConnector,
         statement.executeWith(
           fitting.id,
           fitting.name,
-          fitting.properties.map( Json.generate(_) )
+          fitting.properties.map( ProfiJson.serialize(_) )
         )
       }
       
@@ -74,7 +74,7 @@ class SetupLcmsDB( val dbConnector: IDatabaseConnector,
           pps.name,
           pps.version,
           pps.algorithm,
-          pps.properties.map( Json.generate(_) )
+          pps.properties.map( ProfiJson.serialize(_) )
         )
       }
       
