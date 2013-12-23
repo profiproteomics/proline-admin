@@ -65,6 +65,12 @@ object RunCommand extends App with Logging {
     var filePath: String = ""
   }
   
+  @Parameters(commandNames = Array("export_dbunit_dtds"), commandDescription = "Export DBUnit DTD files", separators = "=")
+  private object ExportDbUnitDTDsCommand extends JCommandReflection {
+    @Parameter(names = Array("--dir_path", "-d"), description = "The path to the export directory", required = true)
+    var dirPath: String = ""
+  }
+  
   @Parameters(commandNames = Array("upgrade_dbs"), commandDescription = "Upgrade all databases to the latest format", separators = "=")
   private object UpgradeDatabasesCommand extends JCommandReflection
 
@@ -93,6 +99,7 @@ object RunCommand extends App with Logging {
     jCmd.addCommand(DumpMsiDbCommand)
     jCmd.addCommand(DumpPsDbCommand)
     jCmd.addCommand(DumpUdsDbCommand)
+    jCmd.addCommand(ExportDbUnitDTDsCommand)
     jCmd.addCommand(UpgradeDatabasesCommand)
 
     // Try to parse the command line
@@ -138,6 +145,10 @@ object RunCommand extends App with Logging {
         case DumpUdsDbCommand.Parameters.firstName => {
           import fr.proline.admin.service.db.maintenance.DumpDatabase
           DumpDatabase(dsConnectorFactory.getUdsDbConnector, DumpUdsDbCommand.filePath)
+        }
+        case ExportDbUnitDTDsCommand.Parameters.firstName => {
+          import fr.proline.admin.service.db.maintenance.ExportDbUnitDTDs
+          ExportDbUnitDTDs(dsConnectorFactory,ExportDbUnitDTDsCommand.dirPath)
         }
         case UpgradeDatabasesCommand.Parameters.firstName => {
           if (dsConnectorFactory.isInitialized) {
