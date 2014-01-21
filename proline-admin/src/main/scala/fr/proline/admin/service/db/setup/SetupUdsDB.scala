@@ -4,7 +4,7 @@ import javax.persistence.EntityManager
 import scala.collection.JavaConversions.{collectionAsScalaIterable,setAsJavaSet}
 import scala.collection.mutable.ArrayBuffer
 import com.typesafe.config.Config
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.util.resources._
 import fr.proline.util.sql.getTimeAsSQLTimestamp

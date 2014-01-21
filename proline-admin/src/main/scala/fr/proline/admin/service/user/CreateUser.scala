@@ -1,6 +1,6 @@
 package fr.proline.admin.service.user
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.context.DatabaseConnectionContext

@@ -6,7 +6,7 @@ import org.dbunit.DataSourceDatabaseTester
 import org.dbunit.database.DatabaseConfig
 import org.dbunit.dataset.xml.FlatDtdDataSet
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.service.ICommandWork
 import fr.proline.core.orm.util.DataStoreConnectorFactory

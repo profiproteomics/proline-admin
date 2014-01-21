@@ -6,7 +6,7 @@ import java.sql.DriverManager
 import org.postgresql.Driver
 import org.postgresql.util.PSQLException
 
-import com.weiglewilczek.slf4s.Logger
+import com.typesafe.scalalogging.slf4j.Logger
 
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.repository.IDatabaseConnector
@@ -40,7 +40,7 @@ package object sql {
       } catch {
         case psqle: PSQLException =>
           {
-            classOf[org.postgresql.Driver]
+            val pgClass = classOf[org.postgresql.Driver]
             val templateURL = "jdbc:postgresql://"+dbConfig.connectionConfig.getString("host")+":"++dbConfig.connectionConfig.getString("port")+"/template1"
             if (logger != None) logger.get.info("creating database from template '%s'...".format(templateURL))
 

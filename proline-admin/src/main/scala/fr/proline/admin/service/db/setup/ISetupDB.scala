@@ -3,7 +3,7 @@ package fr.proline.admin.service.db.setup
 import java.io.{ File, InputStream }
 import scala.io.Source
 import com.googlecode.flyway.core.Flyway
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.helper.sql._
 //import fr.proline.context.DatabaseConnectionContext
@@ -37,8 +37,8 @@ trait ISetupDB extends Logging {
 
     val currentThread = Thread.currentThread
 
-    if (!currentThread.isInstanceOf[ThreadLogger]) {
-      currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.name))
+    if (!currentThread.getUncaughtExceptionHandler.isInstanceOf[ThreadLogger]) {
+      currentThread.setUncaughtExceptionHandler(new ThreadLogger())
     }
 
     //try {

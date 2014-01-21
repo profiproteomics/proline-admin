@@ -1,7 +1,7 @@
 package fr.proline.admin
 
 import com.beust.jcommander.{JCommander, MissingCommandException, Parameter, ParameterException, Parameters}
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
@@ -89,7 +89,7 @@ object RunCommand extends App with Logging {
   }
 
   override def main(args: Array[String]): Unit = {
-    Thread.currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.name))
+    Thread.currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.underlying.getName()))
 
     // Instantiate a JCommander object and affect some commands
     val jCmd = new JCommander()

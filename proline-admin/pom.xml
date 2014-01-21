@@ -21,9 +21,11 @@
 
   <dependencies>
 
+    <!-- Scala -->
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
+      <!-- Version inherited from ProFI-Pom ${scala-library.version} -->
     </dependency>
 
     <!-- Logging -->
@@ -33,8 +35,9 @@
       <!-- Compile scope (Proline-Admin can be used as a stand-alone program) -->
     </dependency>
     <dependency>
-      <groupId>com.weiglewilczek.slf4s</groupId>
-      <artifactId>slf4s_2.9.1</artifactId>
+      <groupId>com.typesafe</groupId>
+      <artifactId>scalalogging-slf4j_2.10</artifactId>
+      <!-- Version inherited from ProFI-Pom -->
     </dependency>
 
     <!-- Configuration -->
@@ -49,6 +52,12 @@
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
       <version>1.30</version>
+    </dependency>
+    
+    <!-- Database drivers -->
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
     </dependency>
 
     <!-- Database dumps -->
@@ -110,12 +119,6 @@
       <groupId>fr.proline</groupId>
       <artifactId>PM-MascotParser</artifactId>
       <version>0.0.11-SNAPSHOT</version>  <!-- Snapshot Trunk version -->
-    </dependency>
-
-    <!-- Datbase drivers -->
-    <dependency>
-      <groupId>postgresql</groupId>
-      <artifactId>postgresql</artifactId>
     </dependency>
 
     <!-- Tests -->
@@ -186,18 +189,10 @@
 
     <plugins>
       <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.1.6</version>
         <configuration>
-          <scalaVersion>2.9.1</scalaVersion>
           <launchers>
             <launcher>
               <id>RunCommand</id>
@@ -212,11 +207,6 @@
               </jvmArgs>
             </launcher>
           </launchers>
-          <args>
-            <arg>-make:transitivenocp</arg>
-            <arg>-dependencyfile</arg>
-            <arg>${project.build.directory}/.scala_dependencies</arg>
-          </args>
         </configuration>
       </plugin>
 

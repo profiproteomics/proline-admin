@@ -1,6 +1,6 @@
 package fr.proline.admin.service.user
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import fr.profi.jdbc.easy.{ date2Formattable, int2Formattable, string2Formattable }
 import fr.proline.admin.service.db.{ CreateProjectDBs, SetupProline }
 import fr.proline.admin.service.ICommandWork

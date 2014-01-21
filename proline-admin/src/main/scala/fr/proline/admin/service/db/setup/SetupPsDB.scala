@@ -1,6 +1,6 @@
 package fr.proline.admin.service.db.setup
 
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.ps.{AdminInformation => PsAdminInfos}
 import fr.proline.module.rm.unimod.UnimodImporter

@@ -1,7 +1,7 @@
 package fr.proline.admin.service.db.setup
 
 import java.sql.Connection
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.repository.DriverType
 import fr.proline.repository.IDatabaseConnector

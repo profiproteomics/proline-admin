@@ -2,7 +2,7 @@ package fr.proline.admin.service.db
 
 import java.io.File
 import javax.persistence.EntityManager
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.profi.jdbc.easy.EasyDBC
 import fr.proline.admin.service.ICommandWork

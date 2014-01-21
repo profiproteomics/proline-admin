@@ -3,7 +3,7 @@ package fr.proline.admin.service.db.setup
 import javax.persistence.Persistence
 import scala.collection.JavaConversions.{collectionAsScalaIterable}
 import com.typesafe.config.Config
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.tables.msi.{MsiDbScoringTable,MsiDbObjectTreeSchemaColumns}
 import fr.proline.core.orm.msi.{AdminInformation => MsiAdminInfos, Scoring => MsiScoring, ObjectTreeSchema => MsiSchema }

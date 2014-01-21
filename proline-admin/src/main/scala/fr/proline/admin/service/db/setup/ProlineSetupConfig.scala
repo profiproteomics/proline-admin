@@ -8,7 +8,7 @@ import fr.proline.core.orm.uds.{
   ExternalDbPropertiesSerializer => UdsExtDbPropsSerializer
 }
 import fr.proline.repository._
-import com.weiglewilczek.slf4s.Logging
+import com.typesafe.scalalogging.slf4j.Logging
 
 /** Configuration settings for Proline setup */
 case class ProlineSetupConfig(
