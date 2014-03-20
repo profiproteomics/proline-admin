@@ -9,14 +9,13 @@ import org.dbunit.dataset.xml.FlatDtdDataSet
 import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.service.ICommandWork
-import fr.proline.core.orm.util.DataStoreConnectorFactory
-import fr.proline.repository.IDatabaseConnector
+import fr.proline.repository._
 
 /**
  * @author David Bouyssie
  *
  */
-class ExportDbUnitDTDs( dsConnectorFactory: DataStoreConnectorFactory, dirPath: String ) extends ICommandWork with Logging {
+class ExportDbUnitDTDs( dsConnectorFactory: IDataStoreConnectorFactory, dirPath: String ) extends ICommandWork with Logging {
 
   def doWork() {
     
@@ -57,7 +56,7 @@ class ExportDbUnitDTDs( dsConnectorFactory: DataStoreConnectorFactory, dirPath: 
 
 object ExportDbUnitDTDs {
   
-  def apply( dsConnectorFactory: DataStoreConnectorFactory, exportDirPath: String ): Unit = {
+  def apply( dsConnectorFactory: IDataStoreConnectorFactory, exportDirPath: String ): Unit = {
     new ExportDbUnitDTDs(dsConnectorFactory,exportDirPath).doWork()
   }
 
