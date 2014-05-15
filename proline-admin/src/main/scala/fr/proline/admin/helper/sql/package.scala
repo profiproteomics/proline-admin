@@ -10,6 +10,7 @@ import com.typesafe.scalalogging.slf4j.Logger
 
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.repository.IDatabaseConnector
+import fr.proline.util.StringUtils
 
 /**
  * @author David Bouyssie
@@ -38,34 +39,49 @@ package object sql {
       try {
         pgDbConnector.getDataSource.getConnection
       } catch {
-        case psqle: PSQLException =>
-          {
-            val pgClass = classOf[org.postgresql.Driver]
-            val templateURL = "jdbc:postgresql://"+dbConfig.connectionConfig.getString("host")+":"++dbConfig.connectionConfig.getString("port")+"/template1"
-            if (logger != None) logger.get.info("creating database from template '%s'...".format(templateURL))
+        case psqle: PSQLException => {
+          val pgClass = classOf[org.postgresql.Driver]
+          
+          val connConfig = dbConfig.connectionConfig
+          val host = connConfig.getString("host")
+          val port = connConfig.getString("port")
+          require( StringUtils.isNotEmpty(port), "missing port value" )
+          val portAsInteger = port.toInt
+          
+          val templateURL = if( portAsInteger >= 0 && portAsInteger <= 65535 )
+            s"jdbc:postgresql://${host}:${port}/template1"
+          else
+            s"jdbc:postgresql://${host}/template1"
+          
+          logger.map( _.info(s"creating database from template '${templateURL}'...") )
 
-            val pgTemplateConn = DriverManager.getConnection(templateURL, dbConfig.connectionConfig.getString("user"), dbConfig.connectionConfig.getString("password"))
-            val stmt = pgTemplateConn.createStatement
-            // Create database if it doesn't exists
-            if (_checkDbExists(stmt, dbConfig.dbName) == false) {
-              if (logger != None) logger.get.info("creating database '%s'...".format(dbConfig.dbName))
-              stmt.executeUpdate("CREATE DATABASE %s;".format(dbConfig.dbName))
-            }
-
-            // Close database connection and statement
-            stmt.close()
-            pgTemplateConn.close()
-            pgDbConnector.getDataSource.getConnection
+          val pgTemplateConn = DriverManager.getConnection(
+            templateURL,
+            connConfig.getString("user"),
+            connConfig.getString("password")
+          )
+          val stmt = pgTemplateConn.createStatement
+          
+          // Create database if it doesn't exists
+          if (_checkDbExists(stmt, dbConfig.dbName) == false) {
+            logger.map( _.info(s"creating database '${dbConfig.dbName}'...") )
+            stmt.executeUpdate(s"CREATE DATABASE ${dbConfig.dbName};")
           }
+
+          // Close database connection and statement
+          stmt.close()
+          pgTemplateConn.close()
+          
+          pgDbConnector.getDataSource.getConnection
+        }
       } 
-      }.asInstanceOf[Connection]
-    
+    }.asInstanceOf[Connection]    
 
     val stmt = pgDbConn.createStatement
     
     // Check that database has been created
     if (_checkDbExists(stmt, dbConfig.dbName) == false)
-      throw new Exception("can't create database '%s'".format(dbConfig.dbName))
+      throw new Exception(s"can't create database '${dbConfig.dbName}'")
 
     // Close database connection and statement
     stmt.close()
@@ -73,8 +89,7 @@ package object sql {
   }
 
   private def _checkDbExists(stmt: java.sql.Statement, dbName: String): Boolean = {
-    val jdbcRS = stmt.executeQuery("select count(*) from pg_catalog.pg_database where datname = '%s'"
-      .format(dbName))
+    val jdbcRS = stmt.executeQuery(s"SELECT count(*) FROM pg_catalog.pg_database WHERE datname = '${dbName}'")
 
     if (jdbcRS.next() && jdbcRS.getInt(1) == 0) false else true
   }

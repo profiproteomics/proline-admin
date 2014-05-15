@@ -3,12 +3,12 @@ package fr.proline.admin.service.db.setup
 import java.io.File
 import scala.collection.JavaConversions.collectionAsScalaIterable
 import com.typesafe.config.{ Config, ConfigFactory, ConfigList }
+import com.typesafe.scalalogging.slf4j.Logging
 import fr.proline.core.orm.uds.{
   ExternalDb => UdsExternalDb,
   ExternalDbPropertiesSerializer => UdsExtDbPropsSerializer
 }
 import fr.proline.repository._
-import com.typesafe.scalalogging.slf4j.Logging
 
 /** Configuration settings for Proline setup */
 case class ProlineSetupConfig(
@@ -99,7 +99,11 @@ case class DatabaseSetupConfig(dbType: ProlineDatabaseType,
     if (host.length > 0) udsExtDb.setHost(host)
 
     val port = connectionConfig.getString("port")
-    if (port.length > 0) udsExtDb.setPort(port.toInt)
+    if (port.length > 0) {
+      val portAsInteger = port.toInt
+      if( portAsInteger >= 0 && portAsInteger <= 65535 )
+        udsExtDb.setPort(portAsInteger)
+    }
 
     udsExtDb.setDriverType(driverType)
 
@@ -113,14 +117,17 @@ case class DatabaseSetupConfig(dbType: ProlineDatabaseType,
 
 case class MsiDBDefaults(
   scorings: java.util.List[Config],
-  schemata: java.util.List[Config])
+  schemata: java.util.List[Config]
+)
 
 case class PdiDBDefaults(
-  resources: Config)
+  resources: Config
+)
 
 case class UdsDBDefaults(
   resources: Config,
   instruments: java.util.List[Config],
   peaklistSoftware: java.util.List[Config],
-  quantMethods: java.util.List[Config])
-            
+  quantMethods: java.util.List[Config]
+)
+
