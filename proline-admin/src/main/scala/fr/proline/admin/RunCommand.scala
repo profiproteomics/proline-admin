@@ -41,6 +41,10 @@ object RunCommand extends App with Logging {
   private object CreateUserCommand extends JCommandReflection {
     @Parameter(names = Array("--login", "-l"), description = "The user account login", required = true)
     var userLogin: String = ""
+      
+    @Parameter(names = Array("--password", "-p"), description = "The user password. Default could be used.", required = false)
+    var userPassword: String = ""
+      
   }
 
   @Parameters(commandNames = Array("dump_msi_db"), commandDescription = "Dump MSIdb content into an XML file", separators = "=")
@@ -131,7 +135,8 @@ object RunCommand extends App with Logging {
         }
         case CreateUserCommand.Parameters.firstName => {
           import fr.proline.admin.service.user.CreateUser
-          CreateUser(CreateUserCommand.userLogin)
+          val pswd = if( CreateUserCommand.userPassword.isEmpty()) None else Some(CreateUserCommand.userPassword)
+          CreateUser(CreateUserCommand.userLogin, pswd)
         }
         case DumpMsiDbCommand.Parameters.firstName => {
           import fr.proline.admin.service.db.maintenance.DumpDatabase

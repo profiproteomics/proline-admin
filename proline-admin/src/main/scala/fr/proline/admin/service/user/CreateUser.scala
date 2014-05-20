@@ -12,13 +12,14 @@ import fr.proline.core.orm.util.DataStoreConnectorFactory
  *
  */
 class CreateUser( udsDbContext: DatabaseConnectionContext,
-                  login: String ) extends Logging {
+                  login: String , password : String) extends Logging {
   
   var userId: Long = 0L
   
   def run() {
 
     import fr.proline.core.orm.uds.{UserAccount => UdsUser}
+    import fr.profi.util.security._
     
     // Creation UDS entity manager
     val udsEM = udsDbContext.getEntityManager
@@ -31,6 +32,7 @@ class CreateUser( udsDbContext: DatabaseConnectionContext,
     // Create the project
     val udsUser = new UdsUser()
     udsUser.setLogin( login )
+    udsUser.setPassword(sha256Hex(password))
     udsUser.setCreationMode( "MANUAL" )
     
     udsEM.persist( udsUser )
@@ -47,7 +49,7 @@ class CreateUser( udsDbContext: DatabaseConnectionContext,
 
 object CreateUser {
   
-  def apply( login: String ): Long = {
+  def apply( login: String, pswd : Option[String] = None ): Long = {
     
     // Retrieve Proline configuration
     val prolineConf = SetupProline.config    
@@ -55,7 +57,8 @@ object CreateUser {
     val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
     
     // Create user
-    val userCreator = new CreateUser( udsDbContext, login )
+    val password = if(pswd.isDefined) pswd.get else "proline"
+    val userCreator = new CreateUser( udsDbContext, login, password)
     userCreator.run()
     
     // Close the database manager
