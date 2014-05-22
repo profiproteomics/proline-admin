@@ -26,24 +26,24 @@ trait ISetupDB extends Logging {
   protected def importDefaults(): Unit
 
   /** Execution state. */
-  def isExecuted = this._executed
+  def isExecuted = _executed
 
   /** Execute the setup of the database. */
   def run() {
+
+    val currentThread = Thread.currentThread
+
+    if (!currentThread.getUncaughtExceptionHandler.isInstanceOf[ThreadLogger]) {
+      currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.underlying.getName))
+    }
 
     if (_executed) {
       throw new IllegalStateException("The setup has been already executed")
     }
 
-    val currentThread = Thread.currentThread
-
-    if (!currentThread.getUncaughtExceptionHandler.isInstanceOf[ThreadLogger]) {
-      currentThread.setUncaughtExceptionHandler(new ThreadLogger())
-    }
-
     //try {
-    if (this.initSchema()) {
-      this.importDefaults()
+    if (initSchema()) {
+      importDefaults()
       logger.info("database '" + dbConfig.dbName + "' successfully set up !")
     } else {
       throw new Exception(dbConfig.dbName + " schema initialization failed")
@@ -56,25 +56,24 @@ trait ISetupDB extends Logging {
 
     }*/
 
-    this._executed = true
+    _executed = true
   }
 
   protected def initSchema(): Boolean = {
 
     // Create database if driver type is PostgreSQL
     if (dbConfig.driverType == DriverType.POSTGRESQL) {
-      createPgDatabase(dbConnector,dbConfig, Some(this.logger))
+      createPgDatabase(dbConnector, dbConfig, Some(logger))
     }
 
     // Initialize database schema
     //    dbConfig.schemaVersion = DatabaseUpgrader.upgradeDatabase(dbConnector);    
     //    if ((dbConfig.schemaVersion == null) || (dbConfig.schemaVersion.isEmpty()) || dbConfig.schemaVersion.equals("no.version")) false else true
     dbConfig.schemaVersion = "0.1"
-    
-    val upgradeStatus = if (DatabaseUpgrader.upgradeDatabase(dbConnector) > 0) true else false
-    
-    upgradeStatus
 
+    val upgradeStatus = if (DatabaseUpgrader.upgradeDatabase(dbConnector) > 0) true else false
+
+    upgradeStatus
   }
 
 }
