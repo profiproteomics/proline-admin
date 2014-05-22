@@ -85,7 +85,7 @@ class SetupLcmsDB(val dbConnector: IDatabaseConnector,
       lcMsTransacOK = true
     } finally {
 
-      if (!lcMsTransacOK) {
+      if ((lcMsSqlContext != null) && !lcMsTransacOK) {
         logger.info("Rollbacking LC-MS Db EntityTransaction")
 
         try {

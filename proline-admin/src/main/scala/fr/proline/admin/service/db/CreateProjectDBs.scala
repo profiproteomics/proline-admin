@@ -116,7 +116,7 @@ class CreateProjectDBs(udsDbContext: DatabaseConnectionContext, config: ProlineS
     var msiDbConnector: IDatabaseConnector = null
     var localMsiDbConnector: Boolean = false
 
-    if (connectorFactory.isInitialized()) {
+    if (connectorFactory.isInitialized) {
       msiDbConnector = connectorFactory.getMsiDbConnector(projectId)
     }
 
@@ -129,7 +129,7 @@ class CreateProjectDBs(udsDbContext: DatabaseConnectionContext, config: ProlineS
       new SetupMsiDB(msiDbConnector, msiDBConfig, config.msiDBDefaults).run()
     } finally {
 
-      if (localMsiDbConnector) {
+      if (localMsiDbConnector && (msiDbConnector != null)) {
         msiDbConnector.close()
       }
 
@@ -139,7 +139,7 @@ class CreateProjectDBs(udsDbContext: DatabaseConnectionContext, config: ProlineS
     var lcmsDbConnector: IDatabaseConnector = null
     var localLcMsDbConnector: Boolean = false
 
-    if (connectorFactory.isInitialized()) {
+    if (connectorFactory.isInitialized) {
       lcmsDbConnector = connectorFactory.getLcMsDbConnector(projectId)
     }
 
@@ -152,7 +152,7 @@ class CreateProjectDBs(udsDbContext: DatabaseConnectionContext, config: ProlineS
       new SetupLcmsDB(lcmsDbConnector, lcmsDBConfig).run()
     } finally {
 
-      if (localLcMsDbConnector) {
+      if (localLcMsDbConnector && (lcmsDbConnector != null)) {
         lcmsDbConnector.close()
       }
 
@@ -257,7 +257,7 @@ object CreateProjectDBs extends Logging {
 
     val connectorFactory = DataStoreConnectorFactory.getInstance()
 
-    val udsDbConnector = if (connectorFactory.isInitialized()) {
+    val udsDbConnector = if (connectorFactory.isInitialized) {
       connectorFactory.getUdsDbConnector
     } else {
       // Instantiate a database manager
@@ -288,7 +288,7 @@ object CreateProjectDBs extends Logging {
 
     } finally {
 
-      if (localUdsDbConnector) {
+      if (localUdsDbConnector && (udsDbConnector != null)) {
         udsDbConnector.close()
       }
 

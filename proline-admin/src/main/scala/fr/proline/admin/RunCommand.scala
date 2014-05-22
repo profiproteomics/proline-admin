@@ -1,12 +1,12 @@
 package fr.proline.admin
 
-import com.beust.jcommander.{JCommander, MissingCommandException, Parameter, ParameterException, Parameters}
+import com.beust.jcommander.{ JCommander, MissingCommandException, Parameter, ParameterException, Parameters }
 import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
-import fr.proline.admin.service.user.{CreateProject, CreateUser}
-import fr.proline.core.orm.util.{DataStoreConnectorFactory, DataStoreUpgrader}
+import fr.proline.admin.service.user.{ CreateProject, CreateUser }
+import fr.proline.core.orm.util.{ DataStoreConnectorFactory, DataStoreUpgrader }
 import fr.proline.util.ThreadLogger
 
 object RunCommand extends App with Logging {
@@ -41,10 +41,10 @@ object RunCommand extends App with Logging {
   private object CreateUserCommand extends JCommandReflection {
     @Parameter(names = Array("--login", "-l"), description = "The user account login", required = true)
     var userLogin: String = ""
-      
+
     @Parameter(names = Array("--password", "-p"), description = "The user password. Default could be used.", required = false)
     var userPassword: String = ""
-      
+
   }
 
   @Parameters(commandNames = Array("dump_msi_db"), commandDescription = "Dump MSIdb content into an XML file", separators = "=")
@@ -68,13 +68,13 @@ object RunCommand extends App with Logging {
     @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
     var filePath: String = ""
   }
-  
+
   @Parameters(commandNames = Array("export_dbunit_dtds"), commandDescription = "Export DBUnit DTD files", separators = "=")
   private object ExportDbUnitDTDsCommand extends JCommandReflection {
     @Parameter(names = Array("--dir_path", "-d"), description = "The path to the export directory", required = true)
     var dirPath: String = ""
   }
-  
+
   @Parameters(commandNames = Array("upgrade_dbs"), commandDescription = "Upgrade all databases to the latest format", separators = "=")
   private object UpgradeDatabasesCommand extends JCommandReflection
 
@@ -83,7 +83,7 @@ object RunCommand extends App with Logging {
 
     // Instantiate a database manager
     val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
-    if (dsConnectorFactory.isInitialized == false) {
+    if (!dsConnectorFactory.isInitialized) {
       dsConnectorFactory.initialize(SetupProline.config.udsDBConfig.toNewConnector)
     }
 
@@ -135,7 +135,7 @@ object RunCommand extends App with Logging {
         }
         case CreateUserCommand.Parameters.firstName => {
           import fr.proline.admin.service.user.CreateUser
-          val pswd = if( CreateUserCommand.userPassword.isEmpty()) None else Some(CreateUserCommand.userPassword)
+          val pswd = if (CreateUserCommand.userPassword.isEmpty()) None else Some(CreateUserCommand.userPassword)
           CreateUser(CreateUserCommand.userLogin, pswd)
         }
         case DumpMsiDbCommand.Parameters.firstName => {
@@ -153,18 +153,18 @@ object RunCommand extends App with Logging {
         }
         case ExportDbUnitDTDsCommand.Parameters.firstName => {
           import fr.proline.admin.service.db.maintenance.ExportDbUnitDTDs
-          ExportDbUnitDTDs(dsConnectorFactory,ExportDbUnitDTDsCommand.dirPath)
+          ExportDbUnitDTDs(dsConnectorFactory, ExportDbUnitDTDsCommand.dirPath)
         }
         case UpgradeDatabasesCommand.Parameters.firstName => {
           if (dsConnectorFactory.isInitialized) {
             logger.debug("Upgrading all Proline Databases...")
-            
-            if( DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory) ) {
+
+            if (DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory)) {
               logger.info("Databases successfully upgraded !")
             } else {
               logger.error("Databases upgrade failed !")
             }
-            
+
           } else {
             logger.error("Unable to initialize DataStoreConnectorFactory instance")
           }

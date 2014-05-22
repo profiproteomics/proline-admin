@@ -84,7 +84,7 @@ object CreateUser extends Logging {
 
     val connectorFactory = DataStoreConnectorFactory.getInstance()
 
-    val udsDbConnector = if (connectorFactory.isInitialized()) {
+    val udsDbConnector = if (connectorFactory.isInitialized) {
       connectorFactory.getUdsDbConnector
     } else {
       // Instantiate a database manager
@@ -118,7 +118,7 @@ object CreateUser extends Logging {
 
     } finally {
 
-      if (localUdsDbConnector) {
+      if (localUdsDbConnector && (udsDbConnector != null)) {
         udsDbConnector.close()
       }
 

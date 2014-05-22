@@ -118,7 +118,7 @@ object CreateProject extends Logging {
 
     import fr.proline.admin.service.db.{ CreateProjectDBs, ProlineDatabaseContext }
 
-    var projectId: Long = -1
+    var projectId: Long = -1L
 
     // Retrieve Proline configuration
     val prolineConf = SetupProline.config
@@ -127,7 +127,7 @@ object CreateProject extends Logging {
 
     val connectorFactory = DataStoreConnectorFactory.getInstance()
 
-    val udsDbConnector = if (connectorFactory.isInitialized()) {
+    val udsDbConnector = if (connectorFactory.isInitialized) {
       connectorFactory.getUdsDbConnector
     } else {
       // Instantiate a database manager
@@ -153,6 +153,16 @@ object CreateProject extends Logging {
         projectCreator.doWork()
 
         projectId = projectCreator.projectId
+
+        if (projectId > 0L) {
+
+          // Create project databases
+          new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
+
+        } else {
+          logger.error("Invalid Project Id: " + projectId)
+        }
+
       } finally {
         logger.debug("Closing current UDS Db Context")
 
@@ -164,31 +174,9 @@ object CreateProject extends Logging {
 
       }
 
-      if (projectId > 0L) {
-        // Create a second pure SQL UDS Db context to create Databases
-        val sqlUdsDbContext = ContextFactory.buildDbConnectionContext(udsDbConnector, false)
-
-        try {
-          // Create project databases
-          new CreateProjectDBs(sqlUdsDbContext, prolineConf, projectId).doWork()
-        } finally {
-          logger.debug("Closing current UDS Db SQL Context")
-
-          try {
-            sqlUdsDbContext.close()
-          } catch {
-            case exClose: Exception => logger.error("Error closing UDS Db SQL Context", exClose)
-          }
-
-        }
-
-      } else {
-        logger.error("Invalid Project Id: " + projectId)
-      }
-
     } finally {
 
-      if (localUdsDbConnector) {
+      if (localUdsDbConnector && (udsDbConnector != null)) {
         udsDbConnector.close()
       }
 

@@ -8,6 +8,7 @@ import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.{ IDatabaseConnector, ProlineDatabaseType, DriverType }
 import fr.proline.util.resources._
+import fr.proline.util.ThreadLogger
 
 /*class DatabaseConnectionContext( val dbConnector: IDatabaseConnector ) {
   
@@ -98,9 +99,17 @@ class SetupProline(config: ProlineSetupConfig) extends Logging {
 
   def run() {
 
-    // Instantiate a database manager
-    //val dbManager = DatabaseManager.getInstance()
-    //dbManager.initialize(config.udsDBConfig.connector)
+    val currentThread = Thread.currentThread
+
+    if (!currentThread.getUncaughtExceptionHandler.isInstanceOf[ThreadLogger]) {
+      currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.underlying.getName))
+    }
+
+    val connectorFactory = DataStoreConnectorFactory.getInstance()
+
+    if (connectorFactory.isInitialized) {
+      throw new IllegalStateException("A DataStoreConnectorFactory is ALREADY initialized : cannot run SetupProline !")
+    }
 
     // Set Up the UDSdb
     logger.info("setting up the 'User Data Set' database...")
@@ -130,7 +139,6 @@ class SetupProline(config: ProlineSetupConfig) extends Logging {
     pdiDbConnector.close()
 
     logger.info("Proline has been sucessfuly set up !")
-
   }
 
 }
