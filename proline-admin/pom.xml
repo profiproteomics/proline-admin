@@ -5,7 +5,7 @@
   <parent>
     <artifactId>ProFI-Pom</artifactId>
     <groupId>fr.proline</groupId>
-    <version>0.0.4-SNAPSHOT</version>  <!-- Snapshot Trunk version -->
+    <version>0.0.4-SNAPSHOT</version> <!-- Snapshot Trunk version -->
   </parent>
 
   <artifactId>Proline-Admin</artifactId>
@@ -16,7 +16,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <core.version>0.1.3-SNAPSHOT</core.version>  <!-- Snapshot Trunk version -->
+    <core.version>0.1.3-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
   </properties>
 
   <dependencies>
@@ -85,7 +85,7 @@
     <dependency>
       <groupId>fr.proline.util</groupId>
       <artifactId>ProFI-Commons-Scala</artifactId>
-      <version>0.0.7-SNAPSHOT</version>  <!-- Snapshot Trunk version -->
+      <version>0.0.7-SNAPSHOT</version> <!-- Snapshot Trunk version -->
     </dependency>
 
     <dependency>
@@ -112,13 +112,13 @@
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-ResourcesManager</artifactId>
-      <version>0.0.7</version>
+      <version>0.0.8-SNAPSHOT</version> <!-- Snapshot Trunk version -->
     </dependency>
 
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>PM-MascotParser</artifactId>
-      <version>0.0.11-SNAPSHOT</version>  <!-- Snapshot Trunk version -->
+      <version>0.0.11-SNAPSHOT</version> <!-- Snapshot Trunk version -->
     </dependency>
 
     <!-- Tests -->
