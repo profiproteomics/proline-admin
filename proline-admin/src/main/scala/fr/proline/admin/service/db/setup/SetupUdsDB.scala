@@ -1,5 +1,6 @@
 package fr.proline.admin.service.db.setup
 
+/*
 import javax.persistence.EntityManager
 import scala.collection.JavaConversions.{ collectionAsScalaIterable, setAsJavaSet }
 import scala.collection.mutable.ArrayBuffer
@@ -473,4 +474,4 @@ class SetupUdsDB(val dbConnector: IDatabaseConnector,
 
   }
 
-}
+}*/

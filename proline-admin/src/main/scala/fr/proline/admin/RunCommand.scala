@@ -157,7 +157,7 @@ object RunCommand extends App with Logging {
         }
         case UpgradeDatabasesCommand.Parameters.firstName => {
           if (dsConnectorFactory.isInitialized) {
-            logger.debug("Upgrading all Proline Databases...")
+            logger.info("Upgrading all Proline Databases...")
 
             if (DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory)) {
               logger.info("Databases successfully upgraded !")

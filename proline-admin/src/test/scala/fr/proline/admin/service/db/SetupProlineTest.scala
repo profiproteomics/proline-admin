@@ -36,7 +36,9 @@ class SetupProlineTest extends Logging {
       Map(
         "proline-config.driver-type" -> "h2",
         "proline-config.data-directory" -> dataTmpDir,
-        "h2-config.connection-properties.connectionMode" -> "MEMORY"))
+        "h2-config.connection-properties.connectionMode" -> "MEMORY"
+      )
+    )
 
     // Load application config and replace some properties values with the previous ones
     var classLoader = SetupProline.getClass().getClassLoader()

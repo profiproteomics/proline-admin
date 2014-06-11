@@ -14,16 +14,14 @@ import fr.proline.repository._
 case class ProlineSetupConfig(
   dataDirectory: File,
   udsDBConfig: DatabaseSetupConfig,
-  udsDBDefaults: UdsDBDefaults,
   pdiDBConfig: DatabaseSetupConfig,
-  pdiDBDefaults: PdiDBDefaults,
   psDBConfig: DatabaseSetupConfig,
   msiDBConfig: DatabaseSetupConfig,
-  msiDBDefaults: MsiDBDefaults,
-  lcmsDBConfig: DatabaseSetupConfig) {
+  lcmsDBConfig: DatabaseSetupConfig
+) {
 
   // Check that directory exists
-  require(dataDirectory.exists() && dataDirectory.isDirectory())
+  require(dataDirectory.exists() && dataDirectory.isDirectory(), "data directory does not exist")
 
 }
 
@@ -42,10 +40,12 @@ object DatabaseSetupConfig {
 }
 
 /** Configuration settings for database setup */
-case class DatabaseSetupConfig(dbType: ProlineDatabaseType,
-                               driverType: DriverType,
-                               dbDirectory: File,
-                               connectionConfig: Config) extends Logging {
+case class DatabaseSetupConfig(
+  dbType: ProlineDatabaseType,
+  driverType: DriverType,
+  dbDirectory: File,
+  connectionConfig: Config
+) extends Logging {
 
   // Check that directories exists
   //require( scriptDirectory.exists() && scriptDirectory.isDirectory(), "missing script directory:"+scriptDirectory )
@@ -119,15 +119,3 @@ case class MsiDBDefaults(
   scorings: java.util.List[Config],
   schemata: java.util.List[Config]
 )
-
-case class PdiDBDefaults(
-  resources: Config
-)
-
-case class UdsDBDefaults(
-  resources: Config,
-  instruments: java.util.List[Config],
-  peaklistSoftware: java.util.List[Config],
-  quantMethods: java.util.List[Config]
-)
-

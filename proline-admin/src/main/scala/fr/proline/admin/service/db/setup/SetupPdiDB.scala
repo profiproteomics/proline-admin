@@ -1,5 +1,6 @@
 package fr.proline.admin.service.db.setup
 
+/*
 import java.sql.Connection
 import com.typesafe.scalalogging.slf4j.Logging
 import fr.proline.context.DatabaseConnectionContext
@@ -14,6 +15,7 @@ import fr.proline.repository.util.PostgresUtils
  */
 
 /* Cannot use DatabaseConnectionContext here because Db Shema does not exist yet ! */
+
 class SetupPdiDB(val dbConnector: IDatabaseConnector,
                  val dbConfig: DatabaseSetupConfig,
                  val prolineConfig: ProlineSetupConfig) extends ISetupDB with Logging {
@@ -104,4 +106,4 @@ class SetupPdiDB(val dbConnector: IDatabaseConnector,
 
   }
 
-}
+}*/

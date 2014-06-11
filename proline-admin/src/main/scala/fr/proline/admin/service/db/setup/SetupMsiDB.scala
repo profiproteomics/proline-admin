@@ -1,5 +1,6 @@
 package fr.proline.admin.service.db.setup
 
+/*
 import javax.persistence.Persistence
 import scala.collection.JavaConversions.{ collectionAsScalaIterable }
 import com.typesafe.config.Config
@@ -128,4 +129,4 @@ class SetupMsiDB(val dbConnector: IDatabaseConnector,
 
   }
 
-}
+}*/

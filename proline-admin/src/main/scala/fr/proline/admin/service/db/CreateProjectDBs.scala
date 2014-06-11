@@ -13,68 +13,16 @@ import fr.proline.core.orm.uds.{ Project => UdsProject }
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.ConnectionMode
 import fr.proline.repository.DriverType
-import setup.{ SetupLcmsDB, SetupMsiDB }
 import fr.proline.repository.IDatabaseConnector
 
 /**
  * @author David Bouyssie
  *
  */
-class CreateProjectDBs(udsDbContext: DatabaseConnectionContext, config: ProlineSetupConfig, projectId: Long) extends ICommandWork with Logging {
-
-  /*def run() {
-    
-    val udsEMF = dbManager.udsEMF
-    val udsEM = udsEMF.createEntityManager()    
-    
-    // Retrieve the project => we assume it has been already created
-    val query = udsEM.createQuery("Select prj from Project prj where prj.id = :id", classOf[UdsProject])
-    query.setParameter("id", projectId)
-    
-    val udsProject = query.getSingleResult()
-    
-    // Check that there are no external DBs attached to this project
-    val extDbs = udsProject.getExternalDatabases()
-    if( extDbs != null && extDbs.size() > 0 )
-      throw new Exception("project of id='%d' is already associated to external databases !".format(projectId))
-    
-    // Prepare MSIdb creation
-    val msiDBConfig = this._prepareDBCreation( config.msiDBConfig )
-    
-    // Begin transaction
-    udsEM.getTransaction().begin()
-    
-    // Store MSIdb connection settings
-    val udsMsiDbSettings = msiDBConfig.toUdsExternalDb()
-    udsEM.persist( udsMsiDbSettings )
-    udsProject.addExternalDatabase(udsMsiDbSettings)
-    udsEM.persist( udsProject )
-    udsEM.getTransaction().commit()
-    
-    // Create MSI database
-    new SetupMsiDB( dbManager, msiDBConfig, config.msiDBDefaults, projectId ).run()
-    
-    // Prepare LCMSdb creation
-    val lcmsDBConfig = this._prepareDBCreation( config.lcmsDBConfig )
-    
-    udsEM.getTransaction().begin()
-    
-    // Store LCMSdb connection settings
-    val udsLcmsDbSettings = lcmsDBConfig.toUdsExternalDb()
-    udsEM.persist( udsLcmsDbSettings )
-    udsProject.addExternalDatabase(udsLcmsDbSettings)
-    udsEM.persist( udsProject )
-    
-    // Commit transaction
-    udsEM.getTransaction().commit()
-    
-    // Create LCMS database
-    new SetupLcmsDB( dbManager, lcmsDBConfig, projectId ).run()
-    
-    // Close entity manager
-    udsEM.close()
-    
-  }*/
+class CreateProjectDBs(
+  udsDbContext: DatabaseConnectionContext,
+  config: ProlineSetupConfig, projectId: Long
+) extends ICommandWork with Logging {
 
   def doWork() {
 
@@ -126,7 +74,18 @@ class CreateProjectDBs(udsDbContext: DatabaseConnectionContext, config: ProlineS
     }
 
     try {
-      new SetupMsiDB(msiDbConnector, msiDBConfig, config.msiDBDefaults).run()
+      /*new SetupMsiDB(msiDbConnector, msiDBConfig, config.msiDBDefaults).run()
+      
+      def _importAdminInformation(msiEM: EntityManager) {
+
+        val msiAdminInfos = new MsiAdminInfos()
+        msiAdminInfos.setModelVersion(dbConfig.schemaVersion)
+        msiAdminInfos.setDbCreationDate(getTimeAsSQLTimestamp)
+        //udsAdminInfos.setModelUpdateDate()
+        msiEM.persist(msiAdminInfos)
+    
+      }*/
+      
     } finally {
 
       if (localMsiDbConnector && (msiDbConnector != null)) {
@@ -149,7 +108,7 @@ class CreateProjectDBs(udsDbContext: DatabaseConnectionContext, config: ProlineS
     }
 
     try {
-      new SetupLcmsDB(lcmsDbConnector, lcmsDBConfig).run()
+      //new SetupLcmsDB(lcmsDbConnector, lcmsDBConfig).run()
     } finally {
 
       if (localLcMsDbConnector && (lcmsDbConnector != null)) {
@@ -184,17 +143,7 @@ class CreateProjectDBs(udsDbContext: DatabaseConnectionContext, config: ProlineS
         false,
         Option(extDb.getSerializedProperties)
       )
-      /*stmt.executeWith( "D:/proline/data/test/projects/project_1/msi-db.sqlite",
-                        "FILE",
-                        Option.empty[String],
-                        Option.empty[String],
-                        Option.empty[String],
-                        Option.empty[Int],
-                        "msi",
-                        "0.1",
-                        false,
-                        Option.empty[String]
-                       )*/
+      
       stmt.generatedLong
     }
 
