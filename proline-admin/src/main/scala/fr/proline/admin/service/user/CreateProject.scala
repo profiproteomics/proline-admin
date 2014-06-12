@@ -1,23 +1,26 @@
 package fr.proline.admin.service.user
 
+import javax.persistence.EntityTransaction
 import com.typesafe.scalalogging.slf4j.Logging
 import fr.profi.jdbc.easy.{ date2Formattable, int2Formattable, string2Formattable }
 import fr.proline.admin.service.db.{ CreateProjectDBs, SetupProline }
 import fr.proline.admin.service.ICommandWork
 import fr.proline.context.DatabaseConnectionContext
+import fr.proline.core.dal.ContextFactory
 import fr.proline.core.orm.uds.{ Dataset => UdsDataset, Project => UdsProject, UserAccount => UdsUser }
 import fr.proline.core.orm.util.DataStoreConnectorFactory
-import javax.persistence.EntityTransaction
-import fr.proline.core.dal.ContextFactory
+import fr.proline.repository.DriverType
 
 /**
  * @author David Bouyssie
  *
  */
-class CreateProject(udsDbContext: DatabaseConnectionContext,
-                    projectName: String,
-                    projectDescription: String,
-                    ownerId: Long) extends ICommandWork with Logging {
+class CreateProject(
+  udsDbContext: DatabaseConnectionContext,
+  projectName: String,
+  projectDescription: String,
+  ownerId: Long
+) extends ICommandWork with Logging {
 
   var projectId: Long = -1L
 
@@ -95,7 +98,7 @@ class CreateProject(udsDbContext: DatabaseConnectionContext,
       logger.debug("Project #" + projectId + " has been created")
     } finally {
 
-      if ((localUdsTransaction != null) && !udsTransacOK) {
+      if ((localUdsTransaction != null) && !udsTransacOK && udsDbContext.getDriverType() != DriverType.SQLITE) {
         logger.info("Rollbacking current UDS Db Transaction")
 
         try {
@@ -116,7 +119,7 @@ object CreateProject extends Logging {
 
   def apply(name: String, description: String, ownerId: Long): Long = {
 
-    import fr.proline.admin.service.db.{ CreateProjectDBs, ProlineDatabaseContext }
+    import fr.proline.admin.service.db.CreateProjectDBs
 
     var projectId: Long = -1L
 

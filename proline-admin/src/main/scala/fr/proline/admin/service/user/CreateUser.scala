@@ -6,13 +6,17 @@ import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.uds.{ Project => UdsProject, UserAccount => UdsUser }
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import javax.persistence.EntityTransaction
+import fr.proline.repository.DriverType
 
 /**
  * @author David Bouyssie
  *
  */
-class CreateUser(udsDbContext: DatabaseConnectionContext,
-                 login: String, password: String) extends Logging {
+class CreateUser(
+  udsDbContext: DatabaseConnectionContext,
+  login: String,
+  password: String
+) extends Logging {
 
   var userId: Long = -1L
 
@@ -40,7 +44,7 @@ class CreateUser(udsDbContext: DatabaseConnectionContext,
       // Create the project
       val udsUser = new UdsUser()
       udsUser.setLogin(login)
-      udsUser.setPassword(sha256Hex(password))
+      udsUser.setPasswordHash(sha256Hex(password))
       udsUser.setCreationMode("MANUAL")
 
       udsEM.persist(udsUser)
@@ -54,7 +58,7 @@ class CreateUser(udsDbContext: DatabaseConnectionContext,
       logger.debug("User #" + userId + " has been created")
     } finally {
 
-      if ((localUdsTransaction != null) && !udsTransacOK) {
+      if ((localUdsTransaction != null) && !udsTransacOK && udsDbContext.getDriverType != DriverType.SQLITE) {
         logger.info("Rollbacking current UDS Db Transaction")
 
         try {
@@ -87,11 +91,13 @@ object CreateUser extends Logging {
     val udsDbConnector = if (connectorFactory.isInitialized) {
       connectorFactory.getUdsDbConnector
     } else {
-      // Instantiate a database manager
+      
+      // Create a new connector
       val udsDBConfig = prolineConf.udsDBConfig
-
       val newUdsDbConnector = udsDBConfig.toNewConnector()
+      
       localUdsDbConnector = true
+      
       newUdsDbConnector
     }
 

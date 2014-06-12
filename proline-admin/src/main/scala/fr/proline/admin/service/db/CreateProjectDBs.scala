@@ -1,15 +1,13 @@
 package fr.proline.admin.service.db
 
 import java.io.File
-import javax.persistence.EntityManager
 import com.typesafe.scalalogging.slf4j.Logging
 import fr.profi.jdbc.easy.EasyDBC
-import fr.proline.admin.service.ICommandWork
-import fr.proline.admin.service.db.setup.{ DatabaseSetupConfig, ProlineSetupConfig }
 import fr.proline.admin.helper.sql._
+import fr.proline.admin.service.ICommandWork
+import fr.proline.admin.service.db.setup.{DatabaseSetupConfig, ProlineSetupConfig, SetupLcmsDB}
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.DoJDBCWork
-import fr.proline.core.orm.uds.{ Project => UdsProject }
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.ConnectionMode
 import fr.proline.repository.DriverType
@@ -25,12 +23,7 @@ class CreateProjectDBs(
 ) extends ICommandWork with Logging {
 
   def doWork() {
-
-    // Retrieve UDSdb connection
-    //val dbManager = dbContext.dbManager
-    //val udsDbContext = dbContext.udsDbContext
-    //val wasUdsDbConnectionOpened = udsDbContext.isConnectionOpened
-
+    
     // Prepare MSIdb creation
     val msiDBConfig = this._prepareDBCreation(config.msiDBConfig)
 
@@ -38,15 +31,16 @@ class CreateProjectDBs(
     val lcmsDBConfig = this._prepareDBCreation(config.lcmsDBConfig)
 
     DoJDBCWork.withEzDBC(udsDbContext, { udsEzDBC =>
+      
       // Check that there are no external DBs attached to this project
-      val nbExtDbs = udsEzDBC.selectInt("SELECT count(*) FROM external_db, project_db_map " +
+      val nbExtDbs = udsEzDBC.selectInt(
+        "SELECT count(*) FROM external_db, project_db_map " +
         "WHERE project_db_map.external_db_id = external_db.id " +
-        "AND project_db_map.project_id = " + projectId)
+        "AND project_db_map.project_id = " + projectId
+      )
+      
       if (nbExtDbs > 0)
         throw new Exception("project of id='%d' is already associated to external databases !".format(projectId))
-
-      // Close connection to avoid any conflict
-      //udsEzDBC.commitTransaction()      
 
       // Store MSIdb connection settings
       this._insertExtDb(udsEzDBC, msiDBConfig.toUdsExternalDb)
@@ -74,9 +68,11 @@ class CreateProjectDBs(
     }
 
     try {
-      /*new SetupMsiDB(msiDbConnector, msiDBConfig, config.msiDBDefaults).run()
+      //new SetupMsiDB(msiDbConnector, msiDBConfig, config.msiDBDefaults).run()
+      setupDbFromDataset(msiDbConnector, msiDBConfig, "/dbunit_init_datasets/msi-db_dataset.xml")
       
-      def _importAdminInformation(msiEM: EntityManager) {
+      // TODO: re-enable this importation ?
+      /*def _importAdminInformation(msiEM: EntityManager) {
 
         val msiAdminInfos = new MsiAdminInfos()
         msiAdminInfos.setModelVersion(dbConfig.schemaVersion)
@@ -86,6 +82,7 @@ class CreateProjectDBs(
     
       }*/
       
+    // FIXME: remove ExternalDbs and throw new Exception if error occurs
     } finally {
 
       if (localMsiDbConnector && (msiDbConnector != null)) {
@@ -108,7 +105,12 @@ class CreateProjectDBs(
     }
 
     try {
-      //new SetupLcmsDB(lcmsDbConnector, lcmsDBConfig).run()
+      // FIXME: DbUnit throws a CyclicTablesDependencyException  (see issue http://sourceforge.net/p/dbunit/feature-requests/169)
+      //setupDbFromDataset(lcmsDbConnector, lcmsDBConfig, "/dbunit_init_datasets/lcms-db_dataset.xml")
+      
+      new SetupLcmsDB(lcmsDbConnector, lcmsDBConfig).run()
+    
+    // FIXME: remove ExternalDbs and throw new Exception if error occurs
     } finally {
 
       if (localLcMsDbConnector && (lcmsDbConnector != null)) {

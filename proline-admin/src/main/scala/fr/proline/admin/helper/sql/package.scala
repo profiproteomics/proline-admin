@@ -3,12 +3,21 @@ package fr.proline.admin.helper
 import java.sql.Connection
 import java.sql.DriverManager
 
+import org.dbunit.DataSourceDatabaseTester
+import org.dbunit.database.DatabaseConfig
+import org.dbunit.database.DatabaseSequenceFilter
+import org.dbunit.dataset.FilteredDataSet
+import org.dbunit.dataset.xml.FlatXmlDataSetBuilder
+import org.dbunit.operation.DatabaseOperation
 import org.postgresql.Driver
 import org.postgresql.util.PSQLException
 
 import com.typesafe.scalalogging.slf4j.Logger
+import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
+import fr.proline.repository.DatabaseUpgrader
+import fr.proline.repository.DriverType
 import fr.proline.repository.IDatabaseConnector
 import fr.proline.util.StringUtils
 
@@ -16,23 +25,77 @@ import fr.proline.util.StringUtils
  * @author David Bouyssie
  *
  */
-package object sql {
-
-  /*def buildEmfUsingPgWorkaround( connector: DatabaseConnector,
-                                 db: ProlineRepository.Databases ): EntityManagerFactory = {
-    
-    val emSettings = connector.getEntityManagerSettings()
-    println( emSettings.get("hibernate.dialect") )
+package object sql extends Logging {
   
-    /* Custom Dialect with one sequence / Entity (Table) */
-    emSettings.put("hibernate.dialect", "fr.proline.core.orm.utils.TableNameSequencePostgresDialect")    
-    
-    Persistence.createEntityManagerFactory(
-      JPAUtil.PersistenceUnitNames.getPersistenceUnitNameForDB(db), emSettings
-    )
-  }*/
+  def initDbSchema( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig ): Boolean = {
 
-  def createPgDatabase(pgDbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, logger: Option[Logger] = None) {
+    // Create database if driver type is PostgreSQL
+    if (dbConfig.driverType == DriverType.POSTGRESQL) {
+      createPgDatabase(dbConnector, dbConfig, Some(logger))
+    }
+
+    // Initialize database schema
+    // TODO: find an other way to handle the SCHEMA VERSION
+    dbConfig.schemaVersion = "0.1"
+
+    val upgradeStatus = if (DatabaseUpgrader.upgradeDatabase(dbConnector) > 0) true else false
+
+    upgradeStatus
+  }
+  
+  def setupDbFromDataset( dbConfig: DatabaseSetupConfig, datasetName: String ) {
+    
+    // Create connector
+    val connector = dbConfig.toNewConnector()
+    
+    setupDbFromDataset( connector, dbConfig, datasetName )
+    
+    connector.close()
+  }
+  
+  // TODO: retrieve the datasetName from the config ?
+  // Inspired from: http://www.marcphilipp.de/blog/2012/03/13/database-tests-with-dbunit-part-1/
+  def setupDbFromDataset( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetName: String ) {
+    
+    if( initDbSchema( dbConnector, dbConfig ) ) {
+      logger.info(s"schema initiated for database '${dbConfig.dbName}'")
+      
+      // Load the dataset
+      //val dataLoader = new FlatXmlDataFileLoader()
+      //val dataSet = dataLoader.load(datasetName)
+      val datasetBuilder = new FlatXmlDataSetBuilder()
+      datasetBuilder.setColumnSensing(true)
+      
+      val dsInputStream = this.getClass().getResourceAsStream(datasetName)
+      val dataSet = datasetBuilder.build(dsInputStream)
+      
+      // Connect to the data source
+      val dataSource = dbConnector.getDataSource()
+      val dbTester = new DataSourceDatabaseTester(dbConnector.getDataSource())
+      val dbUnitConn = dbTester.getConnection()
+      
+      // Tell DbUnit to be case sensitive
+      dbUnitConn.getConfig.setProperty(DatabaseConfig.FEATURE_CASE_SENSITIVE_TABLE_NAMES, true)
+      
+      // Filter the dataset if the driver is not SQLite
+      val filteredDS = if( dbConfig.driverType == DriverType.SQLITE ) dataSet
+      else {
+        new FilteredDataSet( new DatabaseSequenceFilter(dbUnitConn) , dataSet)
+      }
+      
+      // Import the dataset
+      dbTester.setDataSet(filteredDS)
+      dbTester.setSetUpOperation(DatabaseOperation.CLEAN_INSERT)
+      dbTester.onSetup()
+      
+      dbUnitConn.close()
+      
+      logger.info("database '" + dbConfig.dbName + "' successfully set up !")
+    }
+    
+  }
+
+  protected def createPgDatabase(pgDbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, logger: Option[Logger] = None) {
     
     // Create database connection and statement
     val pgDbConn = {
@@ -75,7 +138,7 @@ package object sql {
           pgDbConnector.getDataSource.getConnection
         }
       } 
-    }.asInstanceOf[Connection]    
+    }.asInstanceOf[Connection]
 
     val stmt = pgDbConn.createStatement
     

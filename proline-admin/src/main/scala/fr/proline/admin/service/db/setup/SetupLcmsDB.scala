@@ -18,11 +18,12 @@ import fr.proline.core.dal.ContextFactory
  */
 
 /* Cannot use DatabaseConnectionContext here because Db Shema does not exist yet ! */
-class SetupLcmsDB(val dbConnector: IDatabaseConnector,
-                  val dbConfig: DatabaseSetupConfig) extends ISetupDB with Logging {
+class SetupLcmsDB(
+  val dbConnector: IDatabaseConnector,
+  val dbConfig: DatabaseSetupConfig
+) extends ISetupDB with Logging {
 
   protected def importDefaults() {
-    logger.info("no default values at the moment")
 
     var lcMsTransacOK: Boolean = false
 
