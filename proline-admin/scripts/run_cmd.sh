@@ -1,1 +1,3 @@
-java -cp "lib/*:Proline-Admin-${pom.version}.jar:config" -Dlogback.configurationFile=config/logback.xml fr.proline.admin.RunCommand $1
+#!/bin/sh
+
+java -cp "config:lib/*:Proline-Admin-${pom.version}.jar" -Dlogback.configurationFile=config/logback.xml fr.proline.admin.RunCommand $@
