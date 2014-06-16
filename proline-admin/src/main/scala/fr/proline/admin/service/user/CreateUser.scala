@@ -3,6 +3,7 @@ package fr.proline.admin.service.user
 import com.typesafe.scalalogging.slf4j.Logging
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.context.DatabaseConnectionContext
+import fr.proline.core.dal.context._
 import fr.proline.core.orm.uds.{ Project => UdsProject, UserAccount => UdsUser }
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import javax.persistence.EntityTransaction
@@ -24,51 +25,29 @@ class CreateUser(
 
     import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
     import fr.profi.util.security._
-
-    // Creation UDS entity manager
-    val udsEM = udsDbContext.getEntityManager
-
-    var localUdsTransaction: EntityTransaction = null
-    var udsTransacOK: Boolean = false
-
-    try {
-
-      if (!udsDbContext.isInTransaction) {
-        localUdsTransaction = udsEM.getTransaction
-        localUdsTransaction.begin()
-        udsTransacOK = false
-      }
-
-      logger.info("creating user with login '" + login + "'...")
+    
+    val udsUser = new UdsUser()
+      
+    val isTxOk = udsDbContext.tryInTransaction {
+      
+      // Creation UDS entity manager
+      val udsEM = udsDbContext.getEntityManager
+      
+      logger.info(s"creating user with login '${login}'...")
 
       // Create the project
-      val udsUser = new UdsUser()
       udsUser.setLogin(login)
       udsUser.setPasswordHash(sha256Hex(password))
       udsUser.setCreationMode("MANUAL")
 
       udsEM.persist(udsUser)
-
-      if (localUdsTransaction != null) {
-        localUdsTransaction.commit()
-        udsTransacOK = true
-      }
-
+    }
+    
+    if( isTxOk ) {
       userId = udsUser.getId
-      logger.debug("User #" + userId + " has been created")
-    } finally {
-
-      if ((localUdsTransaction != null) && !udsTransacOK && udsDbContext.getDriverType != DriverType.SQLITE) {
-        logger.info("Rollbacking current UDS Db Transaction")
-
-        try {
-          localUdsTransaction.rollback()
-        } catch {
-          case ex: Exception => logger.error("Error rollbacking UDS Db Transaction", ex)
-        }
-
-      }
-
+      logger.debug(s"User #${userId} has been created")
+    } else {
+      logger.error(s"User '${login}' can't be created !")
     }
 
   }

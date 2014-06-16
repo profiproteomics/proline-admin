@@ -2,7 +2,8 @@ package fr.proline.admin.helper
 
 import java.sql.Connection
 import java.sql.DriverManager
-
+import javax.persistence.EntityManager
+import javax.persistence.EntityTransaction
 import org.dbunit.DataSourceDatabaseTester
 import org.dbunit.database.DatabaseConfig
 import org.dbunit.database.DatabaseSequenceFilter
@@ -11,10 +12,8 @@ import org.dbunit.dataset.xml.FlatXmlDataSetBuilder
 import org.dbunit.operation.DatabaseOperation
 import org.postgresql.Driver
 import org.postgresql.util.PSQLException
-
 import com.typesafe.scalalogging.slf4j.Logger
 import com.typesafe.scalalogging.slf4j.Logging
-
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.repository.DatabaseUpgrader
 import fr.proline.repository.DriverType
@@ -91,6 +90,56 @@ package object sql extends Logging {
       dbUnitConn.close()
       
       logger.info("database '" + dbConfig.dbName + "' successfully set up !")
+    }
+    
+  }
+  
+  def tryInTransaction( dbConnector: IDatabaseConnector, txWork: EntityManager => Unit ) {
+    
+    val emf = dbConnector.getEntityManagerFactory()
+    val em = emf.createEntityManager()
+    var transaction: EntityTransaction = null
+    var isTxOK: Boolean = false
+    
+    try {
+      
+      // Begin transaction
+      transaction = em.getTransaction
+      transaction.begin()
+      isTxOK = false
+      
+      // Execute work
+      txWork(em)
+
+      // Commit transaction
+      if( transaction.isActive )
+        transaction.commit()
+      
+      isTxOK = true
+      
+    } finally {
+      
+      val dbType = dbConnector.getProlineDatabaseType()
+
+      if ( (transaction != null) && !isTxOK && dbConnector.getDriverType() != DriverType.SQLITE ) {
+        logger.info(s"Rollbacking '${dbType}db' EntityTransaction")
+
+        try {
+          transaction.rollback()
+        } catch {
+          case ex: Exception => logger.error(s"Error rollbacking '${dbType}db' EntityTransaction")
+        }
+
+      }
+
+      if (em != null) {
+        try {
+          em.close()
+        } catch {
+          case exClose: Exception => logger.error(s"Error closing '${dbType}' EntityManager")
+        }
+      }
+
     }
     
   }

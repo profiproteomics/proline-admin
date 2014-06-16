@@ -26,30 +26,6 @@ class CreateProject(
 
   def doWork() {
 
-    /*
-    // Get EasyDBC object    
-    val udsEzDBC = udsDbContext.ezDBC
-
-    // Check connection and transaction
-    val wasConnOpened = udsDbContext.isConnectionOpened()
-    val wasInTx = udsEzDBC.isInTransaction()
-
-    if (!wasInTx) udsEzDBC.beginTransaction()
-
-    this.projectId = udsEzDBC.executePrepared("INSERT INTO project (name,description,creation_timestamp,owner_id) VALUES (?,?,?,?)", true) { stmt =>
-      stmt.executeWith(projectName,
-        projectDescription,
-        new java.util.Date(),
-        ownerId
-      )
-      //this.projectId = udsDb.extractGeneratedInt( stmt.wrapped )
-      stmt.generatedInt
-    }
-
-    // Manage connection and transaction
-    if (!wasInTx) udsEzDBC.commitTransaction()
-    if (!wasConnOpened) udsDbContext.closeConnection()*/
-
     // Retrieve UDS entity manager
     val udsEM = udsDbContext.getEntityManager
 

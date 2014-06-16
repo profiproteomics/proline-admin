@@ -1,51 +1,23 @@
 package fr.proline.admin.service.db
 
 import java.io.File
-
+import javax.persistence.EntityManager
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.slf4j.Logging
-
 import fr.proline.admin.helper.sql._
 import fr.proline.admin.service.db.setup._
+import fr.proline.core.orm.uds.{ AdminInformation => UdsAdminInfos }
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.{DriverType, ProlineDatabaseType}
 import fr.proline.util.ThreadLogger
 import fr.proline.util.resources._
-
-/*
-class ProlineDatabaseContext(
-  val udsDbContext: DatabaseConnectionContext,
-  val psDbContext: DatabaseConnectionContext,
-  val pdiDbContext: DatabaseConnectionContext,
-  val msiDbContext: DatabaseConnectionContext,
-  val lcmsDbContext: DatabaseConnectionContext) {
-
-  def this(dsConnectorFactory: DataStoreConnectorFactory,
-           msiDbConnector: IDatabaseConnector = null,
-           lcmsDbConnector: IDatabaseConnector = null) {
-    this(new DatabaseConnectionContext(dsConnectorFactory.getUdsDbConnector),
-      new DatabaseConnectionContext(dsConnectorFactory.getPsDbConnector),
-      new DatabaseConnectionContext(dsConnectorFactory.getPdiDbConnector),
-      new DatabaseConnectionContext(msiDbConnector),
-      new DatabaseConnectionContext(lcmsDbConnector)
-    )
-  }
-
-  def closeAll() {
-    udsDbContext.close()
-    psDbContext.close()
-    pdiDbContext.close()
-    msiDbContext.close()
-    lcmsDbContext.close()
-  }
-
-}*/
+import fr.proline.util.sql.getTimeAsSQLTimestamp
 
 /**
  * @author David Bouyssie
  *
  */
-class SetupProline(config: ProlineSetupConfig) extends Logging {
+class SetupProline(prolineConfig: ProlineSetupConfig) extends Logging {
 
   def run() {
 
@@ -54,32 +26,32 @@ class SetupProline(config: ProlineSetupConfig) extends Logging {
     if (!currentThread.getUncaughtExceptionHandler.isInstanceOf[ThreadLogger]) {
       currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.underlying.getName))
     }
-
-    val connectorFactory = DataStoreConnectorFactory.getInstance()
-
-    if (connectorFactory.isInitialized) {
-      throw new IllegalStateException("A DataStoreConnectorFactory is ALREADY initialized : cannot run SetupProline !")
-    }
+    
+    // Create a new RAW UDSdb connector
+    val udsDbConnector = prolineConfig.udsDBConfig.toNewConnector
 
     // Set Up the UDSdb
     logger.info("setting up the 'User Data Set' database...")
-    setupDbFromDataset( config.udsDBConfig, "/dbunit_init_datasets/uds-db_dataset.xml" )
+    setupDbFromDataset( udsDbConnector, prolineConfig.udsDBConfig, "/dbunit_init_datasets/uds-db_dataset.xml" )
     
-    // TODO: re-enable this importation ?
-    /*val udsAdminInfos = new UdsAdminInfos()
-    udsAdminInfos.setModelVersion(dbConfig.schemaVersion)
-    udsAdminInfos.setDbCreationDate(getTimeAsSQLTimestamp)
-    //udsAdminInfos.setModelUpdateDate()
-    udsAdminInfos.setConfiguration("""{}""")
+    tryInTransaction( udsDbConnector, { udsEM =>
+      
+      // Import Admin information
+      _importAdminInformation(udsEM)
+      logger.info("Admin information imported !")
 
-    udsEM.persist(udsAdminInfos)
+      // Import external DBs connections
+      _importExternalDBs(udsEM)
+      logger.info("External databases connection settings imported !")
+      
+    })
     
-    logger.info("UDSdb admin information imported !")
-    */
+    // Release the connector
+    udsDbConnector.close()
 
     // Set Up the PSdb
     logger.info("setting up the 'Peptide Sequence' database...")
-    setupDbFromDataset( config.psDBConfig, "/dbunit_init_datasets/ps-db_dataset.xml" )
+    setupDbFromDataset( prolineConfig.psDBConfig, "/dbunit_init_datasets/ps-db_dataset.xml" )
     
     // TODO: re-enable this importation ?
     /*val psAdminInfos = new PsAdminInfos()
@@ -93,9 +65,31 @@ class SetupProline(config: ProlineSetupConfig) extends Logging {
 
     // Set Up the PDIdb
     logger.info("setting up the 'Protein Database Index' database...")
-    setupDbFromDataset( config.pdiDBConfig, "/dbunit_init_datasets/pdi-db_dataset.xml" )
+    setupDbFromDataset( prolineConfig.pdiDBConfig, "/dbunit_init_datasets/pdi-db_dataset.xml" )
 
     logger.info("Proline has been successfully set up !")
+  }
+  
+  private def _importAdminInformation(udsEM: EntityManager) {
+    
+    val udsDbConfig = prolineConfig.udsDBConfig
+
+    val udsAdminInfos = new UdsAdminInfos()
+    udsAdminInfos.setModelVersion(udsDbConfig.schemaVersion)
+    udsAdminInfos.setDbCreationDate(getTimeAsSQLTimestamp)
+    //udsAdminInfos.setModelUpdateDate()
+    udsAdminInfos.setConfiguration("""{}""")
+
+    udsEM.persist(udsAdminInfos)
+  }
+
+  private def _importExternalDBs(udsEM: EntityManager) {
+
+    // Store PSdb connection settings
+    udsEM.persist(prolineConfig.psDBConfig.toUdsExternalDb())
+
+    // Store PDIdb connection settings
+    udsEM.persist(prolineConfig.pdiDBConfig.toUdsExternalDb())
   }
 
 }
@@ -110,6 +104,11 @@ object SetupProline {
   //ClassLoadergetSystemClassLoader()
 
   private var _appConfParams: Config = null
+  
+  /** Instantiates a SetupProline object and call the run() method. */
+  def apply() {
+    new SetupProline(config).run()
+  }
 
   def getConfigParams(): Config = {
 
@@ -130,9 +129,9 @@ object SetupProline {
   }
 
   // Parse config if it not already done
-  lazy val config = parseProlineSetupConfig(getConfigParams)
+  lazy val config = _parseProlineSetupConfig(getConfigParams)
 
-  private def parseProlineSetupConfig(config: Config): ProlineSetupConfig = {
+  private def _parseProlineSetupConfig(config: Config): ProlineSetupConfig = {
 
     // Load proline main settings
     val prolineConfig = config.getConfig("proline-config")
@@ -195,11 +194,6 @@ object SetupProline {
     }
 
     mergedConfig
-  }
-
-  /** Instantiates a SetupProline object and call the run() method. */
-  def apply() {
-    new SetupProline(config).run()
   }
 
 }
