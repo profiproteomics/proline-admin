@@ -9,9 +9,9 @@ import fr.proline.admin.service.db.setup._
 import fr.proline.core.orm.uds.{ AdminInformation => UdsAdminInfos }
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.{DriverType, ProlineDatabaseType}
-import fr.proline.util.ThreadLogger
-import fr.proline.util.resources._
-import fr.proline.util.sql.getTimeAsSQLTimestamp
+import fr.profi.util.ThreadLogger
+import fr.profi.util.resources._
+import fr.profi.util.sql.getTimeAsSQLTimestamp
 
 /**
  * @author David Bouyssie

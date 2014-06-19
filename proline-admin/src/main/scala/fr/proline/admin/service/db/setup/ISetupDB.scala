@@ -7,9 +7,9 @@ import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.helper.sql._
 import fr.proline.repository.{ IDatabaseConnector, DatabaseUpgrader, DriverType }
-import fr.proline.util.io._
-import fr.proline.util.resources._
-import fr.proline.util.ThreadLogger
+import fr.profi.util.io._
+import fr.profi.util.resources._
+import fr.profi.util.ThreadLogger
 
 /**
  * @author David Bouyssie

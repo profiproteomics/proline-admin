@@ -7,7 +7,7 @@ import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
 import fr.proline.admin.service.user.{ CreateProject, CreateUser }
 import fr.proline.core.orm.util.{ DataStoreConnectorFactory, DataStoreUpgrader }
-import fr.proline.util.ThreadLogger
+import fr.profi.util.ThreadLogger
 
 object RunCommand extends App with Logging {
 

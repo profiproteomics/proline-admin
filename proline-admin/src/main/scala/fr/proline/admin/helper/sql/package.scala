@@ -18,7 +18,7 @@ import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.repository.DatabaseUpgrader
 import fr.proline.repository.DriverType
 import fr.proline.repository.IDatabaseConnector
-import fr.proline.util.StringUtils
+import fr.profi.util.StringUtils
 
 /**
  * @author David Bouyssie

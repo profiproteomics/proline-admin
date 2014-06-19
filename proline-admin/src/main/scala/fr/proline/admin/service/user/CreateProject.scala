@@ -50,7 +50,7 @@ class CreateProject(
       val udsProject = new UdsProject(udsUser)
       udsProject.setName(projectName)
       udsProject.setDescription(projectDescription)
-      udsProject.setCreationTimestamp(fr.proline.util.sql.getTimeAsSQLTimestamp)
+      udsProject.setCreationTimestamp(fr.profi.util.sql.getTimeAsSQLTimestamp)
       udsProject.setOwner(udsUser)
 
       udsEM.persist(udsProject)
@@ -60,7 +60,7 @@ class CreateProject(
       udsDataset.setNumber(1)
       udsDataset.setName(UdsDataset.DatasetType.TRASH.toString)
       udsDataset.setType(UdsDataset.DatasetType.TRASH)
-      udsDataset.setCreationTimestamp(fr.proline.util.sql.getTimeAsSQLTimestamp)
+      udsDataset.setCreationTimestamp(fr.profi.util.sql.getTimeAsSQLTimestamp)
       udsDataset.setChildrenCount(0)
 
       udsEM.persist(udsDataset)
