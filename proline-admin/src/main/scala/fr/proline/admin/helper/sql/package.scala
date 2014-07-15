@@ -1,12 +1,17 @@
 package fr.proline.admin.helper
 
+import java.io.InputStream
 import java.sql.Connection
 import java.sql.DriverManager
 import javax.persistence.EntityManager
 import javax.persistence.EntityTransaction
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.HashMap
 import org.dbunit.DataSourceDatabaseTester
 import org.dbunit.database.DatabaseConfig
 import org.dbunit.database.DatabaseSequenceFilter
+import org.dbunit.dataset.AbstractDataSet
+import org.dbunit.dataset.Column.AutoIncrement
 import org.dbunit.dataset.FilteredDataSet
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder
 import org.dbunit.operation.DatabaseOperation
@@ -14,17 +19,43 @@ import org.postgresql.Driver
 import org.postgresql.util.PSQLException
 import com.typesafe.scalalogging.slf4j.Logger
 import com.typesafe.scalalogging.slf4j.Logging
+import fr.profi.util.StringUtils
+import fr.profi.util.primitives._
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
+import fr.proline.core.dal.ContextFactory
+import fr.proline.core.dal.context._
+import fr.proline.core.dal.DoJDBCWork
+import fr.proline.core.dal.tables.lcms.LcmsDb
+import fr.proline.core.dal.tables.msi.MsiDb
+import fr.proline.core.dal.tables.pdi.PdiDb
+import fr.proline.core.dal.tables.ps.PsDb
+import fr.proline.core.dal.tables.uds.UdsDb
 import fr.proline.repository.DatabaseUpgrader
 import fr.proline.repository.DriverType
 import fr.proline.repository.IDatabaseConnector
-import fr.profi.util.StringUtils
+import fr.proline.repository.ProlineDatabaseType
 
 /**
  * @author David Bouyssie
  *
  */
 package object sql extends Logging {
+  
+  val sqlTypeByName = getSqlTypeByName()
+  
+  def getSqlTypeByName(): Map[String,Int] = {
+    val mapBuilder = Map.newBuilder[String,Int]
+
+    // Get all field in java.sql.Types
+    val fields = classOf[java.sql.Types].getFields
+    for ( i <- 0 until fields.length ) {
+      val name = fields(i).getName()
+      val value = fields(i).get(null).asInstanceOf[Int]
+      mapBuilder += (name -> value)
+    }
+    
+    mapBuilder.result()
+  }
   
   def initDbSchema( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig ): Boolean = {
 
@@ -54,7 +85,7 @@ package object sql extends Logging {
   
   // TODO: retrieve the datasetName from the config ?
   // Inspired from: http://www.marcphilipp.de/blog/2012/03/13/database-tests-with-dbunit-part-1/
-  def setupDbFromDataset( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetName: String ) {
+  def setupDbFromDatasetV1( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetName: String ) {
     
     if( initDbSchema( dbConnector, dbConfig ) ) {
       logger.info(s"schema initiated for database '${dbConfig.dbName}'")
@@ -93,6 +124,214 @@ package object sql extends Logging {
     }
     
   }
+  
+  def setupDbFromDataset( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetName: String ) {
+    
+    if( initDbSchema( dbConnector, dbConfig ) == false ) return ()
+    
+    logger.info(s"schema initiated for database '${dbConfig.dbName}'")
+       
+    val filteredDataset = _getFilteredDataset(dbConnector,dbConfig.driverType,datasetName )
+    val sortedTableNames: Array[String] = filteredDataset.getTableNames()
+    val recordsByTableName = _parseDbUnitDataset( datasetName )
+    val colNamesByTableName = _getColNamesByTableName(dbConnector.getProlineDatabaseType())
+    val insertQueryByTableName = _getInsertQueryByTableName(dbConnector.getProlineDatabaseType())
+    
+    // TODO: try to retrieve the table meta-data from the database
+    
+    val sqlContext = ContextFactory.buildDbConnectionContext(dbConnector, false)
+    
+    try {
+      
+      sqlContext.tryInTransaction {
+        DoJDBCWork.withEzDBC(sqlContext, { ezDBC =>
+          
+          for( tableName <- sortedTableNames; if recordsByTableName.contains(tableName) ) {
+              
+            //val tableMetaData = filteredDataset.getTableMetaData(tableName)
+            val colNames = colNamesByTableName(tableName)
+            val insertQuery = insertQueryByTableName(tableName)
+            val records = recordsByTableName(tableName)
+            
+            ezDBC.executePrepared(insertQuery, false) { statement =>
+              
+              //val jdbcStmt = statement.jdbcPrepStmt
+              
+              for( record <- records ) {
+                
+                for( colName <- colNames ) {
+                  //val colName = col.getColumnName()
+                  
+                  if( colName != "ID" ) {
+                    
+                    if( record.contains(colName) == false ) {
+                      statement.addNull()
+                      //val sqlTypeAsInt = sqlTypeByName( col.getSqlTypeName() )
+                      //jdbcStmt.setNull(paramIdx, sqlTypeAsInt)
+                    } else {
+                      val valueAsStr = record(colName)
+                      val parsedValue = parseString(valueAsStr)
+                      
+                      parsedValue match {
+                        case b: Boolean => statement.addBoolean(b)
+                        case d: Double => statement.addDouble(d)
+                        case f: Float => statement.addFloat(f)
+                        case i: Int => statement.addInt(i)
+                        case l: Long => statement.addLong(l)
+                        case s: String => statement.addString(s)
+                      }
+                      
+                      /*col.getDataType match {
+                        case DataType.BOOLEAN => jdbcStmt.setBoolean(paramIdx, value.toBoolean)
+                        case DataType.INTEGER => jdbcStmt.setInt(paramIdx, value.toInt)
+                        case DataType.REAL => jdbcStmt.setFloat(paramIdx, value.toFloat)
+                        case DataType.FLOAT => jdbcStmt.setFloat(paramIdx, value.toFloat)
+                        case _ => "not yet implemented data type"
+                      }*/
+                    }
+                  }
+                } // End of col iteration
+                
+                statement.execute()
+              }
+            }
+          }
+  
+        }) // END OF DoJDBCWork.withEzDBC
+        
+      } // END OF tryInTransaction
+      
+      logger.info("database '" + dbConfig.dbName + "' successfully set up !")
+      
+    } finally {
+      
+      if( sqlContext != null ) {
+        sqlContext.close()
+      }
+      
+    }
+    
+  }
+  
+  private def _getInsertQueryByTableName( dbType: ProlineDatabaseType ): Map[String,String] =  {
+    
+    val tableInsertQueryByName = dbType match {
+      case ProlineDatabaseType.LCMS => {
+        for( table <- LcmsDb.tables )
+          yield table.name.toUpperCase() -> table.mkInsertQuery((t,c) => c.filter(_.toString != "id"))
+      }
+      case ProlineDatabaseType.MSI => {
+        for( table <- MsiDb.tables )
+          yield table.name.toUpperCase() -> table.mkInsertQuery((t,c) => c.filter(_.toString != "id"))
+      }
+      case ProlineDatabaseType.PDI => {
+        for( table <- PdiDb.tables )
+          yield table.name.toUpperCase() -> table.mkInsertQuery((t,c) => c.filter(_.toString != "id"))
+
+      }
+      case ProlineDatabaseType.PS => {
+        for( table <- PsDb.tables )
+          yield table.name.toUpperCase() -> table.mkInsertQuery((t,c) => c.filter(_.toString != "id"))
+      }
+      case ProlineDatabaseType.UDS => {
+        for( table <- UdsDb.tables )
+          yield table.name.toUpperCase() -> table.mkInsertQuery((t,c) => c.filter(_.toString != "id"))
+      }
+      case ProlineDatabaseType.SEQ => throw new Exception("Not yet implemented !")
+    }
+    
+    tableInsertQueryByName.toMap
+  }
+  
+  private def _getColNamesByTableName( dbType: ProlineDatabaseType ): Map[String,List[String]] =  {
+    
+    val tableInsertQueryByName = dbType match {
+      case ProlineDatabaseType.LCMS => {
+        for( table <- LcmsDb.tables )
+          yield table.name.toUpperCase() -> table.columnsAsStrList.map(_.toUpperCase())
+      }
+      case ProlineDatabaseType.MSI => {
+        for( table <- MsiDb.tables )
+          yield table.name.toUpperCase() -> table.columnsAsStrList.map(_.toUpperCase())
+      }
+      case ProlineDatabaseType.PDI => {
+        for( table <- PdiDb.tables )
+          yield table.name.toUpperCase() -> table.columnsAsStrList.map(_.toUpperCase())
+      }
+      case ProlineDatabaseType.PS => {
+        for( table <- PsDb.tables )
+          yield table.name.toUpperCase() -> table.columnsAsStrList.map(_.toUpperCase())
+      }
+      case ProlineDatabaseType.UDS => {
+        for( table <- UdsDb.tables )
+          yield table.name.toUpperCase() -> table.columnsAsStrList.map(_.toUpperCase())
+      }
+      case ProlineDatabaseType.SEQ => throw new Exception("Not yet implemented !")
+    }
+    
+    tableInsertQueryByName.toMap
+  }
+  
+  private def _parseDbUnitDataset( datasetName: String ): Map[String,ArrayBuffer[Map[String,String]]] = {
+    
+    // Load the dataset
+    val xmlDoc = scala.xml.XML.load( this.getClass().getResourceAsStream(datasetName) )
+    
+    val recordsByTableName = new HashMap[String,ArrayBuffer[Map[String,String]]]
+    
+    // Iterate over dataset nodes
+    for( xmlNode <- xmlDoc.child ) {
+      
+      val attrs = xmlNode.attributes
+      
+      // Check node has defined attributes
+      if( attrs.isEmpty == false ) {
+        
+        val tableName = xmlNode.label
+        
+        val recordBuilder = Map.newBuilder[String,String]
+        
+        // Iterate over node attributes
+        for( attr <- attrs ) {
+          val str = attr.value.text
+          recordBuilder += attr.key -> attr.value.text
+        }
+        
+        // Append record to the records of this table
+        val records = recordsByTableName.getOrElseUpdate(tableName, new ArrayBuffer[Map[String,String]]() )
+        records += recordBuilder.result()
+        
+      }
+    }
+    
+    recordsByTableName.toMap
+  }
+        
+  // Inspired from: http://www.marcphilipp.de/blog/2012/03/13/database-tests-with-dbunit-part-1/
+  private def _getFilteredDataset( dbConnector: IDatabaseConnector, driverType: DriverType, datasetName: String ): AbstractDataSet = {
+    
+    val datasetBuilder = new FlatXmlDataSetBuilder()
+    datasetBuilder.setColumnSensing(true)
+    val dataSet = datasetBuilder.build( this.getClass().getResourceAsStream(datasetName) )
+    
+    // Connect to the data source
+    val dataSource = dbConnector.getDataSource()
+    val dbTester = new DataSourceDatabaseTester(dbConnector.getDataSource())
+    val dbUnitConn = dbTester.getConnection()
+    
+    // Tell DbUnit to be case sensitive
+    dbUnitConn.getConfig.setProperty(DatabaseConfig.FEATURE_CASE_SENSITIVE_TABLE_NAMES, true)
+    
+    // Filter the dataset if the driver is not SQLite
+    val filteredDS = if( driverType == DriverType.SQLITE ) dataSet
+    else {
+      new FilteredDataSet( new DatabaseSequenceFilter(dbUnitConn), dataSet)
+    }
+    
+    dbUnitConn.close()
+    
+    filteredDS 
+ }
   
   def tryInTransaction( dbConnector: IDatabaseConnector, txWork: EntityManager => Unit ) {
     
