@@ -179,6 +179,7 @@ package object sql extends Logging {
                         case i: Int => statement.addInt(i)
                         case l: Long => statement.addLong(l)
                         case s: String => statement.addString(s)
+                        case dt: java.util.Date => statement.addTimestamp(new java.sql.Timestamp(dt.getTime))
                       }
                       
                       /*col.getDataType match {
