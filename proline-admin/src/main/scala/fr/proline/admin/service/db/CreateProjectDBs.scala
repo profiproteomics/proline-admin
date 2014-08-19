@@ -175,20 +175,27 @@ class CreateProjectDBs(
       }
       case ConnectionMode.HOST => {
 
-        val newDbConfig = dbConfig.copy()
-        newDbConfig.dbName = dbConfig.dbName + "_project_" + this.projectId
-
         if ((dbConfig.driverType == DriverType.POSTGRESQL) || (dbConfig.driverType == DriverType.H2)) {
           //val pgDbConnector = newDbConfig.toNewConnector()
           //createPgDatabase( pgDbConnector, newDbConfig.dbName, Some(this.logger) )
         } else {
-          throw new Exception("NYI : Host db creation is supported only for Postgresql or H2")
+          throw new Exception("Host DB creation is only supported for PostgreSQL and H2 drivers")
         }
+        
+        val newDbConfig = dbConfig.copy()
+        newDbConfig.dbName = dbConfig.dbName + "_project_" + this.projectId
 
         newDbConfig
       }
-      case ConnectionMode.MEMORY => {
-        throw new Exception("NYI")
+      case ConnectionMode.MEMORY => {        
+
+        if (dbConfig.driverType != DriverType.H2) {
+          throw new Exception("In-memory DB creation only is supported for H2 driver")
+        }
+        
+        val newDbConfig = dbConfig.copy()
+        newDbConfig.dbName = dbConfig.dbName + "_project_" + this.projectId
+        
         dbConfig
       }
     }
