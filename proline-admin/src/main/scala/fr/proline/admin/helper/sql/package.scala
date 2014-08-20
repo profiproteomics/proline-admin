@@ -1,5 +1,6 @@
 package fr.proline.admin.helper
 
+import java.io.File
 import java.io.InputStream
 import java.sql.Connection
 import java.sql.DriverManager
@@ -21,6 +22,7 @@ import com.typesafe.scalalogging.slf4j.Logger
 import com.typesafe.scalalogging.slf4j.Logging
 import fr.profi.util.StringUtils
 import fr.profi.util.primitives._
+import fr.profi.util.resources._
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.core.dal.ContextFactory
 import fr.proline.core.dal.context._
@@ -73,19 +75,22 @@ package object sql extends Logging {
     upgradeStatus
   }
   
-  def setupDbFromDataset( dbConfig: DatabaseSetupConfig, datasetName: String ) {
+  // TODO: retrieve the datasetPath from the config ?
+  def setupDbFromDataset( dbConfig: DatabaseSetupConfig, datasetPath: String ) {
     
     // Create connector
     val connector = dbConfig.toNewConnector()
     
-    setupDbFromDataset( connector, dbConfig, datasetName )
+    try {
+      setupDbFromDataset( connector, dbConfig, datasetPath )
+    } finally {
+      connector.close()
+    }
     
-    connector.close()
   }
   
-  // TODO: retrieve the datasetName from the config ?
   // Inspired from: http://www.marcphilipp.de/blog/2012/03/13/database-tests-with-dbunit-part-1/
-  def setupDbFromDatasetV1( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetName: String ) {
+  def setupDbFromDatasetV1( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetPath: String ) {
     
     if( initDbSchema( dbConnector, dbConfig ) ) {
       logger.info(s"schema initiated for database '${dbConfig.dbName}'")
@@ -96,7 +101,7 @@ package object sql extends Logging {
       val datasetBuilder = new FlatXmlDataSetBuilder()
       datasetBuilder.setColumnSensing(true)
       
-      val dsInputStream = this.getClass().getResourceAsStream(datasetName)
+      val dsInputStream = this.getClass().getResourceAsStream(datasetPath)
       val dataSet = datasetBuilder.build(dsInputStream)
       
       // Connect to the data source
@@ -125,15 +130,15 @@ package object sql extends Logging {
     
   }
   
-  def setupDbFromDataset( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetName: String ) {
+  def setupDbFromDataset( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetPath: String ) {
     
     if( initDbSchema( dbConnector, dbConfig ) == false ) return ()
     
     logger.info(s"schema initiated for database '${dbConfig.dbName}'")
        
-    val filteredDataset = _getFilteredDataset(dbConnector,dbConfig.driverType,datasetName )
+    val filteredDataset = _getFilteredDataset(dbConnector,dbConfig.driverType,datasetPath )
     val sortedTableNames: Array[String] = filteredDataset.getTableNames()
-    val recordsByTableName = _parseDbUnitDataset( datasetName )
+    val recordsByTableName = _parseDbUnitDataset( datasetPath )
     val colNamesByTableName = _getColNamesByTableName(dbConnector.getProlineDatabaseType())
     val insertQueryByTableName = _getInsertQueryByTableName(dbConnector.getProlineDatabaseType())
     
@@ -207,6 +212,7 @@ package object sql extends Logging {
     } finally {
       
       if( sqlContext != null ) {
+        logger.info(s"Closing connection context for database '${dbConfig.dbName}'")
         sqlContext.close()
       }
       
@@ -273,10 +279,10 @@ package object sql extends Logging {
     tableInsertQueryByName.toMap
   }
   
-  private def _parseDbUnitDataset( datasetName: String ): Map[String,ArrayBuffer[Map[String,String]]] = {
+  private def _parseDbUnitDataset( datasetPath: String ): Map[String,ArrayBuffer[Map[String,String]]] = {
     
     // Load the dataset
-    val xmlDoc = scala.xml.XML.load( this.getClass().getResourceAsStream(datasetName) )
+    val xmlDoc = scala.xml.XML.loadFile( pathToFileOrResourceToFile(datasetPath,this.getClass) )
     
     val recordsByTableName = new HashMap[String,ArrayBuffer[Map[String,String]]]
     
@@ -309,11 +315,12 @@ package object sql extends Logging {
   }
         
   // Inspired from: http://www.marcphilipp.de/blog/2012/03/13/database-tests-with-dbunit-part-1/
-  private def _getFilteredDataset( dbConnector: IDatabaseConnector, driverType: DriverType, datasetName: String ): AbstractDataSet = {
+  private def _getFilteredDataset( dbConnector: IDatabaseConnector, driverType: DriverType, datasetPath: String ): AbstractDataSet = {
     
     val datasetBuilder = new FlatXmlDataSetBuilder()
     datasetBuilder.setColumnSensing(true)
-    val dataSet = datasetBuilder.build( this.getClass().getResourceAsStream(datasetName) )
+    
+    val dataSet = datasetBuilder.build( pathToFileOrResourceToFile(datasetPath,this.getClass) )
     
     // Connect to the data source
     val dataSource = dbConnector.getDataSource()
@@ -332,7 +339,7 @@ package object sql extends Logging {
     dbUnitConn.close()
     
     filteredDS 
- }
+  }
   
   def tryInTransaction( dbConnector: IDatabaseConnector, txWork: EntityManager => Unit ) {
     

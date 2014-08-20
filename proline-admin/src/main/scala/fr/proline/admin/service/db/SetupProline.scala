@@ -29,25 +29,28 @@ class SetupProline(prolineConfig: ProlineSetupConfig) extends Logging {
     
     // Create a new RAW UDSdb connector
     val udsDbConnector = prolineConfig.udsDBConfig.toNewConnector
-
-    // Set Up the UDSdb
-    logger.info("setting up the 'User Data Set' database...")
-    setupDbFromDataset( udsDbConnector, prolineConfig.udsDBConfig, "/dbunit_init_datasets/uds-db_dataset.xml" )
     
-    tryInTransaction( udsDbConnector, { udsEM =>
+    try {
+      // Set Up the UDSdb
+      logger.info("setting up the 'User Data Set' database...")
+      setupDbFromDataset( udsDbConnector, prolineConfig.udsDBConfig, "/dbunit_init_datasets/uds-db_dataset.xml" )
       
-      // Import Admin information
-      _importAdminInformation(udsEM)
-      logger.info("Admin information imported !")
-
-      // Import external DBs connections
-      _importExternalDBs(udsEM)
-      logger.info("External databases connection settings imported !")
+      tryInTransaction( udsDbConnector, { udsEM =>
+        
+        // Import Admin information
+        _importAdminInformation(udsEM)
+        logger.info("Admin information imported !")
+  
+        // Import external DBs connections
+        _importExternalDBs(udsEM)
+        logger.info("External databases connection settings imported !")
+        
+      })
       
-    })
-    
-    // Release the connector
-    udsDbConnector.close()
+    } finally {
+      // Release the connector
+      udsDbConnector.close()
+    }
 
     // Set Up the PSdb
     logger.info("setting up the 'Peptide Sequence' database...")
