@@ -24,6 +24,7 @@ import fr.profi.util.StringUtils
 import fr.profi.util.primitives._
 import fr.profi.util.resources._
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
+import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.ContextFactory
 import fr.proline.core.dal.context._
 import fr.proline.core.dal.DoJDBCWork
@@ -136,23 +137,30 @@ package object sql extends Logging {
     
     logger.info(s"schema initiated for database '${dbConfig.dbName}'")
        
-    val recordsByTableName = _parseDbUnitDataset( datasetPath )
-    val colNamesByTableName = _getColNamesByTableName(dbConnector.getProlineDatabaseType())
-    val insertQueryByTableName = _getInsertQueryByTableName(dbConnector.getProlineDatabaseType())
-    val filteredDataset = _getFilteredDataset(dbConnector,dbConfig.driverType,datasetPath )
-    val sortedTableNames: Array[String] = filteredDataset.getTableNames()
+    val recordsByTableName = _parseDbUnitDataset(datasetPath)
+    // TODO: try to retrieve the table meta-data from the database ???
+    val colNamesByTableName = _getColNamesByTableName(dbConnector.getProlineDatabaseType)
+    val insertQueryByTableName = _getInsertQueryByTableName(dbConnector.getProlineDatabaseType)
     
-    // TODO: try to retrieve the table meta-data from the database
+    // FIXME: this step is too slow (DbUnit issue ?) => find a workaround
+    // => one workaround is to disable all FK constraint (see disableForeignKeyConstraints method)
+    // but this can't be used currently with Postgres because constraints are "NOT DEFERRABLE" by default
+    val filteredDataset = _getFilteredDataset(dbConnector,dbConfig.driverType,datasetPath )
+    val sortedTableNames: Array[String] = filteredDataset.getTableNames
     
     val sqlContext = ContextFactory.buildDbConnectionContext(dbConnector, false)
     
     try {
       
       sqlContext.tryInTransaction {
+        
+        //this.disableForeignKeyConstraints(sqlContext)
+        
         DoJDBCWork.withEzDBC(sqlContext, { ezDBC =>
           
           for( tableName <- sortedTableNames; if recordsByTableName.contains(tableName) ) {
-              
+          //for( tableName <- recordsByTableName.keys ) {
+            
             //val tableMetaData = filteredDataset.getTableMetaData(tableName)
             val colNames = colNamesByTableName(tableName)
             val insertQuery = insertQueryByTableName(tableName)
@@ -281,8 +289,17 @@ package object sql extends Logging {
   
   private def _parseDbUnitDataset( datasetPath: String ): Map[String,ArrayBuffer[Map[String,String]]] = {
     
+    // Workaround for issue "Non-namespace-aware mode not implemented"
+    // We use the javax SAXParserFactory with a custom configuration
+    // Source:  http://stackoverflow.com/questions/11315439/ignore-dtd-specification-in-scala
+    val saxParserFactory = javax.xml.parsers.SAXParserFactory.newInstance()
+    saxParserFactory.setValidating(false)
+
+    // Instantiate the XML loader using the javax SAXParser
+    val xmlLoader = xml.XML.withSAXParser(saxParserFactory.newSAXParser)
+
     // Load the dataset
-    val xmlDoc = scala.xml.XML.loadFile( pathToFileOrResourceToFile(datasetPath,this.getClass) )
+    val xmlDoc = xmlLoader.loadFile( pathToFileOrResourceToFile(datasetPath,this.getClass) )
     
     val recordsByTableName = new HashMap[String,ArrayBuffer[Map[String,String]]]
     
@@ -451,6 +468,35 @@ package object sql extends Logging {
     val jdbcRS = stmt.executeQuery(s"SELECT count(*) FROM pg_catalog.pg_database WHERE datname = '${dbName}'")
 
     if (jdbcRS.next() && jdbcRS.getInt(1) == 0) false else true
+  }
+  
+  // Inspired from: https://github.com/crazycode/play-factory-boy/blob/master/factory-boy/src/util/DatabaseUtil.java
+  protected def disableForeignKeyConstraints( dbContext: DatabaseConnectionContext ) {
+    
+    DoJDBCWork.withEzDBC(dbContext, { ezDBC =>
+      val driverType = dbContext.getDriverType    
+      
+      driverType match {
+        case DriverType.H2 => ezDBC.execute("SET REFERENTIAL_INTEGRITY FALSE")
+        case DriverType.POSTGRESQL => ezDBC.execute("SET CONSTRAINTS ALL DEFERRED")
+        case DriverType.SQLITE => ezDBC.execute("PRAGMA foreign_keys = OFF;")
+      }
+    })
+    
+  }
+    
+  def enableForeignKeyConstraints( dbContext: DatabaseConnectionContext ) {
+    
+    DoJDBCWork.withEzDBC(dbContext, { ezDBC =>
+      val driverType = dbContext.getDriverType    
+      
+      driverType match {
+        case DriverType.H2 => ezDBC.execute("SET REFERENTIAL_INTEGRITY TRUE")
+        case DriverType.POSTGRESQL => ()
+        case DriverType.SQLITE => ezDBC.execute("PRAGMA foreign_keys = ON;")
+      }
+    })
+    
   }
 
 }
