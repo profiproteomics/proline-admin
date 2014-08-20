@@ -136,11 +136,11 @@ package object sql extends Logging {
     
     logger.info(s"schema initiated for database '${dbConfig.dbName}'")
        
-    val filteredDataset = _getFilteredDataset(dbConnector,dbConfig.driverType,datasetPath )
-    val sortedTableNames: Array[String] = filteredDataset.getTableNames()
     val recordsByTableName = _parseDbUnitDataset( datasetPath )
     val colNamesByTableName = _getColNamesByTableName(dbConnector.getProlineDatabaseType())
     val insertQueryByTableName = _getInsertQueryByTableName(dbConnector.getProlineDatabaseType())
+    val filteredDataset = _getFilteredDataset(dbConnector,dbConfig.driverType,datasetPath )
+    val sortedTableNames: Array[String] = filteredDataset.getTableNames()
     
     // TODO: try to retrieve the table meta-data from the database
     
