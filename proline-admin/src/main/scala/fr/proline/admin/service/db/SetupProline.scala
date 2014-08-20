@@ -129,7 +129,7 @@ object SetupProline {
   }
 
   // Parse config if it not already done
-  def config = _parseProlineSetupConfig(getConfigParams)
+  lazy val config = _parseProlineSetupConfig(getConfigParams)
 
   private def _parseProlineSetupConfig(config: Config): ProlineSetupConfig = {
 
