@@ -20,9 +20,10 @@ import org.postgresql.Driver
 import org.postgresql.util.PSQLException
 import com.typesafe.scalalogging.slf4j.Logger
 import com.typesafe.scalalogging.slf4j.Logging
-import fr.profi.util.StringUtils
+import fr.profi.util.dbunit._
 import fr.profi.util.primitives._
 import fr.profi.util.resources._
+import fr.profi.util.StringUtils
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.ContextFactory
@@ -137,7 +138,7 @@ package object sql extends Logging {
     
     logger.info(s"schema initiated for database '${dbConfig.dbName}'")
        
-    val recordsByTableName = _parseDbUnitDataset(datasetPath)
+    val recordsByTableName = parseDbUnitDataset( pathToFileOrResourceToFile(datasetPath,this.getClass), lowerCase = false )
     // TODO: try to retrieve the table meta-data from the database ???
     val colNamesByTableName = _getColNamesByTableName(dbConnector.getProlineDatabaseType)
     val insertQueryByTableName = _getInsertQueryByTableName(dbConnector.getProlineDatabaseType)
@@ -287,7 +288,7 @@ package object sql extends Logging {
     tableInsertQueryByName.toMap
   }
   
-  private def _parseDbUnitDataset( datasetPath: String ): Map[String,ArrayBuffer[Map[String,String]]] = {
+  /*private def _parseDbUnitDataset( datasetPath: String ): Map[String,ArrayBuffer[Map[String,String]]] = {
     
     // Workaround for issue "Non-namespace-aware mode not implemented"
     // We use the javax SAXParserFactory with a custom configuration
@@ -329,7 +330,7 @@ package object sql extends Logging {
     }
     
     recordsByTableName.toMap
-  }
+  }*/
         
   // Inspired from: http://www.marcphilipp.de/blog/2012/03/13/database-tests-with-dbunit-part-1/
   private def _getFilteredDataset( dbConnector: IDatabaseConnector, driverType: DriverType, datasetPath: String ): AbstractDataSet = {

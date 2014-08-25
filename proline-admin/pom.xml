@@ -312,10 +312,11 @@
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <excludes>
+            <exclude>dbunit_init_datasets/</exclude>
+            <exclude>mascot_config/</exclude>
             <exclude>**/logback.xml</exclude>
             <exclude>**/*.conf</exclude>
-            <exclude>*_db/</exclude>
-            <exclude>mascot_config/</exclude>
+            <exclude>*_db/</exclude>    
           </excludes>
         </configuration>
       </plugin>
