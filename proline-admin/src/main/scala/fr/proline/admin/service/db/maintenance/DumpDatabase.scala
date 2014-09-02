@@ -17,13 +17,18 @@ import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory
 import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.service.ICommandWork
+import fr.proline.admin.helper.sql.createDatabaseTester
 import fr.proline.repository._
 
 /**
  * @author David Bouyssie
  *
  */
-class DumpDatabase( dbConnector: IDatabaseConnector, outputFilePath: String ) extends ICommandWork with Logging {
+class DumpDatabase(
+  dbConnector: IDatabaseConnector,
+  outputFilePath: String,
+  excludedTableNames: Array[String] = Array("SCHEMA_VERSION")
+) extends ICommandWork with Logging {
 
   def doWork() {
     
@@ -51,7 +56,8 @@ class DumpDatabase( dbConnector: IDatabaseConnector, outputFilePath: String ) ex
     
     // Remove Flyway "schema_version" table from the datset
     val tableNames = sortedDS.getTableNames()
-    val filteredTableNames = tableNames.filter(t => t !="schema_version" && t != "SCHEMA_VERSION" )
+    val excludedTableNameSet = excludedTableNames.map(_.toUpperCase()).toSet
+    val filteredTableNames = tableNames.filter(t => excludedTableNameSet.contains(t.toUpperCase()) == false )
     //println( scala.runtime.ScalaRunTime.stringOf(ft))
     //ft.foreach( t => println( scala.runtime.ScalaRunTime.stringOf(dataSet.getTableMetaData(t))) )
     
@@ -62,42 +68,6 @@ class DumpDatabase( dbConnector: IDatabaseConnector, outputFilePath: String ) ex
     val out = new FileOutputStream(outputFilePath)
 
     FlatXmlDataSet.write(filteredDS, out)
-  }
-  
-  // TODO: remove code redudancy with same method in fr.proline.repository.util.DatabaseTestConnector
-  def createDatabaseTester( dataSource: javax.sql.DataSource, driverType: DriverType ) = {
-    new DataSourceDatabaseTester(dataSource) {
-      
-      import DriverType._
-      
-      override def getConnection(): IDatabaseConnection = {
-        val dbUnitConn = super.getConnection()
-        
-        // Retrieve the IDataTypeFactory corresponding to the DriverType
-        val dataTypeFactory = driverType match {
-          case H2 => new H2DataTypeFactory()
-          case POSTGRESQL => new PostgresqlDataTypeFactory();
-          case SQLITE => new DefaultDataTypeFactory() {
-              override def getValidDbProducts(): Collection[_] = {
-                Arrays.asList( Array("sqlite") )
-              }
-            }
-        }
-        
-        // Apply the created IDataTypeFactory to the connection config
-        val dbUnitConnConfig = dbUnitConn.getConfig()
-        dbUnitConnConfig.setProperty(
-          DatabaseConfig.PROPERTY_DATATYPE_FACTORY, dataTypeFactory
-        )
-        
-        // Tell Dbunit to be case sensitive
-        dbUnitConnConfig.setProperty(
-          DatabaseConfig.FEATURE_CASE_SENSITIVE_TABLE_NAMES, true
-        )
-        
-        dbUnitConn
-      }
-    }
   }
 
 }

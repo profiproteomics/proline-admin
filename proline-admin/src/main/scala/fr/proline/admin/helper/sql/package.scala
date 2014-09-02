@@ -1,34 +1,40 @@
 package fr.proline.admin.helper
 
-import java.io.File
-import java.io.InputStream
 import java.sql.Connection
 import java.sql.DriverManager
+import java.util.Arrays
+import java.util.Collection
+
 import javax.persistence.EntityManager
 import javax.persistence.EntityTransaction
-import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable.HashMap
+
 import org.dbunit.DataSourceDatabaseTester
 import org.dbunit.database.DatabaseConfig
 import org.dbunit.database.DatabaseSequenceFilter
+import org.dbunit.database.IDatabaseConnection
 import org.dbunit.dataset.AbstractDataSet
-import org.dbunit.dataset.Column.AutoIncrement
 import org.dbunit.dataset.FilteredDataSet
+import org.dbunit.dataset.datatype.DataType
+import org.dbunit.dataset.datatype.DefaultDataTypeFactory
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder
+import org.dbunit.ext.h2.H2DataTypeFactory
+import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory
 import org.dbunit.operation.DatabaseOperation
 import org.postgresql.Driver
 import org.postgresql.util.PSQLException
+
 import com.typesafe.scalalogging.slf4j.Logger
 import com.typesafe.scalalogging.slf4j.Logging
-import fr.profi.util.dbunit._
-import fr.profi.util.primitives._
-import fr.profi.util.resources._
+
 import fr.profi.util.StringUtils
+import fr.profi.util.dbunit._
+import fr.profi.util.primitives.castToTimestamp
+import fr.profi.util.resources._
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.ContextFactory
-import fr.proline.core.dal.context._
 import fr.proline.core.dal.DoJDBCWork
+import fr.proline.core.dal.context._
 import fr.proline.core.dal.tables.lcms.LcmsDb
 import fr.proline.core.dal.tables.msi.MsiDb
 import fr.proline.core.dal.tables.pdi.PdiDb
@@ -143,11 +149,12 @@ package object sql extends Logging {
     val colNamesByTableName = _getColNamesByTableName(dbConnector.getProlineDatabaseType)
     val insertQueryByTableName = _getInsertQueryByTableName(dbConnector.getProlineDatabaseType)
     
-    // FIXME: this step is too slow (DbUnit issue ?) => find a workaround
-    // => one workaround is to disable all FK constraint (see disableForeignKeyConstraints method)
-    // but this can't be used currently with Postgres because constraints are "NOT DEFERRABLE" by default
-    val filteredDataset = _getFilteredDataset(dbConnector,dbConfig.driverType,datasetPath )
-    val sortedTableNames: Array[String] = filteredDataset.getTableNames
+    //val filteredDataset = _getFilteredDataset(dbConnector,dbConfig.driverType,datasetPath )
+    //val sortedTableNames: Array[String] = filteredDataset.getTableNames
+    
+    // Connect to the data source
+    val dbTester = createDatabaseTester(dbConnector.getDataSource(), dbConfig.driverType)
+    val dbUnitConn = dbTester.getConnection()
     
     val sqlContext = ContextFactory.buildDbConnectionContext(dbConnector, false)
     
@@ -159,17 +166,19 @@ package object sql extends Logging {
         
         DoJDBCWork.withEzDBC(sqlContext, { ezDBC =>
           
-          for( tableName <- sortedTableNames; if recordsByTableName.contains(tableName) ) {
-          //for( tableName <- recordsByTableName.keys ) {
+          //for( tableName <- sortedTableNames; if recordsByTableName.contains(tableName) ) {
+          for( (tableName,records) <- recordsByTableName; if records.isEmpty == false ) {
+            //val records = recordsByTableName(tableName)
             
             //val tableMetaData = filteredDataset.getTableMetaData(tableName)
+            val tableMetaData = dbUnitConn.createDataSet(Array(tableName)).getTableMetaData(tableName)
+            val cols = tableMetaData.getColumns()
+            val dataTypeByColName = cols.map( col => col.getColumnName() -> col.getDataType() ).toMap
+            
             val colNames = colNamesByTableName(tableName)
             val insertQuery = insertQueryByTableName(tableName)
-            val records = recordsByTableName(tableName)
             
             ezDBC.executePrepared(insertQuery, false) { statement =>
-              
-              //val jdbcStmt = statement.jdbcPrepStmt
               
               for( record <- records ) {
                 
@@ -178,13 +187,13 @@ package object sql extends Logging {
                   
                   if( colName != "ID" ) {
                     
+                    val dataType = dataTypeByColName(colName)
+                    
                     if( record.contains(colName) == false ) {
                       statement.addNull()
-                      //val sqlTypeAsInt = sqlTypeByName( col.getSqlTypeName() )
-                      //jdbcStmt.setNull(paramIdx, sqlTypeAsInt)
                     } else {
                       val valueAsStr = record(colName)
-                      val parsedValue = parseString(valueAsStr)
+                      /*val parsedValue = parseString(valueAsStr)
                       
                       parsedValue match {
                         case b: Boolean => statement.addBoolean(b)
@@ -194,15 +203,23 @@ package object sql extends Logging {
                         case l: Long => statement.addLong(l)
                         case s: String => statement.addString(s)
                         case dt: java.util.Date => statement.addTimestamp(new java.sql.Timestamp(dt.getTime))
+                      }*/
+                      
+                      dataType match {
+                        case DataType.BOOLEAN => statement.addBoolean(valueAsStr.toBoolean)
+                        case DataType.DOUBLE => statement.addDouble(valueAsStr.toDouble)
+                        case DataType.FLOAT => statement.addFloat(valueAsStr.toFloat)
+                        case DataType.REAL => statement.addFloat(valueAsStr.toFloat)
+                        case DataType.INTEGER => statement.addInt(valueAsStr.toInt)
+                        case DataType.BIGINT => statement.addLong(valueAsStr.toLong)
+                        case DataType.CHAR => statement.addString(valueAsStr)
+                        case DataType.VARCHAR => statement.addString(valueAsStr)
+                        case DataType.CLOB => statement.addString(valueAsStr)
+                        case DataType.DATE => statement.addTimestamp(castToTimestamp(valueAsStr))
+                        case DataType.TIMESTAMP => statement.addTimestamp(castToTimestamp(valueAsStr))                        
+                        case _ => "not yet implemented data type: " + dataType
                       }
                       
-                      /*col.getDataType match {
-                        case DataType.BOOLEAN => jdbcStmt.setBoolean(paramIdx, value.toBoolean)
-                        case DataType.INTEGER => jdbcStmt.setInt(paramIdx, value.toInt)
-                        case DataType.REAL => jdbcStmt.setFloat(paramIdx, value.toFloat)
-                        case DataType.FLOAT => jdbcStmt.setFloat(paramIdx, value.toFloat)
-                        case _ => "not yet implemented data type"
-                      }*/
                     }
                   }
                 } // End of col iteration
@@ -287,50 +304,6 @@ package object sql extends Logging {
     
     tableInsertQueryByName.toMap
   }
-  
-  /*private def _parseDbUnitDataset( datasetPath: String ): Map[String,ArrayBuffer[Map[String,String]]] = {
-    
-    // Workaround for issue "Non-namespace-aware mode not implemented"
-    // We use the javax SAXParserFactory with a custom configuration
-    // Source:  http://stackoverflow.com/questions/11315439/ignore-dtd-specification-in-scala
-    val saxParserFactory = javax.xml.parsers.SAXParserFactory.newInstance()
-    saxParserFactory.setValidating(false)
-
-    // Instantiate the XML loader using the javax SAXParser
-    val xmlLoader = xml.XML.withSAXParser(saxParserFactory.newSAXParser)
-
-    // Load the dataset
-    val xmlDoc = xmlLoader.loadFile( pathToFileOrResourceToFile(datasetPath,this.getClass) )
-    
-    val recordsByTableName = new HashMap[String,ArrayBuffer[Map[String,String]]]
-    
-    // Iterate over dataset nodes
-    for( xmlNode <- xmlDoc.child ) {
-      
-      val attrs = xmlNode.attributes
-      
-      // Check node has defined attributes
-      if( attrs.isEmpty == false ) {
-        
-        val tableName = xmlNode.label
-        
-        val recordBuilder = Map.newBuilder[String,String]
-        
-        // Iterate over node attributes
-        for( attr <- attrs ) {
-          val str = attr.value.text
-          recordBuilder += attr.key -> attr.value.text
-        }
-        
-        // Append record to the records of this table
-        val records = recordsByTableName.getOrElseUpdate(tableName, new ArrayBuffer[Map[String,String]]() )
-        records += recordBuilder.result()
-        
-      }
-    }
-    
-    recordsByTableName.toMap
-  }*/
         
   // Inspired from: http://www.marcphilipp.de/blog/2012/03/13/database-tests-with-dbunit-part-1/
   private def _getFilteredDataset( dbConnector: IDatabaseConnector, driverType: DriverType, datasetPath: String ): AbstractDataSet = {
@@ -348,11 +321,16 @@ package object sql extends Logging {
     // Tell DbUnit to be case sensitive
     dbUnitConn.getConfig.setProperty(DatabaseConfig.FEATURE_CASE_SENSITIVE_TABLE_NAMES, true)
     
+    // FIXME: this step is too slow (DbUnit issue ?) => find a workaround
+    // => one workaround is to disable all FK constraint (see disableForeignKeyConstraints method)
+    // but this can't be used currently with Postgres because constraints are "NOT DEFERRABLE" by default
+    
     // Filter the dataset if the driver is not SQLite
-    val filteredDS = if( driverType == DriverType.SQLITE ) dataSet
+    /*val filteredDS = if( driverType == DriverType.SQLITE ) dataSet
     else {
       new FilteredDataSet( new DatabaseSequenceFilter(dbUnitConn), dataSet)
-    }
+    }*/
+    val filteredDS = dataSet
     
     dbUnitConn.close()
     
@@ -498,6 +476,42 @@ package object sql extends Logging {
       }
     })
     
+  }
+  
+  // TODO: remove code redudancy with same method in fr.proline.repository.util.DatabaseTestConnector
+  def createDatabaseTester( dataSource: javax.sql.DataSource, driverType: DriverType ) = {
+    new DataSourceDatabaseTester(dataSource) {
+      
+      import DriverType._
+      
+      override def getConnection(): IDatabaseConnection = {
+        val dbUnitConn = super.getConnection()
+        
+        // Retrieve the IDataTypeFactory corresponding to the DriverType
+        val dataTypeFactory = driverType match {
+          case H2 => new H2DataTypeFactory()
+          case POSTGRESQL => new PostgresqlDataTypeFactory();
+          case SQLITE => new DefaultDataTypeFactory() {
+              override def getValidDbProducts(): Collection[_] = {
+                Arrays.asList( Array("sqlite") )
+              }
+            }
+        }
+        
+        // Apply the created IDataTypeFactory to the connection config
+        val dbUnitConnConfig = dbUnitConn.getConfig()
+        dbUnitConnConfig.setProperty(
+          DatabaseConfig.PROPERTY_DATATYPE_FACTORY, dataTypeFactory
+        )
+        
+        // Tell Dbunit to be case sensitive
+        dbUnitConnConfig.setProperty(
+          DatabaseConfig.FEATURE_CASE_SENSITIVE_TABLE_NAMES, true
+        )
+        
+        dbUnitConn
+      }
+    }
   }
 
 }
