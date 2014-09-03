@@ -111,6 +111,7 @@ package object sql extends Logging {
       
       val dsInputStream = this.getClass().getResourceAsStream(datasetPath)
       val dataSet = datasetBuilder.build(dsInputStream)
+      dsInputStream.close()
       
       // Connect to the data source
       val dataSource = dbConnector.getDataSource()
@@ -143,8 +144,11 @@ package object sql extends Logging {
     if( initDbSchema( dbConnector, dbConfig ) == false ) return ()
     
     logger.info(s"schema initiated for database '${dbConfig.dbName}'")
-       
-    val recordsByTableName = parseDbUnitDataset( pathToFileOrResourceToFile(datasetPath,this.getClass), lowerCase = false )
+    
+    val dsInputStream = this.getClass.getResourceAsStream(datasetPath)
+    val recordsByTableName = parseDbUnitDataset( dsInputStream, lowerCase = false )
+    dsInputStream.close()
+    
     // TODO: try to retrieve the table meta-data from the database ???
     val colNamesByTableName = _getColNamesByTableName(dbConnector.getProlineDatabaseType)
     val insertQueryByTableName = _getInsertQueryByTableName(dbConnector.getProlineDatabaseType)
@@ -237,6 +241,10 @@ package object sql extends Logging {
       
     } finally {
       
+      // Close DbUnit connection
+      dbUnitConn.close()
+      
+      // Close database connection context
       if( sqlContext != null ) {
         logger.info(s"Closing connection context for database '${dbConfig.dbName}'")
         sqlContext.close()
@@ -311,7 +319,8 @@ package object sql extends Logging {
     val datasetBuilder = new FlatXmlDataSetBuilder()
     datasetBuilder.setColumnSensing(true)
     
-    val dataSet = datasetBuilder.build( pathToFileOrResourceToFile(datasetPath,this.getClass) )
+    //val dataSet = datasetBuilder.build( pathToFileOrResourceToFile(datasetPath,this.getClass) )
+    val dataSet = datasetBuilder.build( this.getClass.getResourceAsStream(datasetPath) )
     
     // Connect to the data source
     val dataSource = dbConnector.getDataSource()
