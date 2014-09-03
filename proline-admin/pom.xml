@@ -241,6 +241,7 @@
                   <filtering>true</filtering>
                   <excludes>
                     <exclude>META-INF/**</exclude>
+                    <exclude>dbunit_init_datasets/</exclude>
                   </excludes>
                 </resource>
               </resources>
@@ -312,11 +313,8 @@
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <excludes>
-            <exclude>dbunit_init_datasets/</exclude>
-            <exclude>mascot_config/</exclude>
             <exclude>**/logback.xml</exclude>
             <exclude>**/*.conf</exclude>
-            <exclude>*_db/</exclude>    
           </excludes>
         </configuration>
       </plugin>
