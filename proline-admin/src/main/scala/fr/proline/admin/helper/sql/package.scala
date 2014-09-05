@@ -98,7 +98,7 @@ package object sql extends Logging {
   }
   
   // Inspired from: http://www.marcphilipp.de/blog/2012/03/13/database-tests-with-dbunit-part-1/
-  def setupDbFromDatasetV1( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetPath: String ) {
+  def setupDbFromDataset( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetPath: String ) {
     
     if( initDbSchema( dbConnector, dbConfig ) ) {
       logger.info(s"schema initiated for database '${dbConfig.dbName}'")
@@ -115,20 +115,20 @@ package object sql extends Logging {
       
       // Connect to the data source
       val dataSource = dbConnector.getDataSource()
-      val dbTester = new DataSourceDatabaseTester(dbConnector.getDataSource())
+      val dbTester = createDatabaseTester(dbConnector.getDataSource(), dbConfig.driverType)
       val dbUnitConn = dbTester.getConnection()
       
       // Tell DbUnit to be case sensitive
-      dbUnitConn.getConfig.setProperty(DatabaseConfig.FEATURE_CASE_SENSITIVE_TABLE_NAMES, true)
+      //dbUnitConn.getConfig.setProperty(DatabaseConfig.FEATURE_CASE_SENSITIVE_TABLE_NAMES, true)
       
       // Filter the dataset if the driver is not SQLite
-      val filteredDS = if( dbConfig.driverType == DriverType.SQLITE ) dataSet
+      /*val filteredDS = if( dbConfig.driverType == DriverType.SQLITE ) dataSet
       else {
         new FilteredDataSet( new DatabaseSequenceFilter(dbUnitConn) , dataSet)
-      }
+      }*/
       
       // Import the dataset
-      dbTester.setDataSet(filteredDS)
+      dbTester.setDataSet(dataSet)
       dbTester.setSetUpOperation(DatabaseOperation.CLEAN_INSERT)
       dbTester.onSetup()
       
@@ -139,7 +139,7 @@ package object sql extends Logging {
     
   }
   
-  def setupDbFromDataset( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetPath: String ) {
+  def setupDbFromDatasetV2( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetPath: String ) {
     
     if( initDbSchema( dbConnector, dbConfig ) == false ) return ()
     
@@ -185,6 +185,7 @@ package object sql extends Logging {
             
             val colNames = colNamesByTableName(tableName)
             val insertQuery = insertQueryByTableName(tableName)
+            logger.debug(s"TABLE ${tableName} INSERT query: " + insertQuery)
             
             ezDBC.executePrepared(insertQuery, false) { statement =>
               
@@ -197,10 +198,11 @@ package object sql extends Logging {
                     
                     val dataType = dataTypeByColName(colName)
                     
-                    if( record.contains(colName) == false ) {
+                    if( record.contains(colName) == false || record(colName) == null ) {
                       statement.addNull()
                     } else {
                       val valueAsStr = record(colName)
+                      
                       /*val parsedValue = parseString(valueAsStr)
                       
                       parsedValue match {
@@ -213,7 +215,9 @@ package object sql extends Logging {
                         case dt: java.util.Date => statement.addTimestamp(new java.sql.Timestamp(dt.getTime))
                       }*/
                       
+                      // For the SQL <-> Java type mapping see http://db.apache.org/ojb/docu/guides/jdbc-types.html                      
                       dataType match {
+                        case DataType.BIT => statement.addBoolean(valueAsStr.toBoolean)
                         case DataType.BOOLEAN => statement.addBoolean(valueAsStr.toBoolean)
                         case DataType.DOUBLE => statement.addDouble(valueAsStr.toDouble)
                         case DataType.FLOAT => statement.addFloat(valueAsStr.toFloat)
@@ -222,10 +226,11 @@ package object sql extends Logging {
                         case DataType.BIGINT => statement.addLong(valueAsStr.toLong)
                         case DataType.CHAR => statement.addString(valueAsStr)
                         case DataType.VARCHAR => statement.addString(valueAsStr)
+                        case DataType.LONGVARCHAR => statement.addString(valueAsStr)
                         case DataType.CLOB => statement.addString(valueAsStr)
                         case DataType.DATE => statement.addTimestamp(castToTimestamp(valueAsStr))
                         case DataType.TIMESTAMP => statement.addTimestamp(castToTimestamp(valueAsStr))                        
-                        case _ => "not yet implemented data type: " + dataType
+                        case _ => throw new Exception( "not yet implemented data type: " + dataType )
                       }
                       
                     }
