@@ -98,7 +98,8 @@ package object sql extends Logging {
   }
   
   // Inspired from: http://www.marcphilipp.de/blog/2012/03/13/database-tests-with-dbunit-part-1/
-  def setupDbFromDataset( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetPath: String ) {
+  // WANRING: this method has issue with Pg PK sequence => see https://bioproj.cea.fr/redmine/issues/10643
+  def setupDbFromDatasetV1( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetPath: String ) {
     
     if( initDbSchema( dbConnector, dbConfig ) ) {
       logger.info(s"schema initiated for database '${dbConfig.dbName}'")
@@ -139,7 +140,7 @@ package object sql extends Logging {
     
   }
   
-  def setupDbFromDatasetV2( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetPath: String ) {
+  def setupDbFromDataset( dbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, datasetPath: String ) {
     
     if( initDbSchema( dbConnector, dbConfig ) == false ) return ()
     
