@@ -8,6 +8,7 @@ import org.dbunit.dataset.xml.FlatDtdDataSet
 
 import com.typesafe.scalalogging.slf4j.Logging
 
+import fr.proline.admin.helper.sql.createDatabaseTester
 import fr.proline.admin.service.ICommandWork
 import fr.proline.repository._
 
@@ -43,7 +44,8 @@ class ExportDbUnitDTDs( dsConnectorFactory: IDataStoreConnectorFactory, dirPath:
   
   protected def writeDataSetDTD( dbConnector: IDatabaseConnector, dtdFileName: String) {
       
-    val dbTester = new DataSourceDatabaseTester(dbConnector.getDataSource())
+    //val dbTester = new DataSourceDatabaseTester(dbConnector.getDataSource())
+    val dbTester = createDatabaseTester( dbConnector.getDataSource(), dbConnector.getDriverType )
     val dbUnitConn = dbTester.getConnection()
     val dbCfg = dbUnitConn.getConfig()
     dbCfg.setProperty(DatabaseConfig.FEATURE_CASE_SENSITIVE_TABLE_NAMES, true)
