@@ -159,6 +159,9 @@ package object sql extends Logging {
     // Connect to the data source
     val dbTester = createDatabaseTester(dbConnector.getDataSource(), dbConfig.driverType)
     val dbUnitConn = dbTester.getConnection()
+    val dbUnitDS = dbUnitConn.createDataSet()
+    val tableNamesInDb = dbUnitDS.getTableNames()
+    val dbTblNameByUpCasedTblName = tableNamesInDb.map(tbl => tbl.toUpperCase() -> tbl ).toMap
     
     val sqlContext = ContextFactory.buildDbConnectionContext(dbConnector, false)
     
@@ -171,13 +174,14 @@ package object sql extends Logging {
         DoJDBCWork.withEzDBC(sqlContext, { ezDBC =>
           
           //for( tableName <- sortedTableNames; if recordsByTableName.contains(tableName) ) {
+          //  val records = recordsByTableName(tableName)
           for( (tableName,records) <- recordsByTableName; if records.isEmpty == false ) {
-            //val records = recordsByTableName(tableName)
             
             //val tableMetaData = filteredDataset.getTableMetaData(tableName)
-            val tableMetaData = dbUnitConn.createDataSet(Array(tableName)).getTableMetaData(tableName)
+            val dbTblName = dbTblNameByUpCasedTblName(tableName)
+            val tableMetaData = dbUnitDS.getTableMetaData(dbTblName)
             val cols = tableMetaData.getColumns()
-            val dataTypeByColName = cols.map( col => col.getColumnName() -> col.getDataType() ).toMap
+            val dataTypeByColName = cols.map( col => col.getColumnName().toUpperCase() -> col.getDataType() ).toMap
             
             val colNames = colNamesByTableName(tableName)
             val insertQuery = insertQueryByTableName(tableName)
