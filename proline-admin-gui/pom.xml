@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>ProFI-Pom</artifactId>
+    <groupId>fr.proline</groupId>
+    <version>0.0.4</version> <!-- Snapshot Trunk version -->
+  </parent>
+
+  <artifactId>Proline-Admin-GUI</artifactId>
+  <version>0.0.10-SNAPSHOT</version>
+
+  <name>${project.artifactId}</name>
+  <description>A GUI for Proline Administration</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <core.version>0.2.0-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
+  </properties>
+
+  <dependencies>
+
+    <!-- Scala -->
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <!-- Version inherited from ProFI-Pom ${scala-library.version} -->
+    </dependency>
+
+    <!-- Scala FX -->
+    <dependency>
+      <groupId>org.scalafx</groupId>
+      <artifactId>scalafx_2.10</artifactId>
+      <version>1.0.0-R8</version> <!--for JavaFX 2.2 -->
+      <!-- <version>8.0.0-R4</version> --><!--for JavaFX 8 -->
+    </dependency>
+
+    <!-- Logging -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <!-- Compile scope (Proline-Admin can be used as a stand-alone program) -->
+    </dependency>
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>scalalogging-slf4j_2.10</artifactId>
+      <!-- Version inherited from ProFI-Pom -->
+    </dependency>
+
+    <!-- Configuration -->
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>config</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+    <!-- Database drivers -->
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>
+
+    <!-- Dependency problem with Hibernate : force antlr version 2.7.7 -->
+    <dependency>
+      <groupId>antlr</groupId>
+      <artifactId>antlr</artifactId>
+      <version>2.7.7</version>
+
+      <exclusions>
+        <exclusion>
+          <artifactId>xml-apis</artifactId>
+          <groupId>xml-apis</groupId>
+        </exclusion>
+      </exclusions>
+
+    </dependency>
+
+    <!-- Proline -->
+    <dependency>
+      <groupId>fr.proline.util</groupId>
+      <artifactId>ProFI-Commons-Scala</artifactId>
+      <version>0.0.8-SNAPSHOT</version> <!-- Snapshot Trunk version -->
+    </dependency>
+
+    <dependency>
+      <groupId>fr.proline</groupId>
+      <artifactId>Proline-ORM</artifactId>
+      <version>${core.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>fr.proline</groupId>
+      <artifactId>Proline-Admin</artifactId>
+      <version>0.0.10-SNAPSHOT</version>
+    </dependency>
+
+    <!-- Tests -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scalatest</groupId>
+      <artifactId>scalatest_${scala.version}</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+
+    <pluginManagement>
+      <plugins>
+
+        <!-- For Eclipse build -->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <versionRange>[2.8,)</versionRange>
+                    <goals>
+                      <goal>copy-dependencies</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <execute />
+                  </action>
+                </pluginExecution>
+
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>com.google.code.maven-replacer-plugin</groupId>
+                    <artifactId>replacer</artifactId>
+                    <versionRange>[1.5.2,)</versionRange>
+                    <goals>
+                      <goal>replace</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <execute>
+                      <runOnIncremental>false</runOnIncremental>
+                    </execute>
+                  </action>
+                </pluginExecution>
+
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <!-- Version inherited from ProFI-Pom -->
+        <configuration>
+          <launchers>
+            <launcher>
+              <id>GUI</id>
+              <mainClass>fr.proline.admin.gui.Main</mainClass>
+              <!-- <id>RunCommand</id> -->
+              <!-- <mainClass>fr.proline.admin.RunCommand</mainClass> -->
+              <!-- args are optional <args> <arg>arg1</arg> </args> -->
+              <!-- jvmArgs are optional -->
+              <jvmArgs>
+                <jvmArg>-Xms512m</jvmArg>
+                <jvmArg>-Xmx1024m</jvmArg>
+                <jvmArg>-Duser.language=en</jvmArg>
+                <jvmArg>-Djava.library.path=./lib</jvmArg>
+              </jvmArgs>
+            </launcher>
+          </launchers>
+        </configuration>
+      </plugin>
+
+      <!-- Deploy JavaFX-based executable JAR -->
+      <!-- Created in target\jfx\app\ in version 2.0 -->
+      <plugin>
+        <groupId>com.zenjava</groupId>
+        <artifactId>javafx-maven-plugin</artifactId>
+        <version>2.0</version>
+        <executions>
+          <execution>
+            <id>create-final-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <vendor>ProFi</vendor>
+          <mainClass>fr.proline.admin.gui.Main</mainClass>
+          <permissions>
+            <permission>all-permissions</permission>
+          </permissions>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <!-- Version inherited from ProFI-Pom -->
+        <executions>
+
+          <execution>
+            <id>copy-config</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/config</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/main/resources</directory>
+                  <filtering>true</filtering>
+                  <excludes>
+                    <exclude>META-INF/**</exclude>
+                  </excludes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+
+        </executions>
+      </plugin>
+
+      <!-- Is this plugin still used with assembly plugin ? ? -->
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <!-- Version inherited from ProFI-Pom -->
+        <executions>
+
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <includeTypes>jar</includeTypes>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>copy-dll</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <includeTypes>dll,exe</includeTypes>
+              <stripVersion>true</stripVersion>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <!-- Version inherited from ProFI-Pom -->
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/assembly.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+</project>
