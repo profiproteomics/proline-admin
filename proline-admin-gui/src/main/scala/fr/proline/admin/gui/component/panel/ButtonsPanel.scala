@@ -49,18 +49,12 @@ object ButtonsPanel {
 
       /** Set up Proline if confirmed */
       if (confirmed) {
-        //        try {
+
         LaunchAction(
           actionButton = this,
           actionString = Util.mkCmd("setup"),
-          action = () => {
-            SetupProline() //TODO: create data folder if it doesn't exist?
-          }
+          action = () => SetupProline()
         )
-
-        //        } catch {
-        //          case e: Exception => println("  ERROR : could not set up Proline databases : " + e) //TODO: remove me
-        //        }
       }
     }
   }
@@ -68,28 +62,24 @@ object ButtonsPanel {
   /**
    *  Create a new user
    */
-  //  val createUserButton = new Button("Create a new user") {
-  //    onAction = handle { new NewUserDialog() }
-  //  }
-  val createUserButton = new Button("Sing the Pokemon song") {
-    onAction = handle {
-      LaunchAction(
-        actionButton = this,
-        actionString = Util.mkCmd("sing_pokemon"),
-        action = () => _singPokemon()
-      )
-    }
+  val createUserButton = new Button("Create a new user") {
+    onAction = handle { new NewUserDialog() }
   }
+  //  val createUserButton = new Button("Sing the Pokemon song") {
+  //    onAction = handle {
+  //      LaunchAction(
+  //        actionButton = this,
+  //        actionString = Util.mkCmd("sing_pokemon"),
+  //        action = () => _singPokemon()
+  //      )
+  //    }
+  //  }
 
   /**
    *  Create a new project
    */
   val createProjectButton = new Button("Create a new project") {
-    onAction = handle {
-      println("pressed create project button")
-      System.out.println("OUT pressed create project button")
-      new NewProjectDialog()
-    }
+    onAction = handle { new NewProjectDialog() }
   }
 
   /** Upgrade databases */
@@ -101,7 +91,6 @@ object ButtonsPanel {
 
       /** Upgrade databases if confirmed */
       if (confirmed) {
-        //        try {
 
         LaunchAction(
           actionButton = this,
@@ -120,9 +109,6 @@ object ButtonsPanel {
             dsConnectorFactory.closeAll()
           }
         )
-        //        } catch {
-        //          case e: Exception => println("  ERROR : Could not upgrade Proline databases : " + e)
-        //        }
       }
     }
 
@@ -139,7 +125,7 @@ object ButtonsPanel {
       connectorFactory
     }
 
-  }
+  } //end of 'upgrade db' button
 
   /**
    * ********************** *
@@ -153,7 +139,8 @@ object ButtonsPanel {
   val someUserInDb = new BooleanProperty()
 
   /** Define when buttons shall be enabled/disbaled */
-  updateBooleans()
+  //  updateBooleans()
+
   setupProlineButton.disable <== when(prolineMustBeSetUp) choose false otherwise true
   createUserButton.disable <== when(dbCanBeUsed) choose false otherwise true
   createProjectButton.disable <== when(dbCanBeUsed && someUserInDb) choose false otherwise true
@@ -169,7 +156,8 @@ object ButtonsPanel {
     try {
 
       /** Config file is OK if udsDBConfig can be built with it */
-      val udsDBConfig = SetupProline.config.udsDBConfig
+
+      val udsDBConfig = SetupProline.getUpdatedConfig().udsDBConfig
       _prolineConfIsOk = true
 
       /** Check if Proline is already set up */
@@ -199,7 +187,6 @@ object ButtonsPanel {
       }
     }
   }
-
   //  /**
   //   * Print these booleans
   //   */
@@ -258,24 +245,24 @@ object ButtonsPanel {
     }
   }
 
-  /**
-   * ******************* *
-   * ADDITIONAL FEATURES *
-   * ******************* *
-   */
-
-  private def _singPokemon() = println("""INFO
-Un jour je serai le meilleur dresseur
-Je me battrai sans répit
-Je ferai tout pour être vainqueur
-Et gagner les défis
-
-Je parcourrai la Terre entière
-Battant avec espoir 
-Les Pokemon et leur mystère
-Le secret de leur pouvoir
-
-POKEMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONNNNNNNNNNNNNNNNN
-""")
+  //  /**
+  //   * ******************* *
+  //   * ADDITIONAL FEATURES *
+  //   * ******************* *
+  //   */
+  //
+  //  private def _singPokemon() = println("""INFO
+  //Un jour je serai le meilleur dresseur
+  //Je me battrai sans répit
+  //Je ferai tout pour être vainqueur
+  //Et gagner les défis
+  //
+  //Je parcourrai la Terre entière
+  //Battant avec espoir 
+  //Les Pokemon et leur mystère
+  //Le secret de leur pouvoir
+  //
+  //POKEMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONNNNNNNNNNNNNNNNN
+  //""")
 
 }

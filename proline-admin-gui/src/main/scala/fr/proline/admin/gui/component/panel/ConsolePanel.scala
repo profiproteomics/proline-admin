@@ -2,22 +2,12 @@ package fr.proline.admin.gui.component.panel
 
 import java.io.OutputStream
 import java.io.PrintStream
-import scalafx.Includes.observableList2ObservableBuffer
-import scalafx.Includes.handle
+
 import scalafx.application.Platform
 import scalafx.geometry.Insets
-import scalafx.scene.control.ScrollPane
-import scalafx.scene.control.ScrollPane.ScrollBarPolicy
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
-import scalafx.scene.paint.Color
-import scalafx.scene.text.Font
-import scalafx.scene.text.Text
-import scalafx.scene.text.Text.sfxText2jfx
-import scalafx.scene.control.TextArea
 import scalafx.scene.web.WebView
-import fr.proline.admin.gui.Main
-import scalafx.scene.control.ScrollBar
 
 /**
  * Create an area to display the console content.
@@ -115,10 +105,10 @@ class Console(
     //    }
 
     val color = {
-      if (isStdErr) "orange" //TODO: "red"
+      if (isStdErr) "orange" //"red"
       else {
 
-        if (_textMatches("error") || _textMatches("exception")) "red" // || _textMatches("warn"))
+        if (_textMatches("error") || _textMatches("exception") || _textMatches("fail")) "red" // || _textMatches("warn"))
 
         else if (_textMatches("info") || _textMatches("success")) "green"
 
@@ -128,7 +118,7 @@ class Console(
 
     /** Make and return HTML string */
     //    s"""<kbd style='color:$color'>$bold$strToFormat$endBold</kdb><br>"""
-    s"""<kbd style='color:$color'>$strToFormat</kdb><br>"""
+    s"""<kbd style='color:$color'>$strToFormat</kdb>""" //<br>"""
   }
 
   /** Override OutputStream write method */
