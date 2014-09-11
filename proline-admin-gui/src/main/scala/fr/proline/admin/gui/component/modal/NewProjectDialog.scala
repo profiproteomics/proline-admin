@@ -190,7 +190,6 @@ class NewProjectDialog {
           val _ownerID: Long = userMap(ownerOpt.get)
           val _desc = descField.text()
 
-          //          try {
           val cmd = s"""create_project --owner_id ${_ownerID} --name "${_name}"  --description "${_desc}""""
 
           /** Create project */
@@ -199,10 +198,6 @@ class NewProjectDialog {
             actionString = Util.mkCmd(cmd),
             action = () => { CreateProject(ownerId = _ownerID, name = _name, description = _desc) }
           )
-
-          //          } catch {
-          //            case e: Exception => println("  ERROR : " + e)
-          //          }
 
           newProjectDialog.close()
 

@@ -4,7 +4,6 @@ import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.Util
 
 import scalafx.Includes.handle
-import scalafx.Includes.observableList2ObservableBuffer
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.Scene

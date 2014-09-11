@@ -150,6 +150,7 @@ class NewUserDialog {
         ).foreach(_.text.value = "")
 
         /** Check form */
+
         val _login = loginField.text()
         val isLoginDefined = _login.isEmpty == false
 
@@ -172,16 +173,12 @@ class NewUserDialog {
             else
               (Some(_pw), s"create_user --login ${_login} --password ${"*" * _pw.length()}")
 
-          //          try {
-
           /** Create user and close dialog */
           LaunchAction(
             actionButton = ButtonsPanel.createUserButton,
             actionString = Util.mkCmd(cmd),
             action = () => { CreateUser(_login, pswdOpt) }
           )
-
-          //          } catch { case e: Exception => println("  ERROR : " + e) }
 
           newUserDialog.close()
 
