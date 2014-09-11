@@ -1,18 +1,22 @@
 package fr.proline.admin.gui
 
+import java.io.File
+
+import fr.proline.admin.gui.component.modal.ConfFileChooser
+import fr.proline.admin.gui.component.panel.ButtonsPanel
+import fr.proline.admin.gui.component.panel.ConsolePanel
 import fr.proline.admin.gui.component.panel.MenuPanel
-import fr.proline.admin.service.db.SetupProline
+import fr.proline.admin.gui.process.ProlineAdminConnection
+
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
-import scalafx.scene.control.ScrollPane
-import scalafx.scene.web.WebView
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.Priority
+import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
+
 import javafx.application.Application
-import fr.proline.admin.gui.component.panel.ConsolePanel
-import fr.proline.admin.gui.component.panel.ButtonsPanel
 
 /**
  * Graphical interface for Proline Admin.
@@ -24,11 +28,12 @@ object Main {
   //  /** CSS */
   //  val CSS = this.getClass().getResource("/ProlineAdminCSS.css").toExternalForm()
 
+  /** PAdmin configuration file */
+  var targetPath: String = _
+  var confPath: String = _
+
   /** Panels */
   val menuPanel = MenuPanel()
-
-  //  var consolePanel: WebView = _
-  import scalafx.scene.layout.StackPane
   var consolePanel: StackPane = _
   var buttonsPanel: VBox = _
 
@@ -61,30 +66,53 @@ class Main extends Application {
 
     require(Main.stage == null, "stage is already instantiated")
 
-    /** Console and buttons */
-    //from javaFX doc: “WebView objects must be created and accessed solely from the FX thread.”
-    Main.consolePanel = ConsolePanel()
+    /** Create custom console and redirect system outputs on it */
+    Main.consolePanel = ConsolePanel() //javaFX doc: “WebView objects must be created and accessed solely from the FX thread.”
     Main.buttonsPanel = ButtonsPanel()
 
-    /** Primary stage */
     Main.stage = new Stage(stage) {
       scene = new Scene(Main.root)
-
       width = 1224
       height = 400
       minWidth = 720
       minHeight = 384
-
-      try {
-        val dataDir = SetupProline.config.dataDirectory
-        title = s"Proline Admin @ $dataDir"
-      } catch {
-        case e: Exception => title = s"Proline Admin (invalid configuration)"
-      }
     }
 
-    /** Show stage */
+    /** Locate 'config' folder */
+    val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
+    Main.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
+    val configPath = Main.targetPath + """/config/"""
+
+    //TODO: make sure configPath exists
+
+    /** Locate CONF file */
+    val _appConfPath = configPath + "application.conf"
+
+    if (new File(_appConfPath).exists()) {
+      Main.confPath = _appConfPath
+
+    } else {
+      ConfFileChooser.showIn(new Stage) //Sets Main.confPath and 
+    }
+
+    /** Try to set stage title with conf file content, the show stage */
+    //    try {
+    ProlineAdminConnection.updateProlineConf()
+    //      Main.stage.title = s"Proline Admin @ ${Main.confPath}"
+
+    //    } catch {
+    //      case e: Exception =>
+    //        {
+    //          ButtonsPanel.dbCanBeUsed.set(false)
+    //          ButtonsPanel.prolineMustBeSetUp.set(false)
+    //          //          Main.stage.title = "Proline Admin (invalid configuration)"
+    //        }
+
+    //    } finally {
+
+    /** Build and show stage */
     Main.stage.show()
+    //    }
 
   }
 
