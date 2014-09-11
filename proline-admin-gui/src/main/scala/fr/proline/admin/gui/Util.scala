@@ -1,10 +1,16 @@
 package fr.proline.admin.gui
 
 import scalafx.beans.binding.NumberBinding.sfxNumberBinding2jfx
+import scalafx.geometry.Insets
+import scalafx.scene.Scene
+import scalafx.scene.control.TextArea
 import scalafx.scene.layout.GridPane
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.Region
+import scalafx.scene.layout.StackPane
+import scalafx.stage.Modality
 import scalafx.stage.Stage
+import scalafx.stage.StageStyle
 
 /**
  * GRAPHICAL UTILITIES
@@ -46,4 +52,38 @@ object Util {
     (stageY + (stageHeight / div)).toDouble
   }
 
+  //TODO:  get from fr.profi.util.scalafx
+  def showPopup(
+
+    wTitle: String,
+    wText: String,
+    wParent: Option[Stage] = Some(Main.stage),
+    X: Option[Double] = Some(Main.stage.width() / 2),
+    Y: Option[Double] = Some(Main.stage.width() / 2)
+    
+  ) = {
+    new Stage {
+
+      popup =>
+      title = wTitle
+      initStyle(StageStyle.UTILITY)
+      initModality(Modality.WINDOW_MODAL)
+      resizable = false
+      if (wParent.isDefined) initOwner(wParent.get)
+      if (X.isDefined) this.x = X.get
+      if (Y.isDefined) this.y = Y.get
+
+      scene = new Scene {
+        root = new StackPane {
+          padding = Insets(5)
+          content = new TextArea {
+            text = wText
+            wrapText = true
+            editable = false
+            style = "-fx-border-style: none;-fx-focus-color: transparent;"
+          }
+        }
+      }
+    }.showAndWait()
+  }
 }
