@@ -1,6 +1,7 @@
 package fr.proline.admin.gui.component.panel
 
 import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.component.modal.ConfFileChooser
 
 import scalafx.Includes.handle
 import scalafx.scene.control.Menu
@@ -25,6 +26,11 @@ object MenuPanel {
           style = "-fx-font-fill:white;"
 
           items = List(
+
+            /** Change application file selection */
+            new MenuItem("Select configuration file") {
+              onAction = handle { ConfFileChooser.showIn(Main.stage) }
+            },
 
             /** Refresh enabled/disabled buttons */
             new MenuItem("Refresh") {
