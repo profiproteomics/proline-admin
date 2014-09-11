@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -18,6 +19,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <core.version>0.2.0-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
+    <!-- <version.path>${basedir}/src/main/scala/fr/proline/admin</version.path> -->
   </properties>
 
   <dependencies>
@@ -172,8 +174,6 @@
             <launcher>
               <id>GUI</id>
               <mainClass>fr.proline.admin.gui.Main</mainClass>
-              <!-- <id>RunCommand</id> -->
-              <!-- <mainClass>fr.proline.admin.RunCommand</mainClass> -->
               <!-- args are optional <args> <arg>arg1</arg> </args> -->
               <!-- jvmArgs are optional -->
               <jvmArgs>
@@ -205,6 +205,8 @@
         <configuration>
           <vendor>ProFi</vendor>
           <mainClass>fr.proline.admin.gui.Main</mainClass>
+          <jfxAppOutputDir>${project.build.directory}</jfxAppOutputDir> <!-- produce JFX jar in target folder -->
+          <!-- <jfxMainAppJarName>${project.build.finalName}-jfx.jar</jfxMainAppJarName> -->
           <permissions>
             <permission>all-permissions</permission>
           </permissions>
@@ -216,6 +218,7 @@
         <!-- Version inherited from ProFI-Pom -->
         <executions>
 
+          <!-- Copy resources to '/config' near jar -->
           <execution>
             <id>copy-config</id>
             <phase>validate</phase>
@@ -244,6 +247,8 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <!-- Version inherited from ProFI-Pom -->
         <executions>
+
+          <!-- Copy external libs to '/lib' near jar on phase package -->
 
           <execution>
             <id>copy-dependencies</id>
