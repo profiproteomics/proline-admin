@@ -5,14 +5,9 @@ import java.io.FileWriter
 import scala.io.Source
 
 import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.component.panel.ButtonsPanel
-import fr.proline.admin.gui.process.LaunchAction
-import fr.proline.admin.gui.process.UdsConnection
-import fr.proline.admin.service.db.SetupProline
+import fr.proline.admin.gui.process.ProlineAdminConnection
 
 import scalafx.Includes.handle
-import scalafx.application.Platform
-import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.Scene
@@ -33,7 +28,7 @@ class ConfFileEditor {
   private val _stage = new Stage {
 
     configEditor =>
-    title = "Proline configuration editor"
+    title = s"Proline configuration editor -- ${Main.confPath}"
     initModality(Modality.WINDOW_MODAL)
     initOwner(Main.stage)
 
@@ -51,10 +46,12 @@ class ConfFileEditor {
         hgrow = Priority.ALWAYS
         vgrow = Priority.ALWAYS
 
-                val is = Source.fromInputStream(this.getClass().getResourceAsStream("/application.conf"))
-//        val is = Source.fromInputStream(SetupProline.getClass().getResourceAsStream("/application.conf"))
-        text = is.mkString
-        is.close()
+        //        val is = Source.fromInputStream(this.getClass().getResourceAsStream("/application.conf"))
+        //        val is = Source.fromInputStream(SetupProline.getClass().getResourceAsStream("/application.conf"))
+        //        text = is.mkString
+        //        is.close()
+        text = Source.fromFile(Main.confPath).mkString
+
       }
 
       /** "Save" and "Cancel" buttons */
@@ -102,60 +99,23 @@ class ConfFileEditor {
       saveButton.onAction = handle {
 
         /** Update file content */
-
-        //TODO: clean it (debug mode)
-
-        println("1111")
-        //        val _confFile = this.getClass().getClassLoader().getResource("/application.conf") //TODO: PAdmin . getClass.....
-        val _confFile = SetupProline.getClass().getClassLoader().getResource("/application.conf") //TODO: PAdmin . getClass.....
-        println(_confFile)
-        println("222")
         try {
-          val confFile = _confFile.getFile()
-          println("333")
-          val fileWriter = new FileWriter(confFile)
-          println("444")
-
-          //        val confRes = this.getClass().getClassLoader().getResource("/application.conf")
-          //        val confFile = new File(confRes.toURI())
-          //        val fileWriter = new FileWriter(confFile, false)
-
+          val fileWriter = new FileWriter(Main.confPath)
           fileWriter.write(textEditArea.text.value)
           fileWriter.close()
+
         } catch {
           case e: Exception =>
-            println("exception here")
+            //            System.err.println("exception here")
             e.printStackTrace()
 
         }
 
         /** Set new Proline configuration effective */
+        ProlineAdminConnection.updateProlineConf()
 
-        LaunchAction(
-          actionButton = ButtonsPanel.editConfButton,
-          actionString = "Updating Proline configuration",
-          action = () => {
-
-            try {
-              UdsConnection.setNewProlineConfig()
-              ButtonsPanel.updateBooleans()
-
-            } catch {
-              case e: Exception => {
-                Platform.runLater {
-                  //                  println("  ERROR - Could not set new Proline configuration : " + e)
-                  println("  ERROR - Could not set new Proline configuration : ")
-                  e.printStackTrace()
-                  ButtonsPanel.dbCanBeUsed.set(false)
-                  ButtonsPanel.prolineMustBeSetUp.set(false)
-                }
-              }
-            }
-          }
-        )
-        Platform.runLater(println("Proline configuration updated."))
+        /** Close window */
         configEditor.close()
-
       }
     }
   }
