@@ -4,9 +4,6 @@ import java.io.File
 
 import scala.collection.JavaConverters.asScalaBufferConverter
 
-import com.typesafe.config.ConfigFactory
-
-import fr.proline.admin.gui.Main
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.uds.Project
@@ -14,33 +11,11 @@ import fr.proline.core.orm.uds.UserAccount
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.IDatabaseConnector
 
-import scalafx.application.Platform
-
 /**
  * Some utilities relative to UDS database connection
  */
-object UdsConnection {
+object UdsConnection { 
 
-  /**
-   *  Update SetupProline.config when CONF file changes
-   */
-  def setNewProlineConfig() {
-
-    /** Reload CONF file */
-    var classLoader = SetupProline.getClass().getClassLoader()
-    val newConfigFile = ConfigFactory.load(classLoader, "application")
-    val dataDir = newConfigFile.getConfig("proline-config").getString("data-directory")
-
-    /** Update displayed window, and Proline configuration if data directory exists */
-    if (new File(dataDir).exists()) {
-      SetupProline.setConfigParams(newConfigFile)
-      Platform.runLater(Main.stage.title = s"Proline Admin @ $dataDir")
-
-    } else {
-      Platform.runLater(Main.stage.title = s"Proline Admin (invalid configuration)")
-      throw new Exception("Unknown data directory " + dataDir)
-    }
-  }
 
   /**
    *  Test connexion with database
@@ -48,7 +23,7 @@ object UdsConnection {
   def isUdsDbReachable(): Boolean = {
 
     /** Look for uds.sqlite file in database directory */
-    val (dir, file) = (SetupProline.config.udsDBConfig.dbDirectory, SetupProline.config.udsDBConfig.dbName)
+    val (dir, file) = (SetupProline.getUpdatedConfig.udsDBConfig.dbDirectory, SetupProline.getUpdatedConfig.udsDBConfig.dbName)
     val udsFile = new File(dir + "/" + file)
     if (udsFile.exists()) true else false
   }
@@ -135,7 +110,7 @@ object UdsConnection {
         connectorFactory.getUdsDbConnector
 
       } else {
-        val udsDBConfig = SetupProline.config.udsDBConfig
+        val udsDBConfig = SetupProline.getUpdatedConfig.udsDBConfig
         udsDBConfig.toNewConnector()
       }
 

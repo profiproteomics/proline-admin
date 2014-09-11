@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.process
+package fr.proline.admin.gui.process //TODO: rename/re-organize package
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.future
@@ -33,7 +33,6 @@ object LaunchAction {
       }
 
       /** Print relative command line in console panel */
-      //    Platform.runLater(println("\n\n" + actionString))
       println("\n" + actionString)
     }
 
@@ -58,9 +57,15 @@ object LaunchAction {
       }
 
       case Failure(e) => {
+        e match {
+          case fxThread: java.lang.IllegalStateException => System.err.println("MY FX THREAD? " + e)
+          case _                                         =>
+        }
         Platform.runLater {
-          println("JavaFX FAILURE : failed to run action : " + e)
-          e.printStackTrace() //TODO: remove me
+          println("Failed to run action ! ")
+          println("Got error : "+ e)
+          println(e.getLocalizedMessage())
+          //e.printStackTrace() //TODO: remove me
           println(s"[ $actionString : finished with <b>error</b> ]")
           actionButton.graphic = new ImageView()
         }
