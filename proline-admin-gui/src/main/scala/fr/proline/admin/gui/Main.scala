@@ -1,13 +1,11 @@
 package fr.proline.admin.gui
 
 import java.io.File
-
 import fr.proline.admin.gui.component.dialog.ConfFileChooser
 import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.gui.component.panel.ConsolePanel
 import fr.proline.admin.gui.component.panel.MenuPanel
 import fr.proline.admin.gui.process.ProlineAdminConnection
-
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
 import scalafx.scene.layout.HBox
@@ -15,8 +13,8 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
-
 import javafx.application.Application
+import fr.proline.admin.gui.component.dialog.PopupWindow
 
 /**
  * Graphical interface for Proline Admin.
@@ -85,21 +83,31 @@ class Main extends Application {
 
     //TODO: make sure configPath exists
 
-    /** Locate CONF file */
-    val _appConfPath = configPath + "application.conf"
+    /** Locate CONF file and update Proline config in consequence */
+    val _appConfPath = configPath + "application666.conf"
 
+    // Usual case : default conf file exists
     if (new File(_appConfPath).exists()) {
       Main.confPath = _appConfPath
       ProlineAdminConnection.updateProlineConf()
 
+      // Choose one if not
     } else {
-      ConfFileChooser.showIn(new Stage) //updates proline conf  
+      //TODO: WHILE not selected <=> forbid 'cancel'
+      try {
+        ConfFileChooser.showIn(new Stage) //auto-updates proline conf  
+      } catch {
+        // if the user doesn't select any file ('cancel' or 'close' button)
+        case e: Exception => synchronized {
+          new PopupWindow(
+            "Configuration file required",
+            "You must specify Proline's configuration file to run Proline Admin",
+            None
+          )
+          ConfFileChooser.showIn(new Stage) //auto-updates proline conf  
+        }
+      }
     }
-
-    //    /** Try to set stage title with conf file content, the show stage */
-    //    try {
-    //    ProlineAdminConnection.updateProlineConf()
-
     /** Build and show stage */
     Main.stage.show()
     //    }

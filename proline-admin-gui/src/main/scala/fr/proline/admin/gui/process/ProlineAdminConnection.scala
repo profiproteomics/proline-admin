@@ -18,23 +18,25 @@ object ProlineAdminConnection {
   //TODO: make it a class?
 
   def updateProlineConf() = LaunchAction(
+
     actionButton = ButtonsPanel.editConfButton,
     actionString = "<b>>> Updating Proline configuration...</b>",
     action = () => {
 
       try {
         this._setNewProlineConfig()
-        ButtonsPanel.updateBooleans()
+        //        ButtonsPanel.updateBooleans()
 
       } catch {
         case e: Exception => {
+
           Platform.runLater {
-            println("  ERROR - Could not set new Proline configuration : " + e)
-            e.printStackTrace() //TODO: add all stack traces to console log
-            ButtonsPanel.dbCanBeUsed.set(false)
-            ButtonsPanel.prolineMustBeSetUp.set(false)
+            ButtonsPanel.disableAllButEdit()
+            //TODO: logger here?
+            // println("  ERROR - Could not set new Proline configuration : " + e)
+            // e.printStackTrace() //TODO: add all stack traces to console log
           }
-          //throw new Exception("Could noooot update proline configuration")
+          throw new Exception("Could noooot update proline configuration")
         }
       }
     }

@@ -2,12 +2,12 @@ package fr.proline.admin.gui.component.panel
 
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.component.dialog.ConfFileChooser
-
 import scalafx.Includes.handle
 import scalafx.scene.control.Menu
 import scalafx.scene.control.MenuBar
 import scalafx.scene.control.MenuItem
 import scalafx.scene.layout.Priority
+import fr.proline.admin.gui.process.LaunchAction
 
 /**
  *  Create the menu bar and its items.
@@ -34,7 +34,13 @@ object MenuPanel {
 
             /** Refresh enabled/disabled buttons */
             new MenuItem("Refresh") {
-              onAction = handle { ButtonsPanel.updateBooleans() }
+              onAction = handle {
+                LaunchAction(
+                  ButtonsPanel.editConfButton,
+                  "",
+                  () => () //ButtonsPanel.updateBooleans()
+                )
+              }
             },
 
             /** Exit Proline Admin */

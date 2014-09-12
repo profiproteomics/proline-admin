@@ -105,10 +105,12 @@ class Console(
     //    }
 
     val color = {
-      if (isStdErr) "orange" //"red"
+      if (isStdErr) "red"
       else {
 
-        if (_textMatches("error") || _textMatches("exception") || _textMatches("fail")) "red" // || _textMatches("warn"))
+        if (_textMatches("error") || _textMatches("exception") || _textMatches("fail")) "red"
+
+        else if (_textMatches("warn")) "orange"
 
         else if (_textMatches("info") || _textMatches("success")) "green"
 

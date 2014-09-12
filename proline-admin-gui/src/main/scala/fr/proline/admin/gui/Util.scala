@@ -52,38 +52,4 @@ object Util {
     (stageY + (stageHeight / div)).toDouble
   }
 
-  //TODO:  get from fr.profi.util.scalafx  || move to component.modal
-  def showPopup(
-
-    wTitle: String,
-    wText: String,
-    wParent: Option[Stage] = Some(Main.stage)//,
-//    X: Option[Double] = Some(Main.stage.width() / 2),
-//    Y: Option[Double] = Some(Main.stage.width() / 2)
-    
-  ) = {
-    new Stage {
-
-      popup =>
-      title = wTitle
-      initStyle(StageStyle.UTILITY)
-      initModality(Modality.WINDOW_MODAL)
-      resizable = false
-      if (wParent.isDefined) initOwner(wParent.get)
-//      if (X.isDefined) this.x = X.get
-//      if (Y.isDefined) this.y = Y.get
-
-      scene = new Scene {
-        root = new StackPane {
-          padding = Insets(5)
-          content = new TextArea {
-            text = wText
-            wrapText = true
-            editable = false
-            style = "-fx-border-style: none;-fx-focus-color: transparent;"
-          }
-        }
-      }
-    }.showAndWait()
-  }
 }

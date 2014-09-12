@@ -20,7 +20,7 @@ import scalafx.scene.image.ImageView
 object LaunchAction extends Logging {
 
   def apply(
-    actionButton: Button,
+    actionButton: Button, //Array[Button] ?
     actionString: String,
     action: () => Unit) {
 
@@ -40,8 +40,15 @@ object LaunchAction extends Logging {
 
     /** Lauch action asynchronously then update enabled/disabled buttons*/
     val f = future {
-      action()
-      ButtonsPanel.updateBooleans()
+      synchronized {
+        println("running action ")
+        action()
+        println("finished running action")
+
+        println("now updating booleans ")
+        ButtonsPanel.computeButtonsAvailability()
+        println("booleans updated")
+      }
     }
 
     /** Future's callback : when action is finished */
@@ -50,8 +57,11 @@ object LaunchAction extends Logging {
       case Success(_) => {
 
         Platform.runLater {
-          println(s"[ $actionString : <b>success</b> ]")
-          actionButton.graphic = new ImageView()
+          synchronized {
+            logger.info(s"Action '$actionString' finished with success.")
+            println(s"""[ $actionString : <b>success</b> ]""")
+            actionButton.graphic = new ImageView()
+          }
           //actionButton.style = " -fx-background-color: SlateGrey;"
           //actionButton.styleClass -= ("activeButtons")
           //actionButton.styleClass += ("mainButtons")
@@ -59,18 +69,18 @@ object LaunchAction extends Logging {
       }
 
       case Failure(e) => {
-        
+
         e match {
           case fxThread: java.lang.IllegalStateException => System.err.println("MY FX THREAD? " + e)
-          case _                                         => Platform.runLater {
-            
-            logger.error(s"Failed to run action [$actionString]",e)
-            
+          case _ => Platform.runLater {
+
+            logger.error(s"Failed to run action [$actionString]", e)
+
             // TODO: user sys.err
             println(s"[ $actionString : finished with <b>error</b> ]")
-            println("Got error : "+ e.getMessage)
+            println("Got error : " + e.getMessage)
             //e.printStackTrace() //TODO: remove me
-            
+
             actionButton.graphic = new ImageView()
           }
         }

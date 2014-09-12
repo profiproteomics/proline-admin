@@ -73,7 +73,7 @@ class NewUserDialog {
 
         onAction = handle {
           val users = UdsRepository.getAllUserAccounts()
-          Util.showPopup(
+          new PopupWindow(
             "All users",
             users.map(_.getLogin()).sorted.mkString("\n"),
             Option(Main.stage)

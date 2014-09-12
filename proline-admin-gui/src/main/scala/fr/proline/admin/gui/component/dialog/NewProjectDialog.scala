@@ -105,7 +105,7 @@ class NewProjectDialog {
 
           val userAccount = ownerComboBox.selectionModel().getSelectedItem()
           if (userAccount == null) {
-            Util.showPopup("No owner selected", "You must select an owner first.", Option(Main.stage))
+            new PopupWindow("No owner selected", "You must select an owner first.", Option(Main.stage))
             //TODO: print all 
 
           } else {
@@ -121,7 +121,7 @@ class NewProjectDialog {
               }
             }
 
-            Util.showPopup(
+            new PopupWindow(
               s"Projects belonging to user '${userAccount.getLogin}'",
               text,
               Option(Main.stage)

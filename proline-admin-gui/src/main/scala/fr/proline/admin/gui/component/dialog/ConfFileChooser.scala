@@ -3,7 +3,6 @@ package fr.proline.admin.gui.component.dialog
 import java.io.File
 
 import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.process.ProlineAdminConnection
 
 import scalafx.stage.FileChooser
@@ -34,7 +33,7 @@ object ConfFileChooser {
       if (configFolder.exists()) {
         initialDirectory = configFolder
       } else {
-        Util.showPopup(
+        new PopupWindow(
           "Cannot find configuration files",
           "There is no folder named 'config' near this jar.",
           None
