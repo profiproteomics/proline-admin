@@ -52,14 +52,14 @@ object Util {
     (stageY + (stageHeight / div)).toDouble
   }
 
-  //TODO:  get from fr.profi.util.scalafx
+  //TODO:  get from fr.profi.util.scalafx  || move to component.modal
   def showPopup(
 
     wTitle: String,
     wText: String,
-    wParent: Option[Stage] = Some(Main.stage),
-    X: Option[Double] = Some(Main.stage.width() / 2),
-    Y: Option[Double] = Some(Main.stage.width() / 2)
+    wParent: Option[Stage] = Some(Main.stage)//,
+//    X: Option[Double] = Some(Main.stage.width() / 2),
+//    Y: Option[Double] = Some(Main.stage.width() / 2)
     
   ) = {
     new Stage {
@@ -70,8 +70,8 @@ object Util {
       initModality(Modality.WINDOW_MODAL)
       resizable = false
       if (wParent.isDefined) initOwner(wParent.get)
-      if (X.isDefined) this.x = X.get
-      if (Y.isDefined) this.y = Y.get
+//      if (X.isDefined) this.x = X.get
+//      if (Y.isDefined) this.y = Y.get
 
       scene = new Scene {
         root = new StackPane {
