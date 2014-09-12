@@ -139,8 +139,7 @@ object ButtonsPanel {
   val someUserInDb = new BooleanProperty()
 
   /** Define when buttons shall be enabled/disbaled */
-  //  updateBooleans()
-
+  //  updateBooleans() : don't call it now because ProlineAdmin conf is not up to date
   setupProlineButton.disable <== when(prolineMustBeSetUp) choose false otherwise true
   createUserButton.disable <== when(dbCanBeUsed) choose false otherwise true
   createProjectButton.disable <== when(dbCanBeUsed && someUserInDb) choose false otherwise true
@@ -149,14 +148,13 @@ object ButtonsPanel {
   /**
    * Compute boolean values
    */
-  def updateBooleans() {
+  def computeButtonsAvailability() {
 
     var _prolineConfIsOk = false
 
     try {
 
       /** Config file is OK if udsDBConfig can be built with it */
-
       val udsDBConfig = SetupProline.getUpdatedConfig().udsDBConfig
       _prolineConfIsOk = true
 
@@ -187,6 +185,16 @@ object ButtonsPanel {
       }
     }
   }
+
+  /**
+   * Disable all buttons execpt the 'Edit Proline configuration' one
+   */
+  def disableAllButEdit() {
+    ButtonsPanel.dbCanBeUsed.set(false)
+    ButtonsPanel.prolineMustBeSetUp.set(false)
+    ButtonsPanel.someUserInDb.set(false)
+  }
+  
   //  /**
   //   * Print these booleans
   //   */
