@@ -19,6 +19,7 @@
   <MS_PICTURE/>
   <OBJECT_TREE/>
   <OBJECT_TREE_SCHEMA/>
+  <PEAKEL/>
   <PEAKEL_FITTING_MODEL ID="1" NAME="no fitting"/>
   <PEAK_PICKING_SOFTWARE ID="1" NAME="unknown peak picker" VERSION="unknown" ALGORITHM="unknown"/>
   <PROCESSED_MAP/>
