@@ -1,15 +1,15 @@
 package fr.proline.admin.gui.process
 
 import java.io.File
-
 import com.typesafe.config.ConfigFactory
-
 import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.service.db.SetupProline
-
 import scalafx.application.Platform
 import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
+import fr.proline.admin.gui.component.modal.ConfirmationDialog
+import fr.proline.admin.gui.component.modal.GetConfirmation
 
 /**
  * All utilities to modify ProlineAdmin configuration
@@ -54,16 +54,40 @@ object ProlineAdminConnection {
     if (new File(dataDir).exists()) {
       println("dataDir exists") //TODO: delete me
 
+      println("already exists, set conf")
       SetupProline.setConfigParams(newConfigFile)
       Platform.runLater(Main.stage.title = s"Proline Admin @ $dataDir")
 
+      /** Allow to create data folder if it doesn't exist */
     } else {
       println("dataDir doesn't exist")
 
-      Platform.runLater(Main.stage.title = s"Proline Admin (invalid configuration)")
-      throw new Exception("Unknown data directory " + dataDir)
-      //TODO: popup : ask to create it (new installation)
+      Platform.runLater {
+        val isConfirmed =
+          GetConfirmation(
+            "The databases directory you specified does not exist. Do you want to create it? (This involves the creation of a new installation of Proline.)",
+            s"Unknown directory : $dataDir"
+          )
+        if (isConfirmed == true) {
+          val successfullyCreated = new File(dataDir).mkdir()
+
+          if (successfullyCreated == true) {
+            println("Databases directory successfully created.")
+            println("confirmed, set conf")
+            SetupProline.setConfigParams(newConfigFile)
+            Platform.runLater(Main.stage.title = s"Proline Admin @ $dataDir")
+
+            /** If it can't be created */
+          } else {
+            Platform.runLater(Main.stage.title = s"Proline Admin (invalid configuration)")
+            throw new Exception("Unknown data directory " + dataDir)
+          }
+
+        } else {
+          Platform.runLater(Main.stage.title = s"Proline Admin (invalid configuration)")
+          throw new Exception("Unknown data directory " + dataDir)
+        }
+      }
     }
   }
-
 }
