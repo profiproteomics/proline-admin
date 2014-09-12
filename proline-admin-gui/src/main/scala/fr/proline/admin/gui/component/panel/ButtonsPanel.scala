@@ -6,7 +6,7 @@ import fr.proline.admin.gui.component.modal.GetConfirmation
 import fr.proline.admin.gui.component.modal.NewProjectDialog
 import fr.proline.admin.gui.component.modal.NewUserDialog
 import fr.proline.admin.gui.process.LaunchAction
-import fr.proline.admin.gui.process.UdsConnection
+import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.core.orm.util.DataStoreUpgrader
@@ -161,14 +161,14 @@ object ButtonsPanel {
       _prolineConfIsOk = true
 
       /** Check if Proline is already set up */
-      val _prolineIsSetUp = UdsConnection.isUdsDbReachable()
+      val _prolineIsSetUp = UdsRepository.isUdsDbReachable()
 
       if (_prolineIsSetUp) {
         prolineMustBeSetUp.set(false)
         dbCanBeUsed.set(true)
 
         /** Forbid to add project if no user (owner) is registered */
-        someUserInDb.set(!UdsConnection.getUserMap().isEmpty)
+        someUserInDb.set(!UdsRepository.getAllUserAccounts().isEmpty)
 
       } else {
         prolineMustBeSetUp.set(true)
