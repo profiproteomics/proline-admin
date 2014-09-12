@@ -1,10 +1,10 @@
 package fr.proline.admin.gui.component.panel
 
 import fr.proline.admin.gui.Util
-import fr.proline.admin.gui.component.modal.ConfFileEditor
-import fr.proline.admin.gui.component.modal.GetConfirmation
-import fr.proline.admin.gui.component.modal.NewProjectDialog
-import fr.proline.admin.gui.component.modal.NewUserDialog
+import fr.proline.admin.gui.component.dialog.ConfFileEditor
+import fr.proline.admin.gui.component.dialog.GetConfirmation
+import fr.proline.admin.gui.component.dialog.NewProjectDialog
+import fr.proline.admin.gui.component.dialog.NewUserDialog
 import fr.proline.admin.gui.process.LaunchAction
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.service.db.SetupProline

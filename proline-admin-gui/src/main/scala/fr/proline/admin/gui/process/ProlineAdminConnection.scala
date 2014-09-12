@@ -8,8 +8,8 @@ import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.service.db.SetupProline
 import scalafx.application.Platform
 import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
-import fr.proline.admin.gui.component.modal.ConfirmationDialog
-import fr.proline.admin.gui.component.modal.GetConfirmation
+import fr.proline.admin.gui.component.dialog.ConfirmationDialog
+import fr.proline.admin.gui.component.dialog.GetConfirmation
 
 /**
  * All utilities to modify ProlineAdmin configuration
@@ -65,7 +65,7 @@ object ProlineAdminConnection {
       Platform.runLater {
         val isConfirmed =
           GetConfirmation(
-            "The databases directory you specified does not exist. Do you want to create it? (This involves the creation of a new installation of Proline.)",
+            "The databases directory you specified does not exist. Do you want to create it?\n(This involves the creation of a new installation of Proline.)",
             s"Unknown directory : $dataDir"
           )
         if (isConfirmed == true) {

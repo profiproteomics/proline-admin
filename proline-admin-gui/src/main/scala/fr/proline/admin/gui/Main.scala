@@ -2,7 +2,7 @@ package fr.proline.admin.gui
 
 import java.io.File
 
-import fr.proline.admin.gui.component.modal.ConfFileChooser
+import fr.proline.admin.gui.component.dialog.ConfFileChooser
 import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.gui.component.panel.ConsolePanel
 import fr.proline.admin.gui.component.panel.MenuPanel
@@ -90,25 +90,15 @@ class Main extends Application {
 
     if (new File(_appConfPath).exists()) {
       Main.confPath = _appConfPath
+      ProlineAdminConnection.updateProlineConf()
 
     } else {
-      ConfFileChooser.showIn(new Stage) //Sets Main.confPath and 
+      ConfFileChooser.showIn(new Stage) //updates proline conf  
     }
 
-    /** Try to set stage title with conf file content, the show stage */
+    //    /** Try to set stage title with conf file content, the show stage */
     //    try {
-    ProlineAdminConnection.updateProlineConf()
-    //      Main.stage.title = s"Proline Admin @ ${Main.confPath}"
-
-    //    } catch {
-    //      case e: Exception =>
-    //        {
-    //          ButtonsPanel.dbCanBeUsed.set(false)
-    //          ButtonsPanel.prolineMustBeSetUp.set(false)
-    //          //          Main.stage.title = "Proline Admin (invalid configuration)"
-    //        }
-
-    //    } finally {
+    //    ProlineAdminConnection.updateProlineConf()
 
     /** Build and show stage */
     Main.stage.show()

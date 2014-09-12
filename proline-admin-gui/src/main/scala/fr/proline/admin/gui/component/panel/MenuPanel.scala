@@ -1,7 +1,7 @@
 package fr.proline.admin.gui.component.panel
 
 import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.component.modal.ConfFileChooser
+import fr.proline.admin.gui.component.dialog.ConfFileChooser
 
 import scalafx.Includes.handle
 import scalafx.scene.control.Menu

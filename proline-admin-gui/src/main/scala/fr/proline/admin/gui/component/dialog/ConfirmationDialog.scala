@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.component.modal
+package fr.proline.admin.gui.component.dialog
 
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.Util
