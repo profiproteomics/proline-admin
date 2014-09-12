@@ -1,21 +1,20 @@
 package fr.proline.admin.gui.process
 
 import java.io.File
-
+import com.typesafe.scalalogging.slf4j.Logging
 import scala.collection.JavaConverters.asScalaBufferConverter
-
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.uds.Project
 import fr.proline.core.orm.uds.UserAccount
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.IDatabaseConnector
+import fr.proline.core.orm.uds.repository.ProjectRepository
 
 /**
  * Some utilities relative to UDS database connection
  */
-object UdsConnection { 
-
+object UdsRepository extends Logging {
 
   /**
    *  Test connexion with database
@@ -31,10 +30,15 @@ object UdsConnection {
   /**
    *  Get the exhaustive list of UserAccount instances in database as a map of type "login ->  id"
    */
-  def getUserMap(): Map[String, Long] = {
+  def getAllUserAccounts(): Array[UserAccount] = { //login, id
 
     val udsDbConnector = _getUdsDbConnector()
     val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
+    
+    /*case class UdsDbException( message: String, cause: Throwable ) extends Exception
+    implicit def error2udsError( e: Exception ): UdsDbException = {
+      new UdsDbException( e.getMessage(), e.getCause() )
+    }*/
 
     try {
 
@@ -44,14 +48,14 @@ object UdsConnection {
       val jpqlSelectUserAccount = s"FROM ${UdsUserAccountClass.getName}"
 
       val udsUsers = udsEM.createQuery(jpqlSelectUserAccount, UdsUserAccountClass).getResultList()
-      udsUsers.asScala.map { user => (user.getLogin(), user.getId()) }.toMap[String, Long]
+      //udsUsers.asScala.map { user => (user.getLogin(), user.getId()) }.toMap[String, Long] //FIXME: irrelevant!
+      udsUsers.asScala.toArray
 
     } catch {
-      case e: Exception => { Map() }
-
+      // Log Exception message and re-throw Exception
+      case e: Exception => { logger.error("can't load user accounts from UDSdb"); throw e }
     } finally {
       udsDbContext.close()
-      udsDbConnector.close()
     }
 
   }
@@ -59,7 +63,7 @@ object UdsConnection {
   /**
    *  Get the exhaustive list of Project instances in database as a map of type "name ->  owner"
    */
-  def getProjectMap(): Map[String, UserAccount] = {
+  def getAllProjectsGroupedByOwner(): Map[UserAccount, Array[Project]] = {
 
     val udsDbConnector = _getUdsDbConnector()
     val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
@@ -71,8 +75,11 @@ object UdsConnection {
       val UdsProjectClass = classOf[Project]
       val jpqlSelectProject = s"FROM ${UdsProjectClass.getName}"
 
+      //TODO : heeeeeeeeeere make it much more smart !  [UserAccount, UdsProject]
       val udsProjects = udsEM.createQuery(jpqlSelectProject, UdsProjectClass).getResultList()
-      udsProjects.asScala.map { p => (p.getName(), p.getOwner()) }.toMap[String, UserAccount]
+      //udsProjects.asScala.map { p => (p.getOwner(), (p.getName(), p.getDescription())) }.toMap[UserAccount, (String, String)]
+      
+      udsProjects.asScala.toArray.groupBy(_.getOwner())
 
     } finally {
       udsDbContext.close()
@@ -85,16 +92,25 @@ object UdsConnection {
   /**
    *  Get projects name' list for a given user (owner)
    */
-  def getUserProjects(userName: String): Array[String] = {
-    //TODO: refine database request rather than filter on project map
+  def findProjectsByOwnerId(userId: Long): Array[Project] = {
+    
+    val udsDbContext = new DatabaseConnectionContext(_getUdsDbConnector)
+    
+    try {
+      ProjectRepository.findOwnedProjects(udsDbContext.getEntityManager(), userId).asScala.toArray
+    } finally {
+      udsDbContext.close()
+    }
 
-    lazy val map = getProjectMap()
+    /*
+     //TODO: refine database request rather than filter on project map
+     lazy val map = getProjectMap()
 
     val userProjects = map.filter {
-      case (name: String, ua: UserAccount) => ua.getLogin() == userName //WARNING: assume logins are unique
-    }.map { _._1 }
+      case ( ua, (name,desc)) => ua.getLogin() == userName //WARNING: assume logins are unique
+    }.map { _._2 }
 
-    userProjects.toArray
+    userProjects.toArray*/
   }
 
   /**
@@ -105,15 +121,17 @@ object UdsConnection {
     // from fr.proline.admin.service.user.CreateUser
     val connectorFactory = DataStoreConnectorFactory.getInstance()
 
-    var udsDbConnector =
-      if (connectorFactory.isInitialized) {
-        connectorFactory.getUdsDbConnector
-
-      } else {
-        val udsDBConfig = SetupProline.getUpdatedConfig.udsDBConfig
-        udsDBConfig.toNewConnector()
-      }
-
-    udsDbConnector
+    if (connectorFactory.isInitialized) {
+      connectorFactory.getUdsDbConnector
+    } else {
+      
+      val udsDBConfig = SetupProline.getUpdatedConfig.udsDBConfig
+      
+      val connector = udsDBConfig.toNewConnector()
+      connectorFactory.initialize( connector )
+      
+      connector
+    }
   }
+  
 }
