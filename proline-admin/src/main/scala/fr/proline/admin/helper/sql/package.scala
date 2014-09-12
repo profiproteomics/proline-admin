@@ -497,7 +497,7 @@ package object sql extends Logging {
     
   }
   
-  // TODO: remove code redudancy with same method in fr.proline.repository.util.DatabaseTestConnector
+  // TODO: remove code redundancy with same method in fr.proline.repository.util.DatabaseTestConnector
   def createDatabaseTester( dataSource: javax.sql.DataSource, driverType: DriverType ) = {
     new DataSourceDatabaseTester(dataSource) {
       
@@ -511,10 +511,12 @@ package object sql extends Logging {
           case H2 => new H2DataTypeFactory()
           case POSTGRESQL => new PostgresqlDataTypeFactory();
           case SQLITE => new DefaultDataTypeFactory() {
-              override def getValidDbProducts(): Collection[_] = {
-                Arrays.asList( Array("sqlite") )
-              }
+            override def getValidDbProducts(): Collection[_] = {
+              val products = new java.util.ArrayList[java.lang.String]();
+              products.add( new java.lang.String("SQLite") );
+              return products;
             }
+          }
         }
         
         // Apply the created IDataTypeFactory to the connection config
