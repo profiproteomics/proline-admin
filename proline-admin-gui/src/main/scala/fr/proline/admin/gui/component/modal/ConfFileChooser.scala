@@ -37,8 +37,7 @@ object ConfFileChooser {
         Util.showPopup(
           "Cannot find configuration files",
           "There is no folder named 'config' near this jar.",
-          None,
-          None, None
+          None
         )
       }
     }

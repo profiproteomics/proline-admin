@@ -4,8 +4,10 @@ import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.gui.process.LaunchAction
-import fr.proline.admin.gui.process.UdsConnection
+import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.service.user.CreateProject
+import fr.proline.core.orm.uds.Project
+import fr.proline.core.orm.uds.UserAccount
 
 import scalafx.Includes.handle
 import scalafx.Includes.observableList2ObservableBuffer
@@ -16,6 +18,7 @@ import scalafx.geometry.Pos
 import scalafx.scene.Scene
 import scalafx.scene.control.Button
 import scalafx.scene.control.ComboBox
+import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextArea
 import scalafx.scene.control.TextField
@@ -35,8 +38,9 @@ import scalafx.stage.StageStyle
 class NewProjectDialog {
 
   /** Stage */
-  val _stage = new Stage {
-    newProjectDialog =>
+  val _stage = new Stage { newProjectDialog =>
+
+    //    val newProjectDialog = this
 
     title = "Create a new project"
     initStyle(StageStyle.UTILITY)
@@ -56,14 +60,23 @@ class NewProjectDialog {
 
       /** Project owner */
 
-      val userMap = UdsConnection.getUserMap()
+      val userAccounts = UdsRepository.getAllUserAccounts()
 
       val ownerLabel = new Label("Owner* : ")
 
-      val ownerComboBox = new ComboBox[String] {
+      case class PrintableUserAccount(wrappedUser: UserAccount) {
+        override def toString() = wrappedUser.getLogin()
 
-        val obsBuf = new ObservableBuffer[String]
-        val buf = userMap.keys.copyToBuffer(obsBuf)
+        // Define proxy methods
+        def getId() = wrappedUser.getId()
+        def getLogin() = wrappedUser.getLogin()
+      }
+
+      val ownerComboBox = new ComboBox[PrintableUserAccount] {
+
+        val obsBuf = new ObservableBuffer[PrintableUserAccount]
+        userAccounts.map { userAccount => new PrintableUserAccount(userAccount) }.sortBy(ua => ua.getLogin()).copyToBuffer(obsBuf)
+
         items = obsBuf
 
         selectionModel().select(-1)
@@ -76,6 +89,46 @@ class NewProjectDialog {
         //    styleClass += ("warningLabels")
         style = "-fx-text-fill: red;  -fx-font-style: italic;"
         minHeight = 15
+      }
+
+      /** See user's projects */
+      val seeUserProjects = new Hyperlink("See user's projects...") {
+        style = "-fx-color:#66CCFF;"
+        //        alignmentInParent = Pos.BASELINE_RIGHT
+
+        //      }
+        //        new Hyperlink("See user's projects...") {
+        //        style = "-fx-color:#66CCFF;"
+        //        alignmentInParent = Pos.BASELINE_RIGHT
+        //
+        onAction = handle {
+
+          val userAccount = ownerComboBox.selectionModel().getSelectedItem()
+          if (userAccount == null) {
+            Util.showPopup("No owner selected", "You must select an owner first.", Option(Main.stage))
+            //TODO: print all 
+
+          } else {
+            val projects = UdsRepository.findProjectsByOwnerId(userAccount.getId)
+            
+            val text: String = {
+              if (projects.isEmpty) "No projects"
+              else {
+                projects.map { p =>
+                  if (p.getDescription().isEmpty()) s"${p.getName()}"
+                  else s"${p.getName()} [${p.getDescription()}]"
+                }.mkString("\n")
+              }
+            }
+
+            Util.showPopup(
+              s"Projects belonging to user '${userAccount.getLogin}'",
+              text,
+              Option(Main.stage)
+            )
+          }
+
+        }
       }
 
       /** Project name */
@@ -134,6 +187,7 @@ class NewProjectDialog {
           (ownerLabel, 0, 0, 1, 1),
           (ownerComboBox, 1, 0, 1, 1),
           (ownerWarningLabel, 1, 1, 1, 1),
+          (seeUserProjects, 1, 1, 1, 1),
           (nameLabel, 0, 2, 1, 1),
           (nameField, 1, 2, 1, 1),
           (nameWarningLabel, 1, 3, 2, 1),
@@ -147,6 +201,7 @@ class NewProjectDialog {
 
       Seq(
         ownerLabel,
+        seeUserProjects,
         nameLabel,
         descLabel
       ).foreach(GridPane.setHalignment(_, HPos.RIGHT))
@@ -171,32 +226,32 @@ class NewProjectDialog {
 
         val ownerIdx = ownerComboBox.selectionModel().getSelectedIndex()
         val isOwnerDefined: Boolean = ownerIdx >= 0
-        val ownerOpt: Option[String] =
-          if (isOwnerDefined) Some(ownerComboBox.selectionModel().getSelectedItem())
+        val ownerOpt: Option[PrintableUserAccount] =
+          if (isOwnerDefined) Option(ownerComboBox.selectionModel().getSelectedItem())
           else None
 
-        val _name = nameField.text()
-        val isNameDefined = _name.isEmpty == false
+        val newProjectName = nameField.text()
+        val isNameDefined = newProjectName.isEmpty == false
 
-        val userProjects: Array[String] =
+        val userProjects: Array[Project] =
           if (ownerOpt.isEmpty) Array()
-          else UdsConnection.getUserProjects(ownerOpt.get)
-        val isNameAvailable = userProjects.contains(_name) == false //for this user
+          else UdsRepository.findProjectsByOwnerId(ownerOpt.get.getId)
+        val isNameAvailable = userProjects.exists(_.getName() == newProjectName) //for this user
 
         /** If all is ok, run action */
 
         if (isOwnerDefined && isNameDefined && isNameAvailable) {
 
-          val _ownerID: Long = userMap(ownerOpt.get)
-          val _desc = descField.text()
+          val ownerID: Long = ownerOpt.get.getId
+          val newProjectDesc = descField.text()
 
-          val cmd = s"""create_project --owner_id ${_ownerID} --name "${_name}"  --description "${_desc}""""
+          val cmd = s"""create_project --owner_id ${ownerID} --name "${newProjectName}"  --description "${newProjectDesc}""""
 
           /** Create project */
           LaunchAction(
             actionButton = ButtonsPanel.createProjectButton,
             actionString = Util.mkCmd(cmd),
-            action = () => { CreateProject(ownerId = _ownerID, name = _name, description = _desc) }
+            action = () => { CreateProject(ownerId = ownerID, name = newProjectName, description = newProjectDesc) }
           )
 
           newProjectDialog.close()

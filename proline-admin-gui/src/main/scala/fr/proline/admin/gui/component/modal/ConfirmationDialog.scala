@@ -56,7 +56,7 @@ class ConfirmationDialog(
           }
         }
 
-        val cancelButton = new Button("Cancel") {
+        val cancelButton = new Button("Cancel") { //No
           //styleClass += ("minorButtons")
           onAction = handle { confirmDialog.close() } //isActionConfirmed = false
         }

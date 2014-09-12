@@ -4,7 +4,7 @@ import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.gui.process.LaunchAction
-import fr.proline.admin.gui.process.UdsConnection
+import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.service.user.CreateUser
 
 import scalafx.Includes.handle
@@ -14,6 +14,7 @@ import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.Scene
 import scalafx.scene.control.Button
+import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
 import scalafx.scene.control.PasswordField
 import scalafx.scene.control.TextField
@@ -31,9 +32,8 @@ import scalafx.stage.StageStyle
 class NewUserDialog {
 
   /** Define modal window */
-  val _stage = new Stage {
+  val _stage = new Stage { newUserDialog =>
 
-    newUserDialog =>
     title = "Create a new user"
     initStyle(StageStyle.UTILITY)
     resizable = false
@@ -64,17 +64,32 @@ class NewUserDialog {
         minHeight = 15
       }
 
+      /** See all users */
+      val seeAllUsers = new Hyperlink("See all users...") {
+        style = "-fx-color:#66CCFF;"
+        alignmentInParent = Pos.BASELINE_RIGHT
+
+        //TODO: ne dotted border when clicked
+
+        onAction = handle {
+          val users = UdsRepository.getAllUserAccounts()
+          Util.showPopup(
+            "All users",
+            users.map(_.getLogin()).sorted.mkString("\n"),
+            Option(Main.stage)
+          )
+        }
+      }
+
       /** Password */
 
       val pwLabel = new Label("Password : ")
-
       val pwField = new PasswordField
       //      {
       //        styleClass += ("textFields")
       //      }
 
       val pwConfirmLabel = new Label("Confirm password : ")
-
       val pwConfirmField = new PasswordField
       //      {
       //        styleClass += ("textFields")
@@ -108,16 +123,18 @@ class NewUserDialog {
         prefWidth = 500
 
         val s = Seq(
+          //col, row, colSpan, rowSpan
           (loginLabel, 0, 0, 1, 1),
           (loginField, 1, 0, 1, 1),
-          (loginWarningLabel, 1, 1, 2, 1),
-          (pwLabel, 0, 2, 1, 1),
-          (pwField, 1, 2, 1, 1),
-          (pwConfirmLabel, 0, 3, 1, 1),
-          (pwConfirmField, 1, 3, 1, 1),
-          (pwWarningLabel, 1, 4, 2, 1),
-          (Util.newVSpacer, 0, 5, 2, 1),
-          (okButton, 1, 6, 1, 1)
+          (loginWarningLabel, 1, 1, 1, 1),
+          (seeAllUsers, 1, 1, 1, 1), 
+          (pwLabel, 0, 3, 1, 1),
+          (pwField, 1, 3, 1, 1),
+          (pwConfirmLabel, 0, 4, 1, 1),
+          (pwConfirmField, 1, 4, 1, 1),
+          (pwWarningLabel, 1, 5, 2, 1),
+          (Util.newVSpacer, 0, 6, 2, 1),
+          (okButton, 1, 7, 1, 1)
         )
         Util.setGridContent5(s, this)
 
@@ -160,7 +177,7 @@ class NewUserDialog {
 
         /** Check if login is unique in database */
 
-        val users = UdsConnection.getUserMap().keys.toArray
+        val users = UdsRepository.getAllUserAccounts()
         val isLoginAvailable: Boolean = users.contains(_login) == false
 
         /** If all is ok, run action */
