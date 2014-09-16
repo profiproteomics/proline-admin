@@ -190,7 +190,7 @@ class NewUserDialog {
             else
               (Some(_pw), s"create_user --login ${_login} --password ${"*" * _pw.length()}")
 
-          /** Create user and close dialog */
+          /** CREATE USER and close dialog */
           LaunchAction(
             actionButton = ButtonsPanel.createUserButton,
             actionString = Util.mkCmd(cmd),

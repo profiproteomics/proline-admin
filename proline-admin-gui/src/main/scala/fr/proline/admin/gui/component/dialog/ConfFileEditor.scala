@@ -4,12 +4,16 @@ import java.io.FileWriter
 
 import scala.io.Source
 
+import com.typesafe.scalalogging.slf4j.Logging
+
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.ProlineAdminConnection
 
 import scalafx.Includes.handle
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
+import scalafx.scene.Cursor
+import scalafx.scene.Cursor.sfxCursor2jfx
 import scalafx.scene.Scene
 import scalafx.scene.control.Button
 import scalafx.scene.control.TextArea
@@ -22,7 +26,7 @@ import scalafx.stage.Stage
 /**
  * Create a modal window to edit Proline configuration's file.
  */
-class ConfFileEditor {
+class ConfFileEditor extends Logging {
 
   /** Define modal window */
   private val _stage = new Stage {
@@ -98,17 +102,26 @@ class ConfFileEditor {
 
       saveButton.onAction = handle {
 
+        Main.stage.scene().setCursor(Cursor.WAIT)
+
         /** Update file content */
+        val fileWriter = new FileWriter(Main.confPath)
+
         try {
-          val fileWriter = new FileWriter(Main.confPath)
           fileWriter.write(textEditArea.text.value)
-          fileWriter.close()
 
         } catch {
           case e: Exception =>
-            //            System.err.println("exception here")
-            e.printStackTrace()
+//            logger.error("Can't write in configuration file")
+//            logger.error(e.getLocalizedMessage())
+            logger.debug("Can't write in configuration file")
+            logger.debug(e.getLocalizedMessage())
+            println("ERROR - Unable to write in configuration file")
 
+          //throw e ?
+
+        } finally {
+          fileWriter.close()
         }
 
         /** Set new Proline configuration effective */
@@ -116,6 +129,7 @@ class ConfFileEditor {
 
         /** Close window */
         configEditor.close()
+        Main.stage.scene().setCursor(Cursor.DEFAULT)
       }
     }
   }

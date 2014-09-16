@@ -8,8 +8,11 @@ import scala.util.Success
 import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.gui.component.panel.ButtonsPanel
+import fr.proline.admin.gui.Main
 
 import scalafx.application.Platform
+import scalafx.scene.Cursor
+import scalafx.scene.Cursor.sfxCursor2jfx
 import scalafx.scene.control.Button
 import scalafx.scene.control.ProgressIndicator
 import scalafx.scene.image.ImageView
@@ -41,13 +44,8 @@ object LaunchAction extends Logging {
     /** Lauch action asynchronously then update enabled/disabled buttons*/
     val f = future {
       synchronized {
-        println("running action ")
         action()
-        println("finished running action")
-
-        println("now updating booleans ")
         ButtonsPanel.computeButtonsAvailability()
-        println("booleans updated")
       }
     }
 
@@ -55,11 +53,14 @@ object LaunchAction extends Logging {
     f onComplete {
 
       case Success(_) => {
+        synchronized {
+          //          Platform.runLater {
+          //          logger.info(s"Action '$actionString' finished with success.")
+          logger.debug(s"Action '$actionString' finished with success.")
+          println(s"""[ $actionString : <b>success</b> ]""")
 
-        Platform.runLater {
-          synchronized {
-            logger.info(s"Action '$actionString' finished with success.")
-            println(s"""[ $actionString : <b>success</b> ]""")
+          Platform.runLater {
+            Main.stage.scene().setCursor(Cursor.DEFAULT)
             actionButton.graphic = new ImageView()
           }
           //actionButton.style = " -fx-background-color: SlateGrey;"
@@ -71,17 +72,18 @@ object LaunchAction extends Logging {
       case Failure(e) => {
 
         e match {
-          case fxThread: java.lang.IllegalStateException => System.err.println("MY FX THREAD? " + e)
-          case _ => Platform.runLater {
+          case fxThread: java.lang.IllegalStateException => Platform.runLater(actionButton.graphic = new ImageView()) //System.err.println("MY FX THREAD? " + e)
 
-            logger.error(s"Failed to run action [$actionString]", e)
-
-            // TODO: user sys.err
+          case _ => synchronized {
+            //            logger.error(s"Failed to run action [$actionString]", e)
+            logger.debug(s"Failed to run action [$actionString]", e)
+            println("ERROR - " + e.getMessage)
             println(s"[ $actionString : finished with <b>error</b> ]")
-            println("Got error : " + e.getMessage)
-            //e.printStackTrace() //TODO: remove me
 
-            actionButton.graphic = new ImageView()
+            Platform.runLater {
+              actionButton.graphic = new ImageView()
+              Main.stage.scene().setCursor(Cursor.DEFAULT)
+            }
           }
         }
       }

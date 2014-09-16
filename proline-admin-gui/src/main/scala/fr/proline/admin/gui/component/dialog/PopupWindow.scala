@@ -29,6 +29,8 @@ class PopupWindow(
     initModality(Modality.WINDOW_MODAL)
     resizable = false
     if (wParent.isDefined) initOwner(wParent.get)
+
+    maxHeight = 200
     //      if (X.isDefined) this.x = X.get
     //      if (Y.isDefined) this.y = Y.get
 

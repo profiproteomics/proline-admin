@@ -1,5 +1,7 @@
 package fr.proline.admin.gui.component.panel
 
+import com.typesafe.scalalogging.slf4j.Logging
+
 import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.component.dialog.ConfFileEditor
 import fr.proline.admin.gui.component.dialog.GetConfirmation
@@ -23,7 +25,7 @@ import scalafx.scene.layout.VBox
 /**
  * Create the buttons of the main window, one for each feature of Proline Admin.
  */
-object ButtonsPanel {
+object ButtonsPanel extends Logging {
 
   /**
    * ******* *
@@ -101,9 +103,9 @@ object ButtonsPanel {
             val dsConnectorFactory = _getConnectorFactory()
 
             if (DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory)) {
-              println("Databases successfully upgraded !")
+              println("INFO - Databases successfully upgraded !")
             } else {
-              println("Databases upgrade failed !")
+              println("ERROR - Databases upgrade failed !")
             }
 
             dsConnectorFactory.closeAll()
@@ -152,11 +154,32 @@ object ButtonsPanel {
 
     var _prolineConfIsOk = false
 
+    /** Config file is OK if udsDBConfig can be built with it */
     try {
 
-      /** Config file is OK if udsDBConfig can be built with it */
-      val udsDBConfig = SetupProline.getUpdatedConfig().udsDBConfig
+      val udsDBConfig = UdsRepository.getUdsDbConfig()
       _prolineConfIsOk = true
+
+    } catch {
+
+      /** If config file is ok, abort computation */
+      case e: Throwable => {
+
+        //        logger.error("Unable to read Proline configuration : invalid configuration file.")
+        //        logger.error(e.getMessage())
+        logger.debug("Unable to read Proline configuration : invalid configuration file.")
+        logger.debug(e.getMessage())
+        println("ERROR - Invalid configuration. Please edit the configuration file or choose a valid one.")
+
+        _prolineConfIsOk = false
+        this.disableAllButEdit()
+
+        //throw e // if re-thrown, infinite load 
+      }
+    }
+
+    /** If config file is ok, compute the other booleans */
+    if (_prolineConfIsOk == true) {
 
       /** Check if Proline is already set up */
       val _prolineIsSetUp = UdsRepository.isUdsDbReachable()
@@ -166,21 +189,25 @@ object ButtonsPanel {
         dbCanBeUsed.set(true)
 
         /** Forbid to add project if no user (owner) is registered */
-        someUserInDb.set(!UdsRepository.getAllUserAccounts().isEmpty)
+        try {
+          someUserInDb.set(UdsRepository.getAllUserAccounts().isEmpty == false)
+        } catch {
+          case e: Throwable => {
+
+            //            logger.error("Unable to retrieve users :")
+            //            logger.error(e.getLocalizedMessage())
+            logger.debug("Unable to retrieve users :")
+            logger.debug(e.getLocalizedMessage())
+            println("ERROR - Unable to retrieve users : " + e.getMessage())
+
+            someUserInDb.set(false)
+            //TODO ? throw e // if re-thrown, infinite load 
+          }
+        }
 
       } else {
         prolineMustBeSetUp.set(true)
         dbCanBeUsed.set(false)
-        someUserInDb.set(false)
-      }
-
-      /** If config file is not ok */
-    } catch {
-      case e: Throwable => {
-
-        _prolineConfIsOk = false
-        dbCanBeUsed.set(false)
-        prolineMustBeSetUp.set(false)
         someUserInDb.set(false)
       }
     }
@@ -194,7 +221,7 @@ object ButtonsPanel {
     ButtonsPanel.prolineMustBeSetUp.set(false)
     ButtonsPanel.someUserInDb.set(false)
   }
-  
+
   //  /**
   //   * Print these booleans
   //   */

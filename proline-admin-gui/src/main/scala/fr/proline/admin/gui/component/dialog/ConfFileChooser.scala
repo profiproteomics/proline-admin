@@ -49,12 +49,12 @@ object ConfFileChooser {
   def showIn(stage: Stage) {
 
     val confPath = fc.showOpenDialog(stage).getPath()
-    println("Selected configuration file : " + confPath)
+    println("<br><b>Selected configuration file : " + confPath + "</b>")
 
     /** Validate path */
     require(confPath matches """.+\.conf$""", "invalid path for configuration file")
 
-    /** Update global variables */
+    /** Update global variable */
     Main.confPath = confPath
 
     /** Update main stage's title with newly selected configuration file */

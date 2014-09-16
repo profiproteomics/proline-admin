@@ -1,16 +1,10 @@
 package fr.proline.admin.gui
 
 import scalafx.beans.binding.NumberBinding.sfxNumberBinding2jfx
-import scalafx.geometry.Insets
-import scalafx.scene.Scene
-import scalafx.scene.control.TextArea
 import scalafx.scene.layout.GridPane
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.Region
-import scalafx.scene.layout.StackPane
-import scalafx.stage.Modality
 import scalafx.stage.Stage
-import scalafx.stage.StageStyle
 
 /**
  * GRAPHICAL UTILITIES
