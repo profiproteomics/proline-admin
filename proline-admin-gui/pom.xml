@@ -218,7 +218,7 @@
         <!-- Version inherited from ProFI-Pom -->
         <executions>
 
-          <!-- Copy resources to '/config' near jar -->
+          <!-- Copy resources to 'target/config' near jar -->
           <execution>
             <id>copy-config</id>
             <phase>validate</phase>
@@ -234,6 +234,25 @@
                   <excludes>
                     <exclude>META-INF/**</exclude>
                   </excludes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+
+          <!-- Copy scripts to '/target' with jar -->
+          <execution>
+            <id>copy-scripts</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <encoding>UTF-8</encoding>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>scripts</directory>
+                  <filtering>true</filtering>
                 </resource>
               </resources>
             </configuration>
