@@ -185,10 +185,17 @@ object GetConfirmation {
   def apply(
     text: String,
     title: String = "Confirm your action",
-    initOwner: Stage = Main.stage): Boolean = {
+    yesText: String = "Yes", //TODO: delete me
+    cancelText: String = "Cancel",
+    initOwner: Stage = Main.stage
+  ): Boolean = {
 
     val confDialog = new ConfirmationDialog(dTitle = title, dText = text)
+
+    if (yesText != null && yesText != "Yes") confDialog.setYesButtonText(yesText)
+    if (cancelText != null && cancelText != "Cancel") confDialog.setCancelButtonText(cancelText)
     confDialog.showIn(initOwner)
+    
     confDialog.isActionConfirmed //when stage closed()
   }
 }

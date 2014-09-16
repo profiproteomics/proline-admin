@@ -73,9 +73,12 @@ class NewUserDialog {
 
         onAction = handle {
           val users = UdsRepository.getAllUserAccounts()
+          println(s"INFO - Loaded ${users.length} user(s) from UDSdb.")
+          
+          val text = if (users.isEmpty) "No user found." else users.map(_.getLogin()).sorted.mkString("\n")
           new PopupWindow(
             "All users",
-            users.map(_.getLogin()).sorted.mkString("\n"),
+            text,
             Option(Main.stage)
           )
         }
@@ -127,7 +130,7 @@ class NewUserDialog {
           (loginLabel, 0, 0, 1, 1),
           (loginField, 1, 0, 1, 1),
           (loginWarningLabel, 1, 1, 1, 1),
-          (seeAllUsers, 1, 1, 1, 1), 
+          (seeAllUsers, 1, 1, 1, 1),
           (pwLabel, 0, 3, 1, 1),
           (pwField, 1, 3, 1, 1),
           (pwConfirmLabel, 0, 4, 1, 1),
@@ -167,7 +170,6 @@ class NewUserDialog {
         ).foreach(_.text.value = "")
 
         /** Check form */
-
         val _login = loginField.text()
         val isLoginDefined = _login.isEmpty == false
 
@@ -176,12 +178,11 @@ class NewUserDialog {
         val isPwdConfirmed = _pw == _pwConfirm
 
         /** Check if login is unique in database */
-
-        val users = UdsRepository.getAllUserAccounts()
-        val isLoginAvailable: Boolean = users.contains(_login) == false
+        val isLoginAvailable =
+          if (isLoginDefined) (UdsRepository.getAllUserAccounts().contains(_login) == false)
+          else false
 
         /** If all is ok, run action */
-
         if (isLoginDefined && isLoginAvailable && isPwdConfirmed) {
 
           val (pswdOpt, cmd) =

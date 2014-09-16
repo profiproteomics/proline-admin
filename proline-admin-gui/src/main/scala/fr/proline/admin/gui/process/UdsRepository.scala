@@ -105,7 +105,7 @@ object UdsRepository extends Logging {
       val udsUsers = udsEM.createQuery(jpqlSelectUserAccount, UdsUserAccountClass).getResultList()
 
       val res = udsUsers.asScala.toArray
-      println(s"INFO - Loaded ${res.length} user(s) from UDSdb.")
+//      println(s"INFO - Loaded ${res.length} user(s) from UDSdb.")
       res
 
     } catch {

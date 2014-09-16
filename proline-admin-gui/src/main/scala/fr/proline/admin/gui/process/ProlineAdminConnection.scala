@@ -43,7 +43,7 @@ object ProlineAdminConnection extends Logging {
         this._setNewProlineConfig()
         ButtonsPanel.computeButtonsAvailability()
 
-        //        logger.info(s"Action '$actionString' finished with success.")
+        logger.info(s"Action '$actionString' finished with success.")
         logger.debug(s"Action '$actionString' finished with success.")
 
         println(s"""[ $actionString : <b>success</b> ]""")
@@ -52,8 +52,11 @@ object ProlineAdminConnection extends Logging {
         case e: Exception => {
           ButtonsPanel.disableAllButEdit()
 
-//          logger.error("LOGGER ERROR Can't update Proline configuration") //TODO: or throw custom exception?
-          logger.debug("LOGGER DEBUG Can't update Proline configuration") //TODO: or throw custom exception?
+          logger.error("LOGGER ERROR Can't update Proline configuration")
+          logger.warn("LOGGER WARN Can't update Proline configuration")
+          logger.info("LOGGER INFO Can't update Proline configuration")
+          logger.debug("LOGGER DEBUG Can't update Proline configuration")
+
           logger.debug(e.getMessage()) //stackTrace?
 
           //          Platform.runLater {
@@ -96,13 +99,15 @@ object ProlineAdminConnection extends Logging {
 
     } /** Allow to create data folder if it doesn't exist */ else {
 
-//      logger.warn(s"LOGGER WARN Unknown data directory : $dataDir")
+      //      logger.warn(s"LOGGER WARN Unknown data directory : $dataDir")
       logger.debug(s"LOGGER DEBUG Unknown data directory : $dataDir")
       println(s"WARN - Unknown data directory : $dataDir")
 
       val isConfirmed = GetConfirmation(
         text = "The databases directory you specified does not exist. Do you want to create it?\n(This involves the creation of a new installation of Proline.)",
-        title = s"Unknown directory : $dataDir"
+        title = s"Unknown directory : $dataDir",
+        yesText = "Yes",
+        cancelText = "No"
       )
 
       //      Platform.runLater {

@@ -47,7 +47,7 @@ object ButtonsPanel extends Logging {
     onAction = handle {
 
       /** Get confirmation  first */
-      val confirmed = GetConfirmation("Are you sure you want to set up Proline ?")
+      val confirmed = GetConfirmation(text = "Are you sure you want to set up Proline ?")
 
       /** Set up Proline if confirmed */
       if (confirmed) {
