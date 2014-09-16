@@ -43,12 +43,20 @@ object UdsRepository extends Logging {
       udsDbContext = null
     }
 
-    // Close udsDbConnector
+    // Close udsDbConnector //TODO: this.closeUdsDbConnector()
     if (udsDbConnector != null) {
       if (udsDbConnector.isClosed == false) udsDbConnector.close()
       udsDbConnector = null
     }
   }
+
+  //  /** Close UDS db connector */
+  //  def closeUdsDbConnector() {
+  //    if (udsDbConnector != null) {
+  //      if (udsDbConnector.isClosed == false) udsDbConnector.close()
+  //      udsDbConnector = null
+  //    }
+  //  }
 
   /**
    * Get UDS database CONNECTOR
@@ -105,19 +113,19 @@ object UdsRepository extends Logging {
       val udsUsers = udsEM.createQuery(jpqlSelectUserAccount, UdsUserAccountClass).getResultList()
 
       val res = udsUsers.asScala.toArray
-//      println(s"INFO - Loaded ${res.length} user(s) from UDSdb.")
+      //      println(s"INFO - Loaded ${res.length} user(s) from UDSdb.")
       res
 
     } catch {
       // Log Exception message, print error message in console, re-throw Exception
       case e: Exception => {
-        //        logger.error("Can't load user accounts from UDSdb:")
-        //        logger.error(e.toString())
-        logger.debug("Can't load user accounts from UDSdb:")
-        logger.debug(e.toString())
-        //        System.err.println("Can't load user accounts from UDSdb")
-        println("ERROR - Can't load user accounts from UDSdb")
-        throw e
+        synchronized {
+          logger.warn("Can't load user accounts from UDSdb:")
+          logger.warn(e.getLocalizedMessage())
+          //        System.err.println("Can't load user accounts from UDSdb")
+          println("ERROR - Can't load user accounts from UDSdb")
+          throw e
+        }
       }
 
     }
@@ -145,12 +153,11 @@ object UdsRepository extends Logging {
     } catch {
       // Log Exception message, print error message in console, re-throw Exception
       case e: Exception => {
-        //        logger.error("Can't load projects from UDSdb :")
-        //        logger.error(e.toString())
-        logger.debug("Can't load projects from UDSdb :")
-        logger.debug(e.toString())
-        println("ERROR - Can't load projects from UDSdb") // <=> System.err.println
-
+        synchronized {
+          logger.warn("Can't load projects from UDSdb :")
+          logger.warn(e.toString())
+          println("ERROR - Can't load projects from UDSdb") // <=> System.err.println
+        }
         throw e
       }
 

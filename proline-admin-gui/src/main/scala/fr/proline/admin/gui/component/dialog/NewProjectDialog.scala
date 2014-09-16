@@ -110,7 +110,7 @@ class NewProjectDialog {
 
           } else {
             val projects = UdsRepository.findProjectsByOwnerId(userAccount.getId)
-            
+
             val text: String = {
               if (projects.isEmpty) "No projects"
               else {
@@ -236,7 +236,8 @@ class NewProjectDialog {
         val userProjects: Array[Project] =
           if (ownerOpt.isEmpty) Array()
           else UdsRepository.findProjectsByOwnerId(ownerOpt.get.getId)
-        val isNameAvailable = userProjects.exists(_.getName() == newProjectName) //for this user
+
+        val isNameAvailable = (userProjects.exists(_.getName() == newProjectName) == false) //for this user
 
         /** If all is ok, run action */
 
@@ -260,7 +261,7 @@ class NewProjectDialog {
         } else {
           if (isOwnerDefined == false) ownerWarningLabel.text = "Please select the project's owner."
           if (isNameDefined == false) nameWarningLabel.text = "Please enter a name for the project."
-          else if (isNameAvailable == false) nameWarningLabel.text = "This project name is not available."
+          else if (isNameAvailable == false) nameWarningLabel.text = "This project's name is not available."
         }
       }
 

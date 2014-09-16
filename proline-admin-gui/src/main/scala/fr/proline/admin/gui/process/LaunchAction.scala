@@ -7,8 +7,8 @@ import scala.util.Success
 
 import com.typesafe.scalalogging.slf4j.Logging
 
-import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.component.panel.ButtonsPanel
 
 import scalafx.application.Platform
 import scalafx.scene.Cursor
@@ -35,7 +35,9 @@ object LaunchAction extends Logging {
       actionButton.graphic = new ProgressIndicator {
         prefHeight = 20
         prefWidth = 20
-      }
+      }  
+      Main.stage.scene().setCursor(Cursor.WAIT)
+
 
       /** Print relative command line in console panel */
       println("\n" + actionString)
@@ -55,8 +57,7 @@ object LaunchAction extends Logging {
       case Success(_) => {
         synchronized {
           //          Platform.runLater {
-          //          logger.info(s"Action '$actionString' finished with success.")
-          logger.debug(s"Action '$actionString' finished with success.")
+          logger.info(s"Action '$actionString' finished with success.")
           println(s"""[ $actionString : <b>success</b> ]""")
 
           Platform.runLater {
@@ -75,8 +76,7 @@ object LaunchAction extends Logging {
           case fxThread: java.lang.IllegalStateException => Platform.runLater(actionButton.graphic = new ImageView()) //System.err.println("MY FX THREAD? " + e)
 
           case _ => synchronized {
-            //            logger.error(s"Failed to run action [$actionString]", e)
-            logger.debug(s"Failed to run action [$actionString]", e)
+            logger.warn(s"Failed to run action [$actionString]", e)
             println("ERROR - " + e.getMessage)
             println(s"[ $actionString : finished with <b>error</b> ]")
 

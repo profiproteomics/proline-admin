@@ -55,7 +55,7 @@ object ButtonsPanel extends Logging {
         LaunchAction(
           actionButton = this,
           actionString = Util.mkCmd("setup"),
-          action = () => SetupProline()
+          action = () => synchronized { SetupProline() }
         )
       }
     }
@@ -164,13 +164,11 @@ object ButtonsPanel extends Logging {
 
       /** If config file is ok, abort computation */
       case e: Throwable => {
-
-        //        logger.error("Unable to read Proline configuration : invalid configuration file.")
-        //        logger.error(e.getMessage())
-        logger.debug("Unable to read Proline configuration : invalid configuration file.")
-        logger.debug(e.getMessage())
-        println("ERROR - Invalid configuration. Please edit the configuration file or choose a valid one.")
-
+        synchronized {
+          logger.warn("Unable to read Proline configuration : invalid configuration file.")
+          logger.warn(e.getLocalizedMessage())
+          println("ERROR - Invalid configuration. Please edit the configuration file or choose a valid one.")
+        }
         _prolineConfIsOk = false
         this.disableAllButEdit()
 
@@ -193,13 +191,11 @@ object ButtonsPanel extends Logging {
           someUserInDb.set(UdsRepository.getAllUserAccounts().isEmpty == false)
         } catch {
           case e: Throwable => {
-
-            //            logger.error("Unable to retrieve users :")
-            //            logger.error(e.getLocalizedMessage())
-            logger.debug("Unable to retrieve users :")
-            logger.debug(e.getLocalizedMessage())
-            println("ERROR - Unable to retrieve users : " + e.getMessage())
-
+            synchronized {
+              logger.warn("Unable to retrieve users")
+              logger.warn(e.getLocalizedMessage())
+              println("ERROR - Unable to retrieve users : " + e.getMessage())
+            }
             someUserInDb.set(false)
             //TODO ? throw e // if re-thrown, infinite load 
           }

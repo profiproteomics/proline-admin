@@ -44,25 +44,19 @@ object ProlineAdminConnection extends Logging {
         ButtonsPanel.computeButtonsAvailability()
 
         logger.info(s"Action '$actionString' finished with success.")
-        logger.debug(s"Action '$actionString' finished with success.")
-
         println(s"""[ $actionString : <b>success</b> ]""")
 
       } catch {
         case e: Exception => {
           ButtonsPanel.disableAllButEdit()
+          synchronized {
+            logger.warn("Can't update Proline configuration")
+            logger.warn(e.getLocalizedMessage()) //stackTrace?
 
-          logger.error("LOGGER ERROR Can't update Proline configuration")
-          logger.warn("LOGGER WARN Can't update Proline configuration")
-          logger.info("LOGGER INFO Can't update Proline configuration")
-          logger.debug("LOGGER DEBUG Can't update Proline configuration")
-
-          logger.debug(e.getMessage()) //stackTrace?
-
-          //          Platform.runLater {
-          println("ERROR - Can't update Proline configuration : " + e.getMessage())
-          println(s"[ $actionString : finished with <b>error</b> ]")
-          //          }
+            //          Platform.runLater {
+            println("ERROR - Can't update Proline configuration : " + e.getMessage())
+            println(s"[ $actionString : finished with <b>error</b> ]")
+          }
 
           //throw e // if re-thrown, system stops
         }
@@ -97,12 +91,12 @@ object ProlineAdminConnection extends Logging {
       Platform.runLater(Main.stage.title = s"Proline Admin @ $dataDir")
       //      }
 
-    } /** Allow to create data folder if it doesn't exist */ else {
-
-      //      logger.warn(s"LOGGER WARN Unknown data directory : $dataDir")
-      logger.debug(s"LOGGER DEBUG Unknown data directory : $dataDir")
-      println(s"WARN - Unknown data directory : $dataDir")
-
+    } else {
+      /** Allow to create data folder if it doesn't exist */
+      synchronized {
+        logger.warn(s"""Unknown data directory : $dataDir""")
+        println(s"""WARN - Unknown data directory : $dataDir""")
+      }
       val isConfirmed = GetConfirmation(
         text = "The databases directory you specified does not exist. Do you want to create it?\n(This involves the creation of a new installation of Proline.)",
         title = s"Unknown directory : $dataDir",
@@ -112,8 +106,7 @@ object ProlineAdminConnection extends Logging {
 
       //      Platform.runLater {
       if (isConfirmed == true) {
-        //        logger.info(s"Creating data directory : $dataDir")
-        logger.debug(s"Creating data directory : $dataDir")
+        logger.info(s"Creating data directory : $dataDir")
         println(s"Creating databases directory : $dataDir ...")
         val successfullyCreated = new File(dataDir).mkdir()
 
@@ -153,7 +146,7 @@ object ProlineAdminConnection extends Logging {
       //          println("in promise")
       //          val isConfirmed = Platform.runLater(
       //            GetConfirmation(
-      //              text = "The databases directory you specified does not exist. Do you want to create it?\n(This involves the creation of a new installation of Proline.)",
+      //              text = "The databases directory you specified does not exist. Do you want to create it?\n(This involves a new installation of Proline.)",
       //              title = s"Unknown directory : $dataDir"
       //            ))
       //          p success isConfirmed

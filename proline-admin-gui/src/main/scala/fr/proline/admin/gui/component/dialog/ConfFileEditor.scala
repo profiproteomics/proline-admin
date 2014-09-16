@@ -112,12 +112,11 @@ class ConfFileEditor extends Logging {
 
         } catch {
           case e: Exception =>
-//            logger.error("Can't write in configuration file")
-//            logger.error(e.getLocalizedMessage())
-            logger.debug("Can't write in configuration file")
-            logger.debug(e.getLocalizedMessage())
-            println("ERROR - Unable to write in configuration file")
-
+            synchronized {
+              logger.warn("Can't write in configuration file")
+              logger.warn(e.getLocalizedMessage())
+              println("ERROR - Unable to write in configuration file")
+            }
           //throw e ?
 
         } finally {

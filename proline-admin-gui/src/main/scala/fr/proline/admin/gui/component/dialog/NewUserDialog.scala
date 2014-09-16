@@ -6,7 +6,6 @@ import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.gui.process.LaunchAction
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.service.user.CreateUser
-
 import scalafx.Includes.handle
 import scalafx.Includes.observableList2ObservableBuffer
 import scalafx.geometry.HPos
@@ -25,6 +24,7 @@ import scalafx.scene.layout.Priority
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 import scalafx.stage.StageStyle
+import scalafx.application.Platform
 
 /**
  *  Create and display a modal dialog to create a new user in database with optional password.
@@ -73,8 +73,8 @@ class NewUserDialog {
 
         onAction = handle {
           val users = UdsRepository.getAllUserAccounts()
-          println(s"INFO - Loaded ${users.length} user(s) from UDSdb.")
-          
+          Platform.runLater(println(s"INFO - Loaded ${users.length} user(s) from UDSdb."))
+
           val text = if (users.isEmpty) "No user found." else users.map(_.getLogin()).sorted.mkString("\n")
           new PopupWindow(
             "All users",
@@ -179,7 +179,8 @@ class NewUserDialog {
 
         /** Check if login is unique in database */
         val isLoginAvailable =
-          if (isLoginDefined) (UdsRepository.getAllUserAccounts().contains(_login) == false)
+          //          if (isLoginDefined) (UdsRepository.getAllUserAccounts().contains(_login) == false)
+          if (isLoginDefined) (UdsRepository.getAllUserAccounts().exists(_.getLogin() == _login) == false)
           else false
 
         /** If all is ok, run action */
