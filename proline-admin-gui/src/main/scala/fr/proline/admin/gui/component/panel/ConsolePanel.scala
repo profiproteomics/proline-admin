@@ -46,12 +46,12 @@ object ConsolePanel {
 
   /** Redirect application console content in this panel */
   val psOut = new PrintStream(new Console(this.consoleDisp))
-  val psErr = new PrintStream(new Console(this.consoleDisp, true))
+  //  val psErr = new PrintStream(new Console(this.consoleDisp, true))
   System.setOut(psOut)
-  //  System.setErr(psErr) //TODO: redirect sys err (not for debug modeà
+  //  System.setErr(psErr)
+  System.setErr(psOut)
 
   /** Display this panel */
-  //  def apply(): WebView = consoleDisp
   def apply(): StackPane = consoleArea
 }
 
@@ -79,31 +79,22 @@ class Console(
 
   private val _htmlFooter = """</body></html>"""
 
-  //    	window.scrollTo(0, document.body.scrollHeight);
-
   private val _consoleBuffer = new StringBuilder(_htmlHeader)
-  //  private val _consoleBuffer = new StringBuilder(_htmlHeader + _htmlFooter)
 
   /** Add formatted text to webView content */
-  private def _addTextToWebView(newLines: String, htmlWebView: WebView = this.consoleDisp) = {
+  private def _addTextToWebView(newLines: String, htmlWebView: WebView = this.consoleDisp) = synchronized {
 
     _consoleBuffer ++= _formatText(newLines)
-    synchronized { consoleDisp.engine.loadContent(_consoleBuffer.result()) }
+    Platform.runLater(consoleDisp.engine.loadContent(_consoleBuffer.result()))
   }
 
   /** Format HTML text: set color and font */
   private def _formatText(strToFormat: String): String = {
 
-    /** Utility */
+    // Utility
     def _textMatches(test: String): Boolean = strToFormat.toUpperCase() matches s"""(?s).*${test.toUpperCase()}.*"""
-    //    def _textMatches(str: String): Boolean = text.text().toUpperCase() matches s"""(?s).*${str.toUpperCase()}.*"""
 
-    /** Define text color/weight according to text content and/or origin (stdErr, stdOut) */
-    //    val (bold, endBold) = {
-    //      if (_textMatches("> run_cmd") || (_textMatches("""\[.+success\]""")) || (_textMatches("""\[.+finished with error\]"""))) ("<b>", "</b>")
-    //      else ("", "")
-    //    }
-
+    /** Define text color according to text content and/or origin (stdErr, stdOut) */
     val color = {
       if (isStdErr) "red"
       else {
@@ -119,35 +110,27 @@ class Console(
     }
 
     /** Make and return HTML string */
-    //    s"""<kbd style='color:$color'>$bold$strToFormat$endBold</kdb><br>"""
-    s"""<kbd style='color:$color'>$strToFormat</kdb>""" //<br>"""
+    s"""<kbd style='color:$color'>$strToFormat</kdb>""" 
   }
 
-  /** Override OutputStream write method */
-  override def write(byte: Int) = synchronized {
+  /** 
+   *  Override OutputStream write methods
+   */
+  override def write(byte: Int) = {
     _addTextToWebView(byte.toChar.toString())
-    this.flush()
-
   }
 
-  override def write(byteArr: Array[Byte]) = synchronized {
+  override def write(byteArr: Array[Byte]) = {
     val asString = new String(byteArr, "UTF-8")
     val corrString = asString.replaceAll("\n", "<br>") //.replaceAll("\r", "<br>")
 
-    Platform.runLater {
-      _addTextToWebView(corrString) //TODO: scroll
-    }
-    this.flush()
+    _addTextToWebView(corrString)
   }
 
-  override def write(byteArr: Array[Byte], off: Int, len: Int) = synchronized {
+  override def write(byteArr: Array[Byte], off: Int, len: Int) = {
     val asString = new String(byteArr, off, len)
     val corrString = asString.replaceAll("\n", "<br>") //.replaceAll("\r", "<br>")
 
-    Platform.runLater {
-      _addTextToWebView(corrString) //TODO: scroll
-    }
-
-    this.flush()
+    _addTextToWebView(corrString)
   }
 }
