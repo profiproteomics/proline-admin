@@ -256,17 +256,6 @@ class NewProjectDialog {
               val udsDbContext = UdsRepository.getUdsDbContext()
               val projectCreator = new CreateProject(udsDbContext, newProjectName, newProjectDesc, ownerID)
               projectCreator.doWork()
-
-              //              val projectId = projectCreator.projectId
-              //
-              //              if (projectId > 0L) {
-              //
-              //                // Create project databases
-              //                new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
-              //
-              //              } else {
-              //                logger.error("Invalid Project Id: " + projectId)
-              //              }
             }
           )
 

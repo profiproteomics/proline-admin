@@ -35,9 +35,8 @@ object LaunchAction extends Logging {
       actionButton.graphic = new ProgressIndicator {
         prefHeight = 20
         prefWidth = 20
-      }  
+      }
       Main.stage.scene().setCursor(Cursor.WAIT)
-
 
       /** Print relative command line in console panel */
       println("\n" + actionString)
@@ -47,7 +46,7 @@ object LaunchAction extends Logging {
     val f = future {
       synchronized {
         action()
-        ButtonsPanel.computeButtonsAvailability()
+        //        ButtonsPanel.computeButtonsAvailability()
       }
     }
 
@@ -59,6 +58,8 @@ object LaunchAction extends Logging {
           //          Platform.runLater {
           logger.info(s"Action '$actionString' finished with success.")
           println(s"""[ $actionString : <b>success</b> ]""")
+
+          ButtonsPanel.computeButtonsAvailability()
 
           Platform.runLater {
             Main.stage.scene().setCursor(Cursor.DEFAULT)
@@ -73,15 +74,18 @@ object LaunchAction extends Logging {
       case Failure(e) => {
 
         e match {
+          
           case fxThread: java.lang.IllegalStateException => {
             logger.warn(fxThread.getLocalizedMessage())
-            Platform.runLater(actionButton.graphic = new ImageView()) //System.err.println("MY FX THREAD? " + e)
+            ButtonsPanel.computeButtonsAvailability()
+            Platform.runLater(actionButton.graphic = new ImageView())
           }
 
           case _ => synchronized {
             logger.warn(s"Failed to run action [$actionString]", e)
             println("ERROR - " + e.getMessage)
             println(s"[ $actionString : finished with <b>error</b> ]")
+            ButtonsPanel.computeButtonsAvailability()
 
             Platform.runLater {
               actionButton.graphic = new ImageView()

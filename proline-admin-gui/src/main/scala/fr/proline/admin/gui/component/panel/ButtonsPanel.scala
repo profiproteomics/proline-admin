@@ -68,15 +68,15 @@ object ButtonsPanel extends Logging {
   val createUserButton = new Button("Create a new user") {
     onAction = handle { new NewUserDialog() }
   }
-  //  val createUserButton = new Button("Sing the Pokemon song") {
-  //    onAction = handle {
-  //      LaunchAction(
-  //        actionButton = this,
-  //        actionString = Util.mkCmd("sing_pokemon"),
-  //        action = () => _singPokemon()
-  //      )
-  //    }
-  //  }
+  /* val createUserButton = new Button("Sing the Pokemon song") {
+      onAction = handle {
+        LaunchAction(
+          actionButton = this,
+          actionString = Util.mkCmd("sing_pokemon"),
+          action = () => _singPokemon()
+        )
+      }
+    } */
 
   /**
    *  Create a new project

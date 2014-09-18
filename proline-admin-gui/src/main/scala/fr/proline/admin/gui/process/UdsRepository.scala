@@ -85,31 +85,25 @@ object UdsRepository extends Logging {
    *  Test connection with database
    */
   def isUdsDbReachable(): Boolean = {
-    
-    val udsDbConnector = _getUdsDbConnector()
-    //val driverType = udsDbConnector.getDriverType()
 
-    //    /** Look for uds.sqlite file in database directory */
-    //    val (dir, file) = (SetupProline.getUpdatedConfig.udsDBConfig.dbDirectory, SetupProline.getUpdatedConfig.udsDBConfig.dbName)
-    //    val udsFile = new File(dir + "/" + file)
-    //    if (udsFile.exists()) true else false
+    val udsDbConnector = _getUdsDbConnector()
 
     try {
-      
-      // Check to retrieve DB connection
+
+      /** Check to retrieve DB connection */
       udsDbConnector.getDataSource().getConnection()
-      
-      // Additionnal check for file based databases
+
+      /** Additionnal check for file based databases */
       val udsEM = new DatabaseConnectionContext(udsDbConnector).getEntityManager()
       udsEM.find(classOf[ExternalDb], 1L)
-      
+
       logger.info("Proline is already set up !")
-      
       true
+      
     } catch {
       case e: Throwable => {
-        System.err.println( "Proline is not set up !")
-        logger.warn("Proline is not set up : ", e )
+        System.err.println("Proline is not set up !")
+        logger.warn("Proline is not set up : ", e)
         false
       }
     }
