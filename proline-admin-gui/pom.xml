@@ -39,7 +39,7 @@
       <!-- <version>8.0.0-R4</version> --><!--for JavaFX 8 -->
     </dependency>
 
-    <!-- Logging -->
+    <!-- Logback -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
@@ -188,12 +188,11 @@
       </plugin>
 
       <!-- Deploy JavaFX-based executable JAR -->
-      <!-- Created in target\jfx\app\ in version 2.0 -->
       <plugin>
         <groupId>com.zenjava</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
         <version>8.1.2</version>
-        
+
         <executions>
           <execution>
             <id>create-final-jar</id>
@@ -203,18 +202,19 @@
             </goals>
           </execution>
         </executions>
-        
+
         <configuration>
           <vendor>ProFi</vendor>
           <mainClass>fr.proline.admin.gui.Main</mainClass>
           <jfxAppOutputDir>${project.build.directory}</jfxAppOutputDir> <!-- produce JFX jar in target folder -->
-          <jvmArg>-Dlogback.configurationFile=config/logback.xml</jvmArg>
-          <!-- <jfxMainAppJarName>${project.build.finalName}-jfx.jar</jfxMainAppJarName> -->
+          <jfxMainAppJarName>${project.build.finalName}.jar</jfxMainAppJarName> <!--  override non-jfx jar -->
+
+          <!-- <jvmArg>-Dlogback.configurationFile=config/logback.xml</jvmArg> -->
           <permissions>
             <permission>all-permissions</permission>
           </permissions>
         </configuration>
-       
+
       </plugin>
 
       <plugin>
