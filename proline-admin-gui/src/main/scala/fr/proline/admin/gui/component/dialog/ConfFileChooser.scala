@@ -58,6 +58,6 @@ object ConfFileChooser {
     Main.confPath = confPath
 
     /** Update main stage's title with newly selected configuration file */
-    ProlineAdminConnection.updateProlineConf()
+    ProlineAdminConnection.loadProlineConf()
   }
 } 

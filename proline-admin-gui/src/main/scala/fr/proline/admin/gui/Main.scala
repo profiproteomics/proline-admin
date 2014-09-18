@@ -38,6 +38,7 @@ object Main extends Logging {
 
   /** Panels */
   val menuPanel = MenuPanel()
+  //    val menuPanel = MenuPanel2()
   var consolePanel: StackPane = _
   var buttonsPanel: VBox = _
 
@@ -96,7 +97,7 @@ class Main extends Application {
     // Usual case : default conf file exists
     if (new File(_appConfPath).exists()) {
       Main.confPath = _appConfPath
-      ProlineAdminConnection.updateProlineConf()
+      ProlineAdminConnection.loadProlineConf()
 
       // Choose one if not
     } else {
@@ -109,6 +110,7 @@ class Main extends Application {
           isFileChosen = true
 
         } catch {
+
           /** If the user doesn't select any file ('cancel' or 'close' button) */
           case e: Exception =>
 
@@ -133,10 +135,10 @@ class Main extends Application {
     //    Main.stage.show()
 
   }
-  
+
   override def stop() {
     super.stop()
-    if( UdsRepository.getUdsDbContext() != null ) UdsRepository.getUdsDbContext().close
+    if (UdsRepository.getUdsDbContext() != null) UdsRepository.getUdsDbContext().close
   }
 
 }

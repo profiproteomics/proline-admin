@@ -22,11 +22,11 @@ object ProlineAdminConnection extends Logging {
   /**
    * Udapte Proline Admin config (processing + UI management)
    */
-  def updateProlineConf() = {
+  def loadProlineConf() = {
     //BLOCKING! otherwise update config before (conf file changes || user's choice) (are||is) effective
     //FIXME: freezing
 
-    val actionString = "<b>>> Updating Proline configuration...</b>"
+    val actionString = "<b>>> Loading Proline configuration...</b>"
 
     //    LaunchAction(
     //      actionButton = ButtonsPanel.editConfButton, //Array[Button] ?
@@ -47,10 +47,12 @@ object ProlineAdminConnection extends Logging {
         println(s"""[ $actionString : <b>success</b> ]""")
 
       } catch {
-        case e: Exception => {
+        case fxt: IllegalStateException => logger.warn(fxt.getLocalizedMessage()) //useful?
+
+        case e: Throwable => {
           ButtonsPanel.disableAllButEdit()
           synchronized {
-            logger.warn("Can't update Proline configuration")
+            logger.warn("Can't update Proline configuration :")
             logger.warn(e.getLocalizedMessage()) //stackTrace?
 
             //          Platform.runLater {
@@ -98,7 +100,7 @@ object ProlineAdminConnection extends Logging {
         println(s"""WARN - Unknown data directory : $dataDir""")
       }
       val isConfirmed = GetConfirmation(
-        text = "The databases directory you specified does not exist. Do you want to create it?\n(This involves the creation of a new installation of Proline.)",
+        text = "The databases directory you specified does not exist. Do you want to create it?\n(This involves a new installation of Proline.)",
         title = s"Unknown directory : $dataDir",
         yesText = "Yes",
         cancelText = "No"

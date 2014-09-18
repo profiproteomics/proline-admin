@@ -25,11 +25,12 @@ import scalafx.stage.Modality
 import scalafx.stage.Stage
 import scalafx.stage.StageStyle
 import scalafx.application.Platform
+import com.typesafe.scalalogging.slf4j.Logging
 
 /**
  *  Create and display a modal dialog to create a new user in database with optional password.
  */
-class NewUserDialog {
+class NewUserDialog extends Logging {
 
   /** Define modal window */
   val _stage = new Stage { newUserDialog =>
@@ -193,10 +194,17 @@ class NewUserDialog {
               (Some(_pw), s"create_user --login ${_login} --password ${"*" * _pw.length()}")
 
           /** CREATE USER and close dialog */
+
           LaunchAction(
             actionButton = ButtonsPanel.createUserButton,
             actionString = Util.mkCmd(cmd),
-            action = () => { CreateUser(_login, pswdOpt) }
+            action = () => {
+              val udsDbContext = UdsRepository.getUdsDbContext()
+              val pswd = if (pswdOpt.isDefined) pswdOpt.get else "proline"
+
+              val userCreator = new CreateUser(udsDbContext, _login, pswd)
+              userCreator.run()
+            }
           )
 
           newUserDialog.close()

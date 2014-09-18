@@ -16,6 +16,7 @@ import fr.proline.core.orm.util.DataStoreUpgrader
 import scalafx.Includes.handle
 import scalafx.Includes.observableList2ObservableBuffer
 import scalafx.Includes.when
+import scalafx.application.Platform
 import scalafx.beans.property.BooleanProperty
 import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.geometry.Insets
@@ -119,6 +120,8 @@ object ButtonsPanel extends Logging {
      */
     def _getConnectorFactory(): DataStoreConnectorFactory = {
 
+      //TODO: sure? (many changes in UdsRpository)
+
       val connectorFactory = DataStoreConnectorFactory.getInstance()
       if (!connectorFactory.isInitialized) {
         connectorFactory.initialize(SetupProline.config.udsDBConfig.toNewConnector)
@@ -158,6 +161,7 @@ object ButtonsPanel extends Logging {
     try {
 
       val udsDBConfig = UdsRepository.getUdsDbConfig()
+      logger.info("_prolineConfIsOk")
       _prolineConfIsOk = true
 
     } catch {
@@ -181,30 +185,36 @@ object ButtonsPanel extends Logging {
 
       /** Check if Proline is already set up */
       val _prolineIsSetUp = UdsRepository.isUdsDbReachable()
+      logger.info("_prolineIsSetUp (uds reachable) : " + _prolineIsSetUp)
 
-      if (_prolineIsSetUp) {
-        prolineMustBeSetUp.set(false)
-        dbCanBeUsed.set(true)
+      Platform.runLater {
+        if (_prolineIsSetUp) {
+          prolineMustBeSetUp.set(false)
+          dbCanBeUsed.set(true)
 
-        /** Forbid to add project if no user (owner) is registered */
-        try {
-          someUserInDb.set(UdsRepository.getAllUserAccounts().isEmpty == false)
-        } catch {
-          case e: Throwable => {
-            synchronized {
-              logger.warn("Unable to retrieve users")
-              logger.warn(e.getLocalizedMessage())
-              println("ERROR - Unable to retrieve users : " + e.getMessage())
+          /** Forbid to add project if no user (owner) is registered */
+          try {
+            someUserInDb.set(UdsRepository.getAllUserAccounts().isEmpty == false)
+
+          } catch {
+            case fxt: java.lang.IllegalStateException => logger.warn(fxt.getLocalizedMessage())
+
+            case e: Throwable => {
+              synchronized {
+                logger.warn("Unable to retrieve users")
+                logger.warn(e.getLocalizedMessage())
+                println("ERROR - Unable to retrieve users : " + e.getMessage())
+              }
+              someUserInDb.set(false)
+              //TODO ? throw e // if re-thrown, infinite load 
             }
-            someUserInDb.set(false)
-            //TODO ? throw e // if re-thrown, infinite load 
           }
-        }
 
-      } else {
-        prolineMustBeSetUp.set(true)
-        dbCanBeUsed.set(false)
-        someUserInDb.set(false)
+        } else {
+          prolineMustBeSetUp.set(true)
+          dbCanBeUsed.set(false)
+          someUserInDb.set(false)
+        }
       }
     }
   }

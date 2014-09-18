@@ -35,6 +35,8 @@ class ConfFileEditor extends Logging {
     title = s"Proline configuration editor -- ${Main.confPath}"
     initModality(Modality.WINDOW_MODAL)
     initOwner(Main.stage)
+    
+    //TODO: exit on 'escape' pressed
 
     scene = new Scene {
 
@@ -111,7 +113,9 @@ class ConfFileEditor extends Logging {
           fileWriter.write(textEditArea.text.value)
 
         } catch {
-          case e: Exception =>
+          case fxt: java.lang.IllegalStateException => logger.warn(fxt.getLocalizedMessage())
+
+          case e: Throwable =>
             synchronized {
               logger.warn("Can't write in configuration file")
               logger.warn(e.getLocalizedMessage())
@@ -124,7 +128,7 @@ class ConfFileEditor extends Logging {
         }
 
         /** Set new Proline configuration effective */
-        ProlineAdminConnection.updateProlineConf()
+        ProlineAdminConnection.loadProlineConf()
 
         /** Close window */
         configEditor.close()

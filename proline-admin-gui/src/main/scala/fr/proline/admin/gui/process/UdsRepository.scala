@@ -1,11 +1,8 @@
 package fr.proline.admin.gui.process
 
 import java.io.File
-
 import scala.collection.JavaConverters.asScalaBufferConverter
-
 import com.typesafe.scalalogging.slf4j.Logging
-
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.context.DatabaseConnectionContext
@@ -13,6 +10,8 @@ import fr.proline.core.orm.uds.Project
 import fr.proline.core.orm.uds.UserAccount
 import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.repository.IDatabaseConnector
+import fr.proline.repository.DriverType
+import fr.proline.core.orm.uds.ExternalDb
 
 /**
  * Some utilities relative to UDS database connection
@@ -66,9 +65,6 @@ object UdsRepository extends Logging {
     if (udsDbConnector != null) udsDbConnector
     else {
       udsDbConnector = this.getUdsDbConfig.toNewConnector()
-
-      logger.debug("DEBUG - createNewUdsDbConnector OK")
-
       udsDbConnector
     }
   }
@@ -77,22 +73,47 @@ object UdsRepository extends Logging {
    * Get UDS database CONTEXT
    */
   def getUdsDbContext(): DatabaseConnectionContext = {
-    if (udsDbContext != null) udsDbContext
-    else {
+    if (udsDbContext != null) {
+      udsDbContext
+    } else {
       udsDbContext = new DatabaseConnectionContext(_getUdsDbConnector)
       udsDbContext
     }
   }
 
   /**
-   *  Test connexion with database
+   *  Test connection with database
    */
   def isUdsDbReachable(): Boolean = {
+    
+    val udsDbConnector = _getUdsDbConnector()
+    //val driverType = udsDbConnector.getDriverType()
 
-    /** Look for uds.sqlite file in database directory */
-    val (dir, file) = (SetupProline.getUpdatedConfig.udsDBConfig.dbDirectory, SetupProline.getUpdatedConfig.udsDBConfig.dbName)
-    val udsFile = new File(dir + "/" + file)
-    if (udsFile.exists()) true else false
+    //    /** Look for uds.sqlite file in database directory */
+    //    val (dir, file) = (SetupProline.getUpdatedConfig.udsDBConfig.dbDirectory, SetupProline.getUpdatedConfig.udsDBConfig.dbName)
+    //    val udsFile = new File(dir + "/" + file)
+    //    if (udsFile.exists()) true else false
+
+    try {
+      
+      // Check to retrieve DB connection
+      udsDbConnector.getDataSource().getConnection()
+      
+      // Additionnal check for file based databases
+      val udsEM = new DatabaseConnectionContext(udsDbConnector).getEntityManager()
+      udsEM.find(classOf[ExternalDb], 1L)
+      
+      logger.info("Proline is already set up !")
+      
+      true
+    } catch {
+      case e: Throwable => {
+        System.err.println( "Proline is not set up !")
+        logger.warn("Proline is not set up : ", e )
+        false
+      }
+    }
+
   }
 
   /**
@@ -118,12 +139,26 @@ object UdsRepository extends Logging {
 
     } catch {
       // Log Exception message, print error message in console, re-throw Exception
-      case e: Exception => {
+      case e: Throwable => {
         synchronized {
+
+          //          def printProblematicLine(t: Throwable) {
+          //
+          //            val filterFrPro = t.getStackTrace().filter(ste => (ste.getClassName().startsWith("fr.profi.")) || (ste.getClassName().startsWith("fr.proline.")))
+          //            val pbLine = filterFrPro.head.toString()
+          //            val paGuiLine = filterFrPro.filter(ste => ste.getClassName().startsWith("fr.proline.admin.gui")).head.toString()
+          //            println(pbLine)
+          //            println("at " + paGuiLine)
+          //          }
+
           logger.warn("Can't load user accounts from UDSdb:")
           logger.warn(e.getLocalizedMessage())
-          //        System.err.println("Can't load user accounts from UDSdb")
           println("ERROR - Can't load user accounts from UDSdb")
+          //          println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+          //          e.printStackTrace()
+          //          println("***********************************")
+          //          printProblematicLine(e) //TODO: delete me
+
           throw e
         }
       }

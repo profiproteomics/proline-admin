@@ -73,7 +73,10 @@ object LaunchAction extends Logging {
       case Failure(e) => {
 
         e match {
-          case fxThread: java.lang.IllegalStateException => Platform.runLater(actionButton.graphic = new ImageView()) //System.err.println("MY FX THREAD? " + e)
+          case fxThread: java.lang.IllegalStateException => {
+            logger.warn(fxThread.getLocalizedMessage())
+            Platform.runLater(actionButton.graphic = new ImageView()) //System.err.println("MY FX THREAD? " + e)
+          }
 
           case _ => synchronized {
             logger.warn(s"Failed to run action [$actionString]", e)

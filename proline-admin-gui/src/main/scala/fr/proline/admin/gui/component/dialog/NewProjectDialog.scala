@@ -8,7 +8,6 @@ import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.service.user.CreateProject
 import fr.proline.core.orm.uds.Project
 import fr.proline.core.orm.uds.UserAccount
-
 import scalafx.Includes.handle
 import scalafx.Includes.observableList2ObservableBuffer
 import scalafx.collections.ObservableBuffer
@@ -29,6 +28,7 @@ import scalafx.scene.layout.Priority
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 import scalafx.stage.StageStyle
+import fr.proline.admin.service.db.CreateProjectDBs
 
 /**
  *  Create and display a modal dialog to create a new project in database
@@ -252,7 +252,22 @@ class NewProjectDialog {
           LaunchAction(
             actionButton = ButtonsPanel.createProjectButton,
             actionString = Util.mkCmd(cmd),
-            action = () => { CreateProject(ownerId = ownerID, name = newProjectName, description = newProjectDesc) }
+            action = () => {
+              val udsDbContext = UdsRepository.getUdsDbContext()
+              val projectCreator = new CreateProject(udsDbContext, newProjectName, newProjectDesc, ownerID)
+              projectCreator.doWork()
+
+              //              val projectId = projectCreator.projectId
+              //
+              //              if (projectId > 0L) {
+              //
+              //                // Create project databases
+              //                new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
+              //
+              //              } else {
+              //                logger.error("Invalid Project Id: " + projectId)
+              //              }
+            }
           )
 
           newProjectDialog.close()
