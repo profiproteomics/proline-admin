@@ -191,7 +191,8 @@
       <plugin>
         <groupId>com.zenjava</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
-        <version>8.1.2</version>
+        <!-- <version>8.1.2</version> -->
+        <version>2.0</version>
 
         <executions>
           <execution>
@@ -207,7 +208,7 @@
           <vendor>ProFi</vendor>
           <mainClass>fr.proline.admin.gui.Main</mainClass>
           <jfxAppOutputDir>${project.build.directory}</jfxAppOutputDir> <!-- produce JFX jar in target folder -->
-          <jfxMainAppJarName>${project.build.finalName}.jar</jfxMainAppJarName> <!--  override non-jfx jar -->
+          <jfxMainAppJarName>${project.build.finalName}.jar</jfxMainAppJarName> <!-- override non-jfx jar -->
 
           <!-- <jvmArg>-Dlogback.configurationFile=config/logback.xml</jvmArg> -->
           <permissions>
