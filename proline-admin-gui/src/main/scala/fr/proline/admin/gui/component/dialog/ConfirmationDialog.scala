@@ -121,7 +121,7 @@ class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog ex
 
       title = dTitle
       initOwner(dInitOwner)
-      initStyle(StageStyle.UTILITY)
+//      initStyle(StageStyle.UTILITY)
       initModality(Modality.WINDOW_MODAL)
       centerOnScreen()
       //      this.x = Util.getStartX(mainStage = confirmDialog)

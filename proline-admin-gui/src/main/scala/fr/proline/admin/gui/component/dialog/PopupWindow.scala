@@ -2,9 +2,13 @@ package fr.proline.admin.gui.component.dialog
 
 import fr.proline.admin.gui.Main
 
+import scalafx.Includes.eventClosureWrapperWithParam
+import scalafx.Includes.jfxKeyEvent2sfx
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
 import scalafx.scene.control.TextArea
+import scalafx.scene.input.KeyCode
+import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.StackPane
 import scalafx.stage.Modality
 import scalafx.stage.Stage
@@ -23,9 +27,10 @@ class PopupWindow(
 
   new Stage {
 
-    popup =>
+    val popup = this
+
     title = wTitle
-    initStyle(StageStyle.UTILITY)
+    //    initStyle(StageStyle.UTILITY)
     initModality(Modality.WINDOW_MODAL)
     resizable = false
     if (wParent.isDefined) initOwner(wParent.get)
@@ -35,6 +40,9 @@ class PopupWindow(
     //      if (Y.isDefined) this.y = Y.get
 
     scene = new Scene {
+
+      onKeyPressed = (ke: KeyEvent) => { if (ke.code == KeyCode.ESCAPE) popup.close() }
+
       root = new StackPane {
         padding = Insets(5)
         content = new TextArea {

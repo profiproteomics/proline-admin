@@ -7,9 +7,13 @@ import scala.io.Source
 import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.gui.process.ProlineAdminConnection
 
+import scalafx.Includes.eventClosureWrapperWithParam
 import scalafx.Includes.handle
+import scalafx.Includes.jfxKeyEvent2sfx
+import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.Cursor
@@ -17,6 +21,8 @@ import scalafx.scene.Cursor.sfxCursor2jfx
 import scalafx.scene.Scene
 import scalafx.scene.control.Button
 import scalafx.scene.control.TextArea
+import scalafx.scene.input.KeyCode
+import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.VBox
@@ -31,14 +37,20 @@ class ConfFileEditor extends Logging {
   /** Define modal window */
   private val _stage = new Stage {
 
-    configEditor =>
+    val configEditor = this
+
     title = s"Proline configuration editor -- ${Main.confPath}"
     initModality(Modality.WINDOW_MODAL)
     initOwner(Main.stage)
-    
-    //TODO: exit on 'escape' pressed
+
+    //    configEditor.onShowing = handle { ButtonsPanel.someActionRunning.set(true) }
+    //    configEditor.onHiding = handle { ButtonsPanel.someActionRunning.set(false) }
+
+    //    configEditor.onShowing = handle { ButtonsPanel.disableAll() }
 
     scene = new Scene {
+
+      onKeyPressed = (ke: KeyEvent) => { if (ke.code == KeyCode.ESCAPE) configEditor.close() }
 
       /**
        * ********** *

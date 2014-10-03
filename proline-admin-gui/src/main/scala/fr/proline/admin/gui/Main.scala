@@ -1,9 +1,7 @@
 package fr.proline.admin.gui
 
 import java.io.File
-
 import com.typesafe.scalalogging.slf4j.Logging
-
 import fr.proline.admin.gui.component.dialog.ConfFileChooser
 import fr.proline.admin.gui.component.dialog.ConfirmationDialog
 import fr.proline.admin.gui.component.panel.ButtonsPanel
@@ -11,7 +9,6 @@ import fr.proline.admin.gui.component.panel.ConsolePanel
 import fr.proline.admin.gui.component.panel.MenuPanel
 import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.UdsRepository
-
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
 import scalafx.scene.layout.HBox
@@ -19,8 +16,8 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
-
 import javafx.application.Application
+
 
 /**
  * Graphical interface for Proline Admin.
@@ -35,13 +32,14 @@ object Main extends Logging {
   /** PAdmin configuration file */
   var targetPath: String = _
   var confPath: String = _
-
+  var firstCallToDataDir = true 
+  
   /** Panels */
   val menuPanel = MenuPanel()
   //    val menuPanel = MenuPanel2()
   var consolePanel: StackPane = _
   var buttonsPanel: VBox = _
-
+  
   /** Primary stage's root */
   lazy val root = new VBox {
     id = "root"

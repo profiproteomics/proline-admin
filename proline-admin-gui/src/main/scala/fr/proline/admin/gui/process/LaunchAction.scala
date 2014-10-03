@@ -4,18 +4,16 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.future
 import scala.util.Failure
 import scala.util.Success
-
 import com.typesafe.scalalogging.slf4j.Logging
-
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.component.panel.ButtonsPanel
-
 import scalafx.application.Platform
 import scalafx.scene.Cursor
 import scalafx.scene.Cursor.sfxCursor2jfx
 import scalafx.scene.control.Button
 import scalafx.scene.control.ProgressIndicator
 import scalafx.scene.image.ImageView
+import scalafx.beans.property.BooleanProperty
 
 /**
  * Run button's action asynchronously
@@ -37,61 +35,50 @@ object LaunchAction extends Logging {
         prefWidth = 20
       }
       Main.stage.scene().setCursor(Cursor.WAIT)
+//      ButtonsPanel.disableAll()
 
       /** Print relative command line in console panel */
       println("\n" + actionString)
     }
 
     /** Lauch action asynchronously then update enabled/disabled buttons*/
-    val f = future {
-      synchronized {
-        action()
-        //        ButtonsPanel.computeButtonsAvailability()
-      }
-    }
+    val f = future { synchronized { action() } }
 
     /** Future's callback : when action is finished */
     f onComplete {
 
       case Success(_) => {
         synchronized {
-          //          Platform.runLater {
           logger.info(s"Action '$actionString' finished with success.")
-          println(s"""[ $actionString : <b>success</b> ]""")
-
-          ButtonsPanel.computeButtonsAvailability()
+          println(s"""[ $actionString : <b>success</b> ]<br>""")
 
           Platform.runLater {
+            ButtonsPanel.computeButtonsAvailability()
             Main.stage.scene().setCursor(Cursor.DEFAULT)
             actionButton.graphic = new ImageView()
           }
-          //actionButton.style = " -fx-background-color: SlateGrey;"
-          //actionButton.styleClass -= ("activeButtons")
-          //actionButton.styleClass += ("mainButtons")
+          /*actionButton.style = " -fx-background-color: SlateGrey;"
+          actionButton.styleClass -= ("activeButtons")
+          actionButton.styleClass += ("mainButtons")*/
         }
       }
 
       case Failure(e) => {
 
         e match {
-          
-          case fxThread: java.lang.IllegalStateException => {
-            logger.warn(fxThread.getLocalizedMessage())
-            ButtonsPanel.computeButtonsAvailability()
-            Platform.runLater(actionButton.graphic = new ImageView())
-          }
+          case fxThread: java.lang.IllegalStateException => logger.warn(fxThread.getLocalizedMessage())
 
           case _ => synchronized {
             logger.warn(s"Failed to run action [$actionString]", e)
             println("ERROR - " + e.getMessage)
-            println(s"[ $actionString : finished with <b>error</b> ]")
-            ButtonsPanel.computeButtonsAvailability()
-
-            Platform.runLater {
-              actionButton.graphic = new ImageView()
-              Main.stage.scene().setCursor(Cursor.DEFAULT)
-            }
+            println(s"[ $actionString : finished with <b>error</b> ]<br>")
           }
+        }
+
+        Platform.runLater {
+          ButtonsPanel.computeButtonsAvailability()
+          actionButton.graphic = new ImageView()
+          Main.stage.scene().setCursor(Cursor.DEFAULT)
         }
       }
     }

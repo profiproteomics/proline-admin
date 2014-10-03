@@ -26,8 +26,9 @@ object UdsRepository extends Logging {
    * Get UDS database CONFIG
    */
   def getUdsDbConfig(): DatabaseSetupConfig = {
-    if (udsDbConfig != null) udsDbConfig
-    else SetupProline.getUpdatedConfig.udsDBConfig
+    //    if (udsDbConfig != null) udsDbConfig //not re-initialized if invalid config (private) 
+    //    else SetupProline.getUpdatedConfig.udsDBConfig
+    SetupProline.getUpdatedConfig.udsDBConfig
   }
 
   def setUdsDbConfig(udsDbConfig: DatabaseSetupConfig) {
@@ -93,16 +94,16 @@ object UdsRepository extends Logging {
       /** Check to retrieve DB connection */
       udsDbConnector.getDataSource().getConnection()
 
-      /** Additionnal check for file based databases */
+      /** Additionnal check for file-based databases */
       val udsEM = new DatabaseConnectionContext(udsDbConnector).getEntityManager()
       udsEM.find(classOf[ExternalDb], 1L)
 
       logger.info("Proline is already set up !")
       true
-      
+
     } catch {
       case e: Throwable => {
-        System.err.println("Proline is not set up !")
+        System.err.println("WARN - Proline is not set up !")
         logger.warn("Proline is not set up : ", e)
         false
       }

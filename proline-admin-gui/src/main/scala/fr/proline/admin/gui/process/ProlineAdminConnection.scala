@@ -28,49 +28,35 @@ object ProlineAdminConnection extends Logging {
 
     val actionString = "<b>>> Loading Proline configuration...</b>"
 
-    //    LaunchAction(
-    //      actionButton = ButtonsPanel.editConfButton, //Array[Button] ?
-    //      actionString = actionString,
-    //      action = () => {
-
     synchronized {
       Main.stage.scene().setCursor(Cursor.WAIT)
       println()
       println(actionString)
 
       try {
-
         this._setNewProlineConfig()
-        ButtonsPanel.computeButtonsAvailability()
 
         logger.info(s"Action '$actionString' finished with success.")
         println(s"""[ $actionString : <b>success</b> ]""")
 
       } catch {
+
         case fxt: IllegalStateException => logger.warn(fxt.getLocalizedMessage()) //useful?
 
         case e: Throwable => {
-          ButtonsPanel.disableAllButEdit()
           synchronized {
-            logger.warn("Can't update Proline configuration :")
-            logger.warn(e.getLocalizedMessage()) //stackTrace?
-
-            //          Platform.runLater {
+            logger.warn("Can't update Proline configuration :", e)
             println("ERROR - Can't update Proline configuration : " + e.getMessage())
             println(s"[ $actionString : finished with <b>error</b> ]")
           }
-
           //throw e // if re-thrown, system stops
         }
 
       } finally {
-        //        ButtonsPanel.computeButtonsAvailability()
+        ButtonsPanel.computeButtonsAvailability()
         Main.stage.scene().setCursor(Cursor.DEFAULT)
       }
-
     }
-    //    )
-
   }
 
   /**
@@ -86,12 +72,12 @@ object ProlineAdminConnection extends Logging {
 
     if (new File(dataDir).exists()) {
 
-      //      synchronized {
-      SetupProline.setConfigParams(newConfigFile)
-      UdsRepository.setUdsDbConfig(SetupProline.getUpdatedConfig.udsDBConfig)
+      synchronized {
+        SetupProline.setConfigParams(newConfigFile)
+        UdsRepository.setUdsDbConfig(SetupProline.getUpdatedConfig.udsDBConfig)
 
-      Platform.runLater(Main.stage.title = s"Proline Admin @ $dataDir")
-      //      }
+        Platform.runLater(Main.stage.title = s"Proline Admin @ $dataDir")
+      }
 
     } else {
       /** Allow to create data folder if it doesn't exist */
@@ -99,19 +85,26 @@ object ProlineAdminConnection extends Logging {
         logger.warn(s"""Unknown data directory : $dataDir""")
         println(s"""WARN - Unknown data directory : $dataDir""")
       }
-      val isConfirmed = GetConfirmation(
-        text = "The databases directory you specified does not exist. Do you want to create it?\n(This involves a new installation of Proline.)",
-        title = s"Unknown directory : $dataDir",
-        yesText = "Yes",
-        cancelText = "No"
-      )
 
-      //      Platform.runLater {
+      val isConfirmed =
+        if (dataDir == """<path/to/proline/data>""" && Main.firstCallToDataDir) {
+          Main.firstCallToDataDir = false //don't ask to create default dataDir on application start 
+          false
+
+        } else {
+          GetConfirmation(
+            text = "The databases directory you specified does not exist. Do you want to create it?\n(This involves a new installation of Proline.)",
+            title = s"Unknown directory : $dataDir",
+            yesText = "Yes",
+            cancelText = "No"
+          )
+        }
+
       if (isConfirmed == true) {
         logger.info(s"Creating data directory : $dataDir")
         println(s"Creating databases directory : $dataDir ...")
-        val successfullyCreated = new File(dataDir).mkdir()
 
+        val successfullyCreated = new File(dataDir).mkdir()
         if (successfullyCreated == true) {
           logger.info("Data directory successfully created.")
           println("INFO - Databases directory successfully created.")
@@ -121,17 +114,17 @@ object ProlineAdminConnection extends Logging {
 
           Platform.runLater(Main.stage.title = s"Proline Admin @ $dataDir")
 
-          /** If it can't be created */
         } else {
+          /** If dataDir can't be created */
           Platform.runLater(Main.stage.title = s"Proline Admin (invalid configuration)")
           throw new Exception("Unknown data directory (problem in creation) " + dataDir)
         }
 
       } else {
+        /** If user aborts dataDir creation */
         Platform.runLater(Main.stage.title = s"Proline Admin (invalid configuration)")
         throw new Exception("Unknown data directory (not created, user's choice) " + dataDir)
       }
-      //      }
 
       ///////////////////////// TRY ////////////////////////
       // FROM http://docs.scala-lang.org/overviews/core/futures.html

@@ -1,5 +1,7 @@
 package fr.proline.admin.gui.component.dialog
 
+import com.typesafe.scalalogging.slf4j.Logging
+
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.component.panel.ButtonsPanel
@@ -8,8 +10,12 @@ import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.service.user.CreateProject
 import fr.proline.core.orm.uds.Project
 import fr.proline.core.orm.uds.UserAccount
+
+import scalafx.Includes.eventClosureWrapperWithParam
 import scalafx.Includes.handle
+import scalafx.Includes.jfxKeyEvent2sfx
 import scalafx.Includes.observableList2ObservableBuffer
+import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.collections.ObservableBuffer
 import scalafx.geometry.HPos
 import scalafx.geometry.Insets
@@ -21,6 +27,8 @@ import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextArea
 import scalafx.scene.control.TextField
+import scalafx.scene.input.KeyCode
+import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.ColumnConstraints
 import scalafx.scene.layout.ColumnConstraints.sfxColumnConstraints2jfx
 import scalafx.scene.layout.GridPane
@@ -28,29 +36,35 @@ import scalafx.scene.layout.Priority
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 import scalafx.stage.StageStyle
-import fr.proline.admin.service.db.CreateProjectDBs
 
 /**
  *  Create and display a modal dialog to create a new project in database
  *  with registered owner and optional description.
  */
 
-class NewProjectDialog {
+class NewProjectDialog extends Logging {
 
   /** Stage */
-  val _stage = new Stage { newProjectDialog =>
+  val _stage = new Stage {
 
-    //    val newProjectDialog = this
+    val newProjectDialog = this
 
     title = "Create a new project"
-    initStyle(StageStyle.UTILITY)
+//    initStyle(StageStyle.UTILITY)
     resizable = false
     initModality(Modality.WINDOW_MODAL)
     initOwner(Main.stage)
     this.x = Util.getStartX()
     this.y = Util.getStartY()
 
+//    newProjectDialog.onShowing = handle { ButtonsPanel.someActionRunning.set(true) }
+//    newProjectDialog.onHiding = handle { ButtonsPanel.someActionRunning.set(false) }
+
+//        newProjectDialog.onShowing = handle { ButtonsPanel.disableAll() }
+
     scene = new Scene {
+
+      onKeyPressed = (ke: KeyEvent) => { if (ke.code == KeyCode.ESCAPE) newProjectDialog.close() }
 
       /**
        * ********** *
@@ -223,7 +237,8 @@ class NewProjectDialog {
         ).foreach(_.text = "")
 
         /** Check form */
-
+        logger.debug("Checking project's form..."
+        )
         val ownerIdx = ownerComboBox.selectionModel().getSelectedIndex()
         val isOwnerDefined: Boolean = ownerIdx >= 0
         val ownerOpt: Option[PrintableUserAccount] =
@@ -233,10 +248,12 @@ class NewProjectDialog {
         val newProjectName = nameField.text()
         val isNameDefined = newProjectName.isEmpty == false
 
+        logger.debug("Looking for user's projects")
         val userProjects: Array[Project] =
           if (ownerOpt.isEmpty) Array()
           else UdsRepository.findProjectsByOwnerId(ownerOpt.get.getId)
 
+        logger.debug("Check if (user, project name) is available")
         val isNameAvailable = (userProjects.exists(_.getName() == newProjectName) == false) //for this user
 
         /** If all is ok, run action */
@@ -249,6 +266,7 @@ class NewProjectDialog {
           val cmd = s"""create_project --owner_id ${ownerID} --name "${newProjectName}"  --description "${newProjectDesc}""""
 
           /** Create project */
+          logger.debug("Create project")
           LaunchAction(
             actionButton = ButtonsPanel.createProjectButton,
             actionString = Util.mkCmd(cmd),
@@ -263,6 +281,7 @@ class NewProjectDialog {
 
           /** Otherwise fill warning labels */
         } else {
+          logger.debug("Invalid project form")
           if (isOwnerDefined == false) ownerWarningLabel.text = "Please select the project's owner."
           if (isNameDefined == false) nameWarningLabel.text = "Please enter a name for the project."
           else if (isNameAvailable == false) nameWarningLabel.text = "This project's name is not available."

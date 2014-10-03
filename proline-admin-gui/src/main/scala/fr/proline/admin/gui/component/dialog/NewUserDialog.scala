@@ -1,13 +1,20 @@
 package fr.proline.admin.gui.component.dialog
 
+import com.typesafe.scalalogging.slf4j.Logging
+
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.gui.process.LaunchAction
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.service.user.CreateUser
+
+import scalafx.Includes.eventClosureWrapperWithParam
 import scalafx.Includes.handle
+import scalafx.Includes.jfxKeyEvent2sfx
 import scalafx.Includes.observableList2ObservableBuffer
+import scalafx.application.Platform
+import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.geometry.HPos
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
@@ -17,6 +24,8 @@ import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
 import scalafx.scene.control.PasswordField
 import scalafx.scene.control.TextField
+import scalafx.scene.input.KeyCode
+import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.ColumnConstraints
 import scalafx.scene.layout.ColumnConstraints.sfxColumnConstraints2jfx
 import scalafx.scene.layout.GridPane
@@ -24,8 +33,6 @@ import scalafx.scene.layout.Priority
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 import scalafx.stage.StageStyle
-import scalafx.application.Platform
-import com.typesafe.scalalogging.slf4j.Logging
 
 /**
  *  Create and display a modal dialog to create a new user in database with optional password.
@@ -33,17 +40,24 @@ import com.typesafe.scalalogging.slf4j.Logging
 class NewUserDialog extends Logging {
 
   /** Define modal window */
-  val _stage = new Stage { newUserDialog =>
+  val _stage = new Stage {
+
+    val newUserDialog = this
 
     title = "Create a new user"
-    initStyle(StageStyle.UTILITY)
+    //    initStyle(StageStyle.UTILITY)
     resizable = false
     initModality(Modality.WINDOW_MODAL)
     initOwner(Main.stage)
     this.x = Util.getStartX()
     this.y = Util.getStartY()
 
+//    newUserDialog.onShowing = handle { ButtonsPanel.disableAll() }
+    //    newUserDialog.onHiding = handle { ButtonsPanel.someActionRunning.set(false) }
+
     scene = new Scene {
+
+      onKeyPressed = (ke: KeyEvent) => { if (ke.code == KeyCode.ESCAPE) newUserDialog.close() }
 
       /**
        * ********** *

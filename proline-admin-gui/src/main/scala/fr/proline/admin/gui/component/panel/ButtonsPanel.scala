@@ -16,7 +16,6 @@ import fr.proline.core.orm.util.DataStoreUpgrader
 import scalafx.Includes.handle
 import scalafx.Includes.observableList2ObservableBuffer
 import scalafx.Includes.when
-import scalafx.application.Platform
 import scalafx.beans.property.BooleanProperty
 import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.geometry.Insets
@@ -52,11 +51,14 @@ object ButtonsPanel extends Logging {
 
       /** Set up Proline if confirmed */
       if (confirmed) {
+        //        someActionRunning.set(true)
 
         LaunchAction(
           actionButton = this,
           actionString = Util.mkCmd("setup"),
-          action = () => synchronized { SetupProline() }
+          action = () => synchronized {
+            SetupProline()
+          }
         )
       }
     }
@@ -68,15 +70,23 @@ object ButtonsPanel extends Logging {
   val createUserButton = new Button("Create a new user") {
     onAction = handle { new NewUserDialog() }
   }
-  /* val createUserButton = new Button("Sing the Pokemon song") {
-      onAction = handle {
+  /*val createUserButton = new Button("Sing the Pokemon song") {
+    onAction = handle {
+      import scalafx.scene.Cursor
+      synchronized {
         LaunchAction(
           actionButton = this,
           actionString = Util.mkCmd("sing_pokemon"),
-          action = () => _singPokemon()
+          action = () => {
+            _singPokemon()
+            //Thread.sleep(3 * 1000)
+          }
         )
+        //Platform.runLater(Main.stage.scene().setCursor(Cursor.HAND))
+        //Main.stage.scene().setCursor(Cursor.HAND)
       }
-    } */
+    }
+  }*/
 
   /**
    *  Create a new project
@@ -94,6 +104,8 @@ object ButtonsPanel extends Logging {
 
       /** Upgrade databases if confirmed */
       if (confirmed) {
+//        someActionRunning.set(true)
+        //logger.warn("someActionRunning true " + someActionRunning)
 
         LaunchAction(
           actionButton = this,
@@ -111,7 +123,8 @@ object ButtonsPanel extends Logging {
 
             dsConnectorFactory.closeAll()
           }
-        )
+        ) //someActionRunning.set(false)
+
       }
     }
 
@@ -142,26 +155,35 @@ object ButtonsPanel extends Logging {
   val prolineMustBeSetUp = new BooleanProperty()
   val dbCanBeUsed = new BooleanProperty()
   val someUserInDb = new BooleanProperty()
+  //  val someActionRunning = BooleanProperty(false)
 
   /** Define when buttons shall be enabled/disbaled */
-  //  updateBooleans() : don't call it now because ProlineAdmin conf is not up to date
   setupProlineButton.disable <== when(prolineMustBeSetUp) choose false otherwise true
   createUserButton.disable <== when(dbCanBeUsed) choose false otherwise true
   createProjectButton.disable <== when(dbCanBeUsed && someUserInDb) choose false otherwise true
   upgradeDBsButton.disable <== when(dbCanBeUsed) choose false otherwise true
+
+  //  editConfButton.disable <== when(someActionRunning) choose true otherwise false
+  //  setupProlineButton.disable <== when(prolineMustBeSetUp && !someActionRunning) choose false otherwise true
+  //  createUserButton.disable <== when(dbCanBeUsed && !someActionRunning) choose false otherwise true
+  //  createProjectButton.disable <== when((dbCanBeUsed && someUserInDb) && !someActionRunning) choose false otherwise true
+  //  upgradeDBsButton.disable <== when(dbCanBeUsed && !someActionRunning) choose false otherwise true
 
   /**
    * Compute boolean values
    */
   def computeButtonsAvailability() {
 
+    //    someActionRunning.set(false)
+
+    logger.debug("Computing buttons availability...")
     var _prolineConfIsOk = false
 
     /** Config file is OK if udsDBConfig can be built with it */
     try {
 
       val udsDBConfig = UdsRepository.getUdsDbConfig()
-      logger.info("_prolineConfIsOk")
+      logger.info("Proline configuration is valid.")
       _prolineConfIsOk = true
 
     } catch {
@@ -187,36 +209,37 @@ object ButtonsPanel extends Logging {
       val _prolineIsSetUp = UdsRepository.isUdsDbReachable()
       logger.info("_prolineIsSetUp (uds reachable) : " + _prolineIsSetUp)
 
-      Platform.runLater {
-        if (_prolineIsSetUp) {
-          prolineMustBeSetUp.set(false)
-          dbCanBeUsed.set(true)
+      //      Platform.runLater {
+      if (_prolineIsSetUp) {
+        prolineMustBeSetUp.set(false)
+        dbCanBeUsed.set(true)
 
-          /** Forbid to add project if no user (owner) is registered */
-          try {
-            someUserInDb.set(UdsRepository.getAllUserAccounts().isEmpty == false)
+        /** Forbid to add project if no user (owner) is registered */
+        try {
+          someUserInDb.set(UdsRepository.getAllUserAccounts().isEmpty == false)
 
-          } catch {
-            case fxt: java.lang.IllegalStateException => logger.warn(fxt.getLocalizedMessage())
+        } catch {
+          case fxt: java.lang.IllegalStateException => logger.warn(fxt.getLocalizedMessage())
 
-            case e: Throwable => {
-              synchronized {
-                logger.warn("Unable to retrieve users")
-                logger.warn(e.getLocalizedMessage())
-                println("ERROR - Unable to retrieve users : " + e.getMessage())
-              }
-              someUserInDb.set(false)
-              //TODO ? throw e // if re-thrown, infinite load 
+          case e: Throwable => {
+            synchronized {
+              logger.warn("Unable to retrieve users")
+              logger.warn(e.getLocalizedMessage())
+              println("ERROR - Unable to retrieve users : " + e.getMessage())
             }
+            someUserInDb.set(false)
+            //TODO ? throw e // if re-thrown, infinite load 
           }
-
-        } else {
-          prolineMustBeSetUp.set(true)
-          dbCanBeUsed.set(false)
-          someUserInDb.set(false)
         }
+
+      } else {
+        prolineMustBeSetUp.set(true)
+        dbCanBeUsed.set(false)
+        someUserInDb.set(false)
       }
     }
+
+    logger.debug("Finished computing buttons availability.")
   }
 
   /**
@@ -227,6 +250,11 @@ object ButtonsPanel extends Logging {
     ButtonsPanel.prolineMustBeSetUp.set(false)
     ButtonsPanel.someUserInDb.set(false)
   }
+
+  //  def disableAll() {
+  //    this.disableAllButEdit()
+  //    this.someActionRunning.set(true)
+  //  }
 
   //  /**
   //   * Print these booleans
@@ -286,24 +314,24 @@ object ButtonsPanel extends Logging {
     }
   }
 
-  //  /**
-  //   * ******************* *
-  //   * ADDITIONAL FEATURES *
-  //   * ******************* *
-  //   */
-  //
-  //  private def _singPokemon() = println("""INFO
-  //Un jour je serai le meilleur dresseur
-  //Je me battrai sans répit
-  //Je ferai tout pour être vainqueur
-  //Et gagner les défis
-  //
-  //Je parcourrai la Terre entière
-  //Battant avec espoir 
-  //Les Pokemon et leur mystère
-  //Le secret de leur pouvoir
-  //
-  //POKEMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONNNNNNNNNNNNNNNNN
-  //""")
+  /**
+   * ******************* *
+   * ADDITIONAL FEATURES *
+   * ******************* *
+   */
+
+  private def _singPokemon() = println("""INFO
+  Un jour je serai le meilleur dresseur
+  Je me battrai sans répit
+  Je ferai tout pour être vainqueur
+  Et gagner les défis
+  
+  Je parcourrai la Terre entière
+  Battant avec espoir 
+  Les Pokemon et leur mystère
+  Le secret de leur pouvoir
+  
+  POKEMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONNNNNNNNNNNNNNNNN
+  """)
 
 }
