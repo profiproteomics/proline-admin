@@ -1,19 +1,18 @@
 package fr.proline.admin.gui.component.dialog
 
 import java.io.File
-
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.ProlineAdminConnection
-
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 import scalafx.stage.Stage
+import com.typesafe.scalalogging.slf4j.Logging
 
 /**
  * Create and show a file chooser customed for single configuration file's selection.
  * Used by MenuPanel.scala and Main.scala .
  */
-object ConfFileChooser {
+object ConfFileChooser extends Logging {
 
   /** Define file chooser */
   val fc = new FileChooser {
@@ -48,16 +47,22 @@ object ConfFileChooser {
    */
   def showIn(stage: Stage) {
 
-    val confPath = fc.showOpenDialog(stage).getPath()
-    println("<br><b>Selected configuration file : " + confPath + "</b>")
+    try {
+      val confPath = fc.showOpenDialog(stage).getPath()
+      println("<br><b>Selected configuration file : " + confPath + "</b>")
 
-    /** Validate path */
-    require(confPath matches """.+\.conf$""", "invalid path for configuration file")
+      /** Validate path */
+      require(confPath matches """.+\.conf$""", "invalid path for configuration file")
 
-    /** Update global variable */
-    Main.confPath = confPath
+      /** Update global variable */
+      Main.confPath = confPath
 
-    /** Update main stage's title with newly selected configuration file */
-    ProlineAdminConnection.loadProlineConf()
+      /** Update main stage's title with newly selected configuration file */
+      ProlineAdminConnection.loadProlineConf()
+
+    } catch {
+      case jfx: java.lang.NullPointerException => logger.debug("No file selected")
+      case t: Throwable                        => throw t
+    }
   }
 } 
