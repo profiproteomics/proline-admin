@@ -33,7 +33,7 @@ object MenuPanel {
               onAction = handle { ConfFileChooser.showIn(Main.stage) }
             },
 
-/*
+
             /** Refresh enabled/disabled buttons */
             new MenuItem("Refresh (DEBUG)") { //TODO: comment me
               onAction = handle {
@@ -44,7 +44,7 @@ object MenuPanel {
                 println("Refreshed")
               }
             },
-*/
+
 
             /** Exit Proline Admin */
             new MenuItem("Exit") {

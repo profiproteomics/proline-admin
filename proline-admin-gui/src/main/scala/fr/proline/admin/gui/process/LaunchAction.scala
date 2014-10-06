@@ -35,7 +35,7 @@ object LaunchAction extends Logging {
         prefWidth = 20
       }
       Main.stage.scene().setCursor(Cursor.WAIT)
-//      ButtonsPanel.disableAll()
+      //      ButtonsPanel.disableAll()
 
       /** Print relative command line in console panel */
       println("\n" + actionString)
@@ -51,12 +51,13 @@ object LaunchAction extends Logging {
         synchronized {
           logger.info(s"Action '$actionString' finished with success.")
           println(s"""[ $actionString : <b>success</b> ]<br>""")
+          _initialize()
+          //          Platform.runLater {
+          //            Main.stage.scene().setCursor(Cursor.DEFAULT)
+          //            actionButton.graphic = new ImageView()
+          //          }
+          //          ButtonsPanel.computeButtonsAvailability()
 
-          Platform.runLater {
-            ButtonsPanel.computeButtonsAvailability()
-            Main.stage.scene().setCursor(Cursor.DEFAULT)
-            actionButton.graphic = new ImageView()
-          }
           /*actionButton.style = " -fx-background-color: SlateGrey;"
           actionButton.styleClass -= ("activeButtons")
           actionButton.styleClass += ("mainButtons")*/
@@ -66,22 +67,30 @@ object LaunchAction extends Logging {
       case Failure(e) => {
 
         e match {
-          case fxThread: java.lang.IllegalStateException => logger.warn(fxThread.getLocalizedMessage())
+          case fxThread: java.lang.IllegalStateException => {
+            logger.warn(fxThread.getLocalizedMessage())
+            _initialize()
+          }
 
           case _ => synchronized {
             logger.warn(s"Failed to run action [$actionString]", e)
             println("ERROR - " + e.getMessage)
             println(s"[ $actionString : finished with <b>error</b> ]<br>")
+            _initialize()
           }
         }
 
-        Platform.runLater {
-          ButtonsPanel.computeButtonsAvailability()
-          actionButton.graphic = new ImageView()
-          Main.stage.scene().setCursor(Cursor.DEFAULT)
-        }
       }
     }
-  }
 
+    def _initialize() {
+      Platform.runLater {
+        actionButton.graphic = new ImageView()
+        Main.stage.scene().setCursor(Cursor.DEFAULT)
+      }
+      //      ButtonsPanel.computeButtonsAvailability()
+      ProlineAdminConnection.loadProlineConf() //workaround => correctly compute buttons' availability for SQLite (FIXME)
+
+    }
+  }
 }

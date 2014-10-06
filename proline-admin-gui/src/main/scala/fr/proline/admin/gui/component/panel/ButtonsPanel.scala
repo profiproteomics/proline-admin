@@ -1,7 +1,6 @@
 package fr.proline.admin.gui.component.panel
 
 import com.typesafe.scalalogging.slf4j.Logging
-
 import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.component.dialog.ConfFileEditor
 import fr.proline.admin.gui.component.dialog.GetConfirmation
@@ -12,7 +11,6 @@ import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.core.orm.util.DataStoreUpgrader
-
 import scalafx.Includes.handle
 import scalafx.Includes.observableList2ObservableBuffer
 import scalafx.Includes.when
@@ -21,6 +19,8 @@ import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.geometry.Insets
 import scalafx.scene.control.Button
 import scalafx.scene.layout.VBox
+import fr.proline.admin.gui.process.ProlineAdminConnection
+import scalafx.application.Platform
 
 /**
  * Create the buttons of the main window, one for each feature of Proline Admin.
@@ -104,7 +104,7 @@ object ButtonsPanel extends Logging {
 
       /** Upgrade databases if confirmed */
       if (confirmed) {
-//        someActionRunning.set(true)
+        //        someActionRunning.set(true)
         //logger.warn("someActionRunning true " + someActionRunning)
 
         LaunchAction(
@@ -209,33 +209,34 @@ object ButtonsPanel extends Logging {
       val _prolineIsSetUp = UdsRepository.isUdsDbReachable()
       logger.info("_prolineIsSetUp (uds reachable) : " + _prolineIsSetUp)
 
-      //      Platform.runLater {
-      if (_prolineIsSetUp) {
-        prolineMustBeSetUp.set(false)
-        dbCanBeUsed.set(true)
+      Platform.runLater {
+        if (_prolineIsSetUp) {
+          prolineMustBeSetUp.set(false)
+          dbCanBeUsed.set(true)
 
-        /** Forbid to add project if no user (owner) is registered */
-        try {
-          someUserInDb.set(UdsRepository.getAllUserAccounts().isEmpty == false)
+          /** Forbid to add project if no user (owner) is registered */
+          try {
+            someUserInDb.set(UdsRepository.getAllUserAccounts().isEmpty == false)
 
-        } catch {
-          case fxt: java.lang.IllegalStateException => logger.warn(fxt.getLocalizedMessage())
+          } catch {
+            case fxt: java.lang.IllegalStateException => logger.warn(fxt.getLocalizedMessage())
 
-          case e: Throwable => {
-            synchronized {
-              logger.warn("Unable to retrieve users")
-              logger.warn(e.getLocalizedMessage())
-              println("ERROR - Unable to retrieve users : " + e.getMessage())
+            case e: Throwable => {
+              synchronized {
+                logger.warn("Unable to retrieve users")
+                logger.warn(e.getLocalizedMessage())
+                println("ERROR - Unable to retrieve users : " + e.getMessage())
+              }
+              someUserInDb.set(false)
+              //TODO ? throw e // if re-thrown, infinite load 
             }
-            someUserInDb.set(false)
-            //TODO ? throw e // if re-thrown, infinite load 
           }
-        }
 
-      } else {
-        prolineMustBeSetUp.set(true)
-        dbCanBeUsed.set(false)
-        someUserInDb.set(false)
+        } else {
+          prolineMustBeSetUp.set(true)
+          dbCanBeUsed.set(false)
+          someUserInDb.set(false)
+        }
       }
     }
 
