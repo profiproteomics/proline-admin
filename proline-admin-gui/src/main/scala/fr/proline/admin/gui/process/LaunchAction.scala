@@ -50,7 +50,7 @@ object LaunchAction extends Logging {
       case Success(_) => {
         synchronized {
           logger.info(s"Action '$actionString' finished with success.")
-          println(s"""[ $actionString : <b>success</b> ]<br>""")
+          println(s"""[ $actionString : <b>success</b> ]<br><br>""")
           _initialize()
           //          Platform.runLater {
           //            Main.stage.scene().setCursor(Cursor.DEFAULT)
@@ -89,7 +89,7 @@ object LaunchAction extends Logging {
         Main.stage.scene().setCursor(Cursor.DEFAULT)
       }
       //      ButtonsPanel.computeButtonsAvailability()
-      ProlineAdminConnection.loadProlineConf() //workaround => correctly compute buttons' availability for SQLite (FIXME)
+      ProlineAdminConnection.loadProlineConf(verbose = false) //workaround => correctly compute buttons' availability for SQLite (FIXME)
 
     }
   }

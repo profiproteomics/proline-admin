@@ -18,8 +18,8 @@ class PopupWindow(
 
   wTitle: String,
   wText: String,
-  wParent: Option[Stage] = Option(Main.stage) //,
-  //    X: Option[Double] = Some(Main.stage.width() / 2),
+  wParent: Option[Stage] = Option(Main.stage),
+  isResizable: Boolean = false //    X: Option[Double] = Some(Main.stage.width() / 2),
   //    Y: Option[Double] = Some(Main.stage.width() / 2)
   ) {
   //TODO: rename package into window, for this is no dialog
@@ -30,12 +30,11 @@ class PopupWindow(
     val popup = this
 
     title = wTitle
-    //    initStyle(StageStyle.UTILITY)
     initModality(Modality.WINDOW_MODAL)
-    resizable = false
+    resizable = isResizable
     if (wParent.isDefined) initOwner(wParent.get)
 
-    maxHeight = 200
+    height = 200
     //      if (X.isDefined) this.x = X.get
     //      if (Y.isDefined) this.y = Y.get
 

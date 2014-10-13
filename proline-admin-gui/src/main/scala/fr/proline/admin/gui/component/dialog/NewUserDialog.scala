@@ -45,14 +45,13 @@ class NewUserDialog extends Logging {
     val newUserDialog = this
 
     title = "Create a new user"
-    //    initStyle(StageStyle.UTILITY)
     resizable = false
     initModality(Modality.WINDOW_MODAL)
     initOwner(Main.stage)
     this.x = Util.getStartX()
     this.y = Util.getStartY()
 
-//    newUserDialog.onShowing = handle { ButtonsPanel.disableAll() }
+    //    newUserDialog.onShowing = handle { ButtonsPanel.disableAll() }
     //    newUserDialog.onHiding = handle { ButtonsPanel.someActionRunning.set(false) }
 
     scene = new Scene {
@@ -92,9 +91,10 @@ class NewUserDialog extends Logging {
 
           val text = if (users.isEmpty) "No user found." else users.map(_.getLogin()).sorted.mkString("\n")
           new PopupWindow(
-            "All users",
-            text,
-            Option(Main.stage)
+            wTitle = "All users",
+            wText = text,
+            wParent = Option(Main.stage),
+            isResizable = true
           )
         }
       }
@@ -208,16 +208,29 @@ class NewUserDialog extends Logging {
               (Some(_pw), s"create_user --login ${_login} --password ${"*" * _pw.length()}")
 
           /** CREATE USER and close dialog */
-
+          logger.debug("Create user")
           LaunchAction(
             actionButton = ButtonsPanel.createUserButton,
             actionString = Util.mkCmd(cmd),
             action = () => {
-              val udsDbContext = UdsRepository.getUdsDbContext()
-              val pswd = if (pswdOpt.isDefined) pswdOpt.get else "proline"
 
-              val userCreator = new CreateUser(udsDbContext, _login, pswd)
-              userCreator.run()
+              val udsDbContext = UdsRepository.getUdsDbContext()
+
+              try {
+                // Create user
+                val pswd = if (pswdOpt.isDefined) pswdOpt.get else "proline"
+                val userCreator = new CreateUser(udsDbContext, _login, pswd)
+                userCreator.run()
+
+              } finally {
+                // Close udsDbContext
+                logger.debug("Closing current UDS Db Context")
+                try {
+                  udsDbContext.close()
+                } catch {
+                  case exClose: Exception => logger.error("Error closing UDS Db Context", exClose)
+                }
+              }
             }
           )
 

@@ -27,7 +27,7 @@ object ConfFileChooser extends Logging {
       initialDirectory = new File(new File(Main.confPath).getParent()) //TODO: improve =>  ?new File(Main.jarPath + "/config")
 
     } else {
-      val configFolder = new File(Main.targetPath + "/config")
+      val configFolder = new File(Main.targetPath + "/config") 
 
       if (configFolder.exists()) {
         initialDirectory = configFolder

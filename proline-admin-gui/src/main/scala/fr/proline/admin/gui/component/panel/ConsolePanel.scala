@@ -103,17 +103,17 @@ class Console(
 
         else if (_textMatches("warn")) "orange"
 
-        else if (_textMatches("info") || _textMatches("success")) "green"
+        else if (_textMatches("success")) "green" // || _textMatches("info")
 
         else "black"
       }
     }
 
     /** Make and return HTML string */
-    s"""<kbd style='color:$color'>$strToFormat</kdb>""" 
+    s"""<kbd style='color:$color'>$strToFormat</kdb>"""
   }
 
-  /** 
+  /**
    *  Override OutputStream write methods
    */
   override def write(byte: Int) = {

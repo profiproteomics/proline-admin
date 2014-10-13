@@ -1,7 +1,6 @@
 package fr.proline.admin.gui.component.dialog
 
 import com.typesafe.scalalogging.slf4j.Logging
-
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.component.panel.ButtonsPanel
@@ -10,7 +9,6 @@ import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.service.user.CreateProject
 import fr.proline.core.orm.uds.Project
 import fr.proline.core.orm.uds.UserAccount
-
 import scalafx.Includes.eventClosureWrapperWithParam
 import scalafx.Includes.handle
 import scalafx.Includes.jfxKeyEvent2sfx
@@ -36,6 +34,8 @@ import scalafx.scene.layout.Priority
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 import scalafx.stage.StageStyle
+import fr.proline.admin.service.db.CreateProjectDBs
+import fr.proline.admin.service.db.SetupProline
 
 /**
  *  Create and display a modal dialog to create a new project in database
@@ -50,17 +50,17 @@ class NewProjectDialog extends Logging {
     val newProjectDialog = this
 
     title = "Create a new project"
-//    initStyle(StageStyle.UTILITY)
+
     resizable = false
     initModality(Modality.WINDOW_MODAL)
     initOwner(Main.stage)
     this.x = Util.getStartX()
     this.y = Util.getStartY()
 
-//    newProjectDialog.onShowing = handle { ButtonsPanel.someActionRunning.set(true) }
-//    newProjectDialog.onHiding = handle { ButtonsPanel.someActionRunning.set(false) }
+    //    newProjectDialog.onShowing = handle { ButtonsPanel.someActionRunning.set(true) }
+    //    newProjectDialog.onHiding = handle { ButtonsPanel.someActionRunning.set(false) }
 
-//        newProjectDialog.onShowing = handle { ButtonsPanel.disableAll() }
+    //        newProjectDialog.onShowing = handle { ButtonsPanel.disableAll() }
 
     scene = new Scene {
 
@@ -136,12 +136,12 @@ class NewProjectDialog extends Logging {
             }
 
             new PopupWindow(
-              s"Projects belonging to user '${userAccount.getLogin}'",
-              text,
-              Option(Main.stage)
+              wTitle = s"Projects belonging to user '${userAccount.getLogin}'",
+              wText = text,
+              wParent = Option(Main.stage),
+              isResizable = true
             )
           }
-
         }
       }
 
@@ -271,9 +271,32 @@ class NewProjectDialog extends Logging {
             actionButton = ButtonsPanel.createProjectButton,
             actionString = Util.mkCmd(cmd),
             action = () => {
+
               val udsDbContext = UdsRepository.getUdsDbContext()
-              val projectCreator = new CreateProject(udsDbContext, newProjectName, newProjectDesc, ownerID)
-              projectCreator.doWork()
+              val prolineConf = SetupProline.getUpdatedConfig
+
+              try {
+                // Create project
+                val projectCreator = new CreateProject(udsDbContext, newProjectName, newProjectDesc, ownerID)
+                projectCreator.doWork()
+                val projectId = projectCreator.projectId
+
+                // Create project databases
+                if (projectId > 0L) {
+                  new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
+                } else {
+                  logger.error("Invalid Project Id: " + projectId)
+                }
+
+              } finally {
+                logger.debug("Closing current UDS Db Context")
+
+                try {
+                  udsDbContext.close()
+                } catch {
+                  case exClose: Exception => logger.error("Error closing UDS Db Context", exClose)
+                }
+              }
             }
           )
 

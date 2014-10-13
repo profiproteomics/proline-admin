@@ -22,7 +22,7 @@ object ProlineAdminConnection extends Logging {
   /**
    * Udapte Proline Admin config (processing + UI management)
    */
-  def loadProlineConf() = {
+  def loadProlineConf(verbose: Boolean = true) = {
     //BLOCKING! otherwise update config before (conf file changes || user's choice) (are||is) effective
     //FIXME: freezing
 
@@ -30,14 +30,13 @@ object ProlineAdminConnection extends Logging {
 
     synchronized {
       Main.stage.scene().setCursor(Cursor.WAIT)
-      println()
-      println(actionString)
+      if (verbose) println("<br>" + actionString)
 
       try {
         this._setNewProlineConfig()
 
         logger.info(s"Action '$actionString' finished with success.")
-        println(s"""[ $actionString : <b>success</b> ]""")
+        if (verbose)  println(s"""[ $actionString : <b>success</b> ]""")
 
       } catch {
 
