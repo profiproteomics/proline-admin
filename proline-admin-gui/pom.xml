@@ -7,7 +7,7 @@
   <parent>
     <artifactId>ProFI-Pom</artifactId>
     <groupId>fr.proline</groupId>
-    <version>0.0.4</version> <!-- Snapshot Trunk version -->
+    <version>0.0.5-SNAPSHOT</version> <!-- Snapshot Trunk version -->
   </parent>
 
   <artifactId>Proline-Admin-GUI</artifactId>
@@ -83,7 +83,7 @@
     <dependency>
       <groupId>fr.proline.util</groupId>
       <artifactId>ProFI-Commons-Scala</artifactId>
-      <version>0.0.8-SNAPSHOT</version> <!-- Snapshot Trunk version -->
+      <version>0.0.9-SNAPSHOT</version> <!-- Snapshot Trunk version -->
     </dependency>
 
     <dependency>
