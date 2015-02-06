@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>Proline-Admin-GUI</artifactId>
-  <version>0.0.11-SNAPSHOT</version>
+  <version>0.0.12-SNAPSHOT</version>
 
   <name>${project.artifactId}</name>
   <description>A GUI for Proline Administration</description>
@@ -19,9 +19,13 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <core.version>0.2.1-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
-    <!-- <version.path>${basedir}/src/main/scala/fr/proline/admin</version.path> -->
+    <admin.version>0.0.11-SNAPSHOT</admin.version> <!-- Snapshot Trunk version -->
+    <version.path>${basedir}/src/main/scala/fr/proline/admin/gui</version.path>
   </properties>
-
+	<scm>
+	  <connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-Admin-GUI/trunk</connection>
+	</scm>
+	
   <dependencies>
 
     <!-- Scala -->
@@ -95,7 +99,7 @@
     <dependency>
       <groupId>fr.proline</groupId>
       <artifactId>Proline-Admin</artifactId>
-      <version>0.0.11-SNAPSHOT</version>
+      <version>${admin.version}</version>
     </dependency>
 
     <!-- Tests -->
@@ -283,12 +287,29 @@
             <configuration>
               <outputDirectory>${project.build.directory}/lib</outputDirectory>
               <includeTypes>jar</includeTypes>
+              <excludeArtifactIds>Proline-Admin</excludeArtifactIds>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
             </configuration>
           </execution>
-
+          
+          <execution>
+            <id>copy-admin-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+              <includeTypes>jar</includeTypes>
+              <includeArtifactIds>Proline-Admin</includeArtifactIds>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+          
           <execution>
             <id>copy-dll</id>
             <phase>compile</phase>
@@ -318,8 +339,37 @@
         </configuration>
       </plugin>
 
-    </plugins>
 
+    <plugin>
+        <groupId>com.google.code.maven-replacer-plugin</groupId>
+        <artifactId>replacer</artifactId>
+
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+              <goals>
+                <goal>replace</goal>
+              </goals>
+           </execution>
+         </executions>
+
+         <configuration>
+           <file>${version.path}/Version.scala.template</file>
+           <outputFile>${version.path}/Version.scala</outputFile>
+           <replacements>
+             <replacement>
+               <token>@moduleName@</token>
+               <value>${project.artifactId}</value>
+             </replacement>
+             <replacement>
+               <token>@version@</token>
+               <value>${project.version}_${maven.build.timestamp}_${user.name}</value>
+             </replacement>
+           </replacements>
+         </configuration>
+
+      </plugin>
+     </plugins>
   </build>
 
 </project>
