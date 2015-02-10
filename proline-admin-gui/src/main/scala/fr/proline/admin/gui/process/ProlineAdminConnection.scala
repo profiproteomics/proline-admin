@@ -103,7 +103,7 @@ object ProlineAdminConnection extends Logging {
         logger.info(s"Creating data directory : $dataDir")
         println(s"Creating databases directory : $dataDir ...")
 
-        val successfullyCreated = new File(dataDir).mkdir()
+        val successfullyCreated = new File(dataDir).mkdirs()
         if (successfullyCreated == true) {
           logger.info("Data directory successfully created.")
           println("INFO - Databases directory successfully created.")
@@ -162,7 +162,7 @@ object ProlineAdminConnection extends Logging {
       //            logger.info(s"Creating data directory : $dataDir")
       //            println(s"Creating databases directory : $dataDir ...")
       //
-      //            val successfullyCreated = new File(dataDir).mkdir()
+      //            val successfullyCreated = new File(dataDir).mkdirs()
       //
       //            /** If it's created */
       //            if (successfullyCreated == true) {
