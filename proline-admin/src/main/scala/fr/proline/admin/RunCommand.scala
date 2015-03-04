@@ -74,6 +74,9 @@ object RunCommand extends App with Logging {
     @Parameter(names = Array("--dir_path", "-d"), description = "The path to the export directory", required = true)
     var dirPath: String = ""
   }
+  
+  @Parameters(commandNames = Array("create_missing_dbs"), commandDescription = "Create missing MSI and LCMS databases", separators = "=")
+  private object CreateMissingDbsCommand extends JCommandReflection
 
   @Parameters(commandNames = Array("upgrade_dbs"), commandDescription = "Upgrade all databases to the latest format", separators = "=")
   private object UpgradeDatabasesCommand extends JCommandReflection
@@ -155,10 +158,13 @@ object RunCommand extends App with Logging {
           import fr.proline.admin.service.db.maintenance.ExportDbUnitDTDs
           ExportDbUnitDTDs(dsConnectorFactory, ExportDbUnitDTDsCommand.dirPath)
         }
+        case CreateMissingDbsCommand.Parameters.firstName => {            
+          helper.sql.createMissingDatabases(SetupProline.config.udsDBConfig, dsConnectorFactory)
+        }
         case UpgradeDatabasesCommand.Parameters.firstName => {
           if (dsConnectorFactory.isInitialized) {
             logger.info("Upgrading all Proline Databases...")
-
+            
             if (DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory)) {
               logger.info("Databases successfully upgraded !")
             } else {

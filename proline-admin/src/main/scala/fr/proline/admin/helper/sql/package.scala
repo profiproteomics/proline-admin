@@ -2,18 +2,12 @@ package fr.proline.admin.helper
 
 import java.sql.Connection
 import java.sql.DriverManager
-import java.util.Arrays
 import java.util.Collection
-
-import javax.persistence.EntityManager
-import javax.persistence.EntityTransaction
 
 import org.dbunit.DataSourceDatabaseTester
 import org.dbunit.database.DatabaseConfig
-import org.dbunit.database.DatabaseSequenceFilter
 import org.dbunit.database.IDatabaseConnection
 import org.dbunit.dataset.AbstractDataSet
-import org.dbunit.dataset.FilteredDataSet
 import org.dbunit.dataset.datatype.DataType
 import org.dbunit.dataset.datatype.DefaultDataTypeFactory
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder
@@ -40,10 +34,15 @@ import fr.proline.core.dal.tables.msi.MsiDb
 import fr.proline.core.dal.tables.pdi.PdiDb
 import fr.proline.core.dal.tables.ps.PsDb
 import fr.proline.core.dal.tables.uds.UdsDb
+import fr.proline.core.orm.uds.repository.ProjectRepository
+import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.DatabaseUpgrader
 import fr.proline.repository.DriverType
 import fr.proline.repository.IDatabaseConnector
 import fr.proline.repository.ProlineDatabaseType
+
+import javax.persistence.EntityManager
+import javax.persistence.EntityTransaction
 
 /**
  * @author David Bouyssie
@@ -402,10 +401,9 @@ package object sql extends Logging {
         }
       }
 
-    }
-    
+    }    
   }
-
+  
   protected def createPgDatabase(pgDbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, logger: Option[Logger] = None) {
     
     // Create database connection and statement
@@ -416,36 +414,20 @@ package object sql extends Logging {
         case psqle: PSQLException => {
           val pgClass = classOf[org.postgresql.Driver]
           
-          val connConfig = dbConfig.connectionConfig
-          val host = connConfig.getString("host")
-          val port = connConfig.getString("port")
-          require( StringUtils.isNotEmpty(port), "missing port value" )
-          val portAsInteger = port.toInt
-          
-          val templateURL = if( portAsInteger >= 0 && portAsInteger <= 65535 )
-            s"jdbc:postgresql://${host}:${port}/template1"
-          else
-            s"jdbc:postgresql://${host}/template1"
-          
-          logger.map( _.info(s"creating database from template '${templateURL}'...") )
-
-          val pgTemplateConn = DriverManager.getConnection(
-            templateURL,
-            connConfig.getString("user"),
-            connConfig.getString("password")
-          )
-          val stmt = pgTemplateConn.createStatement
+          // Create connection template statement to check if database exists
+          val pgConnTemplate = _createPgConnectionTemplate(dbConfig)
+          val stmt = pgConnTemplate.createStatement
           
           // Create database if it doesn't exists
           if (_checkDbExists(stmt, dbConfig.dbName) == false) {
-            logger.map( _.info(s"creating database '${dbConfig.dbName}'...") )
+            logger.map( _.info(s"Creating database '${dbConfig.dbName}'...") )
             stmt.executeUpdate(s"CREATE DATABASE ${dbConfig.dbName};")
           }
 
           // Close database connection and statement
           stmt.close()
-          pgTemplateConn.close()
-          
+          pgConnTemplate.close()
+
           pgDbConnector.getDataSource.getConnection
         }
       } 
@@ -461,12 +443,85 @@ package object sql extends Logging {
     stmt.close()
     pgDbConn.close()
   }
+  
+  private def _createPgConnectionTemplate(dbConfig: DatabaseSetupConfig): Connection = {
+
+    val connConfig = dbConfig.connectionConfig
+    val host = connConfig.getString("host")
+    val port = connConfig.getString("port")
+    require(StringUtils.isNotEmpty(port), "missing port value")
+    val portAsInteger = port.toInt
+
+    val templateURL = if (portAsInteger >= 0 && portAsInteger <= 65535)
+      s"jdbc:postgresql://${host}:${port}/template1"
+    else
+      s"jdbc:postgresql://${host}/template1"
+
+    DriverManager.getConnection(
+      templateURL,
+      connConfig.getString("user"),
+      connConfig.getString("password")
+    )
+  }
 
   private def _checkDbExists(stmt: java.sql.Statement, dbName: String): Boolean = {
     val jdbcRS = stmt.executeQuery(s"SELECT count(*) FROM pg_catalog.pg_database WHERE datname = '${dbName}'")
 
     if (jdbcRS.next() && jdbcRS.getInt(1) == 0) false else true
   }
+  
+  def createMissingDatabases(dbConfig: DatabaseSetupConfig, dsConnectorFactory: DataStoreConnectorFactory): Unit = {
+    
+    logger.info("Looking for missing databases...")
+    
+    // Get entity manager
+    val udsDbContext = new DatabaseConnectionContext(dsConnectorFactory.getUdsDbConnector())
+    val udsEM = udsDbContext.getEntityManager()
+
+    // Create PostGres template connection statement
+    val pgConnTemplate = _createPgConnectionTemplate(dbConfig)
+    val pgConnTemplateStatement = pgConnTemplate.createStatement
+
+    try {
+      // Get projects ids
+      val projectIds = ProjectRepository.findAllProjectIds(udsEM)
+      
+      var createdDbCount = 0
+
+      // Iterate over projects
+      import scala.collection.JavaConversions._      
+      projectIds.foreach { projectId =>
+        
+        // Create MSIdb if it does not exist
+        if ( _checkDbExists(pgConnTemplateStatement, s"msi_db_project_$projectId") == false) {
+          pgConnTemplateStatement.executeUpdate(s"CREATE DATABASE msi_db_project_$projectId;")
+          
+          logger.debug("Created missing MSI database for project #" + projectId)
+          createdDbCount += 1
+        }
+        
+        // Create LCMSdb if it does not exist
+        if ( _checkDbExists(pgConnTemplateStatement, s"lcms_db_project_$projectId") == false) {
+          pgConnTemplateStatement.executeUpdate(s"CREATE DATABASE lcms_db_project_$projectId;")
+          
+          logger.debug("Created missing LCMS database for project #" + projectId)
+          createdDbCount += 1
+        }        
+      }
+      
+      if( createdDbCount > 0 )
+        logger.info(s"Created $createdDbCount missing databases.")
+      else
+        logger.info("No missing database.")
+
+    } finally {
+      // Close open resources
+      pgConnTemplateStatement.close()
+      pgConnTemplate.close()
+      udsDbContext.close()      
+    }
+  }
+
   
   // Inspired from: https://github.com/crazycode/play-factory-boy/blob/master/factory-boy/src/util/DatabaseUtil.java
   protected def disableForeignKeyConstraints( dbContext: DatabaseConnectionContext ) {
