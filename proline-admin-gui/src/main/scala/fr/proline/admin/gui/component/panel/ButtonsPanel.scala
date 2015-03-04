@@ -1,26 +1,23 @@
 package fr.proline.admin.gui.component.panel
 
-import com.typesafe.scalalogging.slf4j.Logging
-import fr.proline.admin.gui.Util
-import fr.proline.admin.gui.component.dialog.ConfFileEditor
-import fr.proline.admin.gui.component.dialog.GetConfirmation
-import fr.proline.admin.gui.component.dialog.NewProjectDialog
-import fr.proline.admin.gui.component.dialog.NewUserDialog
-import fr.proline.admin.gui.process.LaunchAction
-import fr.proline.admin.gui.process.UdsRepository
-import fr.proline.admin.service.db.SetupProline
-import fr.proline.core.orm.util.DataStoreConnectorFactory
-import fr.proline.core.orm.util.DataStoreUpgrader
-import scalafx.Includes.handle
-import scalafx.Includes.observableList2ObservableBuffer
-import scalafx.Includes.when
+import scalafx.Includes._
+import scalafx.application.Platform
 import scalafx.beans.property.BooleanProperty
 import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.geometry.Insets
 import scalafx.scene.control.Button
 import scalafx.scene.layout.VBox
-import fr.proline.admin.gui.process.ProlineAdminConnection
-import scalafx.application.Platform
+
+import com.typesafe.scalalogging.slf4j.Logging
+
+import fr.proline.admin.gui.Util
+import fr.proline.admin.gui.component.dialog._
+import fr.proline.admin.gui.process.LaunchAction
+import fr.proline.admin.gui.process.UdsRepository
+
+import fr.proline.admin.service.db.SetupProline
+import fr.proline.core.orm.util.DataStoreConnectorFactory
+import fr.proline.core.orm.util.DataStoreUpgrader
 
 /**
  * Create the buttons of the main window, one for each feature of Proline Admin.
@@ -51,7 +48,7 @@ object ButtonsPanel extends Logging {
 
       /** Set up Proline if confirmed */
       if (confirmed) {
-        //        someActionRunning.set(true)
+        //someActionRunning.set(true)
 
         LaunchAction(
           actionButton = this,
@@ -104,7 +101,7 @@ object ButtonsPanel extends Logging {
 
       /** Upgrade databases if confirmed */
       if (confirmed) {
-        //        someActionRunning.set(true)
+        //someActionRunning.set(true)
         //logger.warn("someActionRunning true " + someActionRunning)
 
         LaunchAction(
@@ -113,7 +110,10 @@ object ButtonsPanel extends Logging {
 
           action = () => {
 
-            val dsConnectorFactory = _getConnectorFactory()
+            val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
+
+            // Check missing databases
+            fr.proline.admin.helper.sql.createMissingDatabases(SetupProline.config.udsDBConfig, dsConnectorFactory)
 
             if (DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory)) {
               println("INFO - Databases successfully upgraded !")
@@ -128,20 +128,20 @@ object ButtonsPanel extends Logging {
       }
     }
 
+    /*
     /**
      * Get data store connector factory
      */
     def _getConnectorFactory(): DataStoreConnectorFactory = {
 
       //TODO: sure? (many changes in UdsRpository)
-
       val connectorFactory = DataStoreConnectorFactory.getInstance()
       if (!connectorFactory.isInitialized) {
         connectorFactory.initialize(SetupProline.config.udsDBConfig.toNewConnector)
       }
-
       connectorFactory
     }
+    */
 
   } //end of 'upgrade db' button
 
@@ -207,7 +207,7 @@ object ButtonsPanel extends Logging {
 
       /** Check if Proline is already set up */
       val _prolineIsSetUp = UdsRepository.isUdsDbReachable()
-      logger.info("_prolineIsSetUp (uds reachable) : " + _prolineIsSetUp)
+      //logger.info("_prolineIsSetUp (uds reachable) : " + _prolineIsSetUp)
 
       Platform.runLater {
         if (_prolineIsSetUp) {
@@ -223,9 +223,9 @@ object ButtonsPanel extends Logging {
 
             case e: Throwable => {
               synchronized {
-                logger.warn("Unable to retrieve users")
-                logger.warn(e.getLocalizedMessage())
-                println("ERROR - Unable to retrieve users : " + e.getMessage())
+                logger.warn("Unable to retrieve users", e)
+                println("ERROR - Unable to retrieve users :")
+                println(e.getMessage())
               }
               someUserInDb.set(false)
               //TODO ? throw e // if re-thrown, infinite load 

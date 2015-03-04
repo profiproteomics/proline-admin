@@ -12,6 +12,8 @@ import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.repository.IDatabaseConnector
 import fr.proline.repository.DriverType
 import fr.proline.core.orm.uds.ExternalDb
+import fr.proline.core.orm.util.DataStoreConnectorFactory
+import javax.persistence.EntityManager
 
 /**
  * Some utilities relative to UDS database connection
@@ -69,7 +71,7 @@ object UdsRepository extends Logging {
       udsDbConnector
     }
   }
-
+  
   /**
    * Get UDS database CONTEXT
    */
@@ -81,6 +83,25 @@ object UdsRepository extends Logging {
       udsDbContext
     }
   }
+  
+  /**
+   * Get UDS entity manager
+   */
+  def getUdsDbEm(): EntityManager = {
+    this.getUdsDbContext().getEntityManager()
+  }
+  
+  /**
+   * Get datastore connector factory using UDS databse 
+   */
+  def getDataStoreConnFactory(): DataStoreConnectorFactory = {
+    val connectorFactory = DataStoreConnectorFactory.getInstance()
+    if (!connectorFactory.isInitialized) {
+      connectorFactory.initialize(this._getUdsDbConnector())
+    }
+
+    connectorFactory
+  }
 
   /**
    *  Test connection with database
@@ -89,24 +110,32 @@ object UdsRepository extends Logging {
 
     val udsDbConnector = _getUdsDbConnector()
 
+    var udsDbCtx: DatabaseConnectionContext = null //especially created for SQLite test, needs to be closed in this method
+    
     try {
 
       /** Check to retrieve DB connection */
       udsDbConnector.getDataSource().getConnection()
 
-      /** Additionnal check for file-based databases */
-      val udsEM = new DatabaseConnectionContext(udsDbConnector).getEntityManager()
-      udsEM.find(classOf[ExternalDb], 1L)
+      /** Additionnal check for file-based databases (SQLite) */
+      udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
+      udsDbCtx.getEntityManager().find(classOf[ExternalDb], 1L)
 
-      logger.info("Proline is already set up !")
+      logger.debug("Proline is already set up !")
       true
 
     } catch {
-      case e: Throwable => {
+      case t: Throwable => {
+        logger.warn("Proline is not set up : ", t)
+
         System.err.println("WARN - Proline is not set up !")
-        logger.warn("Proline is not set up : ", e)
+        System.err.println(t.getMessage())
+
         false
       }
+    } finally {
+      if( udsDbCtx != null ) udsDbCtx.close()
+      //if (udsDbConnector != null && udsDbConnector.isClosed() == false) udsDbConnector.close()
     }
 
   }
@@ -157,7 +186,9 @@ object UdsRepository extends Logging {
           throw e
         }
       }
-
+      
+    } finally {
+      udsDbContext.close()
     }
 
   }
@@ -168,11 +199,11 @@ object UdsRepository extends Logging {
   def getAllProjectsGroupedByOwner(): Map[UserAccount, Array[Project]] = {
 
     val udsDbContext = this.getUdsDbContext()
+    val udsEM = udsDbContext.getEntityManager()
 
     val projectMap = try {
 
       // from fr.profi.pwx.dal.ProlineDataStore (pwx-scala daemons)
-      val udsEM = udsDbContext.getEntityManager()
       val UdsProjectClass = classOf[Project]
       val jpqlSelectProject = s"FROM ${UdsProjectClass.getName}"
 
@@ -182,15 +213,19 @@ object UdsRepository extends Logging {
 
     } catch {
       // Log Exception message, print error message in console, re-throw Exception
-      case e: Exception => {
+      case t: Throwable => {
         synchronized {
-          logger.warn("Can't load projects from UDSdb :")
-          logger.warn(e.toString())
-          println("ERROR - Can't load projects from UDSdb") // <=> System.err.println
+          logger.warn("Can't load projects from UDSdb :", t)
+
+          System.err.println("ERROR - Can't load projects from UDSdb")
+          System.err.println(t.getMessage())
         }
-        throw e
+        throw t
       }
 
+    } finally {
+      //udsEM.close()
+      if (udsDbContext != null) udsDbContext.close()
     }
 
     projectMap
