@@ -1,9 +1,6 @@
 package fr.proline.admin.gui.component.dialog
 
-import fr.proline.admin.gui.Main
-
-import scalafx.Includes.eventClosureWrapperWithParam
-import scalafx.Includes.jfxKeyEvent2sfx
+import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
 import scalafx.scene.control.TextArea
@@ -12,7 +9,8 @@ import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.StackPane
 import scalafx.stage.Modality
 import scalafx.stage.Stage
-import scalafx.stage.StageStyle
+
+import fr.proline.admin.gui.Main
 
 class PopupWindow(
 

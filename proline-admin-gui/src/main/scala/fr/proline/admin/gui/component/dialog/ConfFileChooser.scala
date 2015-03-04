@@ -1,12 +1,15 @@
 package fr.proline.admin.gui.component.dialog
 
 import java.io.File
-import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.process.ProlineAdminConnection
+
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 import scalafx.stage.Stage
+
 import com.typesafe.scalalogging.slf4j.Logging
+
+import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.process.ProlineAdminConnection
 
 /**
  * Create and show a file chooser customed for single configuration file's selection.

@@ -60,7 +60,8 @@ object ConsolePanel {
  */
 class Console(
   consoleDisp: WebView,
-  isStdErr: Boolean = false) extends OutputStream {
+  isStdErr: Boolean = false
+) extends OutputStream {
 
   /** Create HTML content */
   // Provide console style (<kbd>) and auto-scroll to bottom (javaScript)

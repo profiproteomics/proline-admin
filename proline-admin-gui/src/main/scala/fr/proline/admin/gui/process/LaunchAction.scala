@@ -4,16 +4,18 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.future
 import scala.util.Failure
 import scala.util.Success
-import com.typesafe.scalalogging.slf4j.Logging
-import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.component.panel.ButtonsPanel
+
 import scalafx.application.Platform
 import scalafx.scene.Cursor
 import scalafx.scene.Cursor.sfxCursor2jfx
 import scalafx.scene.control.Button
 import scalafx.scene.control.ProgressIndicator
 import scalafx.scene.image.ImageView
-import scalafx.beans.property.BooleanProperty
+
+import com.typesafe.scalalogging.slf4j.Logging
+
+import fr.proline.admin.gui.Main
+
 
 /**
  * Run button's action asynchronously
@@ -64,17 +66,20 @@ object LaunchAction extends Logging {
         }
       }
 
-      case Failure(e) => {
+      case Failure(t) => {
 
-        e match {
+        t match {
           case fxThread: java.lang.IllegalStateException => {
             logger.warn(fxThread.getLocalizedMessage())
             _initialize()
           }
 
           case _ => synchronized {
-            logger.warn(s"Failed to run action [$actionString]", e)
-            println("ERROR - " + e.getMessage)
+            logger.warn(s"Failed to run action [$actionString]", t)
+            
+            System.err.println("ERROR - " + t.getMessage)
+            System.err.println(t.getMessage())
+            
             println(s"[ $actionString : finished with <b>error</b> ]<br>")
             _initialize()
           }

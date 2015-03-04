@@ -4,16 +4,7 @@ import java.io.FileWriter
 
 import scala.io.Source
 
-import com.typesafe.scalalogging.slf4j.Logging
-
-import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.component.panel.ButtonsPanel
-import fr.proline.admin.gui.process.ProlineAdminConnection
-
-import scalafx.Includes.eventClosureWrapperWithParam
-import scalafx.Includes.handle
-import scalafx.Includes.jfxKeyEvent2sfx
-import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
+import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.Cursor
@@ -28,6 +19,11 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
+
+import com.typesafe.scalalogging.slf4j.Logging
+
+import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.process.ProlineAdminConnection
 
 /**
  * Create a modal window to edit Proline configuration's file.
@@ -127,11 +123,12 @@ class ConfFileEditor extends Logging {
         } catch {
           case fxt: java.lang.IllegalStateException => logger.warn(fxt.getLocalizedMessage())
 
-          case e: Throwable =>
+          case t: Throwable =>
             synchronized {
               logger.warn("Can't write in configuration file")
-              logger.warn(e.getLocalizedMessage())
-              println("ERROR - Unable to write in configuration file")
+              logger.warn(t.getMessage())
+              println("ERROR - Unable to write in configuration file:")
+              println(t.getMessage())
             }
           //throw e ?
 

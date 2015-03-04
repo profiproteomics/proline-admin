@@ -1,18 +1,19 @@
 package fr.proline.admin.gui.process
 
-import java.io.File
-import scala.collection.JavaConverters.asScalaBufferConverter
 import com.typesafe.scalalogging.slf4j.Logging
+
+import scala.collection.JavaConverters.asScalaBufferConverter
+
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.context.DatabaseConnectionContext
+import fr.proline.core.orm.uds.ExternalDb
 import fr.proline.core.orm.uds.Project
 import fr.proline.core.orm.uds.UserAccount
 import fr.proline.core.orm.uds.repository.ProjectRepository
-import fr.proline.repository.IDatabaseConnector
-import fr.proline.repository.DriverType
-import fr.proline.core.orm.uds.ExternalDb
 import fr.proline.core.orm.util.DataStoreConnectorFactory
+import fr.proline.repository.IDatabaseConnector
+
 import javax.persistence.EntityManager
 
 /**

@@ -2,6 +2,10 @@ package fr.proline.admin.gui.process
 
 import java.io.File
 
+import scalafx.application.Platform
+import scalafx.scene.Cursor
+import scalafx.scene.Cursor.sfxCursor2jfx
+
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.slf4j.Logging
 
@@ -9,10 +13,6 @@ import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.component.dialog.GetConfirmation
 import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.service.db.SetupProline
-
-import scalafx.application.Platform
-import scalafx.scene.Cursor
-import scalafx.scene.Cursor.sfxCursor2jfx
 
 /**
  * All utilities to modify ProlineAdmin configuration
@@ -42,10 +42,13 @@ object ProlineAdminConnection extends Logging {
 
         case fxt: IllegalStateException => logger.warn(fxt.getLocalizedMessage()) //useful?
 
-        case e: Throwable => {
+        case t: Throwable => {
           synchronized {
-            logger.warn("Can't update Proline configuration :", e)
-            println("ERROR - Can't update Proline configuration : " + e.getMessage())
+            logger.warn("Can't update Proline configuration :", t)
+            
+            System.err.println("ERROR - Can't update Proline configuration :")
+            System.err.println(t.getMessage())            
+            
             println(s"[ $actionString : finished with <b>error</b> ]")
           }
           //throw e // if re-thrown, system stops

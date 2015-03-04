@@ -1,20 +1,7 @@
 package fr.proline.admin.gui.component.dialog
 
-import com.typesafe.scalalogging.slf4j.Logging
-
-import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.Util
-import fr.proline.admin.gui.component.panel.ButtonsPanel
-import fr.proline.admin.gui.process.LaunchAction
-import fr.proline.admin.gui.process.UdsRepository
-import fr.proline.admin.service.user.CreateUser
-
-import scalafx.Includes.eventClosureWrapperWithParam
-import scalafx.Includes.handle
-import scalafx.Includes.jfxKeyEvent2sfx
-import scalafx.Includes.observableList2ObservableBuffer
+import scalafx.Includes._
 import scalafx.application.Platform
-import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.geometry.HPos
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
@@ -32,7 +19,15 @@ import scalafx.scene.layout.GridPane
 import scalafx.scene.layout.Priority
 import scalafx.stage.Modality
 import scalafx.stage.Stage
-import scalafx.stage.StageStyle
+
+import com.typesafe.scalalogging.slf4j.Logging
+
+import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.Util
+import fr.proline.admin.gui.component.panel.ButtonsPanel
+import fr.proline.admin.gui.process.LaunchAction
+import fr.proline.admin.gui.process.UdsRepository
+import fr.proline.admin.service.user.CreateUser
 
 /**
  *  Create and display a modal dialog to create a new user in database with optional password.

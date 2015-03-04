@@ -14,9 +14,7 @@ import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.component.dialog._
 import fr.proline.admin.gui.process.LaunchAction
 import fr.proline.admin.gui.process.UdsRepository
-
 import fr.proline.admin.service.db.SetupProline
-import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.core.orm.util.DataStoreUpgrader
 
 /**
