@@ -188,10 +188,7 @@ object UdsRepository extends Logging {
         }
       }
       
-    } finally {
-      udsDbContext.close()
     }
-
   }
 
   /**
