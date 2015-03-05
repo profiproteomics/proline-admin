@@ -95,7 +95,7 @@ object ButtonsPanel extends Logging {
     onAction = handle {
 
       /** Get confirmation  first */
-      val confirmed = GetConfirmation("Are you sure you want to upgrade Proline databases ?")
+      val confirmed = GetConfirmation("Are you sure you want to upgrade Proline databases ?\n(This process may take hours.)")
 
       /** Upgrade databases if confirmed */
       if (confirmed) {
