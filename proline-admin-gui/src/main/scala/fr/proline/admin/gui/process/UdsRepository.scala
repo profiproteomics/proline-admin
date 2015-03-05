@@ -134,10 +134,10 @@ object UdsRepository extends Logging {
 
         false
       }
-    } finally {
+    } /*finally {
       if( udsDbCtx != null ) udsDbCtx.close()
       //if (udsDbConnector != null && udsDbConnector.isClosed() == false) udsDbConnector.close()
-    }
+    } */
 
   }
 
@@ -187,7 +187,6 @@ object UdsRepository extends Logging {
           throw e
         }
       }
-      
     }
   }
 
@@ -221,10 +220,10 @@ object UdsRepository extends Logging {
         throw t
       }
 
-    } finally {
+    } /*finally {
       //udsEM.close()
       if (udsDbContext != null) udsDbContext.close()
-    }
+    }*/
 
     projectMap
   }
