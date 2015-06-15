@@ -17,8 +17,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <core.version>0.3.0</core.version> <!-- Snapshot Trunk version -->
-    <admin.version>0.1.0</admin.version> <!-- Snapshot Trunk version -->
+    <core.version>0.4.0-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
+    <admin.version>0.2.0-SNAPSHOT</admin.version> <!-- Snapshot Trunk version -->
     <version.path>${basedir}/src/main/scala/fr/proline/admin/gui</version.path>
   </properties>
 	<scm>
@@ -86,7 +86,7 @@
     <dependency>
       <groupId>fr.proline.util</groupId>
       <artifactId>ProFI-Commons-Scala</artifactId>
-      <version>0.0.9</version> <!-- Snapshot Trunk version -->
+      <version>0.1.0</version> <!-- Snapshot Trunk version -->
     </dependency>
 
     <dependency>
