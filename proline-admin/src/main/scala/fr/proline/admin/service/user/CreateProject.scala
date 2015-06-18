@@ -51,7 +51,7 @@ class CreateProject(
       udsProject.setName(projectName)
       udsProject.setDescription(projectDescription)
       udsProject.setCreationTimestamp(fr.profi.util.sql.getTimeAsSQLTimestamp)
-      udsProject.setOwner(udsUser)
+      //udsProject.setOwner(udsUser)
 
       udsEM.persist(udsProject)
 
