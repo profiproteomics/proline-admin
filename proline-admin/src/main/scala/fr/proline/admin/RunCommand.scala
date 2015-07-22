@@ -166,6 +166,9 @@ object RunCommand extends App with Logging {
             logger.info("Upgrading all Proline Databases...")
             
             if (DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory)) {
+              
+              //TODO: update external_dbs.version
+              
               logger.info("Databases successfully upgraded !")
             } else {
               logger.error("Databases upgrade failed !")

@@ -3,7 +3,6 @@ package fr.proline.admin.helper
 import java.sql.Connection
 import java.sql.DriverManager
 import java.util.Collection
-
 import org.dbunit.DataSourceDatabaseTester
 import org.dbunit.database.DatabaseConfig
 import org.dbunit.database.IDatabaseConnection
@@ -16,10 +15,8 @@ import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory
 import org.dbunit.operation.DatabaseOperation
 import org.postgresql.Driver
 import org.postgresql.util.PSQLException
-
 import com.typesafe.scalalogging.slf4j.Logger
 import com.typesafe.scalalogging.slf4j.Logging
-
 import fr.profi.util.StringUtils
 import fr.profi.util.dbunit._
 import fr.profi.util.primitives.castToTimestamp
@@ -40,9 +37,9 @@ import fr.proline.repository.DatabaseUpgrader
 import fr.proline.repository.DriverType
 import fr.proline.repository.IDatabaseConnector
 import fr.proline.repository.ProlineDatabaseType
-
 import javax.persistence.EntityManager
 import javax.persistence.EntityTransaction
+import scala.util.{Try, Success, Failure }
 
 /**
  * @author David Bouyssie
@@ -443,6 +440,26 @@ package object sql extends Logging {
     stmt.close()
     pgDbConn.close()
   }
+
+
+  def checkPgConnection(host: String, port: Int, user: String, password: String): Try[Connection] = Try {
+
+    var connection: Connection = null
+
+    try {
+      connection = this._getPgConnectionToTemplate1(host, port, user, password)
+
+    } catch {
+      case t: Throwable => throw t
+    
+    } finally {
+      if (connection != null)
+        connection.close()
+    }
+
+    connection
+  }
+  
   
   private def _createPgConnectionTemplate(dbConfig: DatabaseSetupConfig): Connection = {
 
@@ -450,17 +467,25 @@ package object sql extends Logging {
     val host = connConfig.getString("host")
     val port = connConfig.getString("port")
     require(StringUtils.isNotEmpty(port), "missing port value")
-    val portAsInteger = port.toInt
+    
+    _getPgConnectionToTemplate1(host, port.toInt, connConfig.getString("user"), connConfig.getString("password") )
+  }
+  
+  private def _getPgConnectionToTemplate1(host: String, port: Int, user: String, password: String): Connection = {
+    
+    require(host != null, "DB host must not be null")
+    require(user != null, "DB user name must not be null")
+    require(password != null, "DB password must not be null")
 
-    val templateURL = if (portAsInteger >= 0 && portAsInteger <= 65535)
+    val templateURL = if (port >= 0 && port <= 65535)
       s"jdbc:postgresql://${host}:${port}/template1"
     else
       s"jdbc:postgresql://${host}/template1"
 
     DriverManager.getConnection(
       templateURL,
-      connConfig.getString("user"),
-      connConfig.getString("password")
+      user,
+      password
     )
   }
 

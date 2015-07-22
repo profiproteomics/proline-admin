@@ -8,7 +8,7 @@ import fr.proline.admin.helper.sql._
 import fr.proline.admin.service.db.setup._
 import fr.proline.core.orm.uds.{ AdminInformation => UdsAdminInfos }
 import fr.proline.core.orm.util.DataStoreConnectorFactory
-import fr.proline.repository.{DriverType, ProlineDatabaseType}
+import fr.proline.repository.{IDatabaseConnector, DriverType, ProlineDatabaseType}
 import fr.profi.util.ThreadLogger
 import fr.profi.util.resources._
 import fr.profi.util.sql.getTimeAsSQLTimestamp
@@ -17,7 +17,15 @@ import fr.profi.util.sql.getTimeAsSQLTimestamp
  * @author David Bouyssie
  *
  */
-class SetupProline(prolineConfig: ProlineSetupConfig) extends Logging {
+class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseConnector) extends Logging {
+  
+  private var localConnector = false
+  
+  def this(prolineConfig: ProlineSetupConfig) = {
+    this(prolineConfig, prolineConfig.udsDBConfig.toNewConnector)
+    
+    localConnector = true
+  }
 
   def run() {
 
@@ -26,9 +34,6 @@ class SetupProline(prolineConfig: ProlineSetupConfig) extends Logging {
     if (!currentThread.getUncaughtExceptionHandler.isInstanceOf[ThreadLogger]) {
       currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.underlying.getName))
     }
-    
-    // Create a new RAW UDSdb connector
-    val udsDbConnector = prolineConfig.udsDBConfig.toNewConnector
     
     try {
       // Set Up the UDSdb
@@ -48,8 +53,10 @@ class SetupProline(prolineConfig: ProlineSetupConfig) extends Logging {
       })
       
     } finally {
-      // Release the connector
-      udsDbConnector.close()
+      if( localConnector ) {
+        // Release the connector
+        udsDbConnector.close()
+      }
     }
 
     // Set Up the PSdb
@@ -131,10 +138,10 @@ object SetupProline {
     }
   }
 
-  // Parse config if it not already done
+  // Parse config if it's not already done
   // TODO: rename to initialConfig
   lazy val config = getUpdatedConfig()
-  
+
   def getUpdatedConfig() = _parseProlineSetupConfig(getConfigParams)
 
   private def _parseProlineSetupConfig(config: Config): ProlineSetupConfig = {
@@ -143,6 +150,11 @@ object SetupProline {
     val prolineConfig = config.getConfig("proline-config")
     val dataDirStr = prolineConfig.getString("data-directory")
     val dataDir = new File(dataDirStr)
+
+    // Optional reference to server configuration file
+    val serverConfigFileStr = config.getString("server-config-file")
+    val serverConfigFile = new File(serverConfigFileStr)
+    val serverConfigFileOpt = if (serverConfigFile.exists()) Some(serverConfigFile) else None
 
     // Load shared settings
     val authConfig = config.getConfig("auth-config")
@@ -184,6 +196,7 @@ object SetupProline {
       psDBConfig = dbSetupConfigByType("ps"),
       msiDBConfig = dbSetupConfigByType("msi"),
       lcmsDBConfig = dbSetupConfigByType("lcms")
+      //prolineServerConfigFile= serverConfigFileOpt
     )
 
   }
