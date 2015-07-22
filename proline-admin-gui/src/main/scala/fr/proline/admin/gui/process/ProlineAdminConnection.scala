@@ -1,13 +1,14 @@
 package fr.proline.admin.gui.process
 
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
+import com.typesafe.scalalogging.slf4j.Logging
+
 import java.io.File
 
 import scalafx.application.Platform
 import scalafx.scene.Cursor
 import scalafx.scene.Cursor.sfxCursor2jfx
-
-import com.typesafe.config.ConfigFactory
-import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.component.dialog.GetConfirmation
@@ -20,9 +21,27 @@ import fr.proline.admin.service.db.SetupProline
 object ProlineAdminConnection extends Logging {
 
   /**
+   * Test if data directory in provided config exists
+   **/
+  def dataDirExists(config: Config): (Boolean, String) = { //exists, path
+
+    try {
+      val dataDir = config.getConfig("proline-config").getString("data-directory")
+      (new File(dataDir).exists(), dataDir)
+
+    } catch {
+      case t: Throwable => {
+        logger.warn("Can't find data-directory in config: ", t)
+        (false, "")
+      }
+    }
+  }
+
+  /**
    * Udapte Proline Admin config (processing + UI management)
-   */
-  def loadProlineConf(verbose: Boolean = true) = {
+   **/
+  def loadProlineConf(verbose: Boolean = true): Boolean = { //return isConfigValid
+    
     //BLOCKING! otherwise update config before (conf file changes || user's choice) (are||is) effective
     //FIXME: freezing
 
@@ -30,32 +49,41 @@ object ProlineAdminConnection extends Logging {
 
     synchronized {
       Main.stage.scene().setCursor(Cursor.WAIT)
-      if (verbose) println("<br>" + actionString)
+      println("<br>" + actionString)
 
       try {
         this._setNewProlineConfig()
 
         logger.info(s"Action '$actionString' finished with success.")
-        if (verbose)  println(s"""[ $actionString : <b>success</b> ]""")
+        if (verbose) println(s"""[ $actionString : <b>success</b> ]""")
+        
+        true //isConfigValid
 
       } catch {
 
-        case fxt: IllegalStateException => logger.warn(fxt.getLocalizedMessage()) //useful?
+        case fxt: IllegalStateException => {
+          if (verbose) logger.warn(fxt.getLocalizedMessage()) //useful?
+          false //isConfigValid
+        }
 
         case t: Throwable => {
           synchronized {
-            logger.warn("Can't update Proline configuration :", t)
             
-            System.err.println("ERROR - Can't update Proline configuration :")
-            System.err.println(t.getMessage())            
+            logger.warn("Can't load Proline configuration: ", t)
+
+            // Note: Logs are redirected => we thus print the error to be sure it is displayed in the console
+            System.err.println("ERROR - Can't load Proline configuration :")
+            if (verbose) System.err.println(t.getMessage())
             
             println(s"[ $actionString : finished with <b>error</b> ]")
+            
+            false //isConfigValid
           }
-          //throw e // if re-thrown, system stops
+          // if re-thrown, system stops
         }
 
       } finally {
-        ButtonsPanel.computeButtonsAvailability()
+        ButtonsPanel.computeButtonsAvailability(verbose)
         Main.stage.scene().setCursor(Cursor.DEFAULT)
       }
     }
@@ -67,7 +95,7 @@ object ProlineAdminConnection extends Logging {
   private def _setNewProlineConfig() {
 
     /** Reload CONF file */
-    val newConfigFile = ConfigFactory.parseFile(new File(Main.confPath))
+    val newConfigFile = ConfigFactory.parseFile(new File(Main.adminConfPath))
 
     /** Update displayed window, and Proline configuration if data directory already exists */
     val dataDir = newConfigFile.getConfig("proline-config").getString("data-directory")
@@ -95,7 +123,7 @@ object ProlineAdminConnection extends Logging {
 
         } else {
           GetConfirmation(
-            text = "The databases directory you specified does not exist. Do you want to create it?\n(This involves a new installation of Proline.)",
+            text = "The databases directory you specified doesn't exist. Do you want to create it?\n(This involves a new installation of Proline.)",
             title = s"Unknown directory : $dataDir",
             yesText = "Yes",
             cancelText = "No"

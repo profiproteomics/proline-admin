@@ -1,5 +1,7 @@
 package fr.proline.admin.gui.component.dialog
 
+import com.typesafe.scalalogging.slf4j.Logging
+
 import scalafx.Includes._
 import scalafx.application.Platform
 import scalafx.geometry.HPos
@@ -11,7 +13,6 @@ import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
 import scalafx.scene.control.PasswordField
 import scalafx.scene.control.TextField
-import scalafx.scene.input.KeyCode
 import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.ColumnConstraints
 import scalafx.scene.layout.ColumnConstraints.sfxColumnConstraints2jfx
@@ -20,13 +21,12 @@ import scalafx.scene.layout.Priority
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 
-import com.typesafe.scalalogging.slf4j.Logging
-
+import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.gui.process.LaunchAction
 import fr.proline.admin.gui.process.UdsRepository
+import fr.proline.admin.gui.util._
 import fr.proline.admin.service.user.CreateUser
 
 /**
@@ -43,15 +43,15 @@ class NewUserDialog extends Logging {
     resizable = false
     initModality(Modality.WINDOW_MODAL)
     initOwner(Main.stage)
-    this.x = Util.getStartX()
-    this.y = Util.getStartY()
+    this.x = FxUtils.getStartX()
+    this.y = FxUtils.getStartY()
 
     //    newUserDialog.onShowing = handle { ButtonsPanel.disableAll() }
     //    newUserDialog.onHiding = handle { ButtonsPanel.someActionRunning.set(false) }
 
     scene = new Scene {
 
-      onKeyPressed = (ke: KeyEvent) => { if (ke.code == KeyCode.ESCAPE) newUserDialog.close() }
+      onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(newUserDialog, ke)}
 
       /**
        * ********** *
@@ -76,7 +76,7 @@ class NewUserDialog extends Logging {
       /** See all users */
       val seeAllUsers = new Hyperlink("See all users...") {
         style = "-fx-color:#66CCFF;"
-        alignmentInParent = Pos.BASELINE_RIGHT
+        alignmentInParent = Pos.BaselineRight
 
         //TODO: ne dotted border when clicked
 
@@ -85,7 +85,7 @@ class NewUserDialog extends Logging {
           Platform.runLater(println(s"INFO - Loaded ${users.length} user(s) from UDSdb."))
 
           val text = if (users.isEmpty) "No user found." else users.map(_.getLogin()).sorted.mkString("\n")
-          new PopupWindow(
+          ShowPopupWindow(
             wTitle = "All users",
             wText = text,
             wParent = Option(Main.stage),
@@ -97,28 +97,22 @@ class NewUserDialog extends Logging {
       /** Password */
 
       val pwLabel = new Label("Password : ")
-      val pwField = new PasswordField
-      //      {
-      //        styleClass += ("textFields")
-      //      }
+      val pwField = new PasswordField // { styleClass += ("textFields") }
 
       val pwConfirmLabel = new Label("Confirm password : ")
-      val pwConfirmField = new PasswordField
-      //      {
-      //        styleClass += ("textFields")
-      //      }
+      val pwConfirmField = new PasswordField // { styleClass += ("textFields") }
 
       val pwWarningLabel = new Label {
-        //        styleClass += ("warningLabels")
+        // styleClass += ("warningLabels")
         style = "-fx-text-fill: red;  -fx-font-style: italic;"
         minHeight = 15
       }
 
       /** Action button */
       val okButton = new Button("Register") {
-        //        styleClass += ("minorButtons")
-        alignment = Pos.BASELINE_CENTER
-        hgrow = Priority.ALWAYS
+        // styleClass += ("minorButtons")
+        alignment = Pos.BaselineCenter
+        hgrow = Priority.Always
       }
 
       /**
@@ -126,16 +120,20 @@ class NewUserDialog extends Logging {
        * LAYOUT *
        * ****** *
        */
-      //      stylesheets = List(Main.CSS)
-
+      //stylesheets = List(Main.CSS)
       root = new GridPane {
-        hgrow = Priority.ALWAYS
+        hgrow = Priority.Always
         vgap = 5
         hgap = 10
         padding = Insets(10)
         prefWidth = 500
 
-        val s = Seq(
+        columnConstraints ++= Seq(
+          new ColumnConstraints { percentWidth = 25 },
+          new ColumnConstraints { percentWidth = 75 }
+        )
+
+        content = ScalaFxUtils.getFormattedGridContent5(Seq(
           //col, row, colSpan, rowSpan
           (loginLabel, 0, 0, 1, 1),
           (loginField, 1, 0, 1, 1),
@@ -146,24 +144,18 @@ class NewUserDialog extends Logging {
           (pwConfirmLabel, 0, 4, 1, 1),
           (pwConfirmField, 1, 4, 1, 1),
           (pwWarningLabel, 1, 5, 2, 1),
-          (Util.newVSpacer, 0, 6, 2, 1),
+          (ScalaFxUtils.newVSpacer(), 0, 6, 2, 1),
           (okButton, 1, 7, 1, 1)
-        )
-        Util.setGridContent5(s, this)
-
-        columnConstraints ++= Seq(
-          new ColumnConstraints { percentWidth = 25 },
-          new ColumnConstraints { percentWidth = 75 }
-        )
+        ))
       }
 
       Seq(
         loginLabel,
         pwLabel,
         pwConfirmLabel
-      ).foreach(GridPane.setHalignment(_, HPos.RIGHT))
+      ).foreach(GridPane.setHalignment(_, HPos.Right))
 
-      GridPane.setHalignment(okButton, HPos.CENTER)
+      GridPane.setHalignment(okButton, HPos.Center)
 
       /**
        * ****** *
@@ -206,7 +198,7 @@ class NewUserDialog extends Logging {
           logger.debug("Create user")
           LaunchAction(
             actionButton = ButtonsPanel.createUserButton,
-            actionString = Util.mkCmd(cmd),
+            actionString = Utils.mkCmd(cmd),
             action = () => {
 
               val udsDbContext = UdsRepository.getUdsDbContext()

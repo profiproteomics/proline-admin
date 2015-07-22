@@ -14,11 +14,9 @@ import scalafx.stage.Stage
 
 import com.typesafe.scalalogging.slf4j.Logging
 
-import fr.proline.admin.gui.component.dialog.ConfFileChooser
+import fr.proline.admin.gui.component.dialog.ProlineConfigFileChooser
 import fr.proline.admin.gui.component.dialog.ConfirmationDialog
-import fr.proline.admin.gui.component.panel.ButtonsPanel
-import fr.proline.admin.gui.component.panel.ConsolePanel
-import fr.proline.admin.gui.component.panel.MenuPanel
+import fr.proline.admin.gui.component.panel._
 import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.UdsRepository
 
@@ -33,14 +31,20 @@ object Main extends Logging {
   //  /** CSS */
   //  val CSS = this.getClass().getResource("/ProlineAdminCSS.css").toExternalForm()
 
-  /** PAdmin configuration file */
+  /** Configuration files and dirs */
   var targetPath: String = _
-  var confPath: String = _
-  var firstCallToDataDir = true 
+  var adminConfPath: String = _
+  var serverConfPath: String = _
+  var postgresqlDataDir: String = _
+  
+  var firstCallToDataDir = true
+
+  /** Utility **/
+  def serverConfPathIsEmpty(): Boolean = serverConfPath == null || serverConfPath.isEmpty()
   
   /** Panels */
   val menuPanel = MenuPanel()
-  //    val menuPanel = MenuPanel2()
+  //val menuPanel = MenuPanel2()
   var consolePanel: StackPane = _
   var buttonsPanel: VBox = _
   
@@ -50,7 +54,7 @@ object Main extends Logging {
     content = List(
       menuPanel,
       new HBox {
-        vgrow = Priority.ALWAYS
+        vgrow = Priority.Always
         padding = Insets(10)
         spacing = 20
         content = List(buttonsPanel, consolePanel)
@@ -98,8 +102,8 @@ class Main extends Application {
 
     // Usual case : default conf file exists
     if (new File(_appConfPath).exists()) {
-      Main.confPath = _appConfPath
-      ProlineAdminConnection.loadProlineConf()
+      Main.adminConfPath = _appConfPath
+      ProlineAdminConnection.loadProlineConf(verbose = false)
 
       // Choose one if not
     } else {
@@ -108,7 +112,7 @@ class Main extends Application {
       while (isFileChosen == false) {
 
         try {
-          ConfFileChooser.showIn(new Stage) //auto-updates proline conf  
+          ProlineConfigFileChooser.showIn(new Stage) //auto-updates proline conf  
           isFileChosen = true
 
         } catch {
@@ -118,7 +122,7 @@ class Main extends Application {
 
             //TODO: use ChoiceDialog
             val exitOrContinueDialog = new ConfirmationDialog(
-              "Configuration file required to continue",
+              "Configuration file is required to go further",
               "You must specify Proline's configuration file to run Proline Admin.\nDo you want to exit Proline Admin?"
             )
             exitOrContinueDialog.setYesButtonText("Exit Proline Admin")

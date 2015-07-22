@@ -23,8 +23,8 @@ object ConsolePanel {
   /** Webview : console displayer */
   val consoleDisp = new WebView {
     //    margin = Insets(10)
-    hgrow = Priority.ALWAYS
-    vgrow = Priority.ALWAYS
+    hgrow = Priority.Always
+    vgrow = Priority.Always
     //TODO: wrap text, forbid horizontal scrollbar
     //val scrolls = consoleDisp.lookupAll(".scroll-bar")
   }
@@ -34,8 +34,8 @@ object ConsolePanel {
     content = consoleDisp
     margin = Insets(10)
     style = "-fx-border-color: #C0C0C0; -fx-border-width: 1; -fx-border-radius:2;"
-    hgrow = Priority.ALWAYS
-    vgrow = Priority.ALWAYS
+    hgrow = Priority.Always
+    vgrow = Priority.Always
   }
 
   /**
@@ -93,7 +93,7 @@ class Console(
   private def _formatText(strToFormat: String): String = {
 
     // Utility
-    def _textMatches(test: String): Boolean = strToFormat.toUpperCase() matches s"""(?s).*${test.toUpperCase()}.*"""
+    def _textMatches(test: String): Boolean = strToFormat matches s"""(?s)(?i).*$test.*"""
 
     /** Define text color according to text content and/or origin (stdErr, stdOut) */
     val color = {

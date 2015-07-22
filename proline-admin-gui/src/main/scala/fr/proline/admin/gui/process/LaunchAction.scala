@@ -1,5 +1,7 @@
 package fr.proline.admin.gui.process //TODO: rename/re-organize package
 
+import com.typesafe.scalalogging.slf4j.Logging
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.future
 import scala.util.Failure
@@ -11,8 +13,6 @@ import scalafx.scene.Cursor.sfxCursor2jfx
 import scalafx.scene.control.Button
 import scalafx.scene.control.ProgressIndicator
 import scalafx.scene.image.ImageView
-
-import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.gui.Main
 
@@ -93,7 +93,7 @@ object LaunchAction extends Logging {
         actionButton.graphic = new ImageView()
         Main.stage.scene().setCursor(Cursor.DEFAULT)
       }
-      //      ButtonsPanel.computeButtonsAvailability()
+      //ButtonsPanel.computeButtonsAvailability()
       ProlineAdminConnection.loadProlineConf(verbose = false) //workaround => correctly compute buttons' availability for SQLite (FIXME)
 
     }

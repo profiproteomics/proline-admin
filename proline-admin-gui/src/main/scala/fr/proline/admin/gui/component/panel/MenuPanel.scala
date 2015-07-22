@@ -7,8 +7,12 @@ import scalafx.scene.control.MenuItem
 import scalafx.scene.layout.Priority
 
 import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.component.dialog.ConfFileChooser
+import fr.proline.admin.gui.component.dialog.ProlineConfigForm
+import fr.proline.admin.gui.component.dialog.SelectPostgresDataDirDialog
+import fr.proline.admin.gui.component.dialog.SelectProlineConfigFilesDialog
+import fr.proline.admin.gui.process.DatabaseConnection
 import fr.proline.admin.gui.process.ProlineAdminConnection
+import fr.proline.admin.gui.process.config.AdminConfigFile
 
 /**
  *  Create the menu bar and its items.
@@ -19,7 +23,7 @@ object MenuPanel {
   def apply(): MenuBar = {
     new MenuBar {
       //id = "menuBar"
-      hgrow = Priority.ALWAYS
+      hgrow = Priority.Always
 
       menus = List(
 
@@ -28,9 +32,31 @@ object MenuPanel {
 
           items = List(
 
-            /** Change application file selection */
-            new MenuItem("Select configuration file") {
-              onAction = handle { ConfFileChooser.showIn(Main.stage) }
+            /* Change Proline configuration files selection (ProlineAdmine, Proline server = Core) */
+            new MenuItem("Select configuration files") {
+              onAction = handle {
+                
+                /* Open dialog for file selection */
+                SelectProlineConfigFilesDialog()
+
+                /* test if config is valid, redirect to setup if not */
+                val adminConfigOpt = new AdminConfigFile(Main.adminConfPath).read()
+                require(adminConfigOpt.isDefined, "admin config is undefined")
+                val adminConfig = adminConfigOpt.get
+
+                var isConfigValid = DatabaseConnection.testDbConnection(adminConfig, showPopup = false)
+                if (isConfigValid) isConfigValid = ProlineAdminConnection.loadProlineConf(verbose = false)
+                if (isConfigValid == false) {
+                  new ProlineConfigForm().showAndWait()
+                }
+               }
+            },
+
+            /* Change PostgreSQL data dir */
+            new MenuItem("Select PostgreSQL data directory") {
+              onAction = handle {
+                SelectPostgresDataDirDialog()
+              }
             },
 
 
@@ -40,7 +66,7 @@ object MenuPanel {
                 println("Refresh (DEBUG)")
                 ProlineAdminConnection.loadProlineConf()
 
-                //                ButtonsPanel.computeButtonsAvailability()
+                //ButtonsPanel.computeButtonsAvailability()
                 println("Refreshed")
               }
             },

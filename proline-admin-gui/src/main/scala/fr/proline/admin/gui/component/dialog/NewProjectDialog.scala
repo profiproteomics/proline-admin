@@ -1,5 +1,7 @@
 package fr.proline.admin.gui.component.dialog
 
+import com.typesafe.scalalogging.slf4j.Logging
+
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
 import scalafx.geometry.HPos
@@ -12,7 +14,6 @@ import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextArea
 import scalafx.scene.control.TextField
-import scalafx.scene.input.KeyCode
 import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.ColumnConstraints
 import scalafx.scene.layout.ColumnConstraints.sfxColumnConstraints2jfx
@@ -21,13 +22,12 @@ import scalafx.scene.layout.Priority
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 
-import com.typesafe.scalalogging.slf4j.Logging
-
+import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.Util
 import fr.proline.admin.gui.component.panel.ButtonsPanel
 import fr.proline.admin.gui.process.LaunchAction
 import fr.proline.admin.gui.process.UdsRepository
+import fr.proline.admin.gui.util._
 import fr.proline.admin.service.db.CreateProjectDBs
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.user.CreateProject
@@ -51,8 +51,8 @@ class NewProjectDialog extends Logging {
     resizable = false
     initModality(Modality.WINDOW_MODAL)
     initOwner(Main.stage)
-    this.x = Util.getStartX()
-    this.y = Util.getStartY()
+    this.x = FxUtils.getStartX()
+    this.y = FxUtils.getStartY()
 
     //    newProjectDialog.onShowing = handle { ButtonsPanel.someActionRunning.set(true) }
     //    newProjectDialog.onHiding = handle { ButtonsPanel.someActionRunning.set(false) }
@@ -61,8 +61,9 @@ class NewProjectDialog extends Logging {
 
     scene = new Scene {
 
-      onKeyPressed = (ke: KeyEvent) => { if (ke.code == KeyCode.ESCAPE) newProjectDialog.close() }
+      onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(newProjectDialog, ke) }
 
+      
       /**
        * ********** *
        * COMPONENTS *
@@ -116,7 +117,7 @@ class NewProjectDialog extends Logging {
 
           val userAccount = ownerComboBox.selectionModel().getSelectedItem()
           if (userAccount == null) {
-            new PopupWindow("No owner selected", "You must select an owner first.", Option(Main.stage))
+            ShowPopupWindow("No owner selected", "You must select an owner first.", Option(Main.stage))
             //TODO: print all 
 
           } else {
@@ -132,7 +133,7 @@ class NewProjectDialog extends Logging {
               }
             }
 
-            new PopupWindow(
+            ShowPopupWindow(
               wTitle = s"Projects belonging to user '${userAccount.getLogin}'",
               wText = text,
               wParent = Option(Main.stage),
@@ -171,8 +172,8 @@ class NewProjectDialog extends Logging {
 
       val okButton = new Button("Register") {
         //        styleClass += ("minorButtons")
-        alignment = Pos.BASELINE_CENTER
-        hgrow = Priority.ALWAYS
+        alignment = Pos.BaselineCenter
+        hgrow = Priority.Always
       }
 
       /**
@@ -183,7 +184,7 @@ class NewProjectDialog extends Logging {
       //      stylesheets = List(Main.CSS)
 
       root = new GridPane {
-        hgrow = Priority.ALWAYS
+        hgrow = Priority.Always
         vgap = 10
         hgap = 10
         padding = Insets(20)
@@ -193,8 +194,8 @@ class NewProjectDialog extends Logging {
           new ColumnConstraints { percentWidth = 20 },
           new ColumnConstraints { percentWidth = 80 }
         )
-
-        val s = Seq(
+        
+        content = ScalaFxUtils.getFormattedGridContent5(Seq(
           (ownerLabel, 0, 0, 1, 1),
           (ownerComboBox, 1, 0, 1, 1),
           (ownerWarningLabel, 1, 1, 1, 1),
@@ -204,10 +205,9 @@ class NewProjectDialog extends Logging {
           (nameWarningLabel, 1, 3, 2, 1),
           (descLabel, 0, 4, 1, 1),
           (descField, 1, 4, 1, 1),
-          (Util.newVSpacer, 0, 5, 2, 1),
+          (ScalaFxUtils.newVSpacer(), 0, 5, 2, 1),
           (okButton, 0, 6, 2, 1)
-        )
-        Util.setGridContent5(s, this)
+        ))
       }
 
       Seq(
@@ -215,9 +215,9 @@ class NewProjectDialog extends Logging {
         seeUserProjects,
         nameLabel,
         descLabel
-      ).foreach(GridPane.setHalignment(_, HPos.RIGHT))
+      ).foreach(GridPane.setHalignment(_, HPos.Right))
 
-      GridPane.setHalignment(okButton, HPos.CENTER)
+      GridPane.setHalignment(okButton, HPos.Center)
 
       /**
        * ****** *
@@ -266,7 +266,7 @@ class NewProjectDialog extends Logging {
           logger.debug("Create project")
           LaunchAction(
             actionButton = ButtonsPanel.createProjectButton,
-            actionString = Util.mkCmd(cmd),
+            actionString = Utils.mkCmd(cmd),
             action = () => {
 
               val udsDbContext = UdsRepository.getUdsDbContext()

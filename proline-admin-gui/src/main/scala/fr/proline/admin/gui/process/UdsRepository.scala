@@ -2,7 +2,7 @@ package fr.proline.admin.gui.process
 
 import com.typesafe.scalalogging.slf4j.Logging
 
-import scala.collection.JavaConverters.asScalaBufferConverter
+import scala.collection.JavaConverters._
 
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
@@ -64,7 +64,7 @@ object UdsRepository extends Logging {
   /**
    * Get UDS database CONNECTOR
    */
-  private def _getUdsDbConnector(): IDatabaseConnector = {
+  def getUdsDbConnector(): IDatabaseConnector = {
 
     if (udsDbConnector != null) udsDbConnector
     else {
@@ -80,7 +80,7 @@ object UdsRepository extends Logging {
     if (udsDbContext != null) {
       udsDbContext
     } else {
-      udsDbContext = new DatabaseConnectionContext(_getUdsDbConnector)
+      udsDbContext = new DatabaseConnectionContext(getUdsDbConnector)
       udsDbContext
     }
   }
@@ -98,7 +98,7 @@ object UdsRepository extends Logging {
   def getDataStoreConnFactory(): DataStoreConnectorFactory = {
     val connectorFactory = DataStoreConnectorFactory.getInstance()
     if (!connectorFactory.isInitialized) {
-      connectorFactory.initialize(this._getUdsDbConnector())
+      connectorFactory.initialize(this.getUdsDbConnector())
     }
 
     connectorFactory
@@ -107,9 +107,9 @@ object UdsRepository extends Logging {
   /**
    *  Test connection with database
    */
-  def isUdsDbReachable(): Boolean = {
+  def isUdsDbReachable(verbose: Boolean = true): Boolean = {
 
-    val udsDbConnector = _getUdsDbConnector()
+    val udsDbConnector = getUdsDbConnector()
 
     var udsDbCtx: DatabaseConnectionContext = null //especially created for SQLite test, needs to be closed in this method
     
@@ -123,14 +123,16 @@ object UdsRepository extends Logging {
       udsDbCtx.getEntityManager().find(classOf[ExternalDb], 1L)
 
       logger.debug("Proline is already set up !")
+      
       true
 
     } catch {
       case t: Throwable => {
-        logger.warn("Proline is not set up : ", t)
 
         System.err.println("WARN - Proline is not set up !")
-        System.err.println(t.getMessage())
+        if (verbose) System.err.println(t.getMessage())
+        
+        logger.trace("Proline is not set up : ", t)
 
         false
       }
