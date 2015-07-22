@@ -18,7 +18,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <core.version>0.4.0</core.version> <!-- Snapshot Trunk version -->
-    <admin.version>0.2.0</admin.version> <!-- Snapshot Trunk version -->
+    <admin.version>0.3.0-SNAPSHOT</admin.version> <!-- Snapshot Trunk version -->
     <version.path>${basedir}/src/main/scala/fr/proline/admin/gui</version.path>
   </properties>
 	<scm>
@@ -38,7 +38,7 @@
     <dependency>
       <groupId>org.scalafx</groupId>
       <artifactId>scalafx_2.10</artifactId>
-      <version>8.0.0-R4</version><!-- for JavaFX 8 -->
+      <version>8.0.20-R6</version><!-- for JavaFX 8 -->
       <!-- <version>1.0.0-R8</version> for JavaFX 2.2 -->
     </dependency>
 
