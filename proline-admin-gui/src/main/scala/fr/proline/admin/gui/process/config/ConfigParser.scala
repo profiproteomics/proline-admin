@@ -40,15 +40,15 @@ case class AdminConfig (
 )
 
 /** Parse and write ProlineAdmin configuration file */
-class AdminConfigFile(adminConfigPath: String) extends Logging {
+class AdminConfigFile(val path: String) extends Logging {
   //TODO: object?
 
   require(
-    adminConfigPath != null && adminConfigPath.isEmpty() == false,
+    path != null && path.isEmpty() == false,
     "Configuration file path must not be null nor empty."
   )
 
-  private val adminConfigFile = new File(adminConfigPath)
+  private val adminConfigFile = new File(path)
 
   /** Get Config object from file **/
   def getTypesafeConfig(): Config = ConfigFactory.parseFile(adminConfigFile)
@@ -61,7 +61,7 @@ class AdminConfigFile(adminConfigPath: String) extends Logging {
 
       Some(
         AdminConfig(
-          filePath = adminConfigPath,
+          filePath = path,
           serverConfigFilePath = config.getStringOpt("server-config-file"),
           driverType = config.getStringOpt("proline-config.driver-type").map(dt => DriverType.valueOf(dt.toUpperCase())),
           dataDir = config.getStringOpt("proline-config.data-directory"),
@@ -227,14 +227,14 @@ case class ServerConfig(
 )
 
 /** Parse and write Proline server configuration file */
-class ServerConfigFile(serverConfigPath: String) extends Logging {
+class ServerConfigFile(val path: String) extends Logging {
 
   require(
-    serverConfigPath != null && serverConfigPath.isEmpty() == false,
+    path != null && path.isEmpty() == false,
     "Configuration file path must not be null nor empty."
   )
 
-  val serverConfigFile = new File(serverConfigPath)
+  val serverConfigFile = new File(path)
 
   /** Read config file **/
   def read(): Option[ServerConfig] = {
@@ -257,7 +257,7 @@ class ServerConfigFile(serverConfigPath: String) extends Logging {
       /* Return AdminConfig */
       Some(
         ServerConfig(
-          filePath = serverConfigPath,
+          filePath = path,
           rawFilesMountPoints = rawFilesMp,
           mzdbFilesMountPoints = mzdbFilesMp,
           resultFilesMountPoints = resultFilesMp

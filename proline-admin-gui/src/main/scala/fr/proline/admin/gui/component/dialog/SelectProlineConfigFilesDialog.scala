@@ -21,6 +21,7 @@ import scalafx.stage.Modality
 import scalafx.stage.Stage
 
 import fr.profi.util.scala.ScalaUtils
+import fr.profi.util.scala.ScalaUtils.isEmpty
 import fr.profi.util.scalafx.BoldLabel
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
@@ -38,6 +39,8 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
 
   private var serverConfigPathInAdminConfig: String = _
   private var adminConfigFile: AdminConfigFile = _
+  if (isEmpty(Main.adminConfPath) == false ) adminConfigFile = new AdminConfigFile(Main.adminConfPath)
+  
 
   /**
    * ********** *
@@ -182,7 +185,7 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
   /** Actions run when the admin config path changes **/
   private def _onAdminConfigTextChange(newText: String) {
 
-    if (ScalaUtils.isEmpty(newText) == false) {
+    if (isEmpty(newText) == false) {
 
       /* Update adminConfigFile with new path */
       adminConfigFile = new AdminConfigFile(newText)
@@ -279,7 +282,7 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
     val selectedServerConfigPath = serverConfigField.text()
 
     /* Make sure Admin config file is provided */
-    if (ScalaUtils.isEmpty(selectedAdminConfigPath)) {
+    if (isEmpty(selectedAdminConfigPath)) {
       ShowPopupWindow(
         "ProlineAdmin configuration file is missing",
         "Path to ProlineAdmin configuration file must be provided to use this application."
@@ -335,10 +338,10 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
 
         /* If file(s) exist(s) */
         if (errorCount == 0 || isConfirmed) {
-          
+
           /* Store path to server config in admin config if needed */
           if (
-            selectedServerConfigPath.isEmpty() == false &&
+            isEmpty(selectedServerConfigPath) == false &&
             (serverConfigPathInAdminConfig == null || serverConfigPathInAdminConfig != selectedServerConfigPath)
           ) {
             adminConfigFile.setServerConfigPath(selectedServerConfigPath)
