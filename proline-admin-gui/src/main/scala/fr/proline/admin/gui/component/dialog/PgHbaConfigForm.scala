@@ -752,6 +752,8 @@ class DatabaseNameDialog(
   ) extends Stage {
 
   val thisDialog = this
+  
+  title = "Edit database(s) name(s)"
 
   /*
    * ********** *
@@ -824,7 +826,7 @@ class DatabaseNameDialog(
     root = new VBox {
       alignment = Pos.BaselineLeft
       padding = Insets(20)
-      spacing = 30
+      spacing = 20
       content = defaultNames ++ List(
 
         new HBox {

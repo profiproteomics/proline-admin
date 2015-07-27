@@ -159,7 +159,7 @@ class ProlineConfigForm extends Stage with Logging {
 
   /* "Save" and "Cancel" buttons */
   val saveButton = new Button("Save") {
-    onAction = handle { _onSavePressed }
+    onAction = handle { _onSavePressed() }
   }
   val cancelButton = new Button("Cancel") {
     onAction = handle { formEditor.close() }
@@ -529,6 +529,20 @@ class ProlineConfigForm extends Stage with Logging {
 
       /* Then compute if Proline is already set up */
       ProlineAdminConnection.loadProlineConf(verbose = true)
+    
+    } else {
+      
+      /* If DB can't be reached, allow to save configuration anyway */
+      val isConfirmed = GetConfirmation(
+        title = "Invalid configuration",
+        text = "The connection to the database can't be established with these settings.\n" +
+        "Do you want to save this configuration anyway?"
+      )
+
+      if (isConfirmed) {
+        formEditor.close()
+        ProlineAdminConnection.loadProlineConf(verbose = true)
+      }
     }
     
     Main.stage.scene().setCursor(Cursor.DEFAULT)
