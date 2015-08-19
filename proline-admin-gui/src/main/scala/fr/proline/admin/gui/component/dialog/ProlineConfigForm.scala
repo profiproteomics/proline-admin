@@ -414,6 +414,7 @@ class ProlineConfigForm extends Stage with Logging {
   private def _toAdminConfig() = AdminConfig(
     filePath = adminConfig.filePath,
     serverConfigFilePath = adminConfig.serverConfigFilePath.map(doubleBackSlashes), //FIXME: windows-specific
+    pgsqlDataDir = adminConfig.pgsqlDataDir.map(doubleBackSlashes), //FIXME: windows-specific
     driverType = adminConfig.driverType, //immutable in UI
     prolineDataDir = _getValue(dataDirField).map(doubleBackSlashes), //FIXME: windows-specific
     dbUserName = _getValue(userNameField),

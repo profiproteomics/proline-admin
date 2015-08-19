@@ -20,7 +20,7 @@ object TypesafeConfigWrapper {
       try {
         config.getString(key)
       } catch {
-        case e: Throwable => logger.warn(s"Cannot find configuration string for key '$key'\n", e); replacement;
+        case e: Throwable => logger.warn(s"Cannot find configuration string for key '$key'", e); replacement;
       }
     }
 
@@ -29,7 +29,7 @@ object TypesafeConfigWrapper {
       try {
         config.getInt(key)
       } catch {
-        case e: Throwable => logger.warn(s"Cannot find configuration string for key '$key'\n", e); replacement;
+        case e: Throwable => logger.warn(s"Cannot find configuration string for key '$key'", e); replacement;
       }
     }
 
@@ -43,7 +43,7 @@ object TypesafeConfigWrapper {
       try {
         Option(config.getInt(key))
       } catch {
-        case e: Throwable => logger.warn(s"Cannot find configuration Int for key '$key'\n", e); None;
+        case e: Throwable => logger.warn(s"Cannot find configuration Int for key '$key'", e); None;
       }
     }
   }

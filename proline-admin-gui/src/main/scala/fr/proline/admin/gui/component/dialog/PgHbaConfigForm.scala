@@ -1,11 +1,12 @@
 package fr.proline.admin.gui.component.dialog
 
-import com.typesafe.scalalogging.slf4j.Logging
 import java.io.File
 import java.io.FileWriter
+
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
+
 import scalafx.Includes._
 import scalafx.beans.property.IntegerProperty
 import scalafx.geometry.Insets
@@ -27,8 +28,13 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
+
+import com.typesafe.scalalogging.slf4j.Logging
+
 import fr.profi.util.primitives._
+import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.scala.ScalaUtils._
+import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.BoldLabel
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils.newHSpacer
@@ -37,8 +43,8 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.config.postgres._
 import fr.proline.admin.gui.util.FxUtils
+
 import NewDatabaseNameDialog._
-import fr.profi.util.scala.ScalaUtils
 
 /**
  * ************************************************************ *
@@ -507,7 +513,7 @@ class PgHbaConfigForm extends Stage with Logging {
       synchronized {
         val out = new FileWriter(configFile)
         try {
-          val linesToBeWritten = pgHbaConfigFile.lines.mkString("\n")
+          val linesToBeWritten = pgHbaConfigFile.lines.mkString(LINE_SEPARATOR)
           out.write(linesToBeWritten)
         } finally {
           out.close

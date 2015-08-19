@@ -33,6 +33,7 @@ import scalafx.stage.Stage
 import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.profi.util.primitives._
+import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.scala.ByteUtils._
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.{ScalaFxUtils, NumericTextField, IntegerTextField}
@@ -602,7 +603,7 @@ class PostgresConfigForm extends Stage with Logging {
 
       val out = new FileWriter(configFile)
       try {
-        val linesToBeWritten = (configFileLines ++ newLinesBuffer.result()).mkString("\n")
+        val linesToBeWritten = (configFileLines ++ newLinesBuffer.result()).mkString(LINE_SEPARATOR)
         out.write(linesToBeWritten)
       } finally {
         out.close

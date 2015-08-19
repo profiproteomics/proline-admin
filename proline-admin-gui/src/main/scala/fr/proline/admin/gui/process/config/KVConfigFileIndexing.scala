@@ -6,6 +6,8 @@ import scala.collection.mutable.HashMap
 import scala.io.Source
 
 import fr.proline.admin.gui.process.config.postgres._
+import fr.profi.util.StringUtils.LINE_SEPARATOR
+
 
 /** *********************************************** *
  * Model an informative line in configuration file, *
@@ -214,7 +216,7 @@ trait KVConfigFileIndexing {
       lines(kvLine.index) = kvLine.toString()
     }
 
-    lines.mkString("\n")
+    lines.mkString(LINE_SEPARATOR)
   }
 
 }

@@ -1,6 +1,5 @@
 package fr.proline.admin.gui.component.panel
 
-import com.typesafe.scalalogging.slf4j.Logging
 import scalafx.Includes._
 import scalafx.application.Platform
 import scalafx.beans.property.BooleanProperty
@@ -8,14 +7,17 @@ import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.geometry.Insets
 import scalafx.scene.control.Button
 import scalafx.scene.layout.VBox
+
+import com.typesafe.scalalogging.slf4j.Logging
+
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.component.dialog._
+import fr.proline.admin.gui.component.dialog.ShowPopupWindow
 import fr.proline.admin.gui.process._
 import fr.proline.admin.gui.util._
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.core.orm.util.DataStoreUpgrader
-import fr.proline.admin.gui.component.dialog.ShowPopupWindow
 
 /**
  * Create the buttons of the main window, one for each feature of Proline Admin.

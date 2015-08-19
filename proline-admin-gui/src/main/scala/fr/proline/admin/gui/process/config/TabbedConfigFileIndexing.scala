@@ -6,7 +6,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
 import fr.proline.admin.gui.process.config.postgres._
-
+import fr.profi.util.StringUtils.LINE_SEPARATOR
 
 
 /** *********************************************** *
@@ -91,7 +91,7 @@ trait TabbedConfigFileIndexing {
 
   /** String updated to be written in file **/
   override def toString(): String = synchronized {    
-    connectionLines.mkString("\n")
+    connectionLines.mkString(LINE_SEPARATOR)
   }
 
 }
