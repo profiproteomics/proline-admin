@@ -50,7 +50,7 @@ object ButtonsPanel extends Logging {
     // disable <== when(Main.postgresqlDataDir == null) choose true otherwise false
   }
   
-    val editPostgreSQLConfigButton = new Button("Edit postrgesql.conf") {
+    val editPostgreSQLConfigButton = new Button("Edit postgresql.conf") {
     onAction = handle {
       //_showIfPgDataDirIsDefined(new PostgresConfigForm() )
 

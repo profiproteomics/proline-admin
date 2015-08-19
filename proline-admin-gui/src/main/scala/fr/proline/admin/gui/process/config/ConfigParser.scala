@@ -1,9 +1,5 @@
 package fr.proline.admin.gui.process.config
 
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import com.typesafe.scalalogging.slf4j.Logging
-
 import java.io.File
 import java.io.FileWriter
 
@@ -11,6 +7,10 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.StringBuilder
 import scala.io.Source
 
+import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.scalalogging.slf4j.Logging
+
+import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scala.TypesafeConfigWrapper._
 import fr.proline.repository.DriverType
@@ -31,8 +31,9 @@ import fr.proline.repository.DriverType
 case class AdminConfig (
   filePath: String,
   var serverConfigFilePath: Option[String] = None,
+  var pgsqlDataDir: Option[String] = None,
   var driverType: Option[DriverType] = None,
-  var dataDir: Option[String] = None,
+  var prolineDataDir: Option[String] = None,
   var dbUserName: Option[String] = None,
   var dbPassword: Option[String] = None,
   var dbHost: Option[String] = None,
@@ -63,8 +64,9 @@ class AdminConfigFile(val path: String) extends Logging {
         AdminConfig(
           filePath = path,
           serverConfigFilePath = config.getStringOpt("server-config-file"),
+          pgsqlDataDir = config.getStringOpt("postgresql-data-dir"),
           driverType = config.getStringOpt("proline-config.driver-type").map(dt => DriverType.valueOf(dt.toUpperCase())),
-          dataDir = config.getStringOpt("proline-config.data-directory"),
+          prolineDataDir = config.getStringOpt("proline-config.data-directory"),
           dbUserName = config.getStringOpt("auth-config.user"),
           dbPassword = config.getStringOpt("auth-config.password"),
           dbHost = config.getStringOpt("host-config.host"),
@@ -85,40 +87,57 @@ class AdminConfigFile(val path: String) extends Logging {
     //Reload config in case there are some (hand-made) changes
     getTypesafeConfig().getStringOpt("server-config-file")
   }
+  
+    /** Look for postgresql-data-dir only **/
+  def getPostgreSqlDataDir(): Option[String] = {
+    //Reload config in case there are some (hand-made) changes
+    getTypesafeConfig().getStringOpt("postgresql-data-dir")
+  }
 
   /** Set server-config-file only **/
-  def setServerConfigPath(newPath: String) = synchronized {
+  def setServerConfigPath(newPath: String) = {
+    /* Don't change if it's the same as the old one */
+    if ( Option(newPath) != getServerConfigPath() ) {
+      _updateKey(configKey = "server-config-file", configValue = newPath)
+    }
+  }
+
+  /** Set postgresql-data-dir only **/
+  def setPostgreSqlDataDir(newPath: String) = {
+    /* Don't change if it's the same as the old one */
+    if ( Option(newPath) != getPostgreSqlDataDir() ) {
+      _updateKey(configKey = "postgresql-data-dir", configValue = newPath)
+    }
+  }
+
+  /** Set server-config-file or postgresql-data-dir only **/
+  private def _updateKey(configKey: String, configValue: String) = synchronized {
 
     //TODO: improve / go back to config
 
-    /* Don't change if it's the same as the old one */
-    if (newPath != getServerConfigPath().getOrElse("")) {
+    /* Read config file and and parse it, change only server-config-file */
+    val src = Source.fromFile(adminConfigFile)
 
-      /* Read config file and and parse it, change only server-config-file */
-      val src = Source.fromFile(adminConfigFile)
+    val newLines: String =
+      try {
+        src.getLines().map { line =>
 
-      val newLines: String =
-        try {
-          src.getLines().map { line =>
+          if (line matches s""".*$configKey.*""") {
+            val correctNewPath = ScalaUtils.doubleBackSlashes(configValue)
+            s"""$configKey = "$correctNewPath""""
+          } 
+          
+          else line
 
-            if (line matches """.*server-config-file.*""") {
-              val correctNewPath = ScalaUtils.doubleBackSlashes(newPath)
-              s"""server-config-file = "$correctNewPath""""
-            } 
-            
-            else line
+        }.mkString(LINE_SEPARATOR)
+      }
 
-          }.mkString("\n")
-        }
+    finally { src.close() }
 
-      finally { src.close() }
-
-      /* Write updated config */
-      val out = new FileWriter(adminConfigFile)
-      try { out.write(newLines) }
-      finally { out.close() }
-
-    }
+    /* Write updated config */
+    val out = new FileWriter(adminConfigFile)
+    try { out.write(newLines) }
+    finally { out.close() }
     
 //          /* Create new config (merge with old) */
 //          //val newConfig = ConfigFactory.parseMap(Map("server-config-file" -> newPath))
@@ -148,10 +167,11 @@ class AdminConfigFile(val path: String) extends Logging {
     //TODO: write ConfigObject
     val adminConfigTemplate = s"""
 server-config-file = "${adminConfig.serverConfigFilePath.getOrElse("")}"
+postgresql-data-dir = "${adminConfig.pgsqlDataDir.getOrElse("")}"
 
 proline-config {
   driver-type = "${adminConfig.driverType.map(_.getJdbcURLProtocol()).getOrElse("")}" // valid values are: h2, postgresql or sqlite
-  data-directory = "${adminConfig.dataDir.getOrElse("<path/to/proline/data>")}"
+  data-directory = "${adminConfig.prolineDataDir.getOrElse("<path/to/proline/data>")}"
 }
 
 auth-config {
@@ -282,17 +302,19 @@ class ServerConfigFile(val path: String) extends Logging {
     def _addMpToStringBuilder(mpMap: Map[String, String]) {
       mpMap.foreach {
         case (k, v) =>
-          mpStrBuilder ++= s"""    $k = "$v"""" + "\n"
+          mpStrBuilder ++= s"""    $k = "$v"""" + LINE_SEPARATOR
       }
     }
+    
+    val DOUBLE_LINE_SEPARATOR = LINE_SEPARATOR + LINE_SEPARATOR
 
-    mpStrBuilder ++= "  result_files {\n"
+    mpStrBuilder ++= s"  result_files {$LINE_SEPARATOR"
     _addMpToStringBuilder(serverConfig.resultFilesMountPoints)
 
-    mpStrBuilder ++= "  }\n\n" + "  raw_files {\n"
+    mpStrBuilder ++= s"  }$DOUBLE_LINE_SEPARATOR  raw_files {$LINE_SEPARATOR"
     _addMpToStringBuilder(serverConfig.rawFilesMountPoints)
 
-    mpStrBuilder ++= "  }\n\n" + "  mzdb_files {\n"
+    mpStrBuilder ++= s"  }$DOUBLE_LINE_SEPARATOR  mzdb_files {$LINE_SEPARATOR"
     _addMpToStringBuilder(serverConfig.mzdbFilesMountPoints)
 
     mpStrBuilder ++= "  }"
@@ -302,7 +324,7 @@ class ServerConfigFile(val path: String) extends Logging {
     val serverConfigTemplate = s"""
 proline-config {
   driver-type = "${adminConfig.driverType.map(_.getJdbcURLProtocol()).getOrElse("")}" // valid values are: h2, postgresql or sqlite
-  data-directory = "${adminConfig.dataDir.getOrElse("<path/to/proline/data>")}"
+  data-directory = "${adminConfig.prolineDataDir.getOrElse("<path/to/proline/data>")}"
 }
 
 auth-config {

@@ -1,15 +1,11 @@
 package fr.proline.admin.gui.component.dialog
 
-import com.typesafe.scalalogging.slf4j.Logging
-
 import java.io.File
 import java.io.FileWriter
-
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
-
 import scalafx.Includes._
 import scalafx.beans.property.LongProperty
 import scalafx.geometry.Insets
@@ -31,11 +27,13 @@ import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
-
+import com.typesafe.scalalogging.slf4j.Logging
 import fr.profi.util.primitives._
 import fr.profi.util.scala.ByteUtils._
+import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.{ScalaFxUtils, NumericTextField, IntegerTextField}
 import fr.profi.util.scalafx.ScalaFxUtils.{closeIfEscapePressed, fireIfEnterPressed, seq2obsBuff }
+import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.config.ConfigFileKVLine
 import fr.proline.admin.gui.process.config.postgres._
@@ -76,6 +74,7 @@ class PostgresConfigForm extends Stage with Logging {
    * STUFF *
    * ***** *
    */
+
   /* Read initial settings */
   val pgConfigFile = new PostgresConfigFile(Main.postgresqlDataDir + "/postgresql.conf")
   val pgConfigInitSettings = pgConfigFile.lineByKey
@@ -95,8 +94,15 @@ class PostgresConfigForm extends Stage with Logging {
    * ********** *
    */
 
+  /* Warning */
+  val warningAboutRestartText = "WARNING: Changes will be effective only after a restart of the PostgreSQL service."
+  val warningAboutRestartLabel = new Label{
+    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+    text = warningAboutRestartText
+  }
+
   /* Note */
-  val note = new Label {
+  val noteLabel = new Label {
     text = "Ticks marked with a star correspond to optimized values."
     style = "-fx-font-style:italic;"
   }
@@ -116,12 +122,16 @@ class PostgresConfigForm extends Stage with Logging {
 
   /* For each parameter, define components */
   labeledParams.foreach { labeledParam =>
+    
+    println()
+    println(labeledParam)
 
     val paramFormat = formatByParam(labeledParam)
     val unit = paramFormat.unitString
     val formatter = paramFormat.formatter
     val initValueOpt = pgConfigInitSettings.get(labeledParam.name toLowerCase) //TODO: add field 'configKey' to Param rather than use name.toLowerCase
 
+    println(initValueOpt)
 //    val bytesValue = new LongProperty()
     
     /* Check box: unselected if param is commented out */
@@ -144,6 +154,7 @@ class PostgresConfigForm extends Stage with Logging {
     val slider = new ConfigParamSlider(pgConfigDefaults(labeledParam)) {
       prefWidth <== formEditor.width
     }
+    println("min: "+slider.minValue)
 
     /* Numeric text field for param value viz. and selection */
     val VALUE_NODE_WIDTH = 180
@@ -152,6 +163,8 @@ class PostgresConfigForm extends Stage with Logging {
       val sliderMinAsLong = slider.minValue.toLong
       val sliderMaxAsLong = slider.maxValue.toLong
       val paramType: PgParamType.Value = paramFormat.paramType
+
+      println("sliderMinAsLong: " + sliderMinAsLong)
 
       /* FOR TIME VALUES */
       if (paramType == TIME) {
@@ -233,20 +246,36 @@ class PostgresConfigForm extends Stage with Logging {
 
         // Update fields with slider value
         def _updateFieldsWithSliderValue(oldValue: Number) {
+          println
           val bytesAmount = slider.value.longValue()          
           val asString = formatBytesAmount(
             bytesAmount = bytesAmount,
             numberFormat = "%.2f%s"
           )
-          val (asDouble, unitValue) = parseBytesAmount(asString)
+          val (asBigDecimal, unitValue) = parseBytesAmount(asString)
+          
+          // TODO: use BigDecimal to handle the desire level of precision (number of digits after point)
+          val finalValue = if (asBigDecimal.doubleValue() == math.round(asBigDecimal.doubleValue) ) {
+            asBigDecimal.setScale(0, BigDecimal.RoundingMode.HALF_UP)
+            println("asBigDecimal: "+asBigDecimal)
+            
+            asBigDecimal.longValue().toString
+          } else asBigDecimal.doubleValue.toString()
+          
+          println("finalValue: "+finalValue)
 
+          // If new value is greater than old one
           if( bytesAmount > toLong(oldValue) ) {
-            numericField.setValue(asDouble)
+            numericField.setValue(finalValue)
             unitBox.selectionModel().select(unitValue)
-          } else {
+          } 
+          // Else if new value is lower than old one
+          //else if( asDouble.toInt < toLong(oldValue ) ) {
+          else {
             unitBox.selectionModel().select(unitValue)
-            numericField.setValue(asDouble)
+            numericField.setValue(finalValue)
           }
+          // Else => new value == old value, do nothing      
         }
 
         // Update slider with fields value
@@ -320,8 +349,9 @@ class PostgresConfigForm extends Stage with Logging {
               catch { case t: Throwable => { this.text = oldValue } }
             }
           }
-          
-          /* For integer values */ else {
+
+          /* For integer values */
+          else {
 
             setIntergersOnly(true)
             setMinValue(sliderMinAsLong)
@@ -378,6 +408,7 @@ class PostgresConfigForm extends Stage with Logging {
       if (initValueOpt.isDefined) paramFormat.parser(initValueOpt.get.valueString).toDouble
       else pgConfigDefaults(labeledParam).suggestedValue.toDouble
     }
+    println("slider.value: " + slider.value)
 
     /* Add to buffers and map */
     checkBoxes += checkBox
@@ -464,7 +495,7 @@ class PostgresConfigForm extends Stage with Logging {
   scene = new Scene {
     onKeyPressed = (ke: KeyEvent) => {
       closeIfEscapePressed(formEditor, ke)
-      fireIfEnterPressed(applyButton, ke)
+      //fireIfEnterPressed(applyButton, ke)
     }
     root = new ScrollPane {
 
@@ -482,7 +513,7 @@ class PostgresConfigForm extends Stage with Logging {
         maxWidth <== formEditor.width - SCROLL_BAR_PUTATIVE_WIDTH
         minHeight <== formEditor.height - SCROLL_BAR_PUTATIVE_WIDTH
 
-        content = Seq(topButtons, note, paramsGridPane, bottomButtons)
+        content = Seq(topButtons, warningAboutRestartLabel, noteLabel, paramsGridPane, bottomButtons)
       }
     }
   }
@@ -565,9 +596,16 @@ class PostgresConfigForm extends Stage with Logging {
       }
     }
 
+    val configFile = new File(pgConfigFile.filePath)
+
+    /* Save current file state in backup file */
+    // this method is already wrapped in a 'synchronized' block
+    ScalaUtils.createBackupFile(configFile)
+
     /* Write updated lines in config file */
     synchronized {
-      val out = new FileWriter(new File(pgConfigFile.filePath))
+
+      val out = new FileWriter(configFile)
       try {
         val linesToBeWritten = (configFileLines ++ newLinesBuffer.result()).mkString("\n")
         out.write(linesToBeWritten)
@@ -578,6 +616,11 @@ class PostgresConfigForm extends Stage with Logging {
 
     /* Restart PostgreSQL if needed */
     //TODO : restart PostgreSQL when needed
+    ShowPopupWindow(
+     wTitle = "Warning",
+     wText = warningAboutRestartText,
+     wParent = Option(formEditor)
+    )
 
     /* Close dialog and make some logback */
     formEditor.close()
@@ -601,9 +644,9 @@ class PostgresConfigForm extends Stage with Logging {
     /* First, try to find it as a commented line in lines array */
     for (
       lineIndex <- 0 until configFileLinesLen;
-      val line = configFileLines(lineIndex);
-      val kvMatchOpt = pattern.findFirstMatchIn(line);
-      //val kvMatchOpt = line =# (pattern, "key", "value", "comment");
+      line = configFileLines(lineIndex);
+      kvMatchOpt = pattern.findFirstMatchIn(line);
+      //kvMatchOpt = line =# (pattern, "key", "value", "comment");
       if (kvMatchOpt.isDefined)
     ) {
       val kvMatch = kvMatchOpt.get

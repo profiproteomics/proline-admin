@@ -23,7 +23,7 @@
 
   <!-- FILE APPENDER -->
   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-    <file>proline_admin_gui_log.txt</file>
+    <file>logs/proline_admin_gui_log.txt</file>
     <append>true</append>
 
     <!-- TTCCLayout -->

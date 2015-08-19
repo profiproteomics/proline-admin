@@ -27,10 +27,10 @@ case class ConfigParamValueRange(
   
   def this(minValue: String, defaultValue: String, suggestedValue: String, maxValue: String) = {
     this(
-      BigDecimal(parseBytesAmount(minValue)._1),
-      BigDecimal(parseBytesAmount(defaultValue)._1),
-      BigDecimal(parseBytesAmount(suggestedValue)._1),
-      BigDecimal(parseBytesAmount(maxValue)._1)
+      parseBytesAmount(minValue)._1,
+      parseBytesAmount(defaultValue)._1,
+      parseBytesAmount(suggestedValue)._1,
+      parseBytesAmount(maxValue)._1
     )
   }
   

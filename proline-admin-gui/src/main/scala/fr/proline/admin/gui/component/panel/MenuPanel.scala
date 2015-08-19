@@ -35,21 +35,24 @@ object MenuPanel {
             /* Change Proline configuration files selection (ProlineAdmine, Proline server = Core) */
             new MenuItem("Select configuration files") {
               onAction = handle {
-                
+
                 /* Open dialog for file selection */
-                SelectProlineConfigFilesDialog()
+                val saveAfterClose = SelectProlineConfigFilesDialog()
 
-                /* test if config is valid, redirect to setup if not */
-                val adminConfigOpt = new AdminConfigFile(Main.adminConfPath).read()
-                require(adminConfigOpt.isDefined, "admin config is undefined")
-                val adminConfig = adminConfigOpt.get
+                /* Unless operation was canceled, check if config is valid, redirect to setup if not */
+                if (saveAfterClose) {
 
-                var isConfigValid = DatabaseConnection.testDbConnection(adminConfig, showPopup = false)
-                if (isConfigValid) isConfigValid = ProlineAdminConnection.loadProlineConf(verbose = false)
-                if (isConfigValid == false) {
-                  new ProlineConfigForm().showAndWait()
+                  val adminConfigOpt = new AdminConfigFile(Main.adminConfPath).read()
+                  require(adminConfigOpt.isDefined, "admin config is undefined")
+                  val adminConfig = adminConfigOpt.get
+
+                  var isConfigValid = DatabaseConnection.testDbConnection(adminConfig, showPopup = false)
+                  // if config is valid, try to load it
+                  if (isConfigValid) isConfigValid = ProlineAdminConnection.loadProlineConf(verbose = false)
+                  // if it's not, or made invalid by the previous step, open configuration form
+                  if (isConfigValid == false) new ProlineConfigForm().showAndWait()
                 }
-               }
+              }
             },
 
             /* Change PostgreSQL data dir */

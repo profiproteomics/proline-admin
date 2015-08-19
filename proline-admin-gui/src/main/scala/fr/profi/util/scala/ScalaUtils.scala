@@ -1,12 +1,14 @@
 package fr.profi.util.scala
 
 import java.io.File
+import scala.runtime.ScalaRunTime
+import java.nio.file.Files
 
 /**
  * ********************************* *
  * Some utilities to play with Scala *
  * ********************************* *
- **/
+ */
 
 object ScalaUtils {
 
@@ -19,7 +21,7 @@ object ScalaUtils {
   def isEmpty(string: String): Boolean = (
     string == null || string.isEmpty
   )
-  
+
   /** Double back slashes in file path **/
   def doubleBackSlashes(str: String): String = {
     str.replaceAll("""\\""", """\\\\""")
@@ -28,7 +30,7 @@ object ScalaUtils {
   /** Find best match in a collection **/
   //TODO
   //use minBy( math.abs(diff) ) 
-  
+
   /** Get file extensions */
   //from PWX-Common FileUtils
   //TODO : remove me
@@ -45,6 +47,32 @@ object ScalaUtils {
     this.getFileExtension(file.getName)
   }
 
+  /** Create backup file **/
+  def createBackupFile(file: File): java.nio.file.Path = synchronized {
+    require (file.exists(), "File doesn't exist")
+    
+    val fileName = file.getName()
+    val dir = file.getParentFile()
+
+    /* Get all files in dir that that are the given file or a backup */
+    val regex = s"""^$fileName(\\.\\d+\\.bak)?$$""".r
+    val filteredFileNames = dir.listFiles().filter(f => regex.findFirstIn(f.getName).isDefined )
+    val filteredNamesLen = filteredFileNames.length
+    require(filteredNamesLen > 0, "At least provided file should match regex: " + regex)
+
+    /* Copy current file with i.bak extension ( i = backup index ) */
+    val backupFile = new File(file.getPath() + s".$filteredNamesLen.bak") // nextBackupIdx = filteredNamesLen
+
+    import java.nio.file._
+    Files.copy(
+      file.toPath(),
+      backupFile.toPath(),
+      StandardCopyOption.REPLACE_EXISTING,
+      StandardCopyOption.COPY_ATTRIBUTES,
+      LinkOption.NOFOLLOW_LINKS
+    )
+  }
+
   /** Double-quoted string **/
   def doubleQuoted(string: String): String = if (isDoubleQuoted(string)) string else s""""$string""""
 
@@ -52,7 +80,6 @@ object ScalaUtils {
     //hard to read but ultra-efficient
     string.charAt(0) == '"' && string.charAt(string.length - 1) == '"'
   }
-
 
   /**
    * ********* *
@@ -63,5 +90,4 @@ object ScalaUtils {
   /** Get string, potentially empty, rather than option **/
   implicit def stringOpt2string(strOpt: Option[String]): String = strOpt.getOrElse("")
 
-  
 }

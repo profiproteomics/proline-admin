@@ -1,6 +1,8 @@
 package fr.proline.admin.gui
 
-object IconResource extends Enumeration {
+import fr.profi.util.lang.EnhancedEnum
+
+object IconResource extends EnhancedEnum {
 
   val EDIT = Value("/images/edit.png")
   val HELP = Value("/images/help.png")

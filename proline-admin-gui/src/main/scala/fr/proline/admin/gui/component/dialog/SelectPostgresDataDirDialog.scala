@@ -1,9 +1,7 @@
 package fr.proline.admin.gui.component.dialog
 
 import com.typesafe.scalalogging.slf4j.Logging
-
 import java.io.File
-
 import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
@@ -19,12 +17,12 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
-
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.process.config.AdminConfigFile
 
 
 /**
@@ -176,8 +174,12 @@ object SelectPostgresDataDirDialog extends Stage with Logging {
         if (isConfirmed) dataDir.createNewFile()
       }
 
-      /* Update global variable and close dialog */
-      if (Main.postgresqlDataDir != selectedDataDir) Main.postgresqlDataDir = selectedDataDir
+      /* Update variable and close dialog */
+      if (Main.postgresqlDataDir != selectedDataDir) {
+        Main.postgresqlDataDir = selectedDataDir
+        //TODO: make new AdminConfigFile(Main.adminConfPath) static
+        new AdminConfigFile(Main.adminConfPath).setPostgreSqlDataDir(selectedDataDir) //persist in config file
+      }
       dialog.close()
 
       /* Logback */

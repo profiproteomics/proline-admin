@@ -1,14 +1,11 @@
 package fr.proline.admin.gui.component.dialog
 
 import com.typesafe.scalalogging.slf4j.Logging
-
 import java.io.File
 import java.io.FileWriter
-
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
-
 import scalafx.Includes._
 import scalafx.beans.property.IntegerProperty
 import scalafx.geometry.Insets
@@ -30,7 +27,6 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
-
 import fr.profi.util.primitives._
 import fr.profi.util.scala.ScalaUtils._
 import fr.profi.util.scalafx.BoldLabel
@@ -41,8 +37,8 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.config.postgres._
 import fr.proline.admin.gui.util.FxUtils
-
 import NewDatabaseNameDialog._
+import fr.profi.util.scala.ScalaUtils
 
 /**
  * ************************************************************ *
@@ -494,15 +490,22 @@ class PgHbaConfigForm extends Stage with Logging {
 
     /* Otherwise write in file */
     else {
-      // Update in model
+      
+      val configFile = new File(pgHbaConfigFile.filePath)
+
+      /* Save current file state in backup file */
+      // this method is already wrapped in a 'synchronized' block
+      ScalaUtils.createBackupFile(configFile)
+
+      /* Update model */
       pgHbaConfigFile.updateLines(
         ipv4Lines.result().toArray,
         ipv6Lines.result().toArray
       )
 
-      // Write in file
+      /* Update file */
       synchronized {
-        val out = new FileWriter(new File(pgHbaConfigFile.filePath))
+        val out = new FileWriter(configFile)
         try {
           val linesToBeWritten = pgHbaConfigFile.lines.mkString("\n")
           out.write(linesToBeWritten)

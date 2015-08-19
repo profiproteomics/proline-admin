@@ -32,8 +32,8 @@ trait IPostgresConfig {
   
   
   private val bytesAmountFormatter = { d: Double => 
-    formatBytesAmount(toLong(d), numberFormat = "%.0f%s") 
-    math.round(d)+"B"
+    formatBytesAmount(toLong(d), numberFormat = "%.0f%s")
+    math.round(d / 1024) + "kB"
   }
   
   //private val minutesToSecondsFormatter = { v: BigDecimal => (toLong(v) * 60).toString }
@@ -45,7 +45,7 @@ trait IPostgresConfig {
   //TODO: move relevant part to Utils
   private val bytesAmountParser = { s: String =>
     val (value, unit) = parseBytesAmount(s, defaultUnit = ByteUnit.KB)
-    BigDecimal(getBytesAmount(value, unit))
+    BigDecimal(getBytesAmount(value.doubleValue(), unit))
   }
 
   private val minutesParser = { s: String =>
@@ -286,7 +286,7 @@ object PostgresConfigV9_4 extends IPostgresConfig {
     /* Working memory - PER SORTING OPERATION (bytes amount) */
     WORK_MEM -> new ConfigParamValueRange(64 kB, 4 MB, 16 MB, 128 MB),
     // Used for hashing, sorting and IN operator when processing queries.
-    //Default value 1MB → 4MB to 64MB
+    // Default value 1MB → 4MB to 64MB
 
     // work_mem = 4MB
     // min 64kB
@@ -301,11 +301,11 @@ object PostgresConfigV9_4 extends IPostgresConfig {
 
     /* Effective cache size (bytes amount) */
     EFFECTIVE_CACHE_SIZE -> new ConfigParamValueRange(128 MB, 4 GB, effectiveCacheSizeOptimizedValue, effectiveCacheSizeMaxValue)
-  // Assumption about the effective size of the disk cache to optimize index use:
-  // monitor physical memory allocated by system to disk cache operations.
-  // Default value 128MB → 4096MB
-
-  // effective_cache_size = 4GB
+    // Assumption about the effective size of the disk cache to optimize index use:
+    // monitor physical memory allocated by system to disk cache operations.
+    // Default value 128MB → 4096MB
+  
+    // effective_cache_size = 4GB
   )
 
 }

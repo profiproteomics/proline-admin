@@ -102,7 +102,7 @@ object ByteUtils {
   def parseBytesAmount(
     bytesAmountAsStr: String, 
     defaultUnit: ByteUnit.Value = ByteUnit.KB
-  ): (Double, ByteUnit.Value) = {
+  ): (BigDecimal, ByteUnit.Value) = {
     
     val pattern = """^([\d.]+)\s?(\w+)""".r
 
@@ -133,7 +133,7 @@ object ByteUtils {
         
         //(toLong(value), unitValue)
         //(math.round(valueAsDouble), unitValue)
-        (toDouble(valueString), unitValue)
+        (BigDecimal(valueString), unitValue)
       }
       case _ => throw new Exception(s"Unable to read bytes amount in value '$bytesAmountAsStr'")
     }

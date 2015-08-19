@@ -1,9 +1,7 @@
 package fr.proline.admin.gui
 
 import java.io.File
-
 import javafx.application.Application
-
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
 import scalafx.scene.layout.HBox
@@ -11,14 +9,14 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
-
 import com.typesafe.scalalogging.slf4j.Logging
-
 import fr.proline.admin.gui.component.dialog.ProlineConfigFileChooser
 import fr.proline.admin.gui.component.dialog.ConfirmationDialog
 import fr.proline.admin.gui.component.panel._
 import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.UdsRepository
+import fr.proline.admin.gui.process.config.AdminConfigFile
+import fr.profi.util.scala.ScalaUtils
 
 
 /**
@@ -31,7 +29,7 @@ object Main extends Logging {
   //  /** CSS */
   //  val CSS = this.getClass().getResource("/ProlineAdminCSS.css").toExternalForm()
 
-  /** Configuration files and dirs */
+  /* Configuration files and dirs */
   var targetPath: String = _
   var adminConfPath: String = _
   var serverConfPath: String = _
@@ -42,13 +40,13 @@ object Main extends Logging {
   /** Utility **/
   def serverConfPathIsEmpty(): Boolean = serverConfPath == null || serverConfPath.isEmpty()
   
-  /** Panels */
+  /* Panels */
   val menuPanel = MenuPanel()
   //val menuPanel = MenuPanel2()
   var consolePanel: StackPane = _
   var buttonsPanel: VBox = _
   
-  /** Primary stage's root */
+  /* Primary stage's root */
   lazy val root = new VBox {
     id = "root"
     content = List(
@@ -77,7 +75,7 @@ class Main extends Application {
 
     require(Main.stage == null, "stage is already instantiated")
 
-    /** Create custom console and redirect system outputs on it */
+    /* Create custom console and redirect system outputs on it */
     Main.consolePanel = ConsolePanel() //javaFX doc: “WebView objects must be created and accessed solely from the FX thread.”
     Main.buttonsPanel = ButtonsPanel()
 
@@ -89,24 +87,25 @@ class Main extends Application {
       minHeight = 384
     }
 
-    /** Locate 'config' folder */
+    /* Locate 'config' folder */
     val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
     Main.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
     val configPath = Main.targetPath + """/config/"""
 
-    /** Build and show stage (in any case) */
+    /* Build and show stage (in any case) */
     Main.stage.show()
 
-    /** Locate CONF file and update Proline config in consequence */
+    /* Locate application.CONF file and update Proline config in consequence */
     val _appConfPath = configPath + "application.conf"
 
     // Usual case : default conf file exists
     if (new File(_appConfPath).exists()) {
       Main.adminConfPath = _appConfPath
       ProlineAdminConnection.loadProlineConf(verbose = false)
-
-      // Choose one if not
-    } else {
+    }
+    
+    // Choose one if not
+    else {
       var isFileChosen = false
 
       while (isFileChosen == false) {
@@ -135,11 +134,14 @@ class Main extends Application {
             }
         }
       }
-
     }
-    //    /** Build and show stage */
-    //    Main.stage.show()
 
+    /* Try to find server config file path and PostgreSQL data dir from config */
+    // can't reach this code if adminConfPath isn't set //if (ScalaUtils.isEmpty(Main.adminConfPath) == false) {
+    val adminConfigFile = new AdminConfigFile(Main.adminConfPath)
+    adminConfigFile.getServerConfigPath().map{ Main.serverConfPath = _ }
+    adminConfigFile.getPostgreSqlDataDir().map{ Main.postgresqlDataDir = _ }
+    //}
   }
 
   override def stop() {

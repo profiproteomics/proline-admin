@@ -60,7 +60,7 @@ class ProlineConfigForm extends Stage with Logging {
   private val adminConfig = adminConfigOpt.get
 
   private val serverConfigFileOpt =
-    if (isEmpty(Main.serverConfPath)) None
+    if (isEmpty(Main.serverConfPath)) None //None or Some(null/empty String)
     else Option(new ServerConfigFile(Main.serverConfPath))
 
   private val serverConfigOpt = serverConfigFileOpt.map(_.read()).flatten
@@ -342,7 +342,7 @@ class ProlineConfigForm extends Stage with Logging {
   val driverTypeOpt = adminConfig.driverType
   if (driverTypeOpt.isDefined) driverTypeBox.selectionModel().select(driverTypeOpt.get)
 
-  val dataDir = adminConfig.dataDir //implicit getOrElse("")
+  val dataDir = adminConfig.prolineDataDir //implicit getOrElse("")
   if (isPrompt(dataDir)) dataDirField.promptText = dataDir
   else dataDirField.text = dataDir
 
@@ -415,7 +415,7 @@ class ProlineConfigForm extends Stage with Logging {
     filePath = adminConfig.filePath,
     serverConfigFilePath = adminConfig.serverConfigFilePath.map(doubleBackSlashes), //FIXME: windows-specific
     driverType = adminConfig.driverType, //immutable in UI
-    dataDir = _getValue(dataDirField).map(doubleBackSlashes), //FIXME: windows-specific
+    prolineDataDir = _getValue(dataDirField).map(doubleBackSlashes), //FIXME: windows-specific
     dbUserName = _getValue(userNameField),
     dbPassword = _getValue(passwordTextField),
     dbHost = _getValue(hostNameField),
@@ -427,7 +427,7 @@ class ProlineConfigForm extends Stage with Logging {
     (
       for (
         mp <- mpArray.view;
-        val (k, v) = (mp.getKey, mp.getValue);
+        (k, v) = (mp.getKey, mp.getValue);
         if k.isEmpty == false && v.isEmpty == false
       ) yield k -> v //doubleQuoted(v)
 

@@ -41,6 +41,7 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
   private var adminConfigFile: AdminConfigFile = _
   if (isEmpty(Main.adminConfPath) == false ) adminConfigFile = new AdminConfigFile(Main.adminConfPath)
   
+  private var closedWithSave = true
 
   /**
    * ********** *
@@ -99,7 +100,12 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
 
   /* Buttons */
   val saveButton = new Button("Save") { onAction = handle { _onApplyPressed() } }
-  val cancelButton = new Button("Cancel") { onAction = handle { dialog.close() } }
+  val cancelButton = new Button("Cancel") {
+    onAction = handle {
+      closedWithSave = false
+      dialog.close()
+    } 
+  }
 
   /**
    * ****** *
@@ -171,7 +177,7 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
    */
 
   /** Init and show this stage **/
-  def apply() {
+  def apply(): Boolean = {
     
     adminConfigField.text = Main.adminConfPath
     //adminConfigFile = new AdminConfigFile(Main.adminConfPath)
@@ -180,6 +186,8 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
     if (Main.serverConfPath != null) serverConfigField.text = Main.serverConfPath
 
     this.showAndWait()
+    
+    this.closedWithSave
   }
   
   /** Actions run when the admin config path changes **/
@@ -214,11 +222,21 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
           // let the previously referred one ???
 
           serverConfigNbLabel.visible = false
-          if (pathInField == pathInAdminConfig) {
-            serverConfigWarningLabel.visible = false
-          } else {
-            serverConfigWarningLabel.visible = true
-          }
+          
+          //ShowPopupWindow(
+          //"",
+          //  "pathInField : " + pathInField + "\n" +
+          //  "pathInAdminConfig : " + pathInAdminConfig + "\n" +
+          //  "pathInField == pathInAdminConfig : " + (pathInField == pathInAdminConfig)
+          //)
+
+          //FIXME: that's ugly
+//          val pathInField2 = pathInField.replaceAll("\\", "").replaceAll("/", "")
+//          val pathInAdminConfig2 = pathInAdminConfig.replaceAll("\\", "").replaceAll("/", "")
+
+          if (pathInField == pathInAdminConfig) serverConfigWarningLabel.visible = false
+          //if (pathInField2 == pathInAdminConfig2) serverConfigWarningLabel.visible = false
+          else serverConfigWarningLabel.visible = true
         }
       }
       
@@ -354,6 +372,7 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
           /* Reset warnings and close dialog */
           serverConfigNbLabel.visible = false
           serverConfigWarningLabel.visible = false
+          closedWithSave = true
           dialog.close()
 
           /* Logback */
