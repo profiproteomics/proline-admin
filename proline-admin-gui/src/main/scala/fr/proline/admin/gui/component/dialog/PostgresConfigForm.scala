@@ -2,10 +2,12 @@ package fr.proline.admin.gui.component.dialog
 
 import java.io.File
 import java.io.FileWriter
+
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
+
 import scalafx.Includes._
 import scalafx.beans.property.LongProperty
 import scalafx.geometry.Insets
@@ -27,12 +29,14 @@ import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
+
 import com.typesafe.scalalogging.slf4j.Logging
+
 import fr.profi.util.primitives._
 import fr.profi.util.scala.ByteUtils._
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.{ScalaFxUtils, NumericTextField, IntegerTextField}
-import fr.profi.util.scalafx.ScalaFxUtils.{closeIfEscapePressed, fireIfEnterPressed, seq2obsBuff }
+import fr.profi.util.scalafx.ScalaFxUtils.{closeIfEscapePressed, seq2obsBuff}
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.config.ConfigFileKVLine
@@ -122,21 +126,18 @@ class PostgresConfigForm extends Stage with Logging {
 
   /* For each parameter, define components */
   labeledParams.foreach { labeledParam =>
-    
-    println()
-    println(labeledParam)
 
     val paramFormat = formatByParam(labeledParam)
     val unit = paramFormat.unitString
     val formatter = paramFormat.formatter
-    val initValueOpt = pgConfigInitSettings.get(labeledParam.name toLowerCase) //TODO: add field 'configKey' to Param rather than use name.toLowerCase
+//    val initValueOpt = pgConfigInitSettings.get( PostgresOptimizableParamEnum.getParamConfigKey(labeledParam) )
+    val initValue = pgConfigInitSettings( PostgresOptimizableParamEnum.getParamConfigKey(labeledParam) )
+    val initiallyCommented = initValue.commented
 
-    println(initValueOpt)
-//    val bytesValue = new LongProperty()
-    
     /* Check box: unselected if param is commented out */
     val checkBox = new CheckBox() { 
-      selected = initValueOpt.isDefined
+//      selected = initValueOpt.isDefined
+      selected = ! initiallyCommented
     }
 
     /* Name of the param */
@@ -150,11 +151,10 @@ class PostgresConfigForm extends Stage with Logging {
     }
 
     /* Slider for param value selection */
-    //for byte amounts, unit is kB (?????????)
+    //for byte amounts, unit is B (?????????)
     val slider = new ConfigParamSlider(pgConfigDefaults(labeledParam)) {
       prefWidth <== formEditor.width
     }
-    println("min: "+slider.minValue)
 
     /* Numeric text field for param value viz. and selection */
     val VALUE_NODE_WIDTH = 180
@@ -163,8 +163,6 @@ class PostgresConfigForm extends Stage with Logging {
       val sliderMinAsLong = slider.minValue.toLong
       val sliderMaxAsLong = slider.maxValue.toLong
       val paramType: PgParamType.Value = paramFormat.paramType
-
-      println("sliderMinAsLong: " + sliderMinAsLong)
 
       /* FOR TIME VALUES */
       if (paramType == TIME) {
@@ -246,8 +244,7 @@ class PostgresConfigForm extends Stage with Logging {
 
         // Update fields with slider value
         def _updateFieldsWithSliderValue(oldValue: Number) {
-          println
-          val bytesAmount = slider.value.longValue()          
+          val bytesAmount = slider.value.longValue()
           val asString = formatBytesAmount(
             bytesAmount = bytesAmount,
             numberFormat = "%.2f%s"
@@ -257,25 +254,19 @@ class PostgresConfigForm extends Stage with Logging {
           // TODO: use BigDecimal to handle the desire level of precision (number of digits after point)
           val finalValue = if (asBigDecimal.doubleValue() == math.round(asBigDecimal.doubleValue) ) {
             asBigDecimal.setScale(0, BigDecimal.RoundingMode.HALF_UP)
-            println("asBigDecimal: "+asBigDecimal)
-            
             asBigDecimal.longValue().toString
           } else asBigDecimal.doubleValue.toString()
           
-          println("finalValue: "+finalValue)
-
           // If new value is greater than old one
           if( bytesAmount > toLong(oldValue) ) {
             numericField.setValue(finalValue)
             unitBox.selectionModel().select(unitValue)
           } 
-          // Else if new value is lower than old one
-          //else if( asDouble.toInt < toLong(oldValue ) ) {
+          // Else
           else {
             unitBox.selectionModel().select(unitValue)
             numericField.setValue(finalValue)
           }
-          // Else => new value == old value, do nothing      
         }
 
         // Update slider with fields value
@@ -289,7 +280,7 @@ class PostgresConfigForm extends Stage with Logging {
         // Slider event: try to update fields or update slider
         slider.value.onChange { (_, oldValue, newValue) =>
           try { _updateFieldsWithSliderValue(oldValue) }
-          catch { case t: Throwable => { slider.value = toDouble(oldValue)} }
+          catch { case t: Throwable => { slider.value = toDouble(oldValue) } }
         }
 
         // Field event: try to update slider or update fields
@@ -403,12 +394,16 @@ class PostgresConfigForm extends Stage with Logging {
     /* Link component availability */
     Seq(nameLabel, slider, valueNode).foreach(_.disable <== !checkBox.selected)
 
+    /* First change slider default value (= min) to be sure some change event will be thrown */
+    // Otherwise, if new value = min vlaue, related field +/- box won't be updated
+    slider.value =  slider.value() + slider.majorTickUnit()
+
     /* Initialize values */
     slider.value = {
-      if (initValueOpt.isDefined) paramFormat.parser(initValueOpt.get.valueString).toDouble
-      else pgConfigDefaults(labeledParam).suggestedValue.toDouble
+      paramFormat.parser(initValue.valueString).toDouble
+//      if (initValueOpt.isDefined) paramFormat.parser(initValueOpt.get.valueString).toDouble
+//      else pgConfigDefaults(labeledParam).suggestedValue.toDouble
     }
-    println("slider.value: " + slider.value)
 
     /* Add to buffers and map */
     checkBoxes += checkBox
@@ -554,7 +549,7 @@ class PostgresConfigForm extends Stage with Logging {
       val valueAsString = formatByParam(labeledParam).formatter(formLine.slider.value.doubleValue())
       val commentLine = !formLine.checkBox.selected()
 
-      val configLineKey = labeledParam.name toLowerCase //TODO: add field 'configKey' to Param rather than use name.toLowerCase
+      val configLineKey = PostgresOptimizableParamEnum.getParamConfigKey(labeledParam)
       val oldConfigKVLineOpt = pgConfigFile.lineByKey.get(configLineKey)
 
       val newConfigKVLineOpt: Option[ConfigFileKVLine] = {

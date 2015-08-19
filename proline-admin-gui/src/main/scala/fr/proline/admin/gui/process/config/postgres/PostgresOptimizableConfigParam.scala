@@ -21,6 +21,24 @@ object PostgresOptimizableParamEnum extends LabeledParamEnum {
   val MAINTENANCE_WORK_MEM = Param("MAINTENANCE_WORK_MEM","Maintenance working memory")
   val EFFECTIVE_CACHE_SIZE = Param("EFFECTIVE_CACHE_SIZE","Effective cache size")
 
+  def getParamConfigKey(param: PostgresOptimizableParamEnum.Param): String = {
+    param.name toLowerCase
+//    param match {
+//      case MAX_CONNECTIONS => "max_connections"
+//      case TCP_KEEPALIVES_IDLE =>
+//      case SHARED_BUFFERS =>
+//      case CHECKPOINT_SEGMENTS =>
+//      case CHECKPOINT_COMPLETION_TARGET =>
+//      case TEMP_BUFFERS =>
+//      case WORK_MEM =>
+//      case MAINTENANCE_WORK_MEM =>
+//      case EFFECTIVE_CACHE_SIZE =>
+//    }
+  }
+  
+  def getParamConfigKeys(): Seq[String] = {
+    this.params().map(getParamConfigKey)
+  }
 }
 
 

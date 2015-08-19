@@ -152,7 +152,8 @@ case class ConfigFileKVLine(
 trait KVConfigFileIndexing {
 
   /* To be defined in each implementation */
-  def filePath: String  
+  def filePath: String 
+  //def paramKeys: Array[String]
   protected def parseLine(line: String, lineIdx: Int): Option[ConfigFileKVLine]
 
   /** Get config file **/
@@ -189,8 +190,6 @@ trait KVConfigFileIndexing {
 
     while (lineIdx < linesCount) {
       val line = linesArray(lineIdx)
-      
-      //val kvLineOpt = parseLine(line, lineIdx)
       val lineOpt = parseLine(line, lineIdx)
 
       if (lineOpt.isDefined) {
@@ -202,6 +201,7 @@ trait KVConfigFileIndexing {
     }
 
     //println("Found " + lineByKey.size + " KV lines in file")
+    //println("-> " + lineByKey.values.filter(_.commented).size + " are commented")
     lineByKey
   }
   
