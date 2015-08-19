@@ -40,6 +40,7 @@ import fr.proline.repository.ProlineDatabaseType
 import javax.persistence.EntityManager
 import javax.persistence.EntityTransaction
 import scala.util.{Try, Success, Failure }
+import java.sql.SQLException
 
 /**
  * @author David Bouyssie
@@ -404,14 +405,16 @@ package object sql extends Logging {
   protected def createPgDatabase(pgDbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, logger: Option[Logger] = None) {
     
     // Create database connection and statement
+    logger.map( _.info("createPgDatabase: Create database connection and statement"))
     val pgDbConn = {
       try {
         pgDbConnector.getDataSource.getConnection
       } catch {
-        case psqle: PSQLException => {
+        case psqle: SQLException => {
           val pgClass = classOf[org.postgresql.Driver]
           
           // Create connection template statement to check if database exists
+          logger.map( _.info("Create connection template statement to check if database exists"))
           val pgConnTemplate = _createPgConnectionTemplate(dbConfig)
           val stmt = pgConnTemplate.createStatement
           
@@ -426,6 +429,9 @@ package object sql extends Logging {
           pgConnTemplate.close()
 
           pgDbConnector.getDataSource.getConnection
+        }
+        case e: Exception => {
+          logger.map( _.info("createPgDatabase Exception")+e.getStackTraceString);
         }
       } 
     }.asInstanceOf[Connection]
@@ -467,12 +473,13 @@ package object sql extends Logging {
     val host = connConfig.getString("host")
     val port = connConfig.getString("port")
     require(StringUtils.isNotEmpty(port), "missing port value")
+    logger.info("_createPgConnectionTemplate ")
     
     _getPgConnectionToTemplate1(host, port.toInt, connConfig.getString("user"), connConfig.getString("password") )
   }
   
   private def _getPgConnectionToTemplate1(host: String, port: Int, user: String, password: String): Connection = {
-    
+    logger.info("_getPgConnectionToTemplate1 ")
     require(host != null, "DB host must not be null")
     require(user != null, "DB user name must not be null")
     require(password != null, "DB password must not be null")
@@ -482,6 +489,7 @@ package object sql extends Logging {
     else
       s"jdbc:postgresql://${host}/template1"
 
+    logger.info("_getPgConnectionToTemplate1 "+templateURL)
     DriverManager.getConnection(
       templateURL,
       user,
