@@ -1,9 +1,7 @@
 package fr.proline.admin.gui.component.dialog
 
 import com.typesafe.scalalogging.slf4j.Logging
-
 import scala.collection.mutable.ArrayBuffer
-
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
 import scalafx.geometry.Insets
@@ -26,7 +24,6 @@ import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
-
 import fr.profi.util.scala.ScalaUtils._
 import fr.profi.util.scalafx.BoldLabel
 import fr.profi.util.scalafx.NumericTextField
@@ -37,6 +34,8 @@ import fr.proline.admin.gui.process._
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.repository.DriverType
+import fr.profi.util.scalafx.FileBrowsing
+import fr.profi.util.StringUtils
 
 /**
  * Create a modal window to edit Proline configuration's file.
@@ -60,8 +59,8 @@ class ProlineConfigForm extends Stage with Logging {
   private val adminConfig = adminConfigOpt.get
 
   private val serverConfigFileOpt =
-    if (isEmpty(Main.serverConfPath)) None //None or Some(null/empty String)
-    else Option(new ServerConfigFile(Main.serverConfPath))
+    if (isEmpty(Main.serverConfPath)) None
+    else Option( new ServerConfigFile(Main.serverConfPath) )
 
   private val serverConfigOpt = serverConfigFileOpt.map(_.read()).flatten
 
@@ -409,22 +408,22 @@ class ProlineConfigForm extends Stage with Logging {
   }
 
   /** Get GUI information to create new AdminConfig object **/
-  private def _getValue(txtField: TextField): Option[String] = textField2StringOpt(txtField, allowEmpty = false)
+  private def _getTextFieldValue(txtField: TextField): Option[String] = textField2StringOpt(txtField, allowEmpty = false)
 
   private def _toAdminConfig() = AdminConfig(
     filePath = adminConfig.filePath,
     serverConfigFilePath = adminConfig.serverConfigFilePath.map(doubleBackSlashes), //FIXME: windows-specific
     pgsqlDataDir = adminConfig.pgsqlDataDir.map(doubleBackSlashes), //FIXME: windows-specific
     driverType = adminConfig.driverType, //immutable in UI
-    prolineDataDir = _getValue(dataDirField).map(doubleBackSlashes), //FIXME: windows-specific
-    dbUserName = _getValue(userNameField),
-    dbPassword = _getValue(passwordTextField),
-    dbHost = _getValue(hostNameField),
+    prolineDataDir = _getTextFieldValue(dataDirField).map(doubleBackSlashes), //FIXME: windows-specific
+    dbUserName = _getTextFieldValue(userNameField),
+    dbPassword = _getTextFieldValue(passwordTextField),
+    dbHost = _getTextFieldValue(hostNameField),
     dbPort = portField //FIXME
   )
 
   /** Get GUI information to create new ServerConfig object **/
-  def _getMountPointsMap(mpArray: ArrayBuffer[MountPointPanel]): Map[String, String] = {
+  private def _getMountPointsMap(mpArray: ArrayBuffer[MountPointPanel]): Map[String, String] = {
     (
       for (
         mp <- mpArray.view;
@@ -450,7 +449,8 @@ class ProlineConfigForm extends Stage with Logging {
   /** Add stuff to define another raw_files mount point **/
   private def _addRawFilesMountPoint(
     key: String = "",
-    value: String = "") {
+    value: String = ""
+  ) {
 
     def _onRawFileMpDelete(mp: MountPointPanel): Unit = {
       rawFilesMountPoints -= mp
@@ -460,7 +460,8 @@ class ProlineConfigForm extends Stage with Logging {
     rawFilesMountPoints += new MountPointPanel(
       key = key,
       value = value,
-      onDeleteAction = _onRawFileMpDelete
+      onDeleteAction = _onRawFileMpDelete,
+      parentStage = formEditor
     )
     rawFilesMpBox.content = rawFilesMountPoints
   }
@@ -468,7 +469,8 @@ class ProlineConfigForm extends Stage with Logging {
   /** Add stuff to define another mzdb_files mount point **/
   private def _addMzdbFilesMountPoint(
     key: String = "",
-    value: String = "") {
+    value: String = ""
+  ) {
 
     def _onMzdbFileMpDelete(mp: MountPointPanel): Unit = {
       mzdbFilesMountPoints -= mp
@@ -478,7 +480,8 @@ class ProlineConfigForm extends Stage with Logging {
     mzdbFilesMountPoints += new MountPointPanel(
       key = key,
       value = value,
-      onDeleteAction = _onMzdbFileMpDelete
+      onDeleteAction = _onMzdbFileMpDelete,
+      parentStage = formEditor
     )
     mzdbFilesMpBox.content = mzdbFilesMountPoints
   }
@@ -497,9 +500,35 @@ class ProlineConfigForm extends Stage with Logging {
     resultFilesMountPoints += new MountPointPanel(
       key = key,
       value = value,
-      onDeleteAction = _onResultFileMpDelete
+      onDeleteAction = _onResultFileMpDelete,
+      parentStage = formEditor
     )
     resultFilesMpBox.content = resultFilesMountPoints
+  }
+  
+  /** Check form **/
+  private def _checkForm(): String = {
+    
+    //TODO: finish me
+    
+    val errString = new StringBuilder()
+
+    /* Mount points keys */
+//    val spaceCharPattern = """\s""".r
+//    val corruptedKeys = (rawFilesMountPoints ++ mzdbFilesMountPoints ++ resultFilesMountPoints).toArray
+//      .map(_.getKey)
+//      .filter { key =>
+//        // no space in key
+//        spaceCharPattern.findFirstIn(key).isDefined
+//      }
+//    
+//    if (corruptedKeys.isEmpty == false){
+//      errString ++= "The following mount point names are incorrect: " + corruptedKeys.mkString(", ") + "\n"
+//    }
+    
+    
+    //return 
+    errString.result()
   }
 
   /** Action run when "Save" button is pressed **/
@@ -507,45 +536,54 @@ class ProlineConfigForm extends Stage with Logging {
 
     Main.stage.scene().setCursor(Cursor.WAIT)
 
-    /* New AdminConfig*/
-    val newAdminConfig = _toAdminConfig()
-    adminConfigFile.write(newAdminConfig)
+//    val errString = _checkForm()
+//
+//    if (errString.isEmpty()) {
+//      ShowPopupWindow(
+//        wTitle = "Error",
+//        wText = errString
+//      )
+//    } else {
 
-    if (serverConfigOpt.isDefined) {
+      /* New AdminConfig*/
+      val newAdminConfig = _toAdminConfig()
+      adminConfigFile.write(newAdminConfig)
 
-      /* New ServerConfig */
-      val newServerConfig = _toServerConfig()
-      serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
-    }
+      if (serverConfigOpt.isDefined) {
 
-    /* Test connection to database */
-    // Don't try to reach UDSdb. Here we just want to know if config is valid, not if Proline is set up
-    val connectionEstablished = _testDbConnection(newAdminConfig, showPopup = false)
-    
-    if (connectionEstablished) {
-
-      /* Log and close dialog if config is valid */
-      logger.info("Configuration file(s) successfully updated !")
-      formEditor.close()
-
-      /* Then compute if Proline is already set up */
-      ProlineAdminConnection.loadProlineConf(verbose = true)
-    
-    } else {
-      
-      /* If DB can't be reached, allow to save configuration anyway */
-      val isConfirmed = GetConfirmation(
-        title = "Invalid configuration",
-        text = "The connection to the database can't be established with these settings.\n" +
-        "Do you want to save this configuration anyway?"
-      )
-
-      if (isConfirmed) {
-        formEditor.close()
-        ProlineAdminConnection.loadProlineConf(verbose = true)
+        /* New ServerConfig */
+        val newServerConfig = _toServerConfig()
+        serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
       }
-    }
-    
+
+      /* Test connection to database */
+      // Don't try to reach UDSdb. Here we just want to know if config is valid, not if Proline is set up
+      val connectionEstablished = _testDbConnection(newAdminConfig, showPopup = false)
+
+      if (connectionEstablished) {
+
+        /* Log and close dialog if config is valid */
+        logger.info("Configuration file(s) successfully updated !")
+        formEditor.close()
+
+        /* Then compute if Proline is already set up */
+        ProlineAdminConnection.loadProlineConf(verbose = true)
+
+      } else {
+
+        /* If DB can't be reached, allow to save configuration anyway */
+        val isConfirmed = GetConfirmation(
+          title = "Invalid configuration",
+          text = "The connection to the database can't be established with these settings.\n" +
+            "Do you want to save this configuration anyway?"
+        )
+
+        if (isConfirmed) {
+          formEditor.close()
+          ProlineAdminConnection.loadProlineConf(verbose = true)
+        }
+      }
+    //}
     Main.stage.scene().setCursor(Cursor.DEFAULT)
   }
 }
@@ -563,6 +601,7 @@ object MountPointType {
  * Build 1 mount point panel
  **/
 class MountPointPanel(
+  parentStage: Stage,
   onDeleteAction: (MountPointPanel) => Unit,
   key: String = "",
   value: String = ""
@@ -574,7 +613,7 @@ class MountPointPanel(
   val keyField = new TextField {
     minWidth = 144
     maxWidth = 144
-    promptText = "key"
+    promptText = "Alias"
     text = key
   }
   val equalLabel = new Label("=") {
@@ -583,19 +622,32 @@ class MountPointPanel(
   }
   val valueField = new TextField {
     prefWidth <== thisMountPoint.width
-    promptText = "value"
+    promptText = "Full path"
     text = value
   }
+  val browseButton = new Button("Browse") {
+    minWidth = 56
+    maxWidth = 56
+    onAction = handle {
+      val dir = FileBrowsing.browseDirectory(
+        dcTitle = "Select mount point directory",
+        dcInitialDir = valueField.text(),
+        dcInitOwner = parentStage
+      )
+      
+      if (dir != null) valueField.text = dir.getAbsolutePath()
+    }
+  }
   val removeButton = new Button("Remove") {
-    minWidth = 88
-    maxWidth = 88
+    minWidth = 56
+    maxWidth = 56
     onAction = handle { onDeleteAction(thisMountPoint) }
   }
 
   /* Layout */
   spacing = 10
   alignment = Pos.Center
-  content = List(keyField, equalLabel, valueField, removeButton)
+  content = List(keyField, equalLabel, valueField, browseButton, removeButton)
 
   /* Features */
   def getKey = keyField.text()

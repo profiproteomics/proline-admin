@@ -320,7 +320,7 @@ class PgHbaConfigForm extends Stage with Logging {
   pgHbaConfigInitSettings.foreach { line =>
     
     val split = line.addressWithCIDR.split("/")
-    require(split.length == 2, s"Address should be of type: <ip>/<CIDR> (found: $line)")
+    require(split.length == 2, s"""Address should be of type: <ip>/<CIDR> (found: ${line.addressWithCIDR} within line '$line')""")
     val (address, cidr) = (split.head, toInt(split.last))
 
     /* IPv4 */

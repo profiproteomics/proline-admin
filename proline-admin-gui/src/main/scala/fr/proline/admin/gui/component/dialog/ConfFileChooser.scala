@@ -38,7 +38,6 @@ object ProlineConfigFileChooser extends Logging { //TODO: rename file
       val configFile = new File(initDir)
 
       if (configFile.exists()) {
-
         fc.initialDirectory =
           if (configFile.isFile()) new File(configFile.getParent())
           else configFile
@@ -93,7 +92,7 @@ object ProlineConfigFileChooser extends Logging { //TODO: rename file
     loadConfigWhenChosen = isForProlineAdminConfFile
   }
 }
-
+/*
 /**
  * Easily browse ProlineAdmin or Proline server configuration file
  */
@@ -109,4 +108,4 @@ object BrowseProlineServerConfigFile {
     ProlineConfigFileChooser.updateChooser(initDir: String, isForProlineAdminConfFile = false)
     ProlineConfigFileChooser.showIn(stage)
   }
-}
+}*/

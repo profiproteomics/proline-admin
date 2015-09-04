@@ -24,7 +24,8 @@ class PgHbaConfigFile(val filePath: String) extends TabbedConfigFileIndexing wit
   private val IPv6_LINE = "# IPv6 local connections:"
   
   /* Define parsing pattern */
-  val columnsPattern = """^(\w+)\s+([\w,]+)\s+(\w+)\s+(\S+)\s+(\w+)\s*$""".r
+//  val columnsPattern = """^(\w+)\s+([\w,]+)\s+(\w+)\s+(\S+)\s+(\w+)\s*$""".r
+  val columnsPattern = """^(\w+)\s+([\w,]+)\s+(\w+)\s+(\S+)\s+(\w+)(.*)$""".r
   //TODO: handle commented lines :: val columnsPattern = """^(#?\s*\w+)\s+([\w,]+)\s+(\w+)\s+(\S+)\s+(\w+)\s*$""".r
 
   /** Model line with ConfigFileKVLine **/
@@ -33,11 +34,14 @@ class PgHbaConfigFile(val filePath: String) extends TabbedConfigFileIndexing wit
     lineIdx: Int
   ): Option[PgHbaConnectionLine] = {
 
+    println(s"$lineIdx - $line")
+
     /* First, find IPv4 comment line */
     if (ipv4CommentLineIndex < 0) {
       
       if (line matches s""".*$IPv4_LINE.*""") {
         ipv4CommentLineIndex = lineIdx
+        println("IPv4_LINE")
       }
       return None
     }
@@ -48,11 +52,13 @@ class PgHbaConfigFile(val filePath: String) extends TabbedConfigFileIndexing wit
       // IPv6 comment line
       if (line matches s""".*$IPv6_LINE.*""") {
         ipv6CommentLineIndex = lineIdx
+        println("IPv6_LINE")
         return None
       }
       
       // Final comment lines
       else if (line matches """#(?! IPv).*""") {
+        println("Final comment line")
         if (firstEndingCommentsLineIndex < 0) firstEndingCommentsLineIndex = lineIdx
         return None
       }
@@ -60,6 +66,7 @@ class PgHbaConfigFile(val filePath: String) extends TabbedConfigFileIndexing wit
       // PgHbaConfigLine
       else {
 
+        println("PgHbaConfigLine")
         val _addressType = if (ipv6CommentLineIndex < 0) AddressType.IPv4 else AddressType.IPv6
 
         columnsPattern.findFirstMatchIn(line).map { tabMatch =>

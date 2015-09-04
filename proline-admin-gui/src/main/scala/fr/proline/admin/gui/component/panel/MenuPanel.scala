@@ -45,6 +45,9 @@ object MenuPanel {
                   val adminConfigOpt = new AdminConfigFile(Main.adminConfPath).read()
                   require(adminConfigOpt.isDefined, "admin config is undefined")
                   val adminConfig = adminConfigOpt.get
+                  
+                  // if config contains has some entry for "postgresql-data-dir", set it to global variable
+                  adminConfig.pgsqlDataDir.map{ Main.postgresqlDataDir = _ }
 
                   var isConfigValid = DatabaseConnection.testDbConnection(adminConfig, showPopup = false)
                   // if config is valid, try to load it

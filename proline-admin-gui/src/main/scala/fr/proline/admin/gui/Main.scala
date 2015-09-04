@@ -1,7 +1,9 @@
 package fr.proline.admin.gui
 
 import java.io.File
+
 import javafx.application.Application
+
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
 import scalafx.scene.layout.HBox
@@ -9,14 +11,15 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
+
 import com.typesafe.scalalogging.slf4j.Logging
-import fr.proline.admin.gui.component.dialog.ProlineConfigFileChooser
+
 import fr.proline.admin.gui.component.dialog.ConfirmationDialog
+import fr.proline.admin.gui.component.dialog.ProlineConfigFileChooser
 import fr.proline.admin.gui.component.panel._
 import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.process.config.AdminConfigFile
-import fr.profi.util.scala.ScalaUtils
 
 
 /**

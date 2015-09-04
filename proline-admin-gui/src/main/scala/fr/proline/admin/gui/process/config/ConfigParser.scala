@@ -299,23 +299,23 @@ class ServerConfigFile(val path: String) extends Logging {
     /* Mount points strings */
     val mpStrBuilder = new StringBuilder()
 
-    def _addMpToStringBuilder(mpMap: Map[String, String]) {
+    def _addMountPointsToStringBuilder(mpMap: Map[String, String]) {
       mpMap.foreach {
         case (k, v) =>
-          mpStrBuilder ++= s"""    $k = "$v"""" + LINE_SEPARATOR
+          mpStrBuilder ++= s"""    $k = "${ScalaUtils.doubleBackSlashes(v)}"""" + LINE_SEPARATOR
       }
     }
     
     val DOUBLE_LINE_SEPARATOR = LINE_SEPARATOR + LINE_SEPARATOR
 
     mpStrBuilder ++= s"  result_files {$LINE_SEPARATOR"
-    _addMpToStringBuilder(serverConfig.resultFilesMountPoints)
+    _addMountPointsToStringBuilder(serverConfig.resultFilesMountPoints)
 
     mpStrBuilder ++= s"  }$DOUBLE_LINE_SEPARATOR  raw_files {$LINE_SEPARATOR"
-    _addMpToStringBuilder(serverConfig.rawFilesMountPoints)
+    _addMountPointsToStringBuilder(serverConfig.rawFilesMountPoints)
 
     mpStrBuilder ++= s"  }$DOUBLE_LINE_SEPARATOR  mzdb_files {$LINE_SEPARATOR"
-    _addMpToStringBuilder(serverConfig.mzdbFilesMountPoints)
+    _addMountPointsToStringBuilder(serverConfig.mzdbFilesMountPoints)
 
     mpStrBuilder ++= "  }"
 

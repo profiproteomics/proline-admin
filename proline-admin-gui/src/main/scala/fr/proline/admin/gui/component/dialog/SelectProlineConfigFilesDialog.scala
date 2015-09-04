@@ -41,7 +41,7 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
   private var adminConfigFile: AdminConfigFile = _
   if (isEmpty(Main.adminConfPath) == false ) adminConfigFile = new AdminConfigFile(Main.adminConfPath)
   
-  private var closedWithSave = true
+  private var closedWithSave = false
 
   /**
    * ********** *
@@ -277,7 +277,9 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
 
   /** Browse ProlineAdmin configuration file: set global variable and update field **/
   private def _browseAdminConfigFile() {
-    val filePath = BrowseProlineAdminConfigFile(adminConfigField.text(), dialog)
+    ProlineConfigFileChooser.updateChooser(adminConfigField.text(), isForProlineAdminConfFile = true)
+    val filePath = ProlineConfigFileChooser.showIn(dialog)
+    // val filePath = BrowseProlineAdminConfigFile(adminConfigField.text(), dialog)
     if (filePath != null) adminConfigField.text = filePath
     //BrowseProlineAdminConfigFile(dialog)
     //adminConfigField.text = Main.adminConfPath
@@ -285,7 +287,9 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
 
   /** Browse Proline server configuration file: set global variable and update field **/
   private def _browseServerConfigFile() {
-    val filePath = BrowseProlineServerConfigFile(serverConfigField.text(), dialog)
+    ProlineConfigFileChooser.updateChooser(serverConfigField.text(), isForProlineAdminConfFile = false)
+    val filePath = ProlineConfigFileChooser.showIn(dialog)
+    //val filePath = BrowseProlineServerConfigFile(serverConfigField.text(), dialog)
     if (filePath != null) serverConfigField.text = filePath
     //val newFilePath = BrowseProlineServerConfigFile(dialog)
     //serverConfigField.text = Main.serverConfPath
@@ -340,7 +344,8 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
           str += "\nThe specified Proline server configuration file doesn't exist."
         }
 
-        var isConfirmed = true
+        //TODO: get me back, but write default config into new files
+        /*var isConfirmed = true
         if (errorCount != 0) {
           isConfirmed = GetConfirmation(
             title = if (errorCount == 1) "Unexisting file" else "Unexisting files",
@@ -352,10 +357,19 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
             if (!adminExists) { adminFile.createNewFile() }
             if (!serverExists) { serverFile.createNewFile() }
           }
+        }*/
+
+        /* If one file doesn't exist */
+        if (errorCount > 0) {
+          ShowPopupWindow(
+            wTitle = if (errorCount == 1) "Unexisting file" else "Unexisting files",
+            wText = str
+          )
         }
 
         /* If file(s) exist(s) */
-        if (errorCount == 0 || isConfirmed) {
+        //if (errorCount == 0 || isConfirmed) {
+        else {
 
           /* Store path to server config in admin config if needed */
           if (
@@ -388,7 +402,7 @@ object SelectProlineConfigFilesDialog extends Stage with Logging {
           sb ++= "[INFO]------------------"
           
           val msg = sb.result()
-          println(msg)
+          println(msg) //for integrated console output
           logger.debug(msg)
         }
       }
