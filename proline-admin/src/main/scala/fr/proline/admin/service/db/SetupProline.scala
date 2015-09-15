@@ -152,9 +152,9 @@ object SetupProline {
     val dataDir = new File(dataDirStr)
 
     // Optional reference to server configuration file
-    val serverConfigFileStr = config.getString("server-config-file")
-    val serverConfigFile = new File(serverConfigFileStr)
-    val serverConfigFileOpt = if (serverConfigFile.exists()) Some(serverConfigFile) else None
+//    val serverConfigFileStr = config.getString("server-config-file")
+//    val serverConfigFile = new File(serverConfigFileStr)
+//    val serverConfigFileOpt = if (serverConfigFile.exists()) Some(serverConfigFile) else None
 
     // Load shared settings
     val authConfig = config.getConfig("auth-config")
