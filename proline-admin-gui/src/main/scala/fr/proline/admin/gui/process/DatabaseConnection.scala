@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.process
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import java.sql.Connection
 
@@ -25,7 +25,7 @@ case class UnknownDriverTypeException (dirverType: DriverType) extends Exception
  * Database connection utilities
  * Handles exceptions with popups
  */
-object DatabaseConnection extends Logging {
+object DatabaseConnection extends LazyLogging {
 
   def testDbConnection(
     driverType: DriverType,

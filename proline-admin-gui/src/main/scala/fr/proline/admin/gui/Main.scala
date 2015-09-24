@@ -12,7 +12,7 @@ import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import fr.proline.admin.gui.component.dialog.ConfirmationDialog
 import fr.proline.admin.gui.component.dialog.ProlineConfigFileChooser
@@ -25,7 +25,7 @@ import fr.proline.admin.gui.process.config.AdminConfigFile
 /**
  * Graphical interface for Proline Admin.
  */
-object Main extends Logging {
+object Main extends LazyLogging {
 
   //TODO: splash screen
 

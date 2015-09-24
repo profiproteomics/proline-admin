@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.util
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import scalafx.scene.control.Slider
 import scalafx.util.StringConverter
@@ -35,7 +35,7 @@ object SliderTickName {
   implicit def num2Double(d: Numeric[T]): Double = d
 }*/
 
-class ConfigParamSlider(val configParamValueRange: ConfigParamValueRange) extends Slider with Logging {
+class ConfigParamSlider(val configParamValueRange: ConfigParamValueRange) extends Slider with LazyLogging {
 
   /* Get remarkable values as Double, since slider value is a Double */ 
   val (minValue, suggestedValue, defaultValue, maxValue) = (

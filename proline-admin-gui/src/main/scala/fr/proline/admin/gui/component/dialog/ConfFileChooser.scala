@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.component.dialog
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
 
@@ -15,7 +15,7 @@ import fr.proline.admin.gui.Main
  * Create and show a file chooser customed for single configuration file's selection.
  * Used by MenuPanel.scala and Main.scala .
  */
-object ProlineConfigFileChooser extends Logging { //TODO: rename file
+object ProlineConfigFileChooser extends LazyLogging { //TODO: rename file
 
   // NB: Defaults values are designed for ProlineAdmin config file (not server config file)
 

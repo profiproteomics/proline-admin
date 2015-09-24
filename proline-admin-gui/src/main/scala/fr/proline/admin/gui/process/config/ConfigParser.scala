@@ -8,7 +8,7 @@ import scala.collection.mutable.StringBuilder
 import scala.io.Source
 
 import com.typesafe.config.{Config, ConfigFactory}
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.scala.ScalaUtils
@@ -41,7 +41,7 @@ case class AdminConfig (
 )
 
 /** Parse and write ProlineAdmin configuration file */
-class AdminConfigFile(val path: String) extends Logging {
+class AdminConfigFile(val path: String) extends LazyLogging {
   //TODO: object?
 
   require(

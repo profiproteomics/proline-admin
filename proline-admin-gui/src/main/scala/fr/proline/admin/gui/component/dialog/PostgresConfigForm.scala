@@ -30,7 +30,7 @@ import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import fr.profi.util.primitives._
 import fr.profi.util.StringUtils.LINE_SEPARATOR
@@ -63,7 +63,7 @@ case class PgFormLine(
  * Form to edit and update PostgreSQL configuration (postresql.conf) *
  * ***************************************************************** *
  */
-class PostgresConfigForm extends Stage with Logging {
+class PostgresConfigForm extends Stage with LazyLogging {
 
   val formEditor = this
 

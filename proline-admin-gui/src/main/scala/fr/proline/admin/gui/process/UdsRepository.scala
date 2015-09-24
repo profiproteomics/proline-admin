@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.process
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConverters._
 
@@ -19,7 +19,7 @@ import javax.persistence.EntityManager
 /**
  * Some utilities relative to UDS database connection
  */
-object UdsRepository extends Logging {
+object UdsRepository extends LazyLogging {
 
   private var udsDbConfig: DatabaseSetupConfig = null
   private var udsDbConnector: IDatabaseConnector = null

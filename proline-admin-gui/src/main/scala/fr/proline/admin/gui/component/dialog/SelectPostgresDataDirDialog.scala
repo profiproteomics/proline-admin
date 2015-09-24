@@ -18,7 +18,7 @@ import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.ScalaFxUtils
@@ -34,7 +34,7 @@ import fr.proline.admin.gui.util.FxUtils
  * ************************************************* *
  **/
 
-object SelectPostgresDataDirDialog extends Stage with Logging {
+object SelectPostgresDataDirDialog extends Stage with LazyLogging {
 
   val dialog = this
 

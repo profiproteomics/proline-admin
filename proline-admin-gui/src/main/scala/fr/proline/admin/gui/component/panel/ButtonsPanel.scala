@@ -8,7 +8,7 @@ import scalafx.geometry.Insets
 import scalafx.scene.control.Button
 import scalafx.scene.layout.VBox
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Main
@@ -22,7 +22,7 @@ import fr.proline.core.orm.util.DataStoreUpgrader
 /**
  * Create the buttons of the main window, one for each feature of Proline Admin.
  */
-object ButtonsPanel extends Logging {
+object ButtonsPanel extends LazyLogging {
 
   /**
    * ******* *

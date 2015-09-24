@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.process.config.postgres
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -13,7 +13,7 @@ import fr.proline.admin.gui.process.config._
  * ****************************************************** *
  */
 
-class PgHbaConfigFile(val filePath: String) extends TabbedConfigFileIndexing with Logging {
+class PgHbaConfigFile(val filePath: String) extends TabbedConfigFileIndexing with LazyLogging {
 
   /* Get indices of comment lines defining IPv4 and IPv6 addresses sections */
   private var ipv4CommentLineIndex = -1

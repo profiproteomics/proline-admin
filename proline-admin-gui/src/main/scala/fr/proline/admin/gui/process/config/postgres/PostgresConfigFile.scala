@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.process.config.postgres
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import fr.proline.admin.gui.process.config._
 
@@ -9,7 +9,7 @@ import fr.proline.admin.gui.process.config._
  * PostgreSQL implementation : postgres.conf, pg_hba.conf *
  * **************************************************** *
  */
-class PostgresConfigFile(val filePath: String) extends KVConfigFileIndexing with Logging {
+class PostgresConfigFile(val filePath: String) extends KVConfigFileIndexing with LazyLogging {
 
   /* Define the keys we look for */
   val paramKeys: Seq[String] = PostgresOptimizableParamEnum.getParamConfigKeys()

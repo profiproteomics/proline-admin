@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.process //TODO: rename/re-organize package
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.future
@@ -20,7 +20,7 @@ import fr.proline.admin.gui.Main
 /**
  * Run button's action asynchronously
  */
-object LaunchAction extends Logging {
+object LaunchAction extends LazyLogging {
 
   def apply(
     actionButton: Button, //Array[Button] ?

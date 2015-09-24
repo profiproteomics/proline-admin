@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.component.dialog
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
@@ -39,7 +39,7 @@ import fr.proline.core.orm.uds.UserAccount
  *  with registered owner and optional description.
  */
 
-class NewProjectDialog extends Logging {
+class NewProjectDialog extends LazyLogging {
 
   /** Stage */
   val _stage = new Stage {

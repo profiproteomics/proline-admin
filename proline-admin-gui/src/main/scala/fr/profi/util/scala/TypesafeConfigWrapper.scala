@@ -1,7 +1,7 @@
 package fr.profi.util.scala
 
 import com.typesafe.config.Config
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import fr.profi.util.scala.ScalaUtils.isEmpty
 
@@ -12,7 +12,7 @@ import fr.profi.util.scala.ScalaUtils.isEmpty
  */
 object TypesafeConfigWrapper {
   
-  implicit class TypesafeConfigWrapper(config: Config) extends Logging {
+  implicit class TypesafeConfigWrapper(config: Config) extends LazyLogging {
     //TODO: move to play.implicits
 
     def getStringOrElse(key: String, replacement: String): String = {

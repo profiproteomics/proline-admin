@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.component.dialog
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import scalafx.Includes._
 import scalafx.application.Platform
@@ -32,7 +32,7 @@ import fr.proline.admin.service.user.CreateUser
 /**
  *  Create and display a modal dialog to create a new user in database with optional password.
  */
-class NewUserDialog extends Logging {
+class NewUserDialog extends LazyLogging {
 
   /** Define modal window */
   val _stage = new Stage {

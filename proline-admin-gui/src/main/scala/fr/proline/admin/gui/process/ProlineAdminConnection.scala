@@ -2,7 +2,7 @@ package fr.proline.admin.gui.process
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
 
@@ -18,7 +18,7 @@ import fr.proline.admin.service.db.SetupProline
 /**
  * All utilities to modify ProlineAdmin configuration
  */
-object ProlineAdminConnection extends Logging {
+object ProlineAdminConnection extends LazyLogging {
 
   /**
    * Test if data directory in provided config exists

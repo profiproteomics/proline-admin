@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.component.dialog
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
 
@@ -28,7 +28,7 @@ import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.config.AdminConfigFile
 
-object SelectProlineConfigFilesDialog extends Stage with Logging {
+object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
 
   val dialog = this
 

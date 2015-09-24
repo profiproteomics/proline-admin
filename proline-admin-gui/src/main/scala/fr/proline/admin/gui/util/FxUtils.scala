@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.util
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
 
@@ -18,7 +18,7 @@ import fr.proline.admin.gui.Main
 /**
  * GRAPHICAL UTILITIES
  */
-object FxUtils extends Logging {
+object FxUtils extends LazyLogging {
 
   /** Modal windows location, relative to main window **/
   def getStartX(mainStage: Stage = Main.stage, div: Int = 2): Double = {

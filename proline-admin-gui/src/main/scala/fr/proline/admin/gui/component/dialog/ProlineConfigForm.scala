@@ -1,6 +1,6 @@
 package fr.proline.admin.gui.component.dialog
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 import scala.collection.mutable.ArrayBuffer
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
@@ -40,7 +40,7 @@ import fr.profi.util.StringUtils
 /**
  * Create a modal window to edit Proline configuration's file.
  */
-class ProlineConfigForm extends Stage with Logging {
+class ProlineConfigForm extends Stage with LazyLogging {
 
   val formEditor = this
 

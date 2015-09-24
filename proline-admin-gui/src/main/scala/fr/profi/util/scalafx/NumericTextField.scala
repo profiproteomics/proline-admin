@@ -1,6 +1,6 @@
 package fr.profi.util.scalafx
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import scalafx.Includes._
 import scalafx.scene.control.TextField
@@ -13,7 +13,7 @@ import scalafx.scene.input.KeyEvent
  * (obsolete when Spinner is ok, scalafx-8.0.40-SNAPSHOT) *
  * ****************************************************** *
  */
-class NumericTextField extends TextField with Logging{
+class NumericTextField extends TextField with LazyLogging{
 
   /** Secondary constructor **/
   def this(bigDecimal: BigDecimal) = {
