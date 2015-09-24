@@ -1,6 +1,6 @@
 package fr.profi.util.scalafx
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.reflect.ClassTag
 
@@ -19,7 +19,7 @@ import scalafx.scene.layout.Region
 import scalafx.stage.Stage
 
 
-object ScalaFxUtils extends Logging {
+object ScalaFxUtils extends LazyLogging {
 
   /** Vertical & horizontal spacers */
    def newHSpacer(
