@@ -247,7 +247,7 @@ case class ServerConfig(
 )
 
 /** Parse and write Proline server configuration file */
-class ServerConfigFile(val path: String) extends Logging {
+class ServerConfigFile(val path: String) extends LazyLogging {
 
   require(
     path != null && path.isEmpty() == false,
