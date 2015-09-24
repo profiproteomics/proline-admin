@@ -3,7 +3,7 @@ package fr.proline.admin.service.db
 import java.io.File
 import javax.persistence.EntityManager
 import com.typesafe.config.{Config, ConfigFactory}
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 import fr.proline.admin.helper.sql._
 import fr.proline.admin.service.db.setup._
 import fr.proline.core.orm.uds.{ AdminInformation => UdsAdminInfos }
@@ -17,7 +17,7 @@ import fr.profi.util.sql.getTimeAsSQLTimestamp
  * @author David Bouyssie
  *
  */
-class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseConnector) extends Logging {
+class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseConnector) extends LazyLogging {
   
   private var localConnector = false
   

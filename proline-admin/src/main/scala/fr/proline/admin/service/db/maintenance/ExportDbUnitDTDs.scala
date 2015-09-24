@@ -6,7 +6,7 @@ import org.dbunit.DataSourceDatabaseTester
 import org.dbunit.database.DatabaseConfig
 import org.dbunit.dataset.xml.FlatDtdDataSet
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import fr.proline.admin.helper.sql.createDatabaseTester
 import fr.proline.admin.service.ICommandWork
@@ -16,7 +16,7 @@ import fr.proline.repository._
  * @author David Bouyssie
  *
  */
-class ExportDbUnitDTDs( dsConnectorFactory: IDataStoreConnectorFactory, dirPath: String ) extends ICommandWork with Logging {
+class ExportDbUnitDTDs( dsConnectorFactory: IDataStoreConnectorFactory, dirPath: String ) extends ICommandWork with LazyLogging {
 
   def doWork() {
     

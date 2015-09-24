@@ -3,7 +3,7 @@ package fr.proline.admin.service.db.setup
 import java.io.{ File, InputStream }
 import scala.io.Source
 import com.googlecode.flyway.core.Flyway
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import fr.proline.admin.helper.sql._
 import fr.proline.repository.{ IDatabaseConnector, DatabaseUpgrader, DriverType }
@@ -15,7 +15,7 @@ import fr.profi.util.ThreadLogger
  * @author David Bouyssie
  *
  */
-trait ISetupDB extends Logging {
+trait ISetupDB extends LazyLogging {
 
   val dbConfig: DatabaseSetupConfig
   val dbConnector: IDatabaseConnector

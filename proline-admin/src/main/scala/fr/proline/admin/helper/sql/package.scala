@@ -15,8 +15,7 @@ import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory
 import org.dbunit.operation.DatabaseOperation
 import org.postgresql.Driver
 import org.postgresql.util.PSQLException
-import com.typesafe.scalalogging.slf4j.Logger
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 import fr.profi.util.StringUtils
 import fr.profi.util.dbunit._
 import fr.profi.util.primitives.castToTimestamp
@@ -46,7 +45,7 @@ import java.sql.SQLException
  * @author David Bouyssie
  *
  */
-package object sql extends Logging {
+package object sql extends LazyLogging {
   
   val sqlTypeByName = getSqlTypeByName()
   
@@ -68,7 +67,7 @@ package object sql extends Logging {
 
     // Create database if driver type is PostgreSQL
     if (dbConfig.driverType == DriverType.POSTGRESQL) {
-      createPgDatabase(dbConnector, dbConfig, Some(logger))
+      createPgDatabase(dbConnector, dbConfig)
     }
 
     // Initialize database schema
@@ -402,10 +401,10 @@ package object sql extends Logging {
     }    
   }
   
-  protected def createPgDatabase(pgDbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig, logger: Option[Logger] = None) {
+  protected def createPgDatabase(pgDbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig) {
     
     // Create database connection and statement
-    logger.map( _.info("createPgDatabase: Create database connection and statement"))
+    logger.info("createPgDatabase: Create database connection and statement")
     val pgDbConn = {
       try {
         pgDbConnector.getDataSource.getConnection
@@ -414,13 +413,13 @@ package object sql extends Logging {
           val pgClass = classOf[org.postgresql.Driver]
           
           // Create connection template statement to check if database exists
-          logger.map( _.info("Create connection template statement to check if database exists"))
+          logger.info("Create connection template statement to check if database exists")
           val pgConnTemplate = _createPgConnectionTemplate(dbConfig)
           val stmt = pgConnTemplate.createStatement
           
           // Create database if it doesn't exists
           if (_checkDbExists(stmt, dbConfig.dbName) == false) {
-            logger.map( _.info(s"Creating database '${dbConfig.dbName}'...") )
+            logger.info(s"Creating database '${dbConfig.dbName}'...") 
             stmt.executeUpdate(s"CREATE DATABASE ${dbConfig.dbName};")
           }
 
@@ -431,7 +430,7 @@ package object sql extends Logging {
           pgDbConnector.getDataSource.getConnection
         }
         case e: Exception => {
-          logger.map( _.info("createPgDatabase Exception")+e.getStackTraceString);
+          logger.info("createPgDatabase Exception "+e.getStackTrace);
         }
       } 
     }.asInstanceOf[Connection]

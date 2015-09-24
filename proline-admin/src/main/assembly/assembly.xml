@@ -9,7 +9,6 @@
 
     <fileSet>
       <directory>${project.basedir}</directory>
-      <outputDirectory>/</outputDirectory>
       <includes>
         <include>README*</include>
         <include>LICENSE*</include>
@@ -19,12 +18,10 @@
 
     <fileSet>
       <directory>${project.build.directory}/config</directory>
-      <outputDirectory>/config</outputDirectory>
     </fileSet>
 
     <fileSet>
       <directory>${project.build.directory}/lib</directory>
-      <outputDirectory>/lib</outputDirectory>
     </fileSet>
 
     <fileSet>
@@ -34,7 +31,6 @@
         <include>*.bat</include>
         <include>*.jar</include>
       </includes>
-      <outputDirectory>/</outputDirectory>
     </fileSet>
 
   </fileSets>

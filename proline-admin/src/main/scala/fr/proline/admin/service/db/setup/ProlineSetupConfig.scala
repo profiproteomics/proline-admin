@@ -3,7 +3,7 @@ package fr.proline.admin.service.db.setup
 import java.io.File
 import scala.collection.JavaConversions.collectionAsScalaIterable
 import com.typesafe.config.{ Config, ConfigFactory, ConfigList }
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 import fr.proline.core.orm.uds.{
   ExternalDb => UdsExternalDb,
   ExternalDbPropertiesSerializer => UdsExtDbPropsSerializer
@@ -46,7 +46,7 @@ case class DatabaseSetupConfig(
   driverType: DriverType,
   dbDirectory: File,
   connectionConfig: Config
-) extends Logging {
+) extends LazyLogging {
 
   // Check that directories exists
   //require( scriptDirectory.exists() && scriptDirectory.isDirectory(), "missing script directory:"+scriptDirectory )

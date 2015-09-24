@@ -1,6 +1,6 @@
 package fr.proline.admin.service.user
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.context._
@@ -17,7 +17,7 @@ class CreateUser(
   udsDbContext: DatabaseConnectionContext,
   login: String,
   password: String
-) extends Logging {
+) extends LazyLogging {
 
   var userId: Long = -1L
 
@@ -54,7 +54,7 @@ class CreateUser(
 
 }
 
-object CreateUser extends Logging {
+object CreateUser extends LazyLogging {
 
   def apply(login: String, pswd: Option[String] = None): Long = {
 

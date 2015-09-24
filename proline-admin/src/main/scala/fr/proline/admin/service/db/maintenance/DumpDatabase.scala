@@ -14,7 +14,7 @@ import org.dbunit.dataset.xml.FlatXmlDataSet
 import org.dbunit.ext.h2.H2DataTypeFactory
 import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import fr.proline.admin.service.ICommandWork
 import fr.proline.admin.helper.sql.createDatabaseTester
@@ -28,7 +28,7 @@ class DumpDatabase(
   dbConnector: IDatabaseConnector,
   outputFilePath: String,
   excludedTableNames: Array[String] = Array("SCHEMA_VERSION")
-) extends ICommandWork with Logging {
+) extends ICommandWork with LazyLogging {
 
   def doWork() {
     

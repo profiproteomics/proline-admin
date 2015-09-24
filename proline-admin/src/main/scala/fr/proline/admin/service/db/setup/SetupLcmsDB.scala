@@ -1,6 +1,6 @@
 package fr.proline.admin.service.db.setup
 
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 import fr.profi.jdbc.easy._
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.context.DatabaseConnectionContext
@@ -22,7 +22,7 @@ import fr.proline.core.dal.ContextFactory
 class SetupLcmsDB(
   val dbConnector: IDatabaseConnector,
   val dbConfig: DatabaseSetupConfig
-) extends ISetupDB with Logging {
+) extends ISetupDB with LazyLogging {
 
   protected def importDefaults() {
     

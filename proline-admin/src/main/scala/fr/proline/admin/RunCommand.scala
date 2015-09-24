@@ -1,7 +1,7 @@
 package fr.proline.admin
 
 import com.beust.jcommander.{ JCommander, MissingCommandException, Parameter, ParameterException, Parameters }
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
@@ -9,7 +9,7 @@ import fr.proline.admin.service.user.{ CreateProject, CreateUser }
 import fr.proline.core.orm.util.{ DataStoreConnectorFactory, DataStoreUpgrader }
 import fr.profi.util.ThreadLogger
 
-object RunCommand extends App with Logging {
+object RunCommand extends App with LazyLogging {
 
   trait JCommandReflection {
     lazy private val _parametersAnnotation = this.getClass().getAnnotation(classOf[Parameters])

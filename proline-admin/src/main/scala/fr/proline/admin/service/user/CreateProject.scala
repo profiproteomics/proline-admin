@@ -1,7 +1,7 @@
 package fr.proline.admin.service.user
 
 import javax.persistence.EntityTransaction
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 import fr.profi.jdbc.easy.{ date2Formattable, int2Formattable, string2Formattable }
 import fr.proline.admin.service.db.{ CreateProjectDBs, SetupProline }
 import fr.proline.admin.service.ICommandWork
@@ -20,7 +20,7 @@ class CreateProject(
   projectName: String,
   projectDescription: String,
   ownerId: Long
-) extends ICommandWork with Logging {
+) extends ICommandWork with LazyLogging {
 
   var projectId: Long = -1L
 
@@ -91,7 +91,7 @@ class CreateProject(
 
 }
 
-object CreateProject extends Logging {
+object CreateProject extends LazyLogging {
 
   def apply(name: String, description: String, ownerId: Long): Long = {
 

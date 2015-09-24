@@ -7,7 +7,6 @@ import org.dbunit.database.DatabaseSequenceFilter
 import org.dbunit.dataset.FilteredDataSet
 import org.dbunit.dataset.xml.FlatXmlDataSet
 
-import com.typesafe.scalalogging.slf4j.Logging
 
 import fr.proline.admin.service.ICommandWork
 import fr.proline.repository.IDatabaseConnector

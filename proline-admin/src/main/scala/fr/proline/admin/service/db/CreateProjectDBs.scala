@@ -1,7 +1,7 @@
 package fr.proline.admin.service.db
 
 import java.io.File
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 import fr.profi.jdbc.easy.EasyDBC
 import fr.proline.admin.helper.sql._
 import fr.proline.admin.service.ICommandWork
@@ -20,7 +20,7 @@ import fr.proline.repository.IDatabaseConnector
 class CreateProjectDBs(
   udsDbContext: DatabaseConnectionContext,
   config: ProlineSetupConfig, projectId: Long
-) extends ICommandWork with Logging {
+) extends ICommandWork with LazyLogging {
 
   def doWork() {
     
@@ -204,7 +204,7 @@ class CreateProjectDBs(
 
 }
 
-object CreateProjectDBs extends Logging {
+object CreateProjectDBs extends LazyLogging {
 
   def apply(projectId: Long) {
 

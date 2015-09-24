@@ -6,11 +6,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import com.typesafe.config.ConfigFactory
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 import org.junit.Before
 import java.util.Date
 
-class SetupProlineTest extends Logging {
+class SetupProlineTest extends LazyLogging {
 
   /* JUnit @Rule annotation does not work in Scala : 
    * http://stackoverflow.com/questions/7352087/how-can-i-use-junit-expectedexception-in-scala
