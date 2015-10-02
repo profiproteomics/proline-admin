@@ -18,7 +18,6 @@ case class ProlineSetupConfig(
   psDBConfig: DatabaseSetupConfig,
   msiDBConfig: DatabaseSetupConfig,
   lcmsDBConfig: DatabaseSetupConfig
-  //prolineServerConfigFile: Option[File] = None
 ) {
 
   // Check that directory exists
