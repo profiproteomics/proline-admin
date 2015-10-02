@@ -318,14 +318,28 @@ class PgHbaConfigForm extends Stage with LazyLogging {
    * ************* *
    */
   pgHbaConfigInitSettings.foreach { line =>
-    
-    val split = line.addressWithCIDR.split("/")
-    require(split.length == 2, s"""Address should be of type: <ip>/<CIDR> (found: ${line.addressWithCIDR} within line '$line')""")
-    val (address, cidr) = (split.head, toInt(split.last))
+
+    /* IP adress stuff */
+    val isAdressOfTypeIpCidr = line.addressWithCIDR contains "/"
+    val (address, cidr) = {
+      
+      if (isAdressOfTypeIpCidr) {
+        val split = line.addressWithCIDR.split("/")
+        require(split.length == 2, s"""Address should be of type: IP/CIDR (found: ${line.addressWithCIDR} within line '$line')""")
+        (split.head, toInt(split.last))
+      }
+      
+      else {
+       println( s"""Address is not of type: IP/CIDR (found: ${line.addressWithCIDR} within line '$line')""")
+       ("", -1) // TODO: handle server names and keywords 
+      }
+    }
 
     /* IPv4 */
     if (line.addressType == AddressType.IPv4) {
-      val maxIpsCount = math.pow(2, (32 - cidr)).toInt
+      val maxIpsCount =
+        if (isAdressOfTypeIpCidr) math.pow(2, (32 - cidr)).toInt
+        else -1 // TODO: handle server names and keywords
 
       _addIPv4Line(
         line.connectionType,
@@ -334,8 +348,7 @@ class PgHbaConfigForm extends Stage with LazyLogging {
         address,
         maxIpsCount,
         line.method,
-        line.commented
-      )
+        line.commented)
     }
 
     /* IPv6 */
@@ -490,7 +503,8 @@ class PgHbaConfigForm extends Stage with LazyLogging {
     if (errorString.isEmpty == false) {
       ShowPopupWindow(
         wTitle = "Errors",
-        wText = errorString
+        wText = errorString,
+        isResizable = true
       )
     }
 
@@ -719,7 +733,7 @@ case class PgHbaLine(
     // Database names must have an alphabetic first character and are limited to 63 bytes in length.
     val dbPattern = """([a-zA-Z]\w+)(,[a-zA-Z]\w+)*"""
     if ((databaseField matches dbPattern) == false) {
-      errorString ++= "Incorrect database name(s). Please refer to help.\n"
+      errorString ++= "Incorrect database name(s). Please refer to help (hover your mouse pointer over column names to reveal more information).\n"
     }
 
     /* IP address follows a correct pattern */

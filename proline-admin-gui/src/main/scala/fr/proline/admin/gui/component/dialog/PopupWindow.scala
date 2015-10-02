@@ -2,15 +2,17 @@ package fr.proline.admin.gui.component.dialog
 
 import scalafx.Includes._
 import scalafx.geometry.Insets
+import scalafx.geometry.Pos
 import scalafx.scene.Scene
+import scalafx.scene.control.Button
 import scalafx.scene.control.Label
 import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.StackPane
 import scalafx.stage.Modality
 import scalafx.stage.Stage
-
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Main
+import scalafx.scene.layout.VBox
 
 /**
  * **************************************** *
@@ -38,7 +40,7 @@ class PopupWindow(
   resizable = isResizable
   if (wParent.isDefined) initOwner(wParent.get)
 
-  height = 200
+  //height = 200
   //      if (X.isDefined) this.x = X.get
   //      if (Y.isDefined) this.y = Y.get
 
@@ -46,15 +48,23 @@ class PopupWindow(
 
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
 
-    root = new StackPane {
-      padding = Insets(5)
+    root = new VBox {
+      alignment = Pos.Center
+      spacing = 15
+      padding = Insets(10)
       //content = new TextArea {
-      content = new Label {
-        text = wText
-        wrapText = true
-        //editable = false
-        style = "-fx-border-style: none;-fx-focus-color: transparent;"
-      }
+      content = List(
+
+        new Label(wText) {
+          wrapText = true
+          //editable = false
+          //style = "-fx-border-style: none;-fx-focus-color: transparent;"
+        },
+
+        new Button("OK") {
+          onAction = handle { popup.close() }
+        }
+      )
     }
   }
 }
@@ -70,7 +80,8 @@ object ShowPopupWindow {
     wTitle: String,
     wText: String,
     wParent: Option[Stage] = Option(Main.stage),
-    isResizable: Boolean = false) {
+    isResizable: Boolean = false
+  ) {
     new PopupWindow(wTitle, wText, wParent, isResizable).showAndWait()
   }
 

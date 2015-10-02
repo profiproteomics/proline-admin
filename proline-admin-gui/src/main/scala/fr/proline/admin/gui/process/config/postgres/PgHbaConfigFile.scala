@@ -24,9 +24,8 @@ class PgHbaConfigFile(val filePath: String) extends TabbedConfigFileIndexing wit
   private val IPv6_LINE = "# IPv6 local connections:"
   
   /* Define parsing pattern */
-//  val columnsPattern = """^(\w+)\s+([\w,]+)\s+(\w+)\s+(\S+)\s+(\w+)\s*$""".r
-  val columnsPattern = """^(\w+)\s+([\w,]+)\s+(\w+)\s+(\S+)\s+(\w+)(.*)$""".r
-  //TODO: handle commented lines :: val columnsPattern = """^(#?\s*\w+)\s+([\w,]+)\s+(\w+)\s+(\S+)\s+(\w+)\s*$""".r
+  val columnsPattern = """^(\w+)\s+([\w,]+)\s+(\w+)\s+(\S+)\s+(\w+)(.*)$"""
+  //TODO: handle commented lines :: val columnsPattern = """^(#?\s*\w+)\s+([\w,]+)\s+(\w+)\s+(\S+)\s+(\w+)\s*$"""
 
   /** Model line with ConfigFileKVLine **/
   protected def parseLine(
@@ -34,15 +33,9 @@ class PgHbaConfigFile(val filePath: String) extends TabbedConfigFileIndexing wit
     lineIdx: Int
   ): Option[PgHbaConnectionLine] = {
 
-    println(s"$lineIdx - $line")
-
     /* First, find IPv4 comment line */
     if (ipv4CommentLineIndex < 0) {
-      
-      if (line matches s""".*$IPv4_LINE.*""") {
-        ipv4CommentLineIndex = lineIdx
-        println("IPv4_LINE")
-      }
+      if (line matches s""".*$IPv4_LINE.*""") ipv4CommentLineIndex = lineIdx
       return None
     }
     
@@ -52,45 +45,31 @@ class PgHbaConfigFile(val filePath: String) extends TabbedConfigFileIndexing wit
       // IPv6 comment line
       if (line matches s""".*$IPv6_LINE.*""") {
         ipv6CommentLineIndex = lineIdx
-        println("IPv6_LINE")
         return None
       }
       
       // Final comment lines
       else if (line matches """#(?! IPv).*""") {
-        println("Final comment line")
         if (firstEndingCommentsLineIndex < 0) firstEndingCommentsLineIndex = lineIdx
         return None
       }
       
       // PgHbaConfigLine
       else {
-
-        println("PgHbaConfigLine")
         val _addressType = if (ipv6CommentLineIndex < 0) AddressType.IPv4 else AddressType.IPv6
 
-        columnsPattern.findFirstMatchIn(line).map { tabMatch =>
-
-          //          val firstGroup = tabMatch.group(1)
-          //          val commented = firstGroup.head == '#'
-          //
-          //          val connectionString : String = {
-          //            if (commented) {
-          //              firstGroup.dropWhile(char => char == '#' || (char.toString() matches """\s"""))
-          //            } else{
-          //              firstGroup
-          //            }
-          //          }
-
+        import fr.profi.util.regex.RegexUtils._
+        val matches =    line   =# (columnsPattern, groupNames = "connectionType", "databases", "user", "adress", "method", "coms" )
+        matches.map  { tabMatch =>
           PgHbaConnectionLine(
             line,
             lineIdx,
             _addressType,
-            ConnectionType.withName(tabMatch.group(1)),
-            tabMatch.group(2),
-            tabMatch.group(3),
-            tabMatch.group(4),
-            Method.withName(tabMatch.group(5)),
+            ConnectionType.withName(tabMatch.group("connectionType")),
+            tabMatch.group("databases"),
+            tabMatch.group("user"),
+            tabMatch.group("adress"),
+            Method.withName(tabMatch.group("method")),
             commented = false
           )
         }

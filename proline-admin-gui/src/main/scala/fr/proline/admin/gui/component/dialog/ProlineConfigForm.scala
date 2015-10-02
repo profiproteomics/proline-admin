@@ -1,12 +1,16 @@
 package fr.proline.admin.gui.component.dialog
 
-import com.typesafe.scalalogging.LazyLogging
 import scala.collection.mutable.ArrayBuffer
-import scalafx.Includes._
+
+import scalafx.Includes.eventClosureWrapperWithParam
+import scalafx.Includes.handle
+import scalafx.Includes.jfxKeyEvent2sfx
+import scalafx.beans.binding.NumberBinding.sfxNumberBinding2jfx
 import scalafx.collections.ObservableBuffer
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.Cursor
+import scalafx.scene.Cursor.sfxCursor2jfx
 import scalafx.scene.Scene
 import scalafx.scene.control.Button
 import scalafx.scene.control.CheckBox
@@ -23,19 +27,28 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
+import scalafx.stage.Screen
 import scalafx.stage.Stage
-import fr.profi.util.scala.ScalaUtils._
+
+import com.typesafe.scalalogging.LazyLogging
+
+import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
+import fr.profi.util.scala.ScalaUtils.isEmpty
+import fr.profi.util.scala.ScalaUtils.stringOpt2string
 import fr.profi.util.scalafx.BoldLabel
+import fr.profi.util.scalafx.FileBrowsing
 import fr.profi.util.scalafx.NumericTextField
+import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
+import fr.proline.admin.gui.IconResource
+import fr.proline.admin.gui.IconResource.enumToString
 import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.process._
+import fr.proline.admin.gui.process.DatabaseConnection
+import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.repository.DriverType
-import fr.profi.util.scalafx.FileBrowsing
-import fr.profi.util.StringUtils
 
 /**
  * Create a modal window to edit Proline configuration's file.
@@ -49,8 +62,8 @@ class ProlineConfigForm extends Stage with LazyLogging {
   initModality(Modality.WINDOW_MODAL)
   initOwner(Main.stage)
   width = 560
-  maxHeight = 816
-
+  maxHeight = Screen.primary.visualBounds.height - 20 // arbitrary margin //816
+  
   /* Configuration files */
   //this stage can't be opened if adminConfigFile is undefined in Main
   private val adminConfigFile = new AdminConfigFile(Main.adminConfPath)
@@ -119,6 +132,11 @@ class ProlineConfigForm extends Stage with LazyLogging {
 
   val hostNameLabel = new Label("Host name :")
   val hostNameField = new TextField()
+  val hostNameWarning = new Label{
+    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+    text = "Don't use the term 'localhost', but the real IP address or fully qualified name of the server."
+    wrapText = true
+  }
 
   val portLabel = new Label("Port :")
   val portField = new NumericTextField()
@@ -191,7 +209,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
   // Make all text fields grow the max. they can
   Seq(
     driverTypeBox, dataDirField,
-    userNameField, passwordPWDField, passwordTextField, hostNameField, portField
+    userNameField, passwordPWDField, passwordTextField, hostNameField, hostNameWarning, portField
   ).foreach { node =>
       node.minWidth = 150
       node.prefWidth <== formEditor.width
@@ -245,7 +263,12 @@ class ProlineConfigForm extends Stage with LazyLogging {
         },
         new HBox {
           spacing = H_SPACING
-          content = List(hostNameLabel, hostNameField)
+          content = List(
+            hostNameLabel,
+            new VBox {
+              content = List(hostNameField, hostNameWarning)
+            }
+          )
         },
         new HBox {
           spacing = H_SPACING
@@ -391,7 +414,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
     if (resultMp.isEmpty) _addResultFilesMountPoint()
     else resultMp.foreach { case (k, v) => _addResultFilesMountPoint(k, v) }
   }
-
+  
   /**
    * ******** *
    * FEATURES *
@@ -639,8 +662,8 @@ class MountPointPanel(
     }
   }
   val removeButton = new Button("Remove") {
-    minWidth = 56
-    maxWidth = 56
+    minWidth = 60
+    maxWidth = 60
     onAction = handle { onDeleteAction(thisMountPoint) }
   }
 

@@ -394,7 +394,6 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
           
           sb ++= "[INFO]-- Configuration files' paths --\n"
           sb ++= "[INFO]ProlineAdmin @ " + selectedAdminConfigPath + "\n"
-          sb ++= "[INFO]-- Configuration files' paths --\n"
 
           if (selectedServerConfigPath.isEmpty()) sb ++= "[INFO]Proline server: undefined\n"
           else sb ++= "[INFO]Proline server @ " + selectedServerConfigPath + "\n"

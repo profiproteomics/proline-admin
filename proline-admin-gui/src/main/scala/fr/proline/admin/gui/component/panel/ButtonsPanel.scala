@@ -54,7 +54,7 @@ object ButtonsPanel extends LazyLogging {
   
     val editPostgreSQLConfigButton = new Button("Edit postgresql.conf") {
     onAction = handle {
-      //_showIfPgDataDirIsDefined(new PostgresConfigForm() )
+      //_showIfPgDataDirIsDefined(new PostgresConfigForm() ) //println
 
       if (Main.postgresqlDataDir == null) {
         ShowPopupWindow(
