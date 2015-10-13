@@ -321,13 +321,13 @@
         <!-- Version & config inherited from ProFI-Pom -->
         <executions>
           <execution>
-            <phase>generate-sources</phase>            
+            <id>scala-version-generation</id>
+            <phase>generate-sources</phase>
+            <configuration>
+			<skip>false</skip>
+      	   </configuration>            
           </execution>
         </executions>
-
-   	  	<configuration>
-			<skip>false</skip>
-      	</configuration>
 
       </plugin>
       
