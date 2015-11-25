@@ -36,8 +36,8 @@ object ButtonsPanel extends LazyLogging {
 
       if (Main.postgresqlDataDir == null) {
         ShowPopupWindow(
-          "Unknown data directory",
-          "PostgreSQL data directory must be known in order to its configuration.\n" ++
+          wTitle = "Unknown data directory",
+          wText = "PostgreSQL data directory must be known in order to its configuration.\n" ++
             """You can choose it in the "Select PostgreSQL data directory" menu."""
         )
 
@@ -58,8 +58,8 @@ object ButtonsPanel extends LazyLogging {
 
       if (Main.postgresqlDataDir == null) {
         ShowPopupWindow(
-          "Unknown data directory",
-          "PostgreSQL data directory must be known in order to its configuration.\n" ++
+          wTitle = "Unknown data directory",
+          wText = "PostgreSQL data directory must be known in order to its configuration.\n" ++
             """You can choose it in the "Select PostgreSQL data directory" menu."""
         )
 
@@ -76,8 +76,8 @@ object ButtonsPanel extends LazyLogging {
       //Main.serverConfPath == null || Main.serverConfPath.isEmpty()
       ) {
         ShowPopupWindow(
-          "Unknown configuration files",
-          "Configuration files must be known in order to edit Proline configuration.\n" ++
+          wTitle = "Unknown configuration files",
+          wText = "Configuration files must be known in order to edit Proline configuration.\n" ++
             """You can choose them in the "Select configuration files" menu."""
         )
 

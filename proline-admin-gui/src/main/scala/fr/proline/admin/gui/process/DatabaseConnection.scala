@@ -57,8 +57,8 @@ object DatabaseConnection extends LazyLogging {
         logger.debug("Successfully connected to database !")
 
         if (showPopup) ShowPopupWindow(
-          "Test connection to database",
-          "The connection to the database has been successfully established!"
+          wTitle = "Test connection to database",
+          wText = "The connection to the database has been successfully established!"
         )
 
         // return isSuccess
@@ -72,8 +72,8 @@ object DatabaseConnection extends LazyLogging {
         logger.warn("Unable to connect to database:\n" + errorMsg)
 
         if (showPopup) ShowPopupWindow(
-          "Test connection to database",
-          "The connection to the database could not be established with this configuration.\n\n" +
+          wTitle = "Test connection to database",
+          wText = "The connection to the database could not be established with this configuration.\n\n" +
             "Got the following error:\n" + errorMsg
         )
 

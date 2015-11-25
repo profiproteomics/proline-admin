@@ -1,7 +1,6 @@
 package fr.proline.admin.gui.component.dialog
 
 import scala.collection.mutable.ArrayBuffer
-
 import scalafx.Includes.eventClosureWrapperWithParam
 import scalafx.Includes.handle
 import scalafx.Includes.jfxKeyEvent2sfx
@@ -29,9 +28,7 @@ import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Screen
 import scalafx.stage.Stage
-
 import com.typesafe.scalalogging.LazyLogging
-
 import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
 import fr.profi.util.scala.ScalaUtils.isEmpty
 import fr.profi.util.scala.ScalaUtils.stringOpt2string
@@ -49,6 +46,7 @@ import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.repository.DriverType
+import fr.proline.admin.gui.component.dialog.ConfirmationDialog
 
 /**
  * Create a modal window to edit Proline configuration's file.
@@ -76,6 +74,10 @@ class ProlineConfigForm extends Stage with LazyLogging {
     else Option( new ServerConfigFile(Main.serverConfPath) )
 
   private val serverConfigOpt = serverConfigFileOpt.map(_.read()).flatten
+
+  private val pwxConfigFileOpt =
+    if (isEmpty(Main.pwxConfPath)) None
+    else Option(new PwxConfigFile(Main.pwxConfPath))
 
 
   /**
@@ -144,6 +146,13 @@ class ProlineConfigForm extends Stage with LazyLogging {
   val testConnectionHyperlink = new Hyperlink("Test connection") {
     onAction = handle { _testDbConnection(_toAdminConfig()) }
   }
+
+//  /* DB names */
+//  val udsLabel = new Label("UDS database:")
+//  val pdiLabel = new Label("PDI database:")
+//  val psLabel = new Label("PS database:")
+//  val msiLabel = new Label("MSI database:")
+//  val lcmsLabel = new Label("LCMS database:")
 
   /* Mount points */
   val disableMpNoteLabel = new Label() {
@@ -282,6 +291,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
   /* Mount points */
   val mountPointsSettings = new TitledBorderPane(
     titleString = "Mount points",
+    titleTooltip = "Mount points as defined in Proline server configuration",
     contentNode = new VBox {
       spacing = 2 * V_SPACING
       content = List(
@@ -436,6 +446,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
   private def _toAdminConfig() = AdminConfig(
     filePath = adminConfig.filePath,
     serverConfigFilePath = adminConfig.serverConfigFilePath.map(doubleBackSlashes), //FIXME: windows-specific
+    pwxConfigFilePath = adminConfig.pwxConfigFilePath.map(doubleBackSlashes), //FIXME: windows-specific
     pgsqlDataDir = adminConfig.pgsqlDataDir.map(doubleBackSlashes), //FIXME: windows-specific
     driverType = adminConfig.driverType, //immutable in UI
     prolineDataDir = _getTextFieldValue(dataDirField).map(doubleBackSlashes), //FIXME: windows-specific
@@ -458,7 +469,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
   }
 
   private def _toServerConfig() = ServerConfig(
-    filePath = serverConfigOpt.get.filePath,
+    //serverConfFilePath = serverConfigOpt.get.filePath,
     rawFilesMountPoints = _getMountPointsMap(rawFilesMountPoints),
     mzdbFilesMountPoints = _getMountPointsMap(mzdbFilesMountPoints),
     resultFilesMountPoints = _getMountPointsMap(resultFilesMountPoints)
@@ -559,15 +570,37 @@ class ProlineConfigForm extends Stage with LazyLogging {
 
     Main.stage.scene().setCursor(Cursor.WAIT)
 
-//    val errString = _checkForm()
-//
-//    if (errString.isEmpty()) {
-//      ShowPopupWindow(
-//        wTitle = "Error",
-//        wText = errString
-//      )
-//    } else {
+    //    val errString = _checkForm()
+    //
+    //    if (errString.isEmpty()) {
+    //      ShowPopupWindow(
+    //        wTitle = "Error",
+    //        wText = errString
+    //      )
+    //    } else {
 
+    val isPwxConfigDefined = pwxConfigFileOpt.isDefined
+    var continue: Boolean = false
+    
+    /* If PWX config is defined, make sure user understand that values will be overwritten */
+    if (isPwxConfigDefined) {
+      continue = GetConfirmation(
+        text = "Proline Web Extension (PWX) mount points will be overwritten with these values.\nDo you want to continue?",
+        title = "Warning"
+      )
+    }
+    
+    /* If PWX config is undefined, warn user that changes will not be written in it */
+    else {
+      continue = GetConfirmation(
+        text = "Proline Web Extension (PWX) mount points will not be updated since its configuration file is not defined "+
+        "\n(see Menu -> Select configuration files -> Full path to PWX configuration file)." + 
+        "\nDo you want to continue?",
+        title = "Warning"
+      )
+    }
+
+    if (continue) {
       /* New AdminConfig*/
       val newAdminConfig = _toAdminConfig()
       adminConfigFile.write(newAdminConfig)
@@ -577,6 +610,9 @@ class ProlineConfigForm extends Stage with LazyLogging {
         /* New ServerConfig */
         val newServerConfig = _toServerConfig()
         serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
+
+        /* New PWX config */
+        if (isPwxConfigDefined) pwxConfigFileOpt.get.write(newServerConfig)
       }
 
       /* Test connection to database */
@@ -592,7 +628,8 @@ class ProlineConfigForm extends Stage with LazyLogging {
         /* Then compute if Proline is already set up */
         ProlineAdminConnection.loadProlineConf(verbose = true)
 
-      } else {
+      }
+      else {
 
         /* If DB can't be reached, allow to save configuration anyway */
         val isConfirmed = GetConfirmation(
@@ -606,8 +643,9 @@ class ProlineConfigForm extends Stage with LazyLogging {
           ProlineAdminConnection.loadProlineConf(verbose = true)
         }
       }
-    //}
-    Main.stage.scene().setCursor(Cursor.DEFAULT)
+      //}
+      Main.stage.scene().setCursor(Cursor.DEFAULT)
+    }
   }
 }
 

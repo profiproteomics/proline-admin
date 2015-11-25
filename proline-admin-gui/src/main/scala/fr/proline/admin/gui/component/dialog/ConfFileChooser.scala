@@ -78,18 +78,25 @@ object ProlineConfigFileChooser extends LazyLogging { //TODO: rename file
   /**
    *  Update properties : adapt to desired config file ( ProlineAdmin / server )
    */
-  def updateChooser(initDir: String, isForProlineAdminConfFile: Boolean) {
+  def setForProlineAdminConf(initDir: String) {
+    _updateChooser(initDir, configName = "ProlineAdmin", loadConfigWhenChosen = true)
+  }
+  def setForProlineServerConf(initDir: String) {
+    _updateChooser(initDir, configName = "Proline server", loadConfigWhenChosen = false)
+  }
+  def setForPwxConf(initDir: String) {
+    _updateChooser(initDir, configName = "Proline Web Extension (PWX)", loadConfigWhenChosen = false)
+  }
+  private def _updateChooser(initDir: String, configName: String, loadConfigWhenChosen: Boolean) {
 
     this.initDir = initDir
 
-    configName =
-      if (isForProlineAdminConfFile) "ProlineAdmin"
-      else "Proline server"
+    this.configName = configName
 
     fc.title = s"Select $configName configuration file"
     _setFChooserInitDir()
 
-    loadConfigWhenChosen = isForProlineAdminConfFile
+    this.loadConfigWhenChosen = loadConfigWhenChosen
   }
 }
 /*

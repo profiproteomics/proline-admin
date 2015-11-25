@@ -117,7 +117,7 @@ class NewProjectDialog extends LazyLogging {
 
           val userAccount = ownerComboBox.selectionModel().getSelectedItem()
           if (userAccount == null) {
-            ShowPopupWindow("No owner selected", "You must select an owner first.", Option(Main.stage))
+            ShowPopupWindow(wTitle = "No owner selected", wText = "You must select an owner first.", wParent = Option(Main.stage))
             //TODO: print all 
 
           } else {

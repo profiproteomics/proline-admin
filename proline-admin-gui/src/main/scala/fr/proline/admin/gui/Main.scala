@@ -36,12 +36,14 @@ object Main extends LazyLogging {
   var targetPath: String = _
   var adminConfPath: String = _
   var serverConfPath: String = _
+  var pwxConfPath: String = _
   var postgresqlDataDir: String = _
   
   var firstCallToDataDir = true
 
   /** Utility **/
   def serverConfPathIsEmpty(): Boolean = serverConfPath == null || serverConfPath.isEmpty()
+  def pwxConfPathIsEmpty(): Boolean = pwxConfPath == null || pwxConfPath.isEmpty()
   
   /* Panels */
   val menuPanel = MenuPanel()
@@ -143,6 +145,7 @@ class Main extends Application {
     // can't reach this code if adminConfPath isn't set //if (ScalaUtils.isEmpty(Main.adminConfPath) == false) {
     val adminConfigFile = new AdminConfigFile(Main.adminConfPath)
     adminConfigFile.getServerConfigPath().map{ Main.serverConfPath = _ }
+    adminConfigFile.getPwxConfigPath().map{ Main.pwxConfPath = _ }
     adminConfigFile.getPostgreSqlDataDir().map{ Main.postgresqlDataDir = _ }
     //}
   }

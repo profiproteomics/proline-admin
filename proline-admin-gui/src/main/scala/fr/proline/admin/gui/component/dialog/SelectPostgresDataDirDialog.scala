@@ -133,8 +133,8 @@ object SelectPostgresDataDirDialog extends Stage with LazyLogging {
 
   /** Open a popup to help user understand whant the PostgreSQL data dir is **/
   private def _openHelpDialog() = ShowPopupWindow(
-    "Help",
-    "The PostgreSQL data directory is defined when PostgreSQL is installed on the machine.\n" +
+    wTitle = "Help",
+    wText = "The PostgreSQL data directory is defined when PostgreSQL is installed on the machine.\n" +
       "This is the folder in which you will find the \"postgresql.conf\" and \"pg_hba.conf\" files."
   )
 
@@ -158,8 +158,8 @@ object SelectPostgresDataDirDialog extends Stage with LazyLogging {
 
     if (ScalaUtils.isEmpty(selectedDataDir)) {
       ShowPopupWindow(
-        "Data directory is empty",
-        "Path to PostgreSQL data directory must be provided to configure PostgreSQL."
+        wTitle = "Data directory is empty",
+        wText = "Path to PostgreSQL data directory must be provided to configure PostgreSQL."
       )
     } else {
 

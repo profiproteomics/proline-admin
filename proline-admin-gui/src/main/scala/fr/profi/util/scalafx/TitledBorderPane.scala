@@ -16,11 +16,13 @@ import scalafx.scene.layout.StackPane
 class TitledBorderPane(
   titleString: String,
   contentNode: Node,
+  titleTooltip: String = "",
   colorStr: String = "slategrey"
 ) extends StackPane {
 
   val title = new Label(" " + titleString + " ") {
     alignmentInParent = Pos.TopLeft
+    if (titleTooltip != "") tooltip = titleTooltip
     style() += s"""
         -fx-font-size: 14;
         -fx-font-weight: bold;

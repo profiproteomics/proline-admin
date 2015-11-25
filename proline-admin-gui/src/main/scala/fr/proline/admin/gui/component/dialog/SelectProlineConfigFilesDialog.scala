@@ -1,9 +1,7 @@
 package fr.proline.admin.gui.component.dialog
 
 import com.typesafe.scalalogging.LazyLogging
-
 import java.io.File
-
 import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
@@ -19,7 +17,6 @@ import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
-
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scala.ScalaUtils.isEmpty
 import fr.profi.util.scalafx.BoldLabel
@@ -27,6 +24,7 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.config.AdminConfigFile
+import scala.collection.mutable.HashMap
 
 object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
 
@@ -38,6 +36,7 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
   initOwner(Main.stage)
 
   private var serverConfigPathInAdminConfig: String = _
+  private var pwxConfigPathInAdminConfig: String = _
   private var adminConfigFile: AdminConfigFile = _
   if (isEmpty(Main.adminConfPath) == false ) adminConfigFile = new AdminConfigFile(Main.adminConfPath)
   
@@ -98,6 +97,37 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
   }
   // TODO: Button("select file specified in admin")
 
+  /* PWX configuration file */
+    val pwxConfigLabel = new HBox {
+    content = List(
+      new Label("Full path to "),
+      new BoldLabel("Proline Web Extension (PWX)", upperCase = false),
+      new Label(" configuration file :")
+    )
+  }
+    
+  val pwxConfigField = new TextField() {
+    text.onChange { (_, oldText, newText) =>
+      _onPwxConfigTextChange(newText)
+    }
+  }
+  val pwxConfigBrowse = new Button("Browse...") {
+    onAction = handle { _browsePwxConfigFile }
+  }
+  val pwxConfigNbLabel = new Label {
+    text = "NB: this information was taken from ProlinAdmin configuration."
+    alignmentInParent = Pos.BottomLeft
+    style = "-fx-font-style: italic;-fx-text-fill:grey"
+    visible = false
+  }
+  val pwxConfigWarningLabel = new Label {
+    text = "Warning: This does not correspond to the path specified in ProlineAdmin configuration."
+    alignmentInParent = Pos.BottomLeft
+    style = "-fx-font-style: italic;"
+    visible = false
+  }
+  // TODO: Button("select file specified in admin")
+
   /* Buttons */
   val saveButton = new Button("Save") { onAction = handle { _onApplyPressed() } }
   val cancelButton = new Button("Cancel") {
@@ -115,7 +145,8 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
 
   Seq(
     adminConfigField,
-    serverConfigField
+    serverConfigField,
+    pwxConfigField
   ).foreach { f =>
       f.hgrow = Priority.Always
       //f.onKeyReleased = (ke: KeyEvent) => ScalaFxUtils.fireIfEnterPressed(saveButton, ke)
@@ -165,6 +196,17 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
         },
         ScalaFxUtils.newVSpacer(minH = 10),
 
+        pwxConfigLabel,
+        new HBox {
+          spacing = 5
+          content = Seq(pwxConfigField, pwxConfigBrowse)
+        },
+        new StackPane {
+          content = List(pwxConfigNbLabel, pwxConfigWarningLabel)
+          alignmentInParent = Pos.BaselineLeft
+        },
+        ScalaFxUtils.newVSpacer(minH = 10),
+
         buttons
       )
     }
@@ -180,13 +222,10 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
   def apply(): Boolean = {
     
     adminConfigField.text = Main.adminConfPath
-    //adminConfigFile = new AdminConfigFile(Main.adminConfPath)
-    //serverConfigPathInAdminConfig = adminConfigFile.getServerConfigPath().getOrElse("")
-
     if (Main.serverConfPath != null) serverConfigField.text = Main.serverConfPath
+    if (Main.pwxConfPath != null) pwxConfigField.text = Main.pwxConfPath
 
     this.showAndWait()
-    
     this.closedWithSave
   }
   
@@ -198,59 +237,80 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
       /* Update adminConfigFile with new path */
       adminConfigFile = new AdminConfigFile(newText)
 
-      /* Try to get server config path */
-      val pathOptInAdminConfig = adminConfigFile.getServerConfigPath()
-      val pathInField = serverConfigField.text()
+      _setServerConfPathField()
+      _setPwxConfPathField()
+    }
+  }
 
-      /* If there is some path in ProlineAdmin config */
-      if (pathOptInAdminConfig.isDefined) {
+  /** Try to get and set server config file path in dedicated textField **/
+  private def _setServerConfPathField() {
+    _setConfPathField(
+      pathOptInAdminConfig = adminConfigFile.getServerConfigPath(),
+      field = serverConfigField,
+      nbLabel = serverConfigNbLabel,
+      warningLabel = serverConfigWarningLabel
+    )
+  }
+  /** Try to get and set PWX config file path in dedicated textField **/
+  private def _setPwxConfPathField() {
+    _setConfPathField(
+      pathOptInAdminConfig = adminConfigFile.getPwxConfigPath(),
+      field = pwxConfigField,
+      nbLabel = pwxConfigNbLabel,
+      warningLabel = pwxConfigWarningLabel
+    )
+  }
+  /** Try to get and set config file path in dedicated textField **/
+  private def _setConfPathField(pathOptInAdminConfig: Option[String], field: TextField, nbLabel: Label, warningLabel: Label) {
+    /* If there is some path in ProlineAdmin config */
+    if (pathOptInAdminConfig.isDefined) {
 
-        val pathInAdminConfig = pathOptInAdminConfig.get
+      val pathInAdminConfig = pathOptInAdminConfig.get
+      val pathInField = field.text()
 
-        serverConfigPathInAdminConfig = pathInAdminConfig
-
-        /* If field was empty, set retrieved path */
-        if (pathInField.isEmpty()) {
-          serverConfigField.text = pathInAdminConfig
-          serverConfigNbLabel.visible = true
-          serverConfigWarningLabel.visible = false
-        }
-        
-        /* If not, test if it's the same */ 
-        else {
-          serverConfigPathInAdminConfig = pathInAdminConfig
-          // let the previously referred one ???
-
-          serverConfigNbLabel.visible = false
-          
-          //ShowPopupWindow(
-          //"",
-          //  "pathInField : " + pathInField + "\n" +
-          //  "pathInAdminConfig : " + pathInAdminConfig + "\n" +
-          //  "pathInField == pathInAdminConfig : " + (pathInField == pathInAdminConfig)
-          //)
-
-          //FIXME: that's ugly
-//          val pathInField2 = pathInField.replaceAll("\\", "").replaceAll("/", "")
-//          val pathInAdminConfig2 = pathInAdminConfig.replaceAll("\\", "").replaceAll("/", "")
-
-          if (pathInField == pathInAdminConfig) serverConfigWarningLabel.visible = false
-          //if (pathInField2 == pathInAdminConfig2) serverConfigWarningLabel.visible = false
-          else serverConfigWarningLabel.visible = true
-        }
+      /* If field was empty, set retrieved path */
+      if (pathInField.isEmpty()) {
+        field.text = pathInAdminConfig
+        nbLabel.visible = true
+        warningLabel.visible = false
       }
-      
-      /* If there is no path in ProlineAdmin config, just hide the putative NB / warning */
+
+      /* If not, test if it's the same */
       else {
-        serverConfigNbLabel.visible = false
-        serverConfigWarningLabel.visible = false
+        //TODO ? get me back?
+        //serverConfigPathInAdminConfig = pathInAdminConfig
+        // let the previously referred one ???
+
+        nbLabel.visible = false
+        warningLabel.visible = pathInField != pathInAdminConfig
       }
+    }
+
+    /* If there is no path in ProlineAdmin config, just hide the putative NB / warning */
+    else {
+      serverConfigNbLabel.visible = false
+      serverConfigWarningLabel.visible = false
     }
   }
 
   /** Actions run when the server config path changes **/
   private def _onServerConfigTextChange(newText: String) {
-    
+    _onConfigTextChange(
+      newText,
+      pathInConfig = serverConfigPathInAdminConfig,
+      nbLabel = serverConfigNbLabel,
+      warningLabel = serverConfigWarningLabel
+    )
+  }
+  private def _onPwxConfigTextChange(newText: String) {
+	  _onConfigTextChange(
+			  newText,
+			  pathInConfig = pwxConfigPathInAdminConfig,
+			  nbLabel = pwxConfigNbLabel,
+			  warningLabel = pwxConfigWarningLabel
+			  )
+  }
+  private def _onConfigTextChange(newText: String, pathInConfig: String, nbLabel: Label, warningLabel: Label) {
     /* Update labels visibility */
     if (
       newText.isEmpty() == false &&
@@ -258,41 +318,42 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
     ) {
 
       if (
-        newText == serverConfigPathInAdminConfig ||
-        ScalaUtils.doubleBackSlashes(newText) == serverConfigPathInAdminConfig
+        newText == pathInConfig ||
+        ScalaUtils.doubleBackSlashes(newText) == pathInConfig
       ) {
-        serverConfigNbLabel.visible = true
-        serverConfigWarningLabel.visible = false
+        nbLabel.visible = true
+        warningLabel.visible = false
       } else {
-        serverConfigNbLabel.visible = false
-        serverConfigWarningLabel.visible = true
+        nbLabel.visible = false
+        warningLabel.visible = true
       }
 
     } else {
-      serverConfigNbLabel.visible = false
-      serverConfigWarningLabel.visible = false
+      nbLabel.visible = false
+      warningLabel.visible = false
     }
     //set serverConfigPathInAdminConfig = pathInAdminConfig if needed
   }
-
+  
   /** Browse ProlineAdmin configuration file: set global variable and update field **/
   private def _browseAdminConfigFile() {
-    ProlineConfigFileChooser.updateChooser(adminConfigField.text(), isForProlineAdminConfFile = true)
+    ProlineConfigFileChooser.setForProlineAdminConf(adminConfigField.text())
     val filePath = ProlineConfigFileChooser.showIn(dialog)
-    // val filePath = BrowseProlineAdminConfigFile(adminConfigField.text(), dialog)
     if (filePath != null) adminConfigField.text = filePath
-    //BrowseProlineAdminConfigFile(dialog)
-    //adminConfigField.text = Main.adminConfPath
   }
 
   /** Browse Proline server configuration file: set global variable and update field **/
   private def _browseServerConfigFile() {
-    ProlineConfigFileChooser.updateChooser(serverConfigField.text(), isForProlineAdminConfFile = false)
+    ProlineConfigFileChooser.setForProlineServerConf(serverConfigField.text())
     val filePath = ProlineConfigFileChooser.showIn(dialog)
-    //val filePath = BrowseProlineServerConfigFile(serverConfigField.text(), dialog)
     if (filePath != null) serverConfigField.text = filePath
-    //val newFilePath = BrowseProlineServerConfigFile(dialog)
-    //serverConfigField.text = Main.serverConfPath
+  }
+  
+  /** Browse PWX configuration file: set global variable and update field **/
+  private def _browsePwxConfigFile() {
+	  ProlineConfigFileChooser.setForPwxConf(pwxConfigField.text())
+	  val filePath = ProlineConfigFileChooser.showIn(dialog)
+	  if (filePath != null) pwxConfigField.text = filePath
   }
 
   /** Action run when "Apply" in pressed **/
@@ -302,36 +363,45 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
 
     val selectedAdminConfigPath = adminConfigField.text()
     val selectedServerConfigPath = serverConfigField.text()
+    val selectedPwxConfigPath = pwxConfigField.text()
 
     /* Make sure Admin config file is provided */
     if (isEmpty(selectedAdminConfigPath)) {
       ShowPopupWindow(
-        "ProlineAdmin configuration file is missing",
-        "Path to ProlineAdmin configuration file must be provided to use this application."
+        wTitle = "ProlineAdmin configuration file is missing",
+        wText = "Path to ProlineAdmin configuration file must be provided to use this application."
       )
-    } else {
+    }
+    else {
+
+      def _isConf(filePath: String): Boolean = {
+        if (filePath.isEmpty()) true //no extension filter if not defined (WARNING: not mandatory files only)
+        else ScalaUtils.getFileExtension(filePath) matches """(?i)conf"""
+      }
 
       /* Make sure extension is CONF */
       val adminIsConf = ScalaUtils.getFileExtension(selectedAdminConfigPath) matches """(?i)conf"""
-      val serverIsConf =
-        if (selectedServerConfigPath.isEmpty()) true //no extension filter if not defined (not mandatory)
-        else ScalaUtils.getFileExtension(selectedServerConfigPath) matches """(?i)conf"""
+      val serverIsConf = _isConf(selectedServerConfigPath)
+      val pwxIsConf = _isConf(selectedPwxConfigPath)
 
-      if (!adminIsConf || !serverIsConf) {
+      if (!adminIsConf || !serverIsConf || !pwxIsConf) {
         var str = if (adminIsConf) "" else "ProlineAdmin configuration file extension should be .conf."
         if (serverIsConf == false) str += "\nProline server configuration file extension should be .conf."
+        if (pwxIsConf == false) str += "\nPWX configuration file extension should be .conf."
 
-        ShowPopupWindow("Invalid configuration file", str)
+        ShowPopupWindow(wTitle = "Invalid configuration file", wText = str)
 
-      } else {
+      }
+      else {
 
-        /* Test if files exist, offer to create them if not */
-        val adminFile = new File(selectedAdminConfigPath)
-        val serverFile = new File(selectedServerConfigPath)
-        val adminExists = adminFile.exists()
-        val serverExists =
-          if (selectedServerConfigPath.isEmpty()) true //no extension filter if not defined (not mandatory)
-          else serverFile.exists()
+        /* Test if files exist */
+        def _fileExists(filePath: String): Boolean = {
+          if (filePath.isEmpty()) true //WARNING! not mandatory files
+          else new File(filePath).exists()
+        }
+        val adminExists = new File(selectedAdminConfigPath).exists()
+        val serverExists = _fileExists(selectedServerConfigPath)
+        val pwxExists = _fileExists(selectedPwxConfigPath)
 
         var errorCount = 0
         var str = ""
@@ -342,6 +412,10 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
         if (!serverExists) {
           errorCount += 1
           str += "\nThe specified Proline server configuration file doesn't exist."
+        }
+        if (!pwxExists) {
+          errorCount += 1
+          str += "\nThe specified PWX configuration file doesn't exist."
         }
 
         //TODO: get me back, but write default config into new files
@@ -368,24 +442,29 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
         }
 
         /* If file(s) exist(s) */
-        //if (errorCount == 0 || isConfirmed) {
         else {
 
-          /* Store path to server config in admin config if needed */
-          if (
-            isEmpty(selectedServerConfigPath) == false &&
-            (serverConfigPathInAdminConfig == null || serverConfigPathInAdminConfig != selectedServerConfigPath)
-          ) {
+          /* Store server config path in admin config if needed */
+          if (isEmpty(selectedServerConfigPath) == false &&
+            (serverConfigPathInAdminConfig == null || serverConfigPathInAdminConfig != selectedServerConfigPath)) {
             adminConfigFile.setServerConfigPath(selectedServerConfigPath)
+          }
+          /* Store PWX config path in admin config if needed */
+          if (isEmpty(selectedPwxConfigPath) == false &&
+            (pwxConfigPathInAdminConfig == null || pwxConfigPathInAdminConfig != selectedPwxConfigPath)) {
+            adminConfigFile.setPwxConfigPath(selectedPwxConfigPath)
           }
 
           /* Update global variables */
           if (Main.adminConfPath != selectedAdminConfigPath) Main.adminConfPath = selectedAdminConfigPath
           if (Main.serverConfPath != selectedServerConfigPath) Main.serverConfPath = selectedServerConfigPath
+          if (Main.pwxConfPath != selectedPwxConfigPath) Main.pwxConfPath = selectedPwxConfigPath
 
           /* Reset warnings and close dialog */
           serverConfigNbLabel.visible = false
           serverConfigWarningLabel.visible = false
+          pwxConfigNbLabel.visible = false
+          pwxConfigWarningLabel.visible = false
           closedWithSave = true
           dialog.close()
 
@@ -397,6 +476,9 @@ object SelectProlineConfigFilesDialog extends Stage with LazyLogging {
 
           if (selectedServerConfigPath.isEmpty()) sb ++= "[INFO]Proline server: undefined\n"
           else sb ++= "[INFO]Proline server @ " + selectedServerConfigPath + "\n"
+
+          if (selectedPwxConfigPath.isEmpty()) sb ++= "[INFO]PWX: undefined\n"
+          else sb ++= "[INFO]PWX @ " + selectedPwxConfigPath + "\n"
 
           sb ++= "[INFO]------------------"
           

@@ -77,8 +77,8 @@ class PopupWindow(
 object ShowPopupWindow {
 
   def apply(
-    wTitle: String,
     wText: String,
+    wTitle: String = "",
     wParent: Option[Stage] = Option(Main.stage),
     isResizable: Boolean = false
   ) {
