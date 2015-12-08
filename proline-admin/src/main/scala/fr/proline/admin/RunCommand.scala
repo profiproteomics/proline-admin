@@ -5,6 +5,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
+import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.service.user.{ CreateProject, CreateUser }
 import fr.proline.core.orm.util.{ DataStoreConnectorFactory, DataStoreUpgrader }
 import fr.profi.util.ThreadLogger
@@ -165,15 +166,7 @@ object RunCommand extends App with LazyLogging {
           if (dsConnectorFactory.isInitialized) {
             logger.info("Upgrading all Proline Databases...")
             
-            if (DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory)) {
-              
-              //TODO: update external_dbs.version
-              
-              logger.info("Databases successfully upgraded !")
-            } else {
-              logger.error("Databases upgrade failed !")
-            }
-
+            UpgradeAllDatabases(dsConnectorFactory)
           } else {
             logger.error("Unable to initialize DataStoreConnectorFactory instance")
           }

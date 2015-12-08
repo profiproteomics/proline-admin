@@ -55,8 +55,11 @@ class UpgradeAllDatabases(
 
       /* Upgrade all Projects (MSI and LCMS) Dbs */
       val projectIds = ProjectRepository.findAllProjectIds(udsEM)
-
+      
       if ((projectIds != null) && projectIds.isEmpty() == false) {
+        
+        val udsTx = udsEM.getTransaction()
+        udsTx.begin()
 
         for (projectId <- projectIds) {
           logger.debug(s"Upgrading databases of Project #$projectId")
@@ -84,13 +87,15 @@ class UpgradeAllDatabases(
           })
 
         }
+        
+        udsEM.flush()
+        udsTx.commit()
       }
 
     } finally {
 
-      // Flush and close UDS entity manager
+      // Close UDS entity manager
       if (udsEM != null) {
-        udsEM.flush()
         udsEM.close()
       }
 
@@ -121,11 +126,17 @@ class UpgradeAllDatabases(
         } else {
           logger.info(s"$dbShortName: $dbMigrationCount migration(s) done.")
         }
+        
+        val driverType = dbConnector.getDriverType
 
-        // Try to retrieve the version reached after the applied migration
-        val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)
-        val version = ezDBC.selectHead("SELECT version FROM schema_version ORDER BY version_rank DESC LIMIT 1") { r =>
-          r.nextString
+        // TODO: find a way to migrate SQLite databases with flyway
+        val version = if( driverType == DriverType.SQLITE ) "no.version"
+        else { 
+          // Try to retrieve the version reached after the applied migration
+          val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)
+          ezDBC.selectHead("""SELECT "version" FROM "schema_version" ORDER BY "version_rank" DESC LIMIT 1""") { r =>
+            r.nextString
+          }
         }
 
         if (onUpgradeSuccess != null)

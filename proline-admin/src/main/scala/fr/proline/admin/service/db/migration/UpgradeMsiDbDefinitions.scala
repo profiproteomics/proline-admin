@@ -62,7 +62,7 @@ class UpgradeMsiDbDefinitions(
     
     // Iterate over the enumeration of ObjectTree SchemaNames
     for (schemaName <- ObjectTreeSchema.SchemaName.values()) {
-      val schemaNameAsStr = schemaName.name()
+      val schemaNameAsStr = schemaName.toString()
       
       val schema = if( oldSchemaByName.contains(schemaNameAsStr) == false ) {
         logger.info("Inserting new object tree schema: " + schemaNameAsStr)
@@ -72,6 +72,7 @@ class UpgradeMsiDbDefinitions(
         s.setName(schemaNameAsStr)
         s.setType("JSON")
         s.setIsBinaryMode(false) // FIXME: add to the enum
+        s.setVersion("0.1")
         s.setSchema("")
         
         msiEM.persist(s)
