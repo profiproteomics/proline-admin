@@ -2,7 +2,7 @@ package fr.proline.admin.service.db.setup
 
 import java.io.{ File, InputStream }
 import scala.io.Source
-import com.googlecode.flyway.core.Flyway
+import org.flywaydb.core.Flyway
 import com.typesafe.scalalogging.LazyLogging
 
 import fr.proline.admin.helper.sql._

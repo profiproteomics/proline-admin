@@ -1,6 +1,6 @@
 package fr.proline.admin.service.db.migration
 
-import com.googlecode.flyway.core.Flyway
+import org.flywaydb.core.Flyway
 import com.typesafe.scalalogging.LazyLogging
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.context._
