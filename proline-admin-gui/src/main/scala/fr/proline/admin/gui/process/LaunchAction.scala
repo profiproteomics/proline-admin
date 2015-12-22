@@ -3,7 +3,7 @@ package fr.proline.admin.gui.process //TODO: rename/re-organize package
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.future
+import scala.concurrent.Future
 import scala.util.Failure
 import scala.util.Success
 
@@ -25,7 +25,9 @@ object LaunchAction extends LazyLogging {
   def apply(
     actionButton: Button, //Array[Button] ?
     actionString: String,
-    action: () => Unit) {
+    action: () => Unit,
+    reloadConfig: Boolean = true
+  ) {
 
     synchronized {
       /** Add progress indicator to activated button */
@@ -44,7 +46,7 @@ object LaunchAction extends LazyLogging {
     }
 
     /** Lauch action asynchronously then update enabled/disabled buttons*/
-    val f = future { synchronized { action() } }
+    val f = Future { synchronized { action() } }
 
     /** Future's callback : when action is finished */
     f onComplete {
@@ -53,7 +55,7 @@ object LaunchAction extends LazyLogging {
         synchronized {
           logger.info(s"Action '$actionString' finished with success.")
           println(s"""[ $actionString : <b>success</b> ]<br><br>""")
-          _initialize()
+          _initialize(reloadConfig)
           //          Platform.runLater {
           //            Main.stage.scene().setCursor(Cursor.DEFAULT)
           //            actionButton.graphic = new ImageView()
@@ -71,30 +73,30 @@ object LaunchAction extends LazyLogging {
         t match {
           case fxThread: java.lang.IllegalStateException => {
             logger.warn(fxThread.getLocalizedMessage())
-            _initialize()
+            _initialize(reloadConfig)
           }
 
           case _ => synchronized {
             logger.warn(s"Failed to run action [$actionString]", t)
-            
+
             System.err.println("ERROR - " + t.getMessage)
             System.err.println(t.getMessage())
-            
+
             println(s"[ $actionString : finished with <b>error</b> ]<br>")
-            _initialize()
+            _initialize(reloadConfig)
           }
         }
 
       }
     }
 
-    def _initialize() {
+    def _initialize(reloadConfig: Boolean = true) {
       Platform.runLater {
         actionButton.graphic = new ImageView()
         Main.stage.scene().setCursor(Cursor.DEFAULT)
       }
       //ButtonsPanel.computeButtonsAvailability()
-      ProlineAdminConnection.loadProlineConf(verbose = false) //workaround => correctly compute buttons' availability for SQLite (FIXME)
+      if (reloadConfig) ProlineAdminConnection.loadProlineConf(verbose = false) //workaround => correctly compute buttons' availability for SQLite (FIXME)
 
     }
   }

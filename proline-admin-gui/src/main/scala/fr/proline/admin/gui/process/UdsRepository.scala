@@ -1,9 +1,7 @@
 package fr.proline.admin.gui.process
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scala.collection.JavaConverters._
-
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.context.DatabaseConnectionContext
@@ -13,17 +11,23 @@ import fr.proline.core.orm.uds.UserAccount
 import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.IDatabaseConnector
-
 import javax.persistence.EntityManager
+import fr.proline.repository.DatabaseUpgrader
+import com.typesafe.scalalogging.StrictLogging
+import fr.proline.repository.IDataStoreConnectorFactory
+import fr.proline.repository.DatabaseConnectorFactory
+import fr.proline.repository.ProlineDatabaseType
+import fr.proline.core.orm.uds.repository.ExternalDbRepository
 
 /**
  * Some utilities relative to UDS database connection
  */
 object UdsRepository extends LazyLogging {
 
-  private var udsDbConfig: DatabaseSetupConfig = null
-  private var udsDbConnector: IDatabaseConnector = null
-  private var udsDbContext: DatabaseConnectionContext = null
+  private var _udsDbConfig: DatabaseSetupConfig = null
+  private var _udsDbConnector: IDatabaseConnector = null
+  private var _udsDbContext: DatabaseConnectionContext = null
+  private var _dsConnectorFactory: IDataStoreConnectorFactory = null
 
   /**
    * Get UDS database CONFIG
@@ -38,18 +42,28 @@ object UdsRepository extends LazyLogging {
     require(udsDbConfig != null, "udsDbConfig is null")
 
     // Set new udsDbConfig
-    this.udsDbConfig = udsDbConfig
+    this._udsDbConfig = udsDbConfig
+    
+    // Close DataStore connector factory
+    if( _dsConnectorFactory != null ) {
+      _dsConnectorFactory.closeAll()
+      _dsConnectorFactory = null
+    }
 
     // Close udsDbContext
-    if (udsDbContext != null) {
-      if (udsDbContext.isClosed == false) udsDbContext.close()
-      udsDbContext = null
+    if (_udsDbContext != null) {
+      if (_udsDbContext.isClosed == false) {          
+      	// An error message will be displayed by proline Databases (EntityManager is closed): thread problem?
+        // And there's nothing we can do...
+        _udsDbContext.close()
+        _udsDbContext = null
+      }
     }
 
     // Close udsDbConnector //TODO: this.closeUdsDbConnector()
-    if (udsDbConnector != null) {
-      if (udsDbConnector.isClosed == false) udsDbConnector.close()
-      udsDbConnector = null
+    if (_udsDbConnector != null) {
+      if (_udsDbConnector.isClosed == false) _udsDbConnector.close()
+      _udsDbConnector = null
     }
   }
 
@@ -65,43 +79,46 @@ object UdsRepository extends LazyLogging {
    * Get UDS database CONNECTOR
    */
   def getUdsDbConnector(): IDatabaseConnector = {
-
-    if (udsDbConnector != null) udsDbConnector
-    else {
-      udsDbConnector = this.getUdsDbConfig.toNewConnector()
-      udsDbConnector
+    if (_udsDbConnector == null) {
+      _udsDbConnector = this.getUdsDbConfig.toNewConnector()
     }
+    _udsDbConnector
   }
   
   /**
    * Get UDS database CONTEXT
    */
   def getUdsDbContext(): DatabaseConnectionContext = {
-    if (udsDbContext != null) {
-      udsDbContext
-    } else {
-      udsDbContext = new DatabaseConnectionContext(getUdsDbConnector)
-      udsDbContext
+    if (_udsDbContext == null) {
+      _udsDbContext = new DatabaseConnectionContext(getUdsDbConnector)
     }
+    _udsDbContext
   }
   
   /**
    * Get UDS entity manager
    */
-  def getUdsDbEm(): EntityManager = {
+  /*def getUdsDbEm(): EntityManager = {
     this.getUdsDbContext().getEntityManager()
-  }
+  }*/
   
   /**
    * Get datastore connector factory using UDS databse 
    */
-  def getDataStoreConnFactory(): DataStoreConnectorFactory = {
-    val connectorFactory = DataStoreConnectorFactory.getInstance()
+  def getDataStoreConnFactory(): IDataStoreConnectorFactory = {
+    if( _dsConnectorFactory == null ) {
+      // FIXME: fix the EntityManager is already closed bug (from DataStoreConnectorFactory) to reuse existing "udsDbConnector"
+      _dsConnectorFactory = new DynamicDataStoreConnectorFactory(this.getUdsDbConfig.toNewConnector())
+    }
+    _dsConnectorFactory
+    
+    
+    /*val connectorFactory = DataStoreConnectorFactory.getInstance()
     if (!connectorFactory.isInitialized) {
       connectorFactory.initialize(this.getUdsDbConnector())
     }
 
-    connectorFactory
+    connectorFactory*/
   }
 
   /**
@@ -136,10 +153,10 @@ object UdsRepository extends LazyLogging {
 
         false
       }
-    } /*finally {
+    } finally {
       if( udsDbCtx != null ) udsDbCtx.close()
       //if (udsDbConnector != null && udsDbConnector.isClosed() == false) udsDbConnector.close()
-    } */
+    }
 
   }
 
@@ -235,6 +252,106 @@ object UdsRepository extends LazyLogging {
    */
   def findProjectsByOwnerId(userId: Long): Array[Project] = {
     ProjectRepository.findOwnedProjects(this.getUdsDbContext.getEntityManager(), userId).asScala.toArray
+  }
+
+}
+
+
+class DynamicDataStoreConnectorFactory(
+  private val udsDbConnector: IDatabaseConnector = null
+) extends IDataStoreConnectorFactory with LazyLogging {
+  require( udsDbConnector != null, "udsDbConnector is null" )
+  
+	private lazy val udsEMF = udsDbConnector.getEntityManagerFactory()
+	private lazy val udsEM = udsEMF.createEntityManager()
+	private var pdiInitialized = false
+	private lazy val pdiDbConnector = _dbTypeToConnector(ProlineDatabaseType.PDI)
+	private var psInitialized = false
+	private lazy val psDbConnector = _dbTypeToConnector(ProlineDatabaseType.PS)
+  
+  override def isInitialized() = {
+    true
+  }
+
+  override def getUdsDbConnector() = {
+    udsDbConnector
+  }
+
+  override def getPdiDbConnector() = {
+    pdiInitialized = true
+    pdiDbConnector
+  }
+
+  override def getPsDbConnector() = {
+    psInitialized = true
+    psDbConnector
+  }
+
+  /**
+   * Return the same MSI Db for all projectId.
+   */
+  override def getMsiDbConnector(projectId: Long) = {    
+    createProjectDatabaseConnector(ProlineDatabaseType.MSI, projectId)
+  }
+
+  /**
+   * Return the same LCMS Db for all projectId.
+   */
+  override def getLcMsDbConnector(projectId: Long) = {
+    createProjectDatabaseConnector(ProlineDatabaseType.LCMS, projectId)
+  }
+  
+	protected def createProjectDatabaseConnector(prolineDbType: ProlineDatabaseType, projectId: Long): IDatabaseConnector = {
+		
+		val project = udsEM.find(classOf[Project], projectId)
+
+		require(project != null, s"Project #$projectId NOT found in UDS Db")
+
+		val externalDb = ExternalDbRepository.findExternalByTypeAndProject(udsEM, prolineDbType, project)
+
+		if (externalDb == null) {
+			logger.warn(s"No ExternalDb for $prolineDbType Db of project #$projectId")
+			null
+		} else {
+			_extDbToConnector(externalDb, prolineDbType)
+		}
+	}
+	
+  private def _dbTypeToConnector(prolineDbType: ProlineDatabaseType): IDatabaseConnector = {
+		_extDbToConnector(ExternalDbRepository.findExternalByType(udsEM, prolineDbType), prolineDbType)
+	}
+	
+	private def _extDbToConnector(externalDb: ExternalDb, prolineDbType: ProlineDatabaseType): IDatabaseConnector = {
+		val propertiesMap = externalDb.toPropertiesMap(udsDbConnector.getDriverType())
+		//propertiesMap.put("ApplicationName", m_applicationName);
+		DatabaseConnectorFactory.createDatabaseConnectorInstance(prolineDbType, propertiesMap)
+	}
+
+  override def closeAll() {
+    this.synchronized {
+
+      if (pdiInitialized) {
+        pdiDbConnector.close()
+      }
+
+      if (psInitialized) {
+        psDbConnector.close()
+      }
+      
+			try {
+				udsEM.close()
+			} catch {
+			  case e: Exception => logger.error("Error closing UDS Db EntityManager", e)
+			}
+
+      udsDbConnector.close()
+
+    } // End of synchronized block on m_closeLock
+
+  }
+  
+  override def closeProjectConnectors(projectId: Long) {
+    throw new Exception("closeProjectConnectors is not effective here: please close the connectors directly")
   }
 
 }

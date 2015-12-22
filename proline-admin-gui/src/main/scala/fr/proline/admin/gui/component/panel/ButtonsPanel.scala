@@ -7,9 +7,7 @@ import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.geometry.Insets
 import scalafx.scene.control.Button
 import scalafx.scene.layout.VBox
-
 import com.typesafe.scalalogging.LazyLogging
-
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.component.dialog._
@@ -18,6 +16,7 @@ import fr.proline.admin.gui.process._
 import fr.proline.admin.gui.util._
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.core.orm.util.DataStoreUpgrader
+import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 
 /**
  * Create the buttons of the main window, one for each feature of Proline Admin.
@@ -148,22 +147,25 @@ object ButtonsPanel extends LazyLogging {
         LaunchAction(
           actionButton = this,
           actionString = Utils.mkCmd("upgrade_dbs"),
+          reloadConfig = false,
 
           action = () => {
-
             val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
-
-            /* Create missing databases */
-            fr.proline.admin.helper.sql.createMissingDatabases(SetupProline.config.udsDBConfig, dsConnectorFactory)
+            // Create missing databases
+            //fr.proline.admin.helper.sql.createMissingDatabases(SetupProline.config.udsDBConfig, dsConnectorFactory)
 
             /* Logback */
-            if (DataStoreUpgrader.upgradeAllDatabases(dsConnectorFactory)) {
+            try {
+              new UpgradeAllDatabases(dsConnectorFactory).doWork()
               println("INFO - Databases successfully upgraded !")
-            } else {
-              println("ERROR - Databases upgrade failed !")
+            } catch {
+              case e: Exception => {
+                println("ERROR - Databases upgrade failed: \n", e.getMessage)
+                logger.error("ERROR - Databases upgrade failed", e)
+              }  
             }
 
-            dsConnectorFactory.closeAll()
+            //dsConnectorFactory.closeAll()
           }
         ) //someActionRunning.set(false)
       }
