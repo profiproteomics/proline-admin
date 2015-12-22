@@ -19,7 +19,7 @@ import fr.proline.repository._
  *            Must be a valid initialized DataStoreConnectorFactory instance.
  */
 class UpgradeAllDatabases(
-  val dsConnectorFactory: DataStoreConnectorFactory
+  val dsConnectorFactory: IDataStoreConnectorFactory
 ) extends ICommandWork with StrictLogging {
 
   def doWork(): Unit = {
@@ -99,9 +99,11 @@ class UpgradeAllDatabases(
         udsEM.close()
       }
 
+      /*
       // Close UDSdb connector at the end
       if (udsDbConnector != null)
         udsDbConnector.close()
+      */
     }
 
     ()
