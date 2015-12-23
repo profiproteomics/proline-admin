@@ -47,7 +47,10 @@ class UpgradeMsiDbDefinitions(
         s
       }
       
-      scoring.setDescription(scoringType.getDescription)
+      if( scoring.getDescription != scoringType.getDescription ) {
+        scoring.setDescription(scoringType.getDescription)
+      }
+      
     }
     
     /*** Insert missing object tree schemas ***/
@@ -55,7 +58,7 @@ class UpgradeMsiDbDefinitions(
     // Load existing schemas
     val oldSchemas = msiEM.createQuery("SELECT s FROM fr.proline.core.orm.msi.ObjectTreeSchema s", classOf[ObjectTreeSchema]).getResultList
 
-    // Index scorings by their type
+    // Index schemas by their name
     val oldSchemaByName = oldSchemas.view.map { schema =>
       schema.getName -> schema
     } toMap

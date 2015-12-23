@@ -6,6 +6,7 @@ import com.typesafe.scalalogging.StrictLogging
 import fr.proline.admin.service.ICommandWork
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.ProlineEzDBC
+import fr.proline.core.dal.context._
 import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.core.orm.util.DataStoreConnectorFactory
@@ -15,7 +16,7 @@ import fr.proline.repository._
  *
  * Upgrades all Proline Databases (UDS, PDI, PS and all projects MSI and LCMS Dbs).
  * 
- * @param connectorFactory
+ * @param dsConnectorFactory
  *            Must be a valid initialized DataStoreConnectorFactory instance.
  */
 class UpgradeAllDatabases(
@@ -27,39 +28,38 @@ class UpgradeAllDatabases(
     if ((dsConnectorFactory == null) || !dsConnectorFactory.isInitialized())
       throw new IllegalArgumentException("Invalid connectorFactory")
 
-    /* Upgrade UDS Db */
+    // Open a connection to the UDSdb
     val udsDbConnector = dsConnectorFactory.getUdsDbConnector
-    _updradeDatabase(udsDbConnector, "UDSdb", closeConnector = false)
-    var udsEM: EntityManager = null
-
-    def _updateExternalDbVersion(dbType: ProlineDatabaseType, newVersion: String) {
-      val extDb = ExternalDbRepository.findExternalByType(udsEM, dbType)
-      extDb.setDbVersion(newVersion)
-    }
-
+    val udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
+    val udsEM = udsDbCtx.getEntityManager
+    
     try {
-
-      udsEM = udsDbConnector.getEntityManagerFactory.createEntityManager()
+      
+      val udsTx = udsEM.getTransaction()
+      udsTx.begin()
+      
+      /* Upgrade UDS Db */
+      _updradeDatabase(udsDbConnector, "UDSdb", closeConnector = false, upgradeCallback = { udsDbVersion =>      
+        /* Upgrade UDS Db definitions */
+        new UpgradeUdsDbDefinitions(udsDbCtx).run()
+      })
 
       /* Upgrade PDI Db */
-      _updradeDatabase(dsConnectorFactory.getPdiDbConnector, "PDIdb", onUpgradeSuccess = { pdiDbVersion =>
+      _updradeDatabase(dsConnectorFactory.getPdiDbConnector, "PDIdb", upgradeCallback = { pdiDbVersion =>
         /* Update PDI Db version */
-        _updateExternalDbVersion(ProlineDatabaseType.PDI, pdiDbVersion)
+        _updateExternalDbVersion(udsEM, ProlineDatabaseType.PDI, pdiDbVersion)
       })
 
       /* Upgrade PS Db */
-      _updradeDatabase(dsConnectorFactory.getPsDbConnector, "PSdb", onUpgradeSuccess = { psDbVersion =>
+      _updradeDatabase(dsConnectorFactory.getPsDbConnector, "PSdb", upgradeCallback = { psDbVersion =>
         /* Update PS Db version */
-        _updateExternalDbVersion(ProlineDatabaseType.PS, psDbVersion)
+        _updateExternalDbVersion(udsEM, ProlineDatabaseType.PS, psDbVersion)
       })
 
       /* Upgrade all Projects (MSI and LCMS) Dbs */
       val projectIds = ProjectRepository.findAllProjectIds(udsEM)
       
       if ((projectIds != null) && projectIds.isEmpty() == false) {
-        
-        val udsTx = udsEM.getTransaction()
-        udsTx.begin()
 
         for (projectId <- projectIds) {
           logger.debug(s"Upgrading databases of Project #$projectId")
@@ -69,34 +69,43 @@ class UpgradeAllDatabases(
           val msiVersion = _updradeDatabase(
             msiDbConnector,
             s"MSIdb (project #$projectId)",
-            onUpgradeSuccess = { msiVersion =>
+            upgradeCallback = { msiVersion =>
 
               /* Update MSI Db version */
-              _updateExternalDbVersion(ProlineDatabaseType.MSI, msiVersion)
+              _updateExternalDbVersion(udsEM, ProlineDatabaseType.MSI, msiVersion)
 
               /* Upgrade MSI Db definitions */
-              new UpgradeMsiDbDefinitions(new DatabaseConnectionContext(msiDbConnector)).run()
+              val msiDbCtx = new DatabaseConnectionContext(msiDbConnector)
+              
+              try {
+                // Executed inside a local transaction (see IUpgradeDb)
+                new UpgradeMsiDbDefinitions(msiDbCtx).run()  
+              } finally {
+                msiDbCtx.close()
+              }
+              
             }
           )
 
           /* Upgrade LCMS Db */
           val lcMsDbConnector = dsConnectorFactory.getLcMsDbConnector(projectId)
-          _updradeDatabase(lcMsDbConnector, s"LCMSdb (project #$projectId)", onUpgradeSuccess = { lcMsVersion =>
+          _updradeDatabase(lcMsDbConnector, s"LCMSdb (project #$projectId)", upgradeCallback = { lcMsVersion =>
             /* Update LCMS Db version */
-            _updateExternalDbVersion(ProlineDatabaseType.LCMS, lcMsVersion)
+            _updateExternalDbVersion(udsEM, ProlineDatabaseType.LCMS, lcMsVersion)
           })
 
         }
         
-        udsEM.flush()
-        udsTx.commit()
       }
+      
+      udsEM.flush()
+      udsTx.commit()
 
     } finally {
 
-      // Close UDS entity manager
-      if (udsEM != null) {
-        udsEM.close()
+      // Close UDSdb connection context
+      if (udsDbCtx != null) {
+        udsDbCtx.close()
       }
 
       /*
@@ -108,12 +117,17 @@ class UpgradeAllDatabases(
 
     ()
   }
+  
+  private def _updateExternalDbVersion(udsEM: EntityManager, dbType: ProlineDatabaseType, newVersion: String) {
+    val extDb = ExternalDbRepository.findExternalByType(udsEM, dbType)
+    extDb.setDbVersion(newVersion)
+  }
 
   private def _updradeDatabase(
     dbConnector: IDatabaseConnector,
     dbShortName: String,
     closeConnector: Boolean = true,
-    onUpgradeSuccess: String => Unit = null
+    upgradeCallback: String => Unit = null
   ): IDatabaseConnector = {
 
     if (dbConnector == null) {
@@ -131,7 +145,7 @@ class UpgradeAllDatabases(
         
         val driverType = dbConnector.getDriverType
 
-        // TODO: find a way to migrate SQLite databases with flyway
+        // TODO: find a way to migrate SQLite databases using flyway
         val version = if( driverType == DriverType.SQLITE ) "no.version"
         else { 
           // Try to retrieve the version reached after the applied migration
@@ -141,8 +155,8 @@ class UpgradeAllDatabases(
           }
         }
 
-        if (onUpgradeSuccess != null)
-          onUpgradeSuccess(version)
+        if (upgradeCallback != null)
+          upgradeCallback(version)
 
       } finally {
 

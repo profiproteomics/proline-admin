@@ -22,24 +22,13 @@ trait IUpgradeDB extends LazyLogging {
 
   /** Execute the setup of the database. */
   def run() {
-    require(_executed == false, "upgrde already executed")
+    require(_executed == false, "upgrade already executed")
 
-    // TODO: call the DatabaseUpgrader
-
-    try {
-
-      dbCtx.tryInTransaction {
-        this.upgradeDefinitions()
-      }
-
-    } finally {
-
-      if (dbCtx != null) {
-        dbCtx.close()
-      }
-
+    // TODO: call the DatabaseUpgrader ?
+    dbCtx.tryInTransaction {
+      this.upgradeDefinitions()
     }
-
+    
     dbCtx.synchronized {
       _executed = true
     }
