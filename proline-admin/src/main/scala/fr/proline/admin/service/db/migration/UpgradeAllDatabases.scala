@@ -47,13 +47,13 @@ class UpgradeAllDatabases(
       /* Upgrade PDI Db */
       _updradeDatabase(dsConnectorFactory.getPdiDbConnector, "PDIdb", upgradeCallback = { pdiDbVersion =>
         /* Update PDI Db version */
-        _updateExternalDbVersion(udsEM, ProlineDatabaseType.PDI, pdiDbVersion)
+        _updateExternalDbVersion(pdiDbVersion, udsEM, ProlineDatabaseType.PDI )
       })
 
       /* Upgrade PS Db */
       _updradeDatabase(dsConnectorFactory.getPsDbConnector, "PSdb", upgradeCallback = { psDbVersion =>
         /* Update PS Db version */
-        _updateExternalDbVersion(udsEM, ProlineDatabaseType.PS, psDbVersion)
+        _updateExternalDbVersion(psDbVersion, udsEM, ProlineDatabaseType.PS )
       })
 
       /* Upgrade all Projects (MSI and LCMS) Dbs */
@@ -72,7 +72,7 @@ class UpgradeAllDatabases(
             upgradeCallback = { msiVersion =>
 
               /* Update MSI Db version */
-              _updateExternalDbVersion(udsEM, ProlineDatabaseType.MSI, msiVersion)
+              _updateExternalDbVersion(msiVersion, udsEM, ProlineDatabaseType.MSI, Some(projectId) )
 
               /* Upgrade MSI Db definitions */
               val msiDbCtx = new DatabaseConnectionContext(msiDbConnector)
@@ -91,7 +91,7 @@ class UpgradeAllDatabases(
           val lcMsDbConnector = dsConnectorFactory.getLcMsDbConnector(projectId)
           _updradeDatabase(lcMsDbConnector, s"LCMSdb (project #$projectId)", upgradeCallback = { lcMsVersion =>
             /* Update LCMS Db version */
-            _updateExternalDbVersion(udsEM, ProlineDatabaseType.LCMS, lcMsVersion)
+            _updateExternalDbVersion(lcMsVersion, udsEM, ProlineDatabaseType.LCMS, Some(projectId))
           })
 
         }
@@ -118,8 +118,17 @@ class UpgradeAllDatabases(
     ()
   }
   
-  private def _updateExternalDbVersion(udsEM: EntityManager, dbType: ProlineDatabaseType, newVersion: String) {
-    val extDb = ExternalDbRepository.findExternalByType(udsEM, dbType)
+  private def _updateExternalDbVersion(newVersion: String, udsEM: EntityManager, dbType: ProlineDatabaseType, projectId: Option[Long] = None ) {
+
+    val extDb = projectId match {
+      case None => ExternalDbRepository.findExternalByType(udsEM, dbType)
+      case Some(id) => ExternalDbRepository.findExternalByTypeAndProject(
+        udsEM,
+        dbType,
+        udsEM.find(classOf[fr.proline.core.orm.uds.Project], id)
+      )
+    }
+    
     extDb.setDbVersion(newVersion)
   }
 
