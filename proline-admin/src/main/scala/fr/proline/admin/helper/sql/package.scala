@@ -2,7 +2,16 @@ package fr.proline.admin.helper
 
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.SQLException
 import java.util.Collection
+
+import javax.persistence.EntityManager
+import javax.persistence.EntityTransaction
+
+import scala.util.Try
+
+import com.typesafe.scalalogging.LazyLogging
+
 import org.dbunit.DataSourceDatabaseTester
 import org.dbunit.database.DatabaseConfig
 import org.dbunit.database.IDatabaseConnection
@@ -14,8 +23,7 @@ import org.dbunit.ext.h2.H2DataTypeFactory
 import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory
 import org.dbunit.operation.DatabaseOperation
 import org.postgresql.Driver
-import org.postgresql.util.PSQLException
-import com.typesafe.scalalogging.LazyLogging
+
 import fr.profi.util.StringUtils
 import fr.profi.util.dbunit._
 import fr.profi.util.primitives.castToTimestamp
@@ -31,15 +39,7 @@ import fr.proline.core.dal.tables.pdi.PdiDb
 import fr.proline.core.dal.tables.ps.PsDb
 import fr.proline.core.dal.tables.uds.UdsDb
 import fr.proline.core.orm.uds.repository.ProjectRepository
-import fr.proline.core.orm.util.DataStoreConnectorFactory
-import fr.proline.repository.DatabaseUpgrader
-import fr.proline.repository.DriverType
-import fr.proline.repository.IDatabaseConnector
-import fr.proline.repository.ProlineDatabaseType
-import javax.persistence.EntityManager
-import javax.persistence.EntityTransaction
-import scala.util.{Try, Success, Failure }
-import java.sql.SQLException
+import fr.proline.repository._
 
 /**
  * @author David Bouyssie
@@ -502,7 +502,7 @@ package object sql extends LazyLogging {
     if (jdbcRS.next() && jdbcRS.getInt(1) == 0) false else true
   }
   
-  def createMissingDatabases(dbConfig: DatabaseSetupConfig, dsConnectorFactory: DataStoreConnectorFactory): Unit = {
+  def createMissingDatabases(dbConfig: DatabaseSetupConfig, dsConnectorFactory: IDataStoreConnectorFactory): Unit = {
     
     logger.info("Looking for missing databases...")
     

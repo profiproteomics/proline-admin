@@ -3,12 +3,12 @@ package fr.proline.admin
 import com.beust.jcommander.{ JCommander, MissingCommandException, Parameter, ParameterException, Parameters }
 import com.typesafe.scalalogging.LazyLogging
 
+import fr.profi.util.ThreadLogger
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.service.user.{ CreateProject, CreateUser }
-import fr.proline.core.orm.util.{ DataStoreConnectorFactory, DataStoreUpgrader }
-import fr.profi.util.ThreadLogger
+import fr.proline.repository.UncachedDataStoreConnectorFactory
 
 object RunCommand extends App with LazyLogging {
 
@@ -83,10 +83,10 @@ object RunCommand extends App with LazyLogging {
   private object UpgradeDatabasesCommand extends JCommandReflection
 
   var hasDsConnectorFactory = false
-  lazy val dsConnectorFactory: DataStoreConnectorFactory = {
+  lazy val dsConnectorFactory: UncachedDataStoreConnectorFactory = {
 
     // Instantiate a database manager
-    val dsConnectorFactory = DataStoreConnectorFactory.getInstance()
+    val dsConnectorFactory = UncachedDataStoreConnectorFactory.getInstance()
     if (!dsConnectorFactory.isInitialized) {
       dsConnectorFactory.initialize(SetupProline.config.udsDBConfig.toNewConnector)
     }

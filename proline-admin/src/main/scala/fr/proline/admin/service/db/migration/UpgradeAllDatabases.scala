@@ -181,7 +181,7 @@ class UpgradeAllDatabases(
 
 object UpgradeAllDatabases extends StrictLogging {
   
-  def apply(dsConnectorFactory: DataStoreConnectorFactory) = {
+  def apply(dsConnectorFactory: IDataStoreConnectorFactory) = {
     
     try {
       new UpgradeAllDatabases(dsConnectorFactory).doWork()
