@@ -136,15 +136,16 @@ class UpgradeAllDatabases(
     dbConnector: IDatabaseConnector,
     dbShortName: String,
     closeConnector: Boolean = true,
+    repairChecksum: Boolean = true, // TODO: add this param to GUI
     upgradeCallback: String => Unit = null
   ): IDatabaseConnector = {
 
     if (dbConnector == null) {
       logger.warn(s"DataStoreConnectorFactory has no valid connector to $dbShortName")
     } else {
-
+      
       try {
-        val dbMigrationCount = DatabaseUpgrader.upgradeDatabase(dbConnector)
+        val dbMigrationCount = DatabaseUpgrader.upgradeDatabase(dbConnector, repairChecksum)
 
         if (dbMigrationCount < 0) {
           throw new Exception(s"Unable to upgrade $dbShortName")

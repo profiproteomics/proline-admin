@@ -74,7 +74,7 @@ package object sql extends LazyLogging {
     // TODO: find an other way to handle the SCHEMA VERSION
     dbConfig.schemaVersion = "0.1"
 
-    val upgradeStatus = if (DatabaseUpgrader.upgradeDatabase(dbConnector) > 0) true else false
+    val upgradeStatus = if (DatabaseUpgrader.upgradeDatabase(dbConnector, false) > 0) true else false
 
     upgradeStatus
   }
