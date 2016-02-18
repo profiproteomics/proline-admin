@@ -1,7 +1,12 @@
 package fr.proline.admin.gui.process
 
-import com.typesafe.scalalogging.LazyLogging
+import javax.persistence.EntityManager
+
 import scala.collection.JavaConverters._
+
+import com.typesafe.scalalogging.LazyLogging
+import com.typesafe.scalalogging.StrictLogging
+
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.context.DatabaseConnectionContext
@@ -9,15 +14,11 @@ import fr.proline.core.orm.uds.ExternalDb
 import fr.proline.core.orm.uds.Project
 import fr.proline.core.orm.uds.UserAccount
 import fr.proline.core.orm.uds.repository.ProjectRepository
-import fr.proline.core.orm.util.DataStoreConnectorFactory
-import fr.proline.repository.IDatabaseConnector
-import javax.persistence.EntityManager
-import fr.proline.repository.DatabaseUpgrader
-import com.typesafe.scalalogging.StrictLogging
 import fr.proline.repository.IDataStoreConnectorFactory
-import fr.proline.repository.DatabaseConnectorFactory
-import fr.proline.repository.ProlineDatabaseType
-import fr.proline.core.orm.uds.repository.ExternalDbRepository
+import fr.proline.repository.IDatabaseConnector
+import fr.proline.repository.UncachedDataStoreConnectorFactory
+
+
 
 /**
  * Some utilities relative to UDS database connection
@@ -106,19 +107,21 @@ object UdsRepository extends LazyLogging {
    * Get datastore connector factory using UDS databse 
    */
   def getDataStoreConnFactory(): IDataStoreConnectorFactory = {
+    
     if( _dsConnectorFactory == null ) {
+      
       // FIXME: fix the EntityManager is already closed bug (from DataStoreConnectorFactory) to reuse existing "udsDbConnector"
-      _dsConnectorFactory = new DynamicDataStoreConnectorFactory(this.getUdsDbConfig.toNewConnector())
+      //_dsConnectorFactory = new DynamicDataStoreConnectorFactory(this.getUdsDbConfig.toNewConnector())
+      
+      val dsConnectorFactory = UncachedDataStoreConnectorFactory.getInstance()
+      if (!dsConnectorFactory.isInitialized) {
+        dsConnectorFactory.initialize(this.getUdsDbConfig.toNewConnector())
+      }
+      
+      _dsConnectorFactory = dsConnectorFactory
     }
+    
     _dsConnectorFactory
-    
-    
-    /*val connectorFactory = DataStoreConnectorFactory.getInstance()
-    if (!connectorFactory.isInitialized) {
-      connectorFactory.initialize(this.getUdsDbConnector())
-    }
-
-    connectorFactory*/
   }
 
   /**
@@ -256,7 +259,7 @@ object UdsRepository extends LazyLogging {
 
 }
 
-
+/*
 class DynamicDataStoreConnectorFactory(
   private val udsDbConnector: IDatabaseConnector = null
 ) extends IDataStoreConnectorFactory with LazyLogging {
@@ -354,4 +357,4 @@ class DynamicDataStoreConnectorFactory(
     throw new Exception("closeProjectConnectors is not effective here: please close the connectors directly")
   }
 
-}
+}*/
