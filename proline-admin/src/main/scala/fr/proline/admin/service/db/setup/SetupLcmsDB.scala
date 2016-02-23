@@ -4,6 +4,7 @@ import com.typesafe.scalalogging.LazyLogging
 import fr.profi.jdbc.easy._
 import fr.profi.util.serialization.ProfiJson
 import fr.proline.context.DatabaseConnectionContext
+import fr.proline.core.dal.BuildDbConnectionContext
 import fr.proline.core.dal.context._
 import fr.proline.core.dal.DoJDBCWork
 import fr.proline.core.dal.tables.lcms.{ LcmsDbFeatureScoringTable, LcmsDbPeakelFittingModelTable, LcmsDbPeakPickingSoftwareTable }
@@ -11,7 +12,6 @@ import fr.proline.core.om.model.lcms.FeatureScoring
 import fr.proline.core.om.model.lcms.PeakPickingSoftware
 import fr.proline.core.om.model.lcms.PeakelFittingModel
 import fr.proline.repository.IDatabaseConnector
-import fr.proline.core.dal.ContextFactory
 
 /**
  * @author David Bouyssie
@@ -26,7 +26,7 @@ class SetupLcmsDB(
 
   protected def importDefaults() {
     
-    val lcMsSqlContext = ContextFactory.buildDbConnectionContext(dbConnector, false)
+    val lcMsSqlContext = BuildDbConnectionContext(dbConnector, false)
     
     try {
       

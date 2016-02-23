@@ -30,7 +30,7 @@ import fr.profi.util.primitives.castToTimestamp
 import fr.profi.util.resources._
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.context.DatabaseConnectionContext
-import fr.proline.core.dal.ContextFactory
+import fr.proline.core.dal.BuildDbConnectionContext
 import fr.proline.core.dal.DoJDBCWork
 import fr.proline.core.dal.context._
 import fr.proline.core.dal.tables.lcms.LcmsDb
@@ -160,7 +160,7 @@ package object sql extends LazyLogging {
     val tableNamesInDb = dbUnitDS.getTableNames()
     val dbTblNameByUpCasedTblName = tableNamesInDb.map(tbl => tbl.toUpperCase() -> tbl ).toMap
     
-    val sqlContext = ContextFactory.buildDbConnectionContext(dbConnector, false)
+    val sqlContext = BuildDbConnectionContext(dbConnector, false)
     
     try {
       
