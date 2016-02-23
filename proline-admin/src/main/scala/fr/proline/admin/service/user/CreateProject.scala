@@ -6,7 +6,6 @@ import fr.profi.jdbc.easy.{ date2Formattable, int2Formattable, string2Formattabl
 import fr.proline.admin.service.db.{ CreateProjectDBs, SetupProline }
 import fr.proline.admin.service.ICommandWork
 import fr.proline.context.DatabaseConnectionContext
-import fr.proline.core.dal.ContextFactory
 import fr.proline.core.orm.uds.{ Dataset => UdsDataset, Project => UdsProject, UserAccount => UdsUser }
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.DriverType
