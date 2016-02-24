@@ -354,7 +354,7 @@ package object sql extends LazyLogging {
   
   def tryInTransaction( dbConnector: IDatabaseConnector, txWork: EntityManager => Unit ) {
     
-    val em = dbConnector.createEntityManager()    
+    val em = dbConnector.createEntityManager()
     var transaction: EntityTransaction = null
     var isTxOK: Boolean = false
     
