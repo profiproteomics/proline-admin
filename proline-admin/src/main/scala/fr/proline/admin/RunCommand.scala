@@ -75,6 +75,11 @@ object RunCommand extends App with LazyLogging {
     @Parameter(names = Array("--dir_path", "-d"), description = "The path to the export directory", required = true)
     var dirPath: String = ""
   }
+  @Parameters(commandNames = Array("export_msidb_stats"), commandDescription = "Export some statitics about MSIdb", separators = "=")
+  private object ExportMsiDbStatsCommand extends JCommandReflection {
+    @Parameter(names = Array("--dir_path", "-d"), description = "The path to the export directory", required = true)
+    var dirPath: String = ""
+  }
   
   @Parameters(commandNames = Array("create_missing_dbs"), commandDescription = "Create missing MSI and LCMS databases", separators = "=")
   private object CreateMissingDbsCommand extends JCommandReflection
@@ -108,6 +113,7 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(DumpPsDbCommand)
     jCmd.addCommand(DumpUdsDbCommand)
     jCmd.addCommand(ExportDbUnitDTDsCommand)
+    jCmd.addCommand(ExportMsiDbStatsCommand)
     jCmd.addCommand(UpgradeDatabasesCommand)
 
     // Try to parse the command line
@@ -158,6 +164,10 @@ object RunCommand extends App with LazyLogging {
         case ExportDbUnitDTDsCommand.Parameters.firstName => {
           import fr.proline.admin.service.db.maintenance.ExportDbUnitDTDs
           ExportDbUnitDTDs(dsConnectorFactory, ExportDbUnitDTDsCommand.dirPath)
+        }
+        case ExportMsiDbStatsCommand.Parameters.firstName => {
+          import fr.proline.admin.service.db.maintenance.ExportMsiDbStats
+          ExportMsiDbStats(dsConnectorFactory, ExportMsiDbStatsCommand.dirPath)
         }
         case CreateMissingDbsCommand.Parameters.firstName => {            
           helper.sql.createMissingDatabases(SetupProline.config.udsDBConfig, dsConnectorFactory)
