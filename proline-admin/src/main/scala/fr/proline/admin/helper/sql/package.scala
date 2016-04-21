@@ -212,7 +212,7 @@ package object sql extends LazyLogging {
                         case dt: java.util.Date => statement.addTimestamp(new java.sql.Timestamp(dt.getTime))
                       }*/
                       
-                      // For the SQL <-> Java type mapping see http://db.apache.org/ojb/docu/guides/jdbc-types.html                      
+                      // For the SQL <-> Java type mapping see http://db.apache.org/ojb/docu/guides/jdbc-types.html
                       dataType match {
                         case DataType.BIT => statement.addBoolean(valueAsStr.toBoolean)
                         case DataType.BOOLEAN => statement.addBoolean(valueAsStr.toBoolean)
@@ -226,7 +226,7 @@ package object sql extends LazyLogging {
                         case DataType.LONGVARCHAR => statement.addString(valueAsStr)
                         case DataType.CLOB => statement.addString(valueAsStr)
                         case DataType.DATE => statement.addTimestamp(castToTimestamp(valueAsStr))
-                        case DataType.TIMESTAMP => statement.addTimestamp(castToTimestamp(valueAsStr))                        
+                        case DataType.TIMESTAMP => statement.addTimestamp(castToTimestamp(valueAsStr))
                         case _ => throw new Exception( "not yet implemented data type: " + dataType )
                       }
                       
@@ -402,47 +402,37 @@ package object sql extends LazyLogging {
   
   protected def createPgDatabase(pgDbConnector: IDatabaseConnector, dbConfig: DatabaseSetupConfig) {
     
-    // Create database connection and statement
-    logger.info("createPgDatabase: Create database connection and statement")
-    val pgDbConn = {
-      try {
-        pgDbConnector.getDataSource.getConnection
-      } catch {
-        case psqle: SQLException => {
-          val pgClass = classOf[org.postgresql.Driver]
+    // Create connection template statement to check if database exists
+    logger.info("createPgDatabase: create connection template statement to check if database exists")
           
-          // Create connection template statement to check if database exists
-          logger.info("Create connection template statement to check if database exists")
-          val pgConnTemplate = _createPgConnectionTemplate(dbConfig)
-          val stmt = pgConnTemplate.createStatement
-          
-          // Create database if it doesn't exists
-          if (_checkDbExists(stmt, dbConfig.dbName) == false) {
-            logger.info(s"Creating database '${dbConfig.dbName}'...") 
-            stmt.executeUpdate(s"CREATE DATABASE ${dbConfig.dbName};")
-          }
-
-          // Close database connection and statement
-          stmt.close()
-          pgConnTemplate.close()
-
-          pgDbConnector.getDataSource.getConnection
-        }
-        case e: Exception => {
-          logger.info("createPgDatabase Exception "+e.getStackTrace);
-        }
-      } 
-    }.asInstanceOf[Connection]
-
-    val stmt = pgDbConn.createStatement
+    // Create PostGres template connection statement
+    val pgConnTemplate = _createPgConnectionTemplate(dbConfig)
+    val pgConnTemplateStatement = pgConnTemplate.createStatement
     
-    // Check that database has been created
-    if (_checkDbExists(stmt, dbConfig.dbName) == false)
-      throw new Exception(s"can't create database '${dbConfig.dbName}'")
-
-    // Close database connection and statement
-    stmt.close()
-    pgDbConn.close()
+    val dbName = dbConfig.dbName
+    if( _checkDbExists(pgConnTemplateStatement,dbName) == false ) {
+      logger.info(s"Creating database '$dbName'...") 
+      pgConnTemplateStatement.executeUpdate(s"CREATE DATABASE $dbName;")
+    }
+    
+    try {
+      // Check that database has been created
+      assert(
+        _checkDbExists(pgConnTemplateStatement, dbName),
+        s"Can't create database '$dbName'"
+      )
+      
+    } catch {
+      case t: Throwable => {
+        logger.error("createPgDatabase failed: "+t.getStackTrace)
+        throw t
+      }
+    } finally {
+      // Close open resources
+      pgConnTemplateStatement.close()
+      pgConnTemplate.close()
+    }
+    
   }
 
 
@@ -471,7 +461,6 @@ package object sql extends LazyLogging {
     val host = connConfig.getString("host")
     val port = connConfig.getString("port")
     require(StringUtils.isNotEmpty(port), "missing port value")
-    logger.info("_createPgConnectionTemplate ")
     
     _getPgConnectionToTemplate1(host, port.toInt, connConfig.getString("user"), connConfig.getString("password") )
   }
@@ -487,7 +476,8 @@ package object sql extends LazyLogging {
     else
       s"jdbc:postgresql://${host}/template1"
 
-    logger.info("_getPgConnectionToTemplate1 "+templateURL)
+    logger.info("_getPgConnectionToTemplate1: create connection at "+templateURL)
+    
     DriverManager.getConnection(
       templateURL,
       user,
@@ -520,7 +510,7 @@ package object sql extends LazyLogging {
       var createdDbCount = 0
 
       // Iterate over projects
-      import scala.collection.JavaConversions._      
+      import scala.collection.JavaConversions._
       projectIds.foreach { projectId =>
         
         // Create MSIdb if it does not exist
@@ -549,7 +539,7 @@ package object sql extends LazyLogging {
       // Close open resources
       pgConnTemplateStatement.close()
       pgConnTemplate.close()
-      udsDbContext.close()      
+      udsDbContext.close()
     }
   }
 
@@ -558,7 +548,7 @@ package object sql extends LazyLogging {
   protected def disableForeignKeyConstraints( dbContext: DatabaseConnectionContext ) {
     
     DoJDBCWork.withEzDBC(dbContext, { ezDBC =>
-      val driverType = dbContext.getDriverType    
+      val driverType = dbContext.getDriverType
       
       driverType match {
         case DriverType.H2 => ezDBC.execute("SET REFERENTIAL_INTEGRITY FALSE")
@@ -572,7 +562,7 @@ package object sql extends LazyLogging {
   def enableForeignKeyConstraints( dbContext: DatabaseConnectionContext ) {
     
     DoJDBCWork.withEzDBC(dbContext, { ezDBC =>
-      val driverType = dbContext.getDriverType    
+      val driverType = dbContext.getDriverType
       
       driverType match {
         case DriverType.H2 => ezDBC.execute("SET REFERENTIAL_INTEGRITY TRUE")
