@@ -163,7 +163,7 @@ class CreateProjectDBs(
       case ConnectionMode.FILE => {
 
         // Create projects directory if not exists
-        val projectsDir = CreateProjectDBs.getProjectsDir(dbConfig.dbDirectory)
+        val projectsDir = CreateProjectDBs.getProjectsDir(dbConfig.dbDirectoryOpt.get)
         if (projectsDir.exists == false) projectsDir.mkdir()
 
         // Retrieve project directory
@@ -171,7 +171,7 @@ class CreateProjectDBs(
         if (projectDir.exists == false) projectDir.mkdir()
 
         // Update database config directory
-        dbConfig.copy(dbDirectory = projectDir)
+        dbConfig.copy(dbDirectoryOpt = Some(projectDir) )
       }
       case ConnectionMode.HOST => {
 

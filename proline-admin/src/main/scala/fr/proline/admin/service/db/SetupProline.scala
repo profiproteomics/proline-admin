@@ -148,15 +148,18 @@ object SetupProline {
 
     // Load proline main settings
     val prolineConfig = config.getConfig("proline-config")
-    val dataDirStr = prolineConfig.getString("data-directory")
-    val dataDir = new File(dataDirStr)
 
     // Load shared settings
     val authConfig = config.getConfig("auth-config")
     val hostConfig = config.getConfig("host-config")
     val driverAlias = prolineConfig.getString("driver-type")
     val driverConfig = config.getConfig(driverAlias + "-config")
+    // TODO: find what is "application-" + driverAlias
     val appDriverSpecificConf = ConfigFactory.load(classLoader, "application-" + driverAlias)
+    val driver = DriverType.valueOf(driverAlias.toUpperCase())
+    
+    val dataDirStrOpt = if (driver == DriverType.POSTGRESQL) None else Some(prolineConfig.getString("data-directory"))
+    val dataDirOpt = dataDirStrOpt.map(new File(_))
 
     // Load database specific settings
     val dbList = List("uds", "pdi", "ps", "msi", "lcms")
@@ -171,21 +174,14 @@ object SetupProline {
       // Merge connection settings with shared settings
       val fullConnConfig = _mergeConfigs(connectionConfig, authConfig, hostConfig, driverConfig.getConfig("connection-properties"))
 
-      // Build the script directory corresponding to the current database configuration
-      //      val scriptDir = prolineConfig.getString("db-script-root") +
-      //                       dbConfig.getString("script-directory") +
-      //                       driverConfig.getString("script-directory")
-      //      val scriptName = dbConfig.getString("script-name")
-
       val db = ProlineDatabaseType.withPersistenceUnitName(dbType + "db_production")
-      val driver = DriverType.valueOf(driverAlias.toUpperCase()) //fullConnConfig.getString("driver")
 
       // Build the database setup configuration object
-      (dbType -> DatabaseSetupConfig(db, driver, dataDir, fullConnConfig))
+      (dbType -> DatabaseSetupConfig(db, driver, dataDirOpt, fullConnConfig))
     } toMap
 
     ProlineSetupConfig(
-      dataDirectory = dataDir,
+      dataDirectoryOpt = dataDirOpt,
       udsDBConfig = dbSetupConfigByType("uds"),
       pdiDBConfig = dbSetupConfigByType("pdi"),
       psDBConfig = dbSetupConfigByType("ps"),
