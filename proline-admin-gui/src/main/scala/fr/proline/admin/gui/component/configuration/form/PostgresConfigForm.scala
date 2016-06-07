@@ -1,12 +1,14 @@
-package fr.proline.admin.gui.component.dialog
+package fr.proline.admin.gui.component.configuration.form
 
-import java.io.File
-import java.io.FileWriter
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
+
+import java.io.File
+import java.io.FileWriter
 
 import scalafx.Includes._
 import scalafx.beans.property.LongProperty
@@ -14,36 +16,33 @@ import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.Cursor
 import scalafx.scene.Node
-import scalafx.scene.Scene
 import scalafx.scene.control.Button
 import scalafx.scene.control.CheckBox
 import scalafx.scene.control.ComboBox
 import scalafx.scene.control.Label
-import scalafx.scene.control.ScrollPane
-import scalafx.scene.control.ScrollPane.ScrollBarPolicy
 import scalafx.scene.control.Tooltip
-import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.GridPane
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
-import scalafx.stage.Modality
 import scalafx.stage.Stage
 
-import com.typesafe.scalalogging.LazyLogging
-
-import fr.profi.util.primitives._
-import fr.profi.util.StringUtils.LINE_SEPARATOR
-import fr.profi.util.scala.ByteUtils._
-import fr.profi.util.scala.ScalaUtils
-import fr.profi.util.scalafx.{ScalaFxUtils, NumericTextField, IntegerTextField}
-import fr.profi.util.scalafx.ScalaFxUtils.{closeIfEscapePressed, seq2obsBuff}
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.config.ConfigFileKVLine
 import fr.proline.admin.gui.process.config.postgres._
 import fr.proline.admin.gui.process.config.postgres.PgParamType._
 import fr.proline.admin.gui.util.ConfigParamSlider
+import fr.proline.admin.gui.util.ShowPopupWindow
+
+import fr.profi.util.StringUtils.LINE_SEPARATOR
+import fr.profi.util.primitives._
+import fr.profi.util.scala.ByteUtils._
+import fr.profi.util.scala.ScalaUtils
+import fr.profi.util.scalafx.IntegerTextField
+import fr.profi.util.scalafx.NumericTextField
+import fr.profi.util.scalafx.ScalaFxUtils
+import fr.profi.util.scalafx.ScalaFxUtils.seq2obsBuff
 
 
 /**
@@ -63,25 +62,10 @@ case class PgFormLine(
  * Form to edit and update PostgreSQL configuration (postresql.conf) *
  * ***************************************************************** *
  */
-class PostgresConfigForm extends Stage with LazyLogging {
-
-  val formEditor = this
-
-  /* Stage's properties */
-  title = s"PostgreSQL configuration editor -- ${Main.postgresqlDataDir}"
-  initModality(Modality.WINDOW_MODAL)
-  initOwner(Main.stage)
-  width = 800
-  minWidth = 616
-
-  /**
-   * ***** *
-   * STUFF *
-   * ***** *
-   */
+class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStage: Stage) extends VBox with IConfigFilesForm with LazyLogging {
 
   /* Read initial settings */
-  val pgConfigFile = new PostgresConfigFile(Main.postgresqlDataDir + "/postgresql.conf")
+  val pgConfigFile = new PostgresConfigFile(postgresConfigFilePath)
   val pgConfigInitSettings = pgConfigFile.lineByKey
 
   /* Get min, max, default, and optimized values */
@@ -93,7 +77,7 @@ class PostgresConfigForm extends Stage with LazyLogging {
   /* Know graphical components for each param */
   val compoByParam: HashMap[PostgresOptimizableParamEnum.Param, PgFormLine] = HashMap()
 
-  /**
+  /*
    * ********** *
    * COMPONENTS *
    * ********** *
@@ -154,7 +138,7 @@ class PostgresConfigForm extends Stage with LazyLogging {
     /* Slider for param value selection */
     //for byte amounts, unit is B (?????????)
     val slider = new ConfigParamSlider(pgConfigDefaults(labeledParam)) {
-      prefWidth <== formEditor.width
+      prefWidth <== parentStage.width
     }
 
     /* Numeric text field for param value viz. and selection */
@@ -432,14 +416,9 @@ class PostgresConfigForm extends Stage with LazyLogging {
     wrapText = true
     onAction = handle { _setAllToDefault() }
   }
-  val applyButton = new Button("Apply") {
-    onAction = handle { _onApplyPressed() }
-  }
-  val cancelButton = new Button("Cancel") {
-    onAction = handle { formEditor.close() }
-  }
 
-  /**
+
+  /*
    * ****** *
    * LAYOUT *
    * ****** *
@@ -467,9 +446,9 @@ class PostgresConfigForm extends Stage with LazyLogging {
   }
 
   /* Buttons */
-  val buttonList = Seq(setAllToOptimizedButton, setQllToDefaultsButton, applyButton, cancelButton)
+  val buttonList = Seq(setAllToOptimizedButton, setQllToDefaultsButton)
   buttonList.foreach { b =>
-    b.prefWidth <== formEditor.width
+    b.prefWidth <== parentStage.width
     b.minHeight = 30
     b.prefHeight = 35
     b.style = "-fx-font-weight:bold;-fx-inner-border : black; "
@@ -481,45 +460,17 @@ class PostgresConfigForm extends Stage with LazyLogging {
     content = Seq(setAllToOptimizedButton, setQllToDefaultsButton)
   }
 
-  val bottomButtons = new HBox {
-    alignmentInParent = Pos.Center
-    spacing = 20
-    content = Seq(applyButton, cancelButton)
-  }
+  /* VBox content */
+  alignment = Pos.Center
+  padding = Insets(30, 40, 30, 5)
+  spacing = 30
+  content = Seq(topButtons, warningAboutRestartLabel, noteLabel, paramsGridPane, wrappedApplyButton)
 
-  /* Scene */
-  scene = new Scene {
-    onKeyPressed = (ke: KeyEvent) => {
-      closeIfEscapePressed(formEditor, ke)
-      //fireIfEnterPressed(applyButton, ke)
-    }
-    root = new ScrollPane {
-
-      hbarPolicy = ScrollBarPolicy.AS_NEEDED
-      vbarPolicy = ScrollBarPolicy.AS_NEEDED
-      val SCROLL_BAR_PUTATIVE_WIDTH = 40
-
-      content = new VBox {
-
-        alignment = Pos.Center
-        padding = Insets(20)
-        spacing = 30
-
-        minWidth <== formEditor.width - SCROLL_BAR_PUTATIVE_WIDTH
-        maxWidth <== formEditor.width - SCROLL_BAR_PUTATIVE_WIDTH
-        minHeight <== formEditor.height - SCROLL_BAR_PUTATIVE_WIDTH
-
-        content = Seq(topButtons, warningAboutRestartLabel, noteLabel, paramsGridPane, bottomButtons)
-      }
-    }
-  }
-
-  /**
+  /*
    * ******** *
    * FEATURES *
    * ******** *
    */
-
   private def _setAllToOptimized() {
     compoByParam.foreach {
       case (labeledParam, formLine) =>
@@ -534,97 +485,6 @@ class PostgresConfigForm extends Stage with LazyLogging {
         formLine.checkBox.selected = true
         formLine.slider.value = pgConfigDefaults(labeledParam).defaultValue.toDouble
     }
-  }
-
-  private def _onApplyPressed() {
-
-    Main.stage.scene().setCursor(Cursor.WAIT)
-
-    val configFileLines = pgConfigFile.lines
-    val configFileLinesLen = configFileLines.length
-    val newLinesBuffer = new ArrayBuffer[String](PostgresOptimizableParamEnum.params().length)
-
-    /* Update valueString in ConfigKVLine, and lines in ConfigFileIndexing.lines */
-    compoByParam.foreach { case (labeledParam, formLine) =>
-
-      val valueAsString = formatByParam(labeledParam).formatter(formLine.slider.value.doubleValue())
-      val commentLine = !formLine.checkBox.selected()
-
-      val configLineKey = PostgresOptimizableParamEnum.getParamConfigKey(labeledParam)
-      val oldConfigKVLineOpt = pgConfigFile.lineByKey.get(configLineKey)
-
-      val newConfigKVLineOpt: Option[ConfigFileKVLine] = {
-
-        /* If KVLine is already known, update it */
-        if (oldConfigKVLineOpt.isDefined) {
-          val oldConfigKVLine = oldConfigKVLineOpt.get
-
-          if (commentLine) Some(oldConfigKVLine.comment())
-          else Some(oldConfigKVLine.toNewKVLine(valueAsString, commented = false)) //commentLine
-        }
-
-        /* Otherwise line is commented or doesn't exist */
-        else {
-
-          /* Don't change or create commented parameters */
-          if (commentLine) None
-
-          /* Try to find line (commented) in lines array, or append it */
-          else {
-            val newLine = _createNewKVLine(
-              configLineKey,
-              valueAsString,
-              configFileLines,
-              configFileLinesLen,
-              newLinesBuffer
-            )
-
-            Some(newLine)
-          }
-        }
-      }
-
-      /* Change in map and lines array if needed */
-      if (newConfigKVLineOpt.isDefined) {
-        val newConfigKVLine = newConfigKVLineOpt.get
-        pgConfigFile.lineByKey(configLineKey) = newConfigKVLine
-        configFileLines(newConfigKVLine.index) = newConfigKVLine.line //newConfigKVLine.toString()
-      }
-    }
-
-    val configFile = new File(pgConfigFile.filePath)
-
-    /* Save current file state in backup file */
-    // this method is already wrapped in a 'synchronized' block
-    ScalaUtils.createBackupFile(configFile)
-
-    /* Write updated lines in config file */
-    synchronized {
-
-      val out = new FileWriter(configFile)
-      try {
-        val linesToBeWritten = (configFileLines ++ newLinesBuffer.result()).mkString(LINE_SEPARATOR)
-        out.write(linesToBeWritten)
-      } finally {
-        out.close
-      }
-    }
-
-    /* Restart PostgreSQL if needed */
-    //TODO : restart PostgreSQL when needed
-    ShowPopupWindow(
-     wTitle = "Warning",
-     wText = warningAboutRestartText,
-     wParent = Option(formEditor)
-    )
-
-    /* Close dialog and make some logback */
-    formEditor.close()
-
-    println("<br>INFO - postgresql.conf successfully updated !<br>")
-    logger.info("postgresql.conf successfully updated !")
-
-    Main.stage.scene().setCursor(Cursor.DEFAULT)
   }
 
   private def _createNewKVLine(
@@ -683,6 +543,96 @@ class PostgresConfigForm extends Stage with LazyLogging {
 
     newLinesBuffer += line
     ConfigFileKVLine(line, lineIdx, configLineKey, valueAsString, valueStartIdx, valueEndIdx, commented = false)
+  }
+
+  /** Check if the form is correct **/
+  def checkForm(): Boolean = {
+    true //since values are optionnal or with defaults and bounded by the sliders values, no error should occur.
+  }
+
+  /** Save the form (write in config file) **/
+  def saveForm() {
+    val configFileLines = pgConfigFile.lines
+    val configFileLinesLen = configFileLines.length
+    val newLinesBuffer = new ArrayBuffer[String](PostgresOptimizableParamEnum.params().length)
+
+    /* Update valueString in ConfigKVLine, and lines in ConfigFileIndexing.lines */
+    compoByParam.foreach {
+      case (labeledParam, formLine) =>
+
+        val valueAsString = formatByParam(labeledParam).formatter(formLine.slider.value.doubleValue())
+        val commentLine = !formLine.checkBox.selected()
+
+        val configLineKey = PostgresOptimizableParamEnum.getParamConfigKey(labeledParam)
+        val oldConfigKVLineOpt = pgConfigFile.lineByKey.get(configLineKey)
+
+        val newConfigKVLineOpt: Option[ConfigFileKVLine] = {
+
+          /* If KVLine is already known, update it */
+          if (oldConfigKVLineOpt.isDefined) {
+            val oldConfigKVLine = oldConfigKVLineOpt.get
+
+            if (commentLine) Some(oldConfigKVLine.comment())
+            else Some(oldConfigKVLine.toNewKVLine(valueAsString, commented = false)) //commentLine
+          }
+          
+          /* Otherwise line is commented or doesn't exist */
+          else {
+
+            /* Don't change or create commented parameters */
+            if (commentLine) None
+
+            /* Try to find line (commented) in lines array, or append it */
+            else {
+              val newLine = _createNewKVLine(
+                configLineKey,
+                valueAsString,
+                configFileLines,
+                configFileLinesLen,
+                newLinesBuffer
+              )
+
+              Some(newLine)
+            }
+          }
+        }
+
+        /* Change in map and lines array if needed */
+        if (newConfigKVLineOpt.isDefined) {
+          val newConfigKVLine = newConfigKVLineOpt.get
+          pgConfigFile.lineByKey(configLineKey) = newConfigKVLine
+          configFileLines(newConfigKVLine.index) = newConfigKVLine.line //newConfigKVLine.toString()
+        }
+    }
+
+    val configFile = new File(pgConfigFile.filePath)
+
+    /* Save current file state in backup file */
+    // this method is already wrapped in a 'synchronized' block
+    ScalaUtils.createBackupFile(configFile)
+
+    /* Write updated lines in config file */
+    synchronized {
+
+      val out = new FileWriter(configFile)
+      try {
+        val linesToBeWritten = (configFileLines ++ newLinesBuffer.result()).mkString(LINE_SEPARATOR)
+        out.write(linesToBeWritten)
+      } finally {
+        out.close
+      }
+    }
+
+    /* Restart PostgreSQL if needed */
+    //TODO : restart PostgreSQL when needed
+    ShowPopupWindow(
+      wTitle = "Warning",
+      wText = warningAboutRestartText,
+      wParent = Option(parentStage)
+    )
+
+    println("<br>INFO - postgresql.conf successfully updated !<br>")
+    logger.info("postgresql.conf successfully updated !")
   }
 
 }

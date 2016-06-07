@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.component.dialog
+package fr.proline.admin.gui.util
 
 import scalafx.Includes._
 import scalafx.geometry.Insets

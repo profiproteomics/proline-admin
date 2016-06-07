@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ArrayBuffer
 
-import fr.proline.admin.gui.component.dialog.PgHbaLine
+import fr.proline.admin.gui.component.configuration.form.PgHbaLine
 import fr.proline.admin.gui.process.config._
 
 /**

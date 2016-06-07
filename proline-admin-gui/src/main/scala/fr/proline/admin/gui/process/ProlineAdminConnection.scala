@@ -11,8 +11,8 @@ import scalafx.scene.Cursor
 import scalafx.scene.Cursor.sfxCursor2jfx
 
 import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.component.dialog.GetConfirmation
-import fr.proline.admin.gui.component.panel.ButtonsPanel
+import fr.proline.admin.gui.component.ButtonsPanel
+import fr.proline.admin.gui.util.GetConfirmation
 import fr.proline.admin.service.db.SetupProline
 
 /**
@@ -46,24 +46,24 @@ object ProlineAdminConnection extends LazyLogging {
     //FIXME: freezing
 
     val actionString = "<b>>> Loading Proline configuration...</b>"
+    var _isConfigValid = false
 
     synchronized {
       Main.stage.scene().setCursor(Cursor.WAIT)
       println("<br>" + actionString)
+      
 
       try {
         this._setNewProlineConfig()
 
         logger.info(s"Action '$actionString' finished with success.")
         if (verbose) println(s"""[ $actionString : <b>success</b> ]""")
-        
-        true //isConfigValid
+        _isConfigValid = true
 
       } catch {
 
         case fxt: IllegalStateException => {
           if (verbose) logger.warn(fxt.getLocalizedMessage()) //useful?
-          false //isConfigValid
         }
 
         case t: Throwable => {
@@ -76,18 +76,18 @@ object ProlineAdminConnection extends LazyLogging {
             if (verbose) System.err.println(t.getMessage())
             
             println(s"[ $actionString : finished with <b>error</b> ]")
-            
-            false //isConfigValid
           }
           // if re-thrown, system stops
         }
 
       } finally {
-        ButtonsPanel.computeButtonsAvailability(verbose)
+        ButtonsPanel.computeButtonsAvailability(verbose = verbose, isConfigSemanticsValid = _isConfigValid)
         Main.stage.scene().setCursor(Cursor.DEFAULT)
       }
     }
-  }
+    _isConfigValid
+
+  } // ends loadProlineConf
 
   /**
    *  Update SetupProline config when CONF file changes
@@ -96,6 +96,15 @@ object ProlineAdminConnection extends LazyLogging {
 
     /** Reload CONF file */
     val newConfigFile = ConfigFactory.parseFile(new File(Main.adminConfPath))
+    
+    synchronized {
+      SetupProline.setConfigParams(newConfigFile)
+      UdsRepository.setUdsDbConfig(SetupProline.getUpdatedConfig.udsDBConfig)
+      Platform.runLater(Main.stage.title = "Proline Admin")
+    }
+    
+    /*
+    // TODO: decide if we want to support other drivers than Pg in the GUI
 
     /** Update displayed window, and Proline configuration if data directory already exists */
     val dataDir = newConfigFile.getConfig("proline-config").getString("data-directory")
@@ -105,7 +114,6 @@ object ProlineAdminConnection extends LazyLogging {
       synchronized {
         SetupProline.setConfigParams(newConfigFile)
         UdsRepository.setUdsDbConfig(SetupProline.getUpdatedConfig.udsDBConfig)
-
         Platform.runLater(Main.stage.title = s"Proline Admin @ $dataDir")
       }
 
@@ -155,73 +163,6 @@ object ProlineAdminConnection extends LazyLogging {
         Platform.runLater(Main.stage.title = s"Proline Admin (invalid configuration)")
         throw new Exception("Unknown data directory (not created, user's choice) " + dataDir)
       }
-
-      ///////////////////////// TRY ////////////////////////
-      // FROM http://docs.scala-lang.org/overviews/core/futures.html
-      //
-      //      import scala.concurrent._
-      //      import scala.concurrent.ExecutionContext.Implicits.global
-      //
-      //      val p = promise[Boolean]
-      //      val f = p.future
-      //
-      //      val producer =
-      //        future 
-      //        {
-      //          println("in promise")
-      //          val isConfirmed = Platform.runLater(
-      //            GetConfirmation(
-      //              text = "The databases directory you specified does not exist. Do you want to create it?\n(This involves a new installation of Proline.)",
-      //              title = s"Unknown directory : $dataDir"
-      //            ))
-      //          p success isConfirmed
-      //          continueDoingSomethingUnrelated()
-      //        }
-      //
-      //      val consumer = future {
-      //
-      //      logger.warn(s"Unknown data directory : $dataDir")
-      //      println(s"WARN - Unknown data directory : $dataDir")
-      //
-      //      f onFailure { case e => logger.error(e.getMessage()); println("ERROR - " + e.getMessage()) }
-      //      f onSuccess {
-      //        case isConfirmed => {
-      //
-      //          println("WARN - isConfirmed : " + isConfirmed)
-      //
-      //          if (isConfirmed == true) {
-      //            logger.info(s"Creating data directory : $dataDir")
-      //            println(s"Creating databases directory : $dataDir ...")
-      //
-      //            val successfullyCreated = new File(dataDir).mkdirs()
-      //
-      //            /** If it's created */
-      //            if (successfullyCreated == true) {
-      //              logger.info("Data directory successfully created.")
-      //              println("Databases directory successfully created.")
-      //
-      //              SetupProline.setConfigParams(newConfigFile)
-      //              UdsRepository.setUdsDbConfig(SetupProline.getUpdatedConfig.udsDBConfig)
-      //
-      //              Platform.runLater(Main.stage.title = s"Proline Admin @ $dataDir")
-      //
-      //              /** If it can't be created */
-      //            } else {
-      //              Platform.runLater(Main.stage.title = s"Proline Admin (invalid configuration)")
-      //              throw new Exception("Unknown data directory (problem in creation) " + dataDir)
-      //            }
-      //
-      //            /** If user doesn't want to create it */
-      //          } else {
-      //            Platform.runLater(Main.stage.title = s"Proline Admin (invalid configuration)")
-      //            throw new Exception("Unknown data directory (not created, user's choice) " + dataDir)
-      //          }
-      //
-      //        }
-      //        }
-      //      }
-      ///////////////// END ////////////////////
-
-    }
+    }*/
   }
 }

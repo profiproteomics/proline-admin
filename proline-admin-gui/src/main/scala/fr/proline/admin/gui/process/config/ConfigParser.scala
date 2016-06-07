@@ -1,19 +1,23 @@
 package fr.proline.admin.gui.process.config
 
-import java.io.File
-import java.io.FileWriter
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigRenderOptions
+import com.typesafe.scalalogging.LazyLogging
+
 import scala.collection.JavaConversions._
 import scala.collection.mutable.StringBuilder
 import scala.io.Source
-import com.typesafe.config.{Config, ConfigFactory}
-import com.typesafe.scalalogging.LazyLogging
+
+import java.io.File
+import java.io.FileWriter
+
+import fr.proline.admin.gui.util.ShowPopupWindow
+import fr.proline.repository.DriverType
+
 import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scala.TypesafeConfigWrapper._
-import fr.proline.repository.DriverType
-import com.typesafe.config.ConfigRenderOptions
-import scala.collection.mutable.HashMap
-import fr.proline.admin.gui.component.dialog.ShowPopupWindow
 
 
 ////////////////////////////////////////////////////////////////
@@ -33,6 +37,7 @@ case class AdminConfig (
   var serverConfigFilePath: Option[String] = None,
   var pwxConfigFilePath: Option[String] = None,
   var pgsqlDataDir: Option[String] = None,
+  var seqRepoConfigFilePath: Option[String] = None,
   var driverType: Option[DriverType] = None,
   var prolineDataDir: Option[String] = None,
   var dbUserName: Option[String] = None,
@@ -63,6 +68,7 @@ class AdminConfigFile(val path: String) extends LazyLogging {
           serverConfigFilePath = config.getStringOpt("server-config-file"),
           pwxConfigFilePath = config.getStringOpt("pwx-config-file"),
           pgsqlDataDir = config.getStringOpt("postgresql-data-dir"),
+          seqRepoConfigFilePath = config.getStringOpt("seq-repo-config-file"),
           driverType = config.getStringOpt("proline-config.driver-type").map(dt => DriverType.valueOf(dt.toUpperCase())),
           prolineDataDir = config.getStringOpt("proline-config.data-directory"),
           dbUserName = config.getStringOpt("auth-config.user"),
@@ -97,6 +103,12 @@ class AdminConfigFile(val path: String) extends LazyLogging {
     //Reload config in case there are some (hand-made) changes
     getTypesafeConfig().getStringOpt("postgresql-data-dir")
   }
+  
+  /** Look for seq-repo-config-file only **/
+  def getSeqRepoConfigPath(): Option[String] = {
+      //Reload config in case there are some (hand-made) changes
+      getTypesafeConfig().getStringOpt("seq-repo-config-file")
+  }
 
   /** Set server-config-file only **/
   def setServerConfigPath(newPath: String) = {
@@ -110,7 +122,6 @@ class AdminConfigFile(val path: String) extends LazyLogging {
   def setPwxConfigPath(newPath: String) = {
     /* Don't change if it's the same as the old one */
     if (Option(newPath) != getPwxConfigPath()) {
-      println("yooo")
       _updateKey(configKey = "pwx-config-file", configValue = newPath)
     }
   }
@@ -123,10 +134,16 @@ class AdminConfigFile(val path: String) extends LazyLogging {
     }
   }
 
+  /** Set seq-repo-config-file only **/
+  def setSeqRepoConfigPath(newPath: String) = {
+      /* Don't change if it's the same as the old one */
+      if ( Option(newPath) != getSeqRepoConfigPath() ) {
+        _updateKey(configKey = "seq-repo-config-file", configValue = newPath)
+      }
+  }
+
   /** Set server-config-file or postgresql-data-dir only **/
   private def _updateKey(configKey: String, configValue: String) = synchronized {
-
-    //TODO: improve / go back to config
 
     /* Read config file and and parse it, change only server-config-file */
     val src = Source.fromFile(adminConfigFile)
@@ -182,6 +199,7 @@ class AdminConfigFile(val path: String) extends LazyLogging {
 server-config-file = "${adminConfig.serverConfigFilePath.getOrElse("")}"
 pwx-config-file = "${adminConfig.pwxConfigFilePath.getOrElse("")}"
 postgresql-data-dir = "${adminConfig.pgsqlDataDir.getOrElse("")}"
+seq-repo-config-file = "${adminConfig.seqRepoConfigFilePath.getOrElse("")}"
 
 proline-config {
   driver-type = "${adminConfig.driverType.map(_.getJdbcURLProtocol()).getOrElse("")}" // valid values are: h2, postgresql or sqlite
@@ -437,19 +455,17 @@ class PwxConfigFile(val path: String) extends LazyLogging {
 
       val newConfig = ConfigFactory.parseMap(superMap)*/
       val newConfig = ConfigFactory.parseString(serverConfig.toTypeSafeConfigString())
-      
-      ShowPopupWindow("newConfig:\n" + newConfig)
 
       val mergedConfig = newConfig.withFallback(currentConfig)
 
       //      logger.warn("mergedConfig")
       //      logger.warn(scala.runtime.ScalaRunTime.stringOf(mergedConfig))
       //      logger.warn(path)
-      ShowPopupWindow(
+      /*ShowPopupWindow(
         wText = "mergedConfig:\n" + scala.runtime.ScalaRunTime.stringOf(mergedConfig) +
           "\n\npath: " + path,
         wTitle = "yo"
-      )
+      )*/
 
       synchronized {
         val renderOptions = ConfigRenderOptions.concise().setComments(true).setFormatted(true).setJson(false)
