@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.component.panel
+package fr.proline.admin.gui.component
 
 import java.io.OutputStream
 import java.io.PrintStream

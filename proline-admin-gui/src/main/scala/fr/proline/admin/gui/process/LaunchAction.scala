@@ -10,12 +10,12 @@ import scala.util.Success
 import scalafx.application.Platform
 import scalafx.scene.Cursor
 import scalafx.scene.Cursor.sfxCursor2jfx
+import scalafx.scene.Node
 import scalafx.scene.control.Button
 import scalafx.scene.control.ProgressIndicator
 import scalafx.scene.image.ImageView
 
 import fr.proline.admin.gui.Main
-
 
 /**
  * Run button's action asynchronously
@@ -26,7 +26,8 @@ object LaunchAction extends LazyLogging {
     actionButton: Button, //Array[Button] ?
     actionString: String,
     action: () => Unit,
-    reloadConfig: Boolean = true
+    reloadConfig: Boolean = true,
+    disableNode: Node = null
   ) {
 
     synchronized {
@@ -38,6 +39,9 @@ object LaunchAction extends LazyLogging {
         prefHeight = 20
         prefWidth = 20
       }
+      
+      if (disableNode != null) disableNode.disable = true
+
       Main.stage.scene().setCursor(Cursor.WAIT)
       //      ButtonsPanel.disableAll()
 
@@ -93,6 +97,7 @@ object LaunchAction extends LazyLogging {
     def _initialize(reloadConfig: Boolean = true) {
       Platform.runLater {
         actionButton.graphic = new ImageView()
+        if (disableNode != null) disableNode.disable = false
         Main.stage.scene().setCursor(Cursor.DEFAULT)
       }
       //ButtonsPanel.computeButtonsAvailability()

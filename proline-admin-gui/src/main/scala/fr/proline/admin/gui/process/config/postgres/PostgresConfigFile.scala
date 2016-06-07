@@ -13,7 +13,6 @@ class PostgresConfigFile(val filePath: String) extends KVConfigFileIndexing with
 
   /* Define the keys we look for */
   val paramKeys: Seq[String] = PostgresOptimizableParamEnum.getParamConfigKeys()
-  //println("Look for " + paramKeys.length + " keys")
 
   /* Define parsing patterns */
   //WARNING:

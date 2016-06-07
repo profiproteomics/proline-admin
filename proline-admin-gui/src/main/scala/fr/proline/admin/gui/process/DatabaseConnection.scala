@@ -2,12 +2,14 @@ package fr.proline.admin.gui.process
 
 import com.typesafe.scalalogging.LazyLogging
 
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
+
 import java.sql.Connection
 
-import scala.util.{Try, Success, Failure}
-
-import fr.proline.admin.gui.component.dialog.ShowPopupWindow
 import fr.proline.admin.gui.process.config.AdminConfig
+import fr.proline.admin.gui.util.ShowPopupWindow
 import fr.proline.repository.DriverType
 
 /**
@@ -58,7 +60,7 @@ object DatabaseConnection extends LazyLogging {
 
         if (showPopup) ShowPopupWindow(
           wTitle = "Test connection to database",
-          wText = "The connection to the database has been successfully established!"
+          wText = "The connection to the database has been successfully established !"
         )
 
         // return isSuccess

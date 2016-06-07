@@ -1,13 +1,12 @@
 package fr.profi.util.scalafx
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scala.reflect.ClassTag
-
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.Button
 import scalafx.scene.control.ComboBox
+import scalafx.scene.control.TableView
 import scalafx.scene.control.TextField
 import scalafx.scene.image.Image
 import scalafx.scene.image.ImageView
@@ -17,6 +16,7 @@ import scalafx.scene.layout.GridPane
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.Region
 import scalafx.stage.Stage
+import scalafx.scene.control.TableColumn
 
 
 object ScalaFxUtils extends LazyLogging {
@@ -286,11 +286,38 @@ object ScalaFxUtils extends LazyLogging {
    * WRAPPERS *
    * ******** *
    **/
-  implicit class CustomComboBox[T] (cb: ComboBox[T]){
+  implicit class EnhancedComboBox[T] (cb: ComboBox[T]){
     
     /** Same as select[T], but get rid of ambiguity when T is Int: select(index: Int) **/
     def selectItem(item: T) {
       cb.selectionModel().select(item)
     }
   }
-}
+
+  implicit class EnhancedTableView[T](tv: TableView[T]) {
+
+    /** Apply width to columns as a percentage of table width **/
+    def applyPercentWidth(columnsWithPercent: List[(TableColumn[T, _], Int)]) {
+      columnsWithPercent.foreach { case (col, percent) =>
+        if (percent < 0) col.prefWidth = 30 //default
+        else col.prefWidth <== tv.width * percent / 100
+      }
+    }
+  }
+  
+  /**
+   * ****** *
+   * STYLES *
+   * ****** *
+   **/ 
+  object TextStyle {
+    val ITALIC = "-fx-font-style: italic;"
+    
+    val BLUE_HYPERLINK = "-fx-color:#66CCFF;"
+    
+    val RED = "-fx-text-fill: red;"
+    val GREY = "-fx-text-fill: grey;"
+
+    val RED_ITALIC = RED ++ ITALIC
+    val GREY_ITALIC = GREY ++ ITALIC
+  }}

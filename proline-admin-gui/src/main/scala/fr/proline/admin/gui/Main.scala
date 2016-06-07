@@ -1,5 +1,7 @@
 package fr.proline.admin.gui
 
+import com.typesafe.scalalogging.LazyLogging
+
 import java.io.File
 
 import javafx.application.Application
@@ -12,15 +14,15 @@ import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
 
-import com.typesafe.scalalogging.LazyLogging
-
-import fr.proline.admin.gui.component.dialog.ConfirmationDialog
-import fr.proline.admin.gui.component.dialog.ProlineConfigFileChooser
-import fr.proline.admin.gui.component.panel._
+import fr.proline.admin.gui.component.ButtonsPanel
+import fr.proline.admin.gui.component.ConsolePanel
+import fr.proline.admin.gui.component.configuration.file.ProlineConfigFileChooser
 import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.process.config.AdminConfigFile
+import fr.proline.admin.gui.util.ConfirmationDialog
 
+import fr.profi.util.StringUtils
 
 /**
  * Graphical interface for Proline Admin.
@@ -38,31 +40,34 @@ object Main extends LazyLogging {
   var serverConfPath: String = _
   var pwxConfPath: String = _
   var postgresqlDataDir: String = _
+  var seqRepoConfPath: String = _
   
   var firstCallToDataDir = true
 
-  /** Utility **/
-  def serverConfPathIsEmpty(): Boolean = serverConfPath == null || serverConfPath.isEmpty()
-  def pwxConfPathIsEmpty(): Boolean = pwxConfPath == null || pwxConfPath.isEmpty()
+  /** Utilities **/
+  def adminConfPathIsEmpty(): Boolean = StringUtils.isEmpty(adminConfPath)
+  def serverConfPathIsEmpty(): Boolean = StringUtils.isEmpty(serverConfPath)
+  def pwxConfPathIsEmpty(): Boolean = StringUtils.isEmpty(pwxConfPath)
+  def postgresDataDirIsEmpty(): Boolean = StringUtils.isEmpty(postgresqlDataDir)
+
+  def getAdminConfigFile(): Option[AdminConfigFile] = {
+    if (adminConfPathIsEmpty()) return None
+    else Option(new AdminConfigFile(Main.adminConfPath))
+  }
   
   /* Panels */
-  val menuPanel = MenuPanel()
-  //val menuPanel = MenuPanel2()
   var consolePanel: StackPane = _
   var buttonsPanel: VBox = _
-  
+
   /* Primary stage's root */
   lazy val root = new VBox {
     id = "root"
-    content = List(
-      menuPanel,
-      new HBox {
-        vgrow = Priority.Always
-        padding = Insets(10)
-        spacing = 20
-        content = List(buttonsPanel, consolePanel)
-      }
-    )
+    content = new HBox {
+      vgrow = Priority.Always
+      padding = Insets(10)
+      spacing = 20
+      content = List(buttonsPanel, consolePanel)
+    }
   }
 
   var stage: scalafx.stage.Stage = null
@@ -103,13 +108,13 @@ class Main extends Application {
     /* Locate application.CONF file and update Proline config in consequence */
     val _appConfPath = configPath + "application.conf"
 
-    // Usual case : default conf file exists
+    /* Usual case : default conf file exists */
     if (new File(_appConfPath).exists()) {
       Main.adminConfPath = _appConfPath
       ProlineAdminConnection.loadProlineConf(verbose = false)
     }
     
-    // Choose one if not
+    /* Choose one if not */
     else {
       var isFileChosen = false
 
@@ -121,7 +126,7 @@ class Main extends Application {
 
         } catch {
 
-          /** If the user doesn't select any file ('cancel' or 'close' button) */
+          /* If the user doesn't select any file ('cancel' or 'close' button) */
           case e: Exception =>
 
             //TODO: use ChoiceDialog
@@ -142,14 +147,17 @@ class Main extends Application {
     }
 
     /* Try to find server config file path and PostgreSQL data dir from config */
-    // can't reach this code if adminConfPath isn't set //if (ScalaUtils.isEmpty(Main.adminConfPath) == false) {
+    // can't reach this code if adminConfPath isn't set 
+    //if (ScalaUtils.isEmpty(Main.adminConfPath) == false) {
     val adminConfigFile = new AdminConfigFile(Main.adminConfPath)
     adminConfigFile.getServerConfigPath().map{ Main.serverConfPath = _ }
     adminConfigFile.getPwxConfigPath().map{ Main.pwxConfPath = _ }
     adminConfigFile.getPostgreSqlDataDir().map{ Main.postgresqlDataDir = _ }
+    adminConfigFile.getSeqRepoConfigPath().map{ Main.seqRepoConfPath = _ }
     //}
   }
 
+  /** Close UDSdb context on application close **/
   override def stop() {
     super.stop()
     if (UdsRepository.getUdsDbContext() != null) UdsRepository.getUdsDbContext().close

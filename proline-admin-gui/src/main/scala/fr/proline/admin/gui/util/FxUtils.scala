@@ -1,9 +1,7 @@
 package fr.proline.admin.gui.util
 
 import com.typesafe.scalalogging.LazyLogging
-
 import java.io.File
-
 import scalafx.beans.binding.NumberBinding.sfxNumberBinding2jfx
 import scalafx.scene.image.Image
 import scalafx.scene.image.ImageView
@@ -11,9 +9,9 @@ import scalafx.stage.DirectoryChooser
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 import scalafx.stage.Stage
-
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
+import fr.profi.util.scala.ScalaUtils
 
 /**
  * GRAPHICAL UTILITIES
@@ -91,9 +89,11 @@ object FxUtils extends LazyLogging {
     /** Define directory chooser */
     val dc = new DirectoryChooser {
       title = dcTitle
-      if (dcInitialDir != null && dcInitialDir != "") {
+      
+      if (ScalaUtils.isEmpty(dcInitialDir) == false) {
         val _initFile = new File(dcInitialDir)
         if (_initFile.isDirectory()) initialDirectory = _initFile
+        else initialDirectory = _initFile.getParentFile
       }
     }
 

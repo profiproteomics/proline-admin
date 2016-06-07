@@ -6,6 +6,8 @@ import scalafx.geometry.Pos
 import scalafx.scene.Node
 import scalafx.scene.control.Label
 import scalafx.scene.layout.StackPane
+import scalafx.scene.layout.VBox
+import scalafx.scene.layout.Priority
 
 /**
  * ******************************************************************** *
@@ -13,16 +15,52 @@ import scalafx.scene.layout.StackPane
  * StackPane surrounded with titled border (emulate Swing TitledBorder) *
  * ******************************************************************** *
  */
-class TitledBorderPane(
-  titleString: String,
+/*class TitledBorderPane(
+  title: String,
   contentNode: Node,
   titleTooltip: String = "",
   colorStr: String = "slategrey"
-) extends StackPane {
+) extends VBox {*/
 
-  val title = new Label(" " + titleString + " ") {
-    alignmentInParent = Pos.TopLeft
+class TitledBorderPane(
+  protected val title: String,
+  protected val contentNode: Node,
+  override val titleTooltip: String = "",
+  override val colorStr: String = "slategrey"
+) extends ITitledBorderPane {
+  this.initContent()
+}
+
+trait IContentAutoInit {
+  protected def initContent()
+  initContent()
+}
+  
+trait ITitledBorderPane extends VBox {
+  
+  protected def title: String
+  protected def contentNode: Node
+  //protected def paddingValue: Any
+  
+  protected val contentPadding: Insets = Insets(10)
+  protected val titleTooltip: String = ""
+  protected val colorStr: String = "slategrey"
+  
+  vgrow = Priority.Always
+  
+  /* Border style */
+  style() += s"""
+    -fx-content-display: center;
+    -fx-border-color: ${colorStr};
+    -fx-border-width: 1;
+    -fx-border-radius: 2;
+    """
+
+  /* Title text and style */
+  private lazy val titleLabel = new Label(" " + title + " ") {
     if (titleTooltip != "") tooltip = titleTooltip
+
+    alignmentInParent = Pos.TopLeft
     style() += s"""
         -fx-font-size: 14;
         -fx-font-weight: bold;
@@ -31,23 +69,24 @@ class TitledBorderPane(
         -fx-translate-y: -20;
         -fx-translate-x: 15;
       """
+     //translate-y: -20: title will appear above the border
   }
-
-  val contentPane = new StackPane() {
-    padding = Insets(10)
+  
+ /* Wrap content to force padding */
+  private lazy val paddedContent = new VBox {
+    padding = contentPadding
     content = contentNode
   }
+  
+  //content = Seq(titleLabel, paddedContent)
+  protected def initContent() {
+    content = Seq(titleLabel, paddedContent)
+  }
 
-  style() += s"""
-    -fx-content-display: center;
-    -fx-border-color: ${colorStr};
-    -fx-border-width: 1;
-    -fx-border-radius: 2;
-    """
-  content = Seq(contentPane, title)
-
-  def setContentNode(newContentNode: Node) {
-    contentPane.content = newContentNode
-    content = Seq(contentPane, title)
+  /** Update titled bordered panel content **/
+  def setContentNode(newContentNode: Node, contentPadding: Insets = Insets(10)) {
+    paddedContent.content = newContentNode
+    paddedContent.padding = contentPadding
+    content = Seq(titleLabel, paddedContent)
   }
 }

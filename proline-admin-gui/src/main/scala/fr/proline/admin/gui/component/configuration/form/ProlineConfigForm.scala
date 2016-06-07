@@ -1,34 +1,38 @@
-package fr.proline.admin.gui.component.dialog
+package fr.proline.admin.gui.component.configuration.form
+
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ArrayBuffer
-import scalafx.Includes.eventClosureWrapperWithParam
-import scalafx.Includes.handle
-import scalafx.Includes.jfxKeyEvent2sfx
-import scalafx.beans.binding.NumberBinding.sfxNumberBinding2jfx
+
+import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.Cursor
 import scalafx.scene.Cursor.sfxCursor2jfx
-import scalafx.scene.Scene
 import scalafx.scene.control.Button
 import scalafx.scene.control.CheckBox
 import scalafx.scene.control.ComboBox
 import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
 import scalafx.scene.control.PasswordField
-import scalafx.scene.control.ScrollPane
-import scalafx.scene.control.ScrollPane.ScrollBarPolicy
 import scalafx.scene.control.TextField
-import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
-import scalafx.stage.Modality
 import scalafx.stage.Screen
 import scalafx.stage.Stage
-import com.typesafe.scalalogging.LazyLogging
+
+import fr.proline.admin.gui.IconResource
+import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.process.DatabaseConnection
+import fr.proline.admin.gui.process.ProlineAdminConnection
+import fr.proline.admin.gui.process.config._
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.util.GetConfirmation
+import fr.proline.repository.DriverType
+
 import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
 import fr.profi.util.scala.ScalaUtils.isEmpty
 import fr.profi.util.scala.ScalaUtils.stringOpt2string
@@ -38,30 +42,14 @@ import fr.profi.util.scalafx.NumericTextField
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
-import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.IconResource.enumToString
-import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.process.DatabaseConnection
-import fr.proline.admin.gui.process.ProlineAdminConnection
-import fr.proline.admin.gui.process.config._
-import fr.proline.admin.gui.util.FxUtils
-import fr.proline.repository.DriverType
-import fr.proline.admin.gui.component.dialog.ConfirmationDialog
 
 /**
  * Create a modal window to edit Proline configuration's file.
  */
-class ProlineConfigForm extends Stage with LazyLogging {
+class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with IConfigFilesForm with LazyLogging {
 
-  val formEditor = this
-
-  /* Stage's properties */
-  title = s"Proline configuration editor -- ${Main.adminConfPath}"
-  initModality(Modality.WINDOW_MODAL)
-  initOwner(Main.stage)
-  width = 560
   maxHeight = Screen.primary.visualBounds.height - 20 // arbitrary margin //816
-  
+
   /* Configuration files */
   //this stage can't be opened if adminConfigFile is undefined in Main
   private val adminConfigFile = new AdminConfigFile(Main.adminConfPath)
@@ -80,7 +68,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
     else Option(new PwxConfigFile(Main.pwxConfPath))
 
 
-  /**
+  /*
    * ********** *
    * COMPONENTS *
    * ********** *
@@ -109,6 +97,8 @@ class ProlineConfigForm extends Stage with LazyLogging {
   val dataDirLabel = new Label("Data directory :")
   val dataDirField = new TextField()
   val dataDirBrowse = new Button("Browse") {
+    minWidth = 55
+    maxWidth = 55
     onAction = handle { _browseDataDir() }
   }
 
@@ -183,15 +173,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
   }
   val resultFilesMpBox = new VBox { spacing = 10 }
 
-  /* "Save" and "Cancel" buttons */
-  val saveButton = new Button("Save") {
-    onAction = handle { _onSavePressed() }
-  }
-  val cancelButton = new Button("Cancel") {
-    onAction = handle { formEditor.close() }
-  }
-
-  /**
+  /*
    * ****** *
    * LAYOUT *
    * ****** *
@@ -209,19 +191,13 @@ class ProlineConfigForm extends Stage with LazyLogging {
     rawFilesMpLabel, mzdbFilesMpLabel, resultFilesMpLabel
   ).foreach(_.minHeight = 25)
 
-  // Buttons' width
-  Seq(dataDirBrowse, saveButton, cancelButton).foreach { b =>
-    b.minWidth = 55
-    b.maxWidth = 55
-  }
-
   // Make all text fields grow the max. they can
   Seq(
     driverTypeBox, dataDirField,
     userNameField, passwordPWDField, passwordTextField, hostNameField, hostNameWarning, portField
   ).foreach { node =>
       node.minWidth = 150
-      node.prefWidth <== formEditor.width
+      node.prefWidth <== parentStage.width
     }
 
   //VBox & HBox spacing
@@ -229,11 +205,11 @@ class ProlineConfigForm extends Stage with LazyLogging {
   private val H_SPACING = 5
 
   /* Proline settings */
-  val prolineSettings = new TitledBorderPane(
-    titleString = "Proline",
+  //TODO: properly delete me if useless
+  /*val prolineSettings = new TitledBorderPane(
+    title = "Proline",
     contentNode = new VBox {
       padding = Insets(5)
-      //      padding = Insets(5, 5, 4 * V_SPACING, 5)
       spacing = V_SPACING
       content = List(
         new HBox {
@@ -246,7 +222,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
         }
       )
     }
-  )
+  )*/
 
   /* DB connection */
   //Set text- and password textfields at the same place in UI
@@ -256,7 +232,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
   }
 
   val dbConnectionSettings = new TitledBorderPane(
-    titleString = "Database connection",
+    title = "Database connection",
     contentNode = new VBox {
       padding = Insets(5)
       spacing = V_SPACING
@@ -290,7 +266,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
 
   /* Mount points */
   val mountPointsSettings = new TitledBorderPane(
-    titleString = "Mount points",
+    title = "Mount points",
     titleTooltip = "Mount points as defined in Proline server configuration",
     contentNode = new VBox {
       spacing = 2 * V_SPACING
@@ -321,49 +297,20 @@ class ProlineConfigForm extends Stage with LazyLogging {
     content = List(disableMpNoteLabel, mountPointsSettings)
   }
 
-  /* "Save" and "Cancel" buttons */
-  val buttons = new HBox {
-    hgrow = Priority.Always
-    alignment = Pos.Center
-    spacing = 20
-    content = List(saveButton, cancelButton)
-  }
+  /* VBox layout and content */
+  alignment = Pos.Center
+  alignmentInParent = Pos.Center
+//  padding = Insets(25, 20, 15, 30)
+  spacing = 4 * V_SPACING
+  content = List(
+    //prolineSettings,
+    dbConnectionSettings,
+    mountPointsWithDisableNote,
+    wrappedApplyButton
+  )
+  prefWidth <== parentStage.width
 
-  /* Scene */
-  scene = new Scene {
-    onKeyPressed = (ke: KeyEvent) => {
-      closeIfEscapePressed(formEditor, ke)
-      fireIfEnterPressed(saveButton, ke)
-    }
-    
-    root = new ScrollPane {
-      hbarPolicy = ScrollBarPolicy.AS_NEEDED
-      vbarPolicy = ScrollBarPolicy.AS_NEEDED
-      val SCROLL_BAR_PUTATIVE_WIDTH = 40
-
-      content = new VBox {
-        alignment = Pos.Center
-        alignmentInParent = Pos.Center
-        padding = Insets(25, 20, 15, 30)
-
-        minWidth <== formEditor.width - SCROLL_BAR_PUTATIVE_WIDTH
-        maxWidth <== formEditor.width - SCROLL_BAR_PUTATIVE_WIDTH
-        minHeight <== formEditor.height - SCROLL_BAR_PUTATIVE_WIDTH
-
-        content = new VBox {
-          spacing = 4 * V_SPACING
-          content = List(
-            prolineSettings,
-            dbConnectionSettings,
-            mountPointsWithDisableNote,
-            buttons
-          )
-        }
-      }
-    }
-  }
-
-  /**
+  /*
    * ************* *
    * INIT. CONTENT *
    * ************* *
@@ -495,7 +442,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
       key = key,
       value = value,
       onDeleteAction = _onRawFileMpDelete,
-      parentStage = formEditor
+      parentStage = parentStage
     )
     rawFilesMpBox.content = rawFilesMountPoints
   }
@@ -515,7 +462,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
       key = key,
       value = value,
       onDeleteAction = _onMzdbFileMpDelete,
-      parentStage = formEditor
+      parentStage = parentStage
     )
     mzdbFilesMpBox.content = mzdbFilesMountPoints
   }
@@ -535,7 +482,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
       key = key,
       value = value,
       onDeleteAction = _onResultFileMpDelete,
-      parentStage = formEditor
+      parentStage = parentStage
     )
     resultFilesMpBox.content = resultFilesMountPoints
   }
@@ -566,18 +513,17 @@ class ProlineConfigForm extends Stage with LazyLogging {
   }
 
   /** Action run when "Save" button is pressed **/
-  private def _onSavePressed() {
+
+  def checkForm(): Boolean = {
+    //TODO
+    true
+  }
+  
+  def saveForm() {
+    
+    //TODO
 
     Main.stage.scene().setCursor(Cursor.WAIT)
-
-    //    val errString = _checkForm()
-    //
-    //    if (errString.isEmpty()) {
-    //      ShowPopupWindow(
-    //        wTitle = "Error",
-    //        wText = errString
-    //      )
-    //    } else {
 
     val isPwxConfigDefined = pwxConfigFileOpt.isDefined
     var continue: Boolean = false
@@ -623,7 +569,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
 
         /* Log and close dialog if config is valid */
         logger.info("Configuration file(s) successfully updated !")
-        formEditor.close()
+        parentStage.close()
 
         /* Then compute if Proline is already set up */
         ProlineAdminConnection.loadProlineConf(verbose = true)
@@ -639,7 +585,7 @@ class ProlineConfigForm extends Stage with LazyLogging {
         )
 
         if (isConfirmed) {
-          formEditor.close()
+          parentStage.close()
           ProlineAdminConnection.loadProlineConf(verbose = true)
         }
       }

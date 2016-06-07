@@ -1,11 +1,13 @@
-package fr.proline.admin.gui.component.dialog
+package fr.proline.admin.gui.component.configuration.form
 
-import java.io.File
-import java.io.FileWriter
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
+
+import java.io.File
+import java.io.FileWriter
 
 import scalafx.Includes._
 import scalafx.beans.property.IntegerProperty
@@ -29,20 +31,20 @@ import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 
-import com.typesafe.scalalogging.LazyLogging
+import fr.proline.admin.gui.IconResource
+import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.process.config.postgres._
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.util.ShowPopupWindow
 
-import fr.profi.util.primitives._
 import fr.profi.util.StringUtils.LINE_SEPARATOR
+import fr.profi.util.primitives._
 import fr.profi.util.scala.ScalaUtils._
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.BoldLabel
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils.newHSpacer
 import fr.profi.util.scalafx.TitledBorderPane
-import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.process.config.postgres._
-import fr.proline.admin.gui.util.FxUtils
 
 import NewDatabaseNameDialog._
 
@@ -51,26 +53,10 @@ import NewDatabaseNameDialog._
  * Form to edit and update PostgreSQL connections (pg_hba.conf) *
  * ************************************************************ *
  */
-class PgHbaConfigForm extends Stage with LazyLogging {
-
-  val formEditor = this
-
-  /* Stage's properties */
-  title = s"PostgreSQL configuration editor -- ${Main.postgresqlDataDir}"
-  initModality(Modality.WINDOW_MODAL)
-  initOwner(Main.stage)
-  width = 1024
-
-  
-  /*
-   * ***** *
-   * STUFF *
-   * ***** *
-   */
+class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFilesForm with LazyLogging {
 
   /* Read initial settings */
-  val pgHbaConfigFile = new PgHbaConfigFile(Main.postgresqlDataDir + "/pg_hba.conf")
-
+  val pgHbaConfigFile = new PgHbaConfigFile(pgHbaConfigFilePath)
   val pgHbaConfigInitSettings = pgHbaConfigFile.connectionLines
 
   /*
@@ -193,10 +179,6 @@ class PgHbaConfigForm extends Stage with LazyLogging {
   }
   val ipv6LinesBox = new VBox { spacing = 10 }
 
-  /* Buttons */
-  val applyButton = new Button("Apply") { onAction = handle { _onApplyPressed() } }
-  val cancelButton = new Button("Cancel") { onAction = handle { formEditor.close() } }
-
   /*
    * ****** *
    * LAYOUT *
@@ -212,7 +194,6 @@ class PgHbaConfigForm extends Stage with LazyLogging {
   val ipv4Panel = new VBox {
     vgrow = Priority.Always
     content = List(
-
       //      new HBox {
       //        spacing = H_SPACING
       //        content = List(ipv4Label, addIPv4LineButton)
@@ -240,89 +221,34 @@ class PgHbaConfigForm extends Stage with LazyLogging {
   val ipv6Panel = new VBox {
     vgrow = Priority.Always
     content = List(
-
-      //      new HBox {
-      //        spacing = H_SPACING
-      //        content = List(ipv6Label, addIPv6LineButton)
-      //      },
       addIPv6LineButton,
-
       new HBox { content = _columnNames(AddressType.IPv6) },
-
       newVSpacer(15, 25),
-
       ipv6LinesBox
     )
   }
-  
-    val ipV6BorderPane = new TitledBorderPane(
+
+  val ipV6BorderPane = new TitledBorderPane(
     "IPv6",
     ipv6Panel
   )
-
-  /* Buttons */
-  val buttonList = Seq(applyButton, cancelButton)
-  buttonList.foreach { b =>
-    b.prefWidth <== formEditor.width
-    b.minHeight = 30
-    b.prefHeight = 35
-    b.style = "-fx-font-weight:bold;-fx-inner-border : black; "
-  }
-  val buttons = new HBox {
-    alignmentInParent = Pos.Center
-    spacing = 20
-    content = buttonList
-  }
-
-  /* Scene's root */
-  val rootPane = new ScrollPane {
-
-    hbarPolicy = ScrollBarPolicy.AS_NEEDED
-    vbarPolicy = ScrollBarPolicy.AS_NEEDED
-    val SCROLL_BAR_PUTATIVE_WIDTH = 40
-
-    content = new VBox {
-
-      alignment = Pos.Center
-      padding = Insets(15)
-      spacing = 30
-
-      prefWidth = formEditor.width() - SCROLL_BAR_PUTATIVE_WIDTH
-      minWidth = formEditor.width() - SCROLL_BAR_PUTATIVE_WIDTH
-      maxWidth = formEditor.width() - SCROLL_BAR_PUTATIVE_WIDTH
-      minHeight <== formEditor.height - SCROLL_BAR_PUTATIVE_WIDTH
-
-//      content = Seq(ipv4Panel, ipv6Panel, buttons)
-      content = Seq(warningLabel, ipV4BorderPane, ipV6BorderPane, buttons)
-    }
-  }
-    
-  /* Scene */
-  scene = new Scene {
-    onKeyPressed = (ke: KeyEvent) => {
-      closeIfEscapePressed(formEditor, ke)
-      fireIfEnterPressed(applyButton, ke)
-    }
-
-    root = rootPane
-  }
   
-  // Stage
-//  this.minWidth = rootPane.minWidth()
-//  this.maxWidth = rootPane.maxWidth()
-
+  /* VBox content */
+  spacing = 20
+  content = Seq(warningLabel, ipV4BorderPane, ipV6BorderPane, wrappedApplyButton)
 
   /*
    * ************* *
    * INIT. CONTENT *
    * ************* *
    */
+
   pgHbaConfigInitSettings.foreach { line =>
 
-    /* IP adress stuff */
+    /* IP adress */
     val isAdressOfTypeIpCidr = line.addressWithCIDR contains "/"
     val (address, cidr) = {
-      
+
       if (isAdressOfTypeIpCidr) {
         val split = line.addressWithCIDR.split("/")
         require(split.length == 2, s"""Address should be of type: IP/CIDR (found: ${line.addressWithCIDR} within line '$line')""")
@@ -387,7 +313,7 @@ class PgHbaConfigForm extends Stage with LazyLogging {
     commented: Boolean
   ) {
 
-    /** Action run when line is deleted **/
+    /* Action run when line is deleted */
     def _onDeleteAction(line: PgHbaLine): Unit = {
       linesBuffer -= line
 
@@ -418,6 +344,7 @@ class PgHbaConfigForm extends Stage with LazyLogging {
     linesBox.content = linesBuffer
   }
 
+  /** Add components to define another IPv4 connection **/
   private def _addIPv4Line(
     connectionType: ConnectionType.Value = ConnectionType.HOST,
     database: String = "",
@@ -449,9 +376,9 @@ class PgHbaConfigForm extends Stage with LazyLogging {
     )
   }
 
-  /** Check lines conformity, return error string **/
-  private def _checkLines(): String = {
-
+  /** Check if the form is correct, show a popup describing errors if not **/
+  def checkForm(): Boolean = {
+    
     val sb = new StringBuilder()
     val sb4 = new StringBuilder()
     val sb6 = new StringBuilder()
@@ -488,62 +415,45 @@ class PgHbaConfigForm extends Stage with LazyLogging {
       sb ++= sb6.result()
     }
 
-    sb.result()
+    /* Display a popup to show errors */
+    val errorString = sb.result()
+    val errorStringIsEmpty = ScalaUtils.isEmpty(errorString)
+    if (errorStringIsEmpty == false) ShowPopupWindow(
+      wTitle = "Errors in form",
+      wText = errorString
+    )
+
+    errorStringIsEmpty
   }
 
-  /** Update model when table is updated **/
-  private def _onApplyPressed() {
+  /** Save the form (write in config file) **/
+  def saveForm() {
+    val configFile = new File(pgHbaConfigFile.filePath)
 
-    Main.stage.scene().setCursor(Cursor.WAIT)
+    /* Save current file state in backup file */
+    // this method is already wrapped in a 'synchronized' block
+    ScalaUtils.createBackupFile(configFile)
 
-    /* Check lines */
-    val errorString = _checkLines()
+    /* Update model */
+    pgHbaConfigFile.updateLines(
+      ipv4Lines.result().toArray,
+      ipv6Lines.result().toArray
+    )
 
-    /* Open a dialog if there are some errors */
-    if (errorString.isEmpty == false) {
-      ShowPopupWindow(
-        wTitle = "Errors",
-        wText = errorString,
-        isResizable = true
-      )
-    }
-
-    /* Otherwise write in file */
-    else {
-      
-      val configFile = new File(pgHbaConfigFile.filePath)
-
-      /* Save current file state in backup file */
-      // this method is already wrapped in a 'synchronized' block
-      ScalaUtils.createBackupFile(configFile)
-
-      /* Update model */
-      pgHbaConfigFile.updateLines(
-        ipv4Lines.result().toArray,
-        ipv6Lines.result().toArray
-      )
-
-      /* Update file */
-      synchronized {
-        val out = new FileWriter(configFile)
-        try {
-          val linesToBeWritten = pgHbaConfigFile.lines.mkString(LINE_SEPARATOR)
-          out.write(linesToBeWritten)
-        } finally {
-          out.close
-        }
+    /* Update file */
+    synchronized {
+      val out = new FileWriter(configFile)
+      try {
+        val linesToBeWritten = pgHbaConfigFile.lines.mkString(LINE_SEPARATOR)
+        out.write(linesToBeWritten)
+      } finally {
+        out.close
       }
-
-      /* Close dialog and make some logback */
-      formEditor.close()
-      
-      println("<br>INFO - pg_hba.conf successfully updated !<br>")
-      logger.info("pg_hba.conf successfully updated !")
     }
 
-    Main.stage.scene().setCursor(Cursor.DEFAULT)
+    println("<br>INFO - pg_hba.conf successfully updated !<br>")
+    logger.info("pg_hba.conf successfully updated !")
   }
-
 }
 
 /**

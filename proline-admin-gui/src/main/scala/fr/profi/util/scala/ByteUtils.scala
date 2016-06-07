@@ -83,7 +83,6 @@ object ByteUtils {
   }*/
   
   def getBytesAmount(value: Double, unit: ByteUnit.Value): Long = {
-//    println("in getBytesAmount")
 
     val bytesAmountAsDouble = unit match {
       case ByteUnit.B  => value
@@ -108,10 +107,6 @@ object ByteUtils {
 
     bytesAmountAsStr match {
       case pattern(valueString, unitString) => {
-        //        println("valueString: "+valueString)
-        //        println("unitString: "+unitString)
-
-        //        val valueAsDouble = toDouble(valueString)
         val unitValue: ByteUnit.Value = {
 
           if (unitString.isEmpty()) defaultUnit
