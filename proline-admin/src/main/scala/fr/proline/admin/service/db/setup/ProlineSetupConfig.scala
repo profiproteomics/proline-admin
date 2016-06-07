@@ -12,18 +12,13 @@ import fr.proline.repository._
 
 /** Configuration settings for Proline setup */
 case class ProlineSetupConfig(
-  dataDirectory: File,
+  dataDirectoryOpt: Option[File],
   udsDBConfig: DatabaseSetupConfig,
   pdiDBConfig: DatabaseSetupConfig,
   psDBConfig: DatabaseSetupConfig,
   msiDBConfig: DatabaseSetupConfig,
   lcmsDBConfig: DatabaseSetupConfig
-) {
-
-  // Check that directory exists
-  require(dataDirectory.exists() && dataDirectory.isDirectory(), "data directory does not exist")
-
-}
+)
 
 object DatabaseSetupConfig {
   private val connectionProperties = new java.util.HashMap[String, String]()
@@ -43,13 +38,17 @@ object DatabaseSetupConfig {
 case class DatabaseSetupConfig(
   dbType: ProlineDatabaseType,
   driverType: DriverType,
-  dbDirectory: File,
+  dbDirectoryOpt: Option[File],
   connectionConfig: Config
 ) extends LazyLogging {
 
   // Check that directories exists
-  //require( scriptDirectory.exists() && scriptDirectory.isDirectory(), "missing script directory:"+scriptDirectory )
-  require(dbDirectory.exists() && dbDirectory.isDirectory(), "missing database directory:" + dbDirectory)
+  if (driverType != DriverType.POSTGRESQL) {
+    require( dbDirectoryOpt.isDefined, s"The database directory must be provided for the $driverType driver" )
+    
+    val dbDirectory = dbDirectoryOpt.get
+    require(dbDirectory.exists() && dbDirectory.isDirectory(), "missing database directory:" + dbDirectory)
+  }
 
   // Check configuration validity
   connectionConfig.checkValid(DatabaseSetupConfig.connectionConfigSchema)
@@ -78,7 +77,7 @@ case class DatabaseSetupConfig(
     //val dbConnProps = this.dbConnProperties
 
     val udsExtDb = new UdsExternalDb()
-    if (connectionMode == ConnectionMode.FILE) udsExtDb.setDbName(dbDirectory + "/" + dbName)
+    if (connectionMode == ConnectionMode.FILE) udsExtDb.setDbName(dbDirectoryOpt.get + "/" + dbName)
     else udsExtDb.setDbName(dbName)
 
     udsExtDb.setType(this.dbType)
