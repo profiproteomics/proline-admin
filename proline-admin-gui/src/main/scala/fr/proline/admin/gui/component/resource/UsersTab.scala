@@ -131,25 +131,6 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
     minHeight = 15
   }
 
-  /* See all users */
-  val seeAllUsers = new Hyperlink("See all users...") {
-    style = TextStyle.BLUE_HYPERLINK
-    alignmentInParent = Pos.BaselineRight
-
-    onAction = handle {
-      val users = UdsRepository.getAllUserAccounts()
-      Platform.runLater(println(s"INFO - Loaded ${users.length} user(s) from UDSdb."))
-
-      val text = if (users.isEmpty) "No user found." else users.map(_.getLogin()).sorted.mkString("\n")
-      ShowPopupWindow(
-        wTitle = "All users",
-        wText = text,
-        wParent = Option(Main.stage),
-        isResizable = true
-      )
-    }
-  }
-
   /* Password */
   val pwLabel = new Label("Password : ")
   val pwField = new PasswordField
@@ -185,7 +166,6 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
       (loginLabel, 0, 0, 1, 1),
       (loginField, 1, 0, 1, 1),
       (loginWarningLabel, 1, 1, 1, 1),
-      (seeAllUsers, 1, 1, 1, 1),
       (pwLabel, 0, 3, 1, 1),
       (pwField, 1, 3, 1, 1),
       (pwConfirmLabel, 0, 4, 1, 1),
@@ -288,21 +268,10 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
 
         val udsDbContext = UdsRepository.getUdsDbContext()
 
-        //try {
-          /* Create user */
-          val pswd = if (pswdOpt.isDefined) pswdOpt.get else "proline"
-          val userCreator = new CreateUser(udsDbContext, _login, pswd)
-          userCreator.run()
-
-        /*} finally {
-          /* Close udsDbContext */
-          logger.debug("Closing current UDS Db Context")
-          try {
-            udsDbContext.close()
-          } catch {
-            case exClose: Exception => logger.error("Error closing UDS Db Context", exClose)
-          }
-        }*/
+        /* Create user */
+        val pswd = if (pswdOpt.isDefined) pswdOpt.get else "proline" //TODO: define in config!
+        val userCreator = new CreateUser(udsDbContext, _login, pswd)
+        userCreator.run()
       }
     )
   }
