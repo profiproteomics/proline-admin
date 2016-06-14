@@ -35,7 +35,8 @@ object DatabaseConnection extends LazyLogging {
     password: String,
     host: String,
     port: Int,
-    showPopup: Boolean
+    showSuccessPopup: Boolean,
+    showFailurePopup: Boolean
   ): Boolean = { //return connectionEstablished
     
     require( driverType != null, "driverType is null")
@@ -58,7 +59,7 @@ object DatabaseConnection extends LazyLogging {
       case Success(connection) => {
         logger.debug("Successfully connected to database !")
 
-        if (showPopup) ShowPopupWindow(
+        if (showSuccessPopup) ShowPopupWindow(
           wTitle = "Test connection to database",
           wText = "The connection to the database has been successfully established !"
         )
@@ -73,9 +74,11 @@ object DatabaseConnection extends LazyLogging {
         val errorMsg = t.getMessage()
         logger.warn("Unable to connect to database:\n" + errorMsg)
 
-        if (showPopup) ShowPopupWindow(
+        if (showFailurePopup) ShowPopupWindow(
           wTitle = "Test connection to database",
           wText = "The connection to the database could not be established with this configuration.\n\n" +
+            "Check that your Proline configuration (Database connection parameters) is correct.\n" +
+            s"Note: you may also check that your $driverType server is running.\n\n" +
             "Got the following error:\n" + errorMsg
         )
 
@@ -85,14 +88,19 @@ object DatabaseConnection extends LazyLogging {
     }
   }
 
-  def testDbConnection(adminConfig: AdminConfig, showPopup: Boolean = true): Boolean = {
+  def testDbConnection(
+    adminConfig: AdminConfig,
+    showSuccessPopup: Boolean = true,
+    showFailurePopup: Boolean = true
+  ): Boolean = {
     testDbConnection(
       adminConfig.driverType.getOrElse(null),
       adminConfig.dbUserName.getOrElse(""),
       adminConfig.dbPassword.getOrElse(""),
       adminConfig.dbHost.getOrElse(""),
       adminConfig.dbPort.getOrElse(5432),
-      showPopup
+      showSuccessPopup,
+      showFailurePopup
     )
   }
 
@@ -115,8 +123,7 @@ object DatabaseConnection extends LazyLogging {
     port: Int
   ): Try[Connection] = {
 
-    //TODO
-    //(false, Some(UnhandledDriverTypeException(DriverType.H2)))
+    //TODO: implement me?
     Failure(UnhandledDriverTypeException(DriverType.H2))
   }
 
@@ -128,8 +135,7 @@ object DatabaseConnection extends LazyLogging {
     port: Int
   ): Try[Connection] = {
 
-    //TODO
-    //(false, Some(UnhandledDriverTypeException(DriverType.SQLITE)))
+    //TODO: implement me?
     Failure(UnhandledDriverTypeException(DriverType.SQLITE))
   }
 

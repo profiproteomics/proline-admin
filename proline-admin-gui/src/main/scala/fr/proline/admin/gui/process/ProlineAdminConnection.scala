@@ -3,17 +3,15 @@ package fr.proline.admin.gui.process
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
-
 import java.io.File
-
 import scalafx.application.Platform
 import scalafx.scene.Cursor
 import scalafx.scene.Cursor.sfxCursor2jfx
-
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.component.ButtonsPanel
 import fr.proline.admin.gui.util.GetConfirmation
 import fr.proline.admin.service.db.SetupProline
+import fr.proline.admin.gui.process.config.AdminConfigFile
 
 /**
  * All utilities to modify ProlineAdmin configuration
@@ -54,10 +52,17 @@ object ProlineAdminConnection extends LazyLogging {
       
 
       try {
+        // Parse configuration
         this._setNewProlineConfig()
+        
+        // Test connection to database
+        val adminConfigOpt = new AdminConfigFile(Main.adminConfPath).read()
+        require(adminConfigOpt.isDefined, "Can't load new admin config: undefined.")
+        val connectionEstablished = DatabaseConnection.testDbConnection(adminConfigOpt.get, showSuccessPopup = false, showFailurePopup = true)
+        require(connectionEstablished, "Can't load new admin config: database is unreachable.")
 
         logger.info(s"Action '$actionString' finished with success.")
-        if (verbose) println(s"""[ $actionString : <b>success</b> ]""")
+        if (verbose) println(s"""<br/>[ $actionString : <b>success</b> ]""")
         _isConfigValid = true
 
       } catch {
@@ -98,11 +103,13 @@ object ProlineAdminConnection extends LazyLogging {
     val newConfigFile = ConfigFactory.parseFile(new File(Main.adminConfPath))
     
     synchronized {
+      logger.debug("Set new config parameters in ProlineAdmin");
       SetupProline.setConfigParams(newConfigFile)
+      logger.debug("Set new udsDB config");
       UdsRepository.setUdsDbConfig(SetupProline.getUpdatedConfig.udsDBConfig)
       Platform.runLater(Main.stage.title = "Proline Admin")
     }
-    
+
     /*
     // TODO: decide if we want to support other drivers than Pg in the GUI
 

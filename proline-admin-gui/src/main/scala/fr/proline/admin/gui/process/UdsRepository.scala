@@ -31,8 +31,6 @@ object UdsRepository extends LazyLogging {
    * Get UDS database CONFIG
    */
   def getUdsDbConfig(): DatabaseSetupConfig = {
-    //    if (udsDbConfig != null) udsDbConfig //not re-initialized if invalid config (private) 
-    //    else SetupProline.getUpdatedConfig.udsDBConfig
     SetupProline.getUpdatedConfig.udsDBConfig
   }
 

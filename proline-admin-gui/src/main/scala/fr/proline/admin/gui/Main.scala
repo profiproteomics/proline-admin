@@ -95,6 +95,7 @@ class Main extends Application {
       height = 400
       minWidth = 720
       minHeight = 384
+      title = "Proline Admin"
     }
 
     /* Locate 'config' folder */

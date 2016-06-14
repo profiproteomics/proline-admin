@@ -153,7 +153,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
   }
 
   val rawFilesMountPoints = ArrayBuffer[MountPointPanel]()
-  val rawFilesMpLabel = new BoldLabel("RAW files :", upperCase = false)
+  val rawFilesMpLabel = new BoldLabel("Raw files :", upperCase = false)
   val addRawFilesMpButton = new Button("Add") {
     onAction = handle { _addRawFilesMountPoint() }
   }
@@ -423,8 +423,13 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
   )
 
   /** Test connection with DB with provided parameters **/
-  private def _testDbConnection(adminConfig: AdminConfig, showPopup: Boolean = true): Boolean = { //return connectionEstablished
-    DatabaseConnection.testDbConnection(adminConfig, showPopup)
+  private def _testDbConnection(
+    adminConfig: AdminConfig,
+    showSuccessPopup: Boolean = true,
+    showFailurePopup: Boolean = true
+  ): Boolean = { //return connectionEstablished
+
+    DatabaseConnection.testDbConnection(adminConfig, showSuccessPopup, showFailurePopup)
   }
 
   /** Add stuff to define another raw_files mount point **/
@@ -562,8 +567,8 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
       }
 
       /* Test connection to database */
-      // Don't try to reach UDSdb. Here we just want to know if config is valid, not if Proline is set up
-      val connectionEstablished = _testDbConnection(newAdminConfig, showPopup = false)
+      // Don't try to reach database. Here we just want to know if config is valid, not if Proline is set up
+      val connectionEstablished = _testDbConnection(newAdminConfig, false, false)
 
       if (connectionEstablished) {
 
