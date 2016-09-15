@@ -1,9 +1,9 @@
 package fr.proline.admin.postgres.install
 import com.typesafe.scalalogging.LazyLogging
 import scala.collection.mutable.ArrayBuffer
-
-
-
+import fr.proline.admin.postgres.install._
+import fr.proline.admin.gui.util.ShowPopupWindow
+import fr.proline.admin.gui.QuickStart
 /**
  * check version of os and check if postgresq is installed  
  **/
@@ -15,7 +15,16 @@ object CheckInstalledPostgres {
   /* check postgre and showmeaaage  alert if not installed  */
   
    def checkPostgres():Unit={
-   
+    if(isWindows()){
+     val checkregistry=new CheckRegistry()
+     if(!checkregistry.readRegistry("HKEY_LOCAL_MACHINE\\SOFTWARE\\","PostgreSQL")){
+     ShowPopupWindow(
+          wTitle = "Software PostgreSQL",
+          wText = "Check if PostgreSQL is installed ! "
+        )
+        // QuickStart.stage.close() 
+     }
+    }
   }
   
   /* get the operating system:Windows or unix */
@@ -33,7 +42,7 @@ object CheckInstalledPostgres {
     return (OS.indexOf("sunos") >= 0);
   }
  /* warning message */
-  
+
  def showPopUp():Unit={
    
  }
