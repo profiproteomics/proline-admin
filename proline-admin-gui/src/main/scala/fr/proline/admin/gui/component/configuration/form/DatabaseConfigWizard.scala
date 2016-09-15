@@ -68,19 +68,23 @@ class DatabaseConfig extends VBox with LazyLogging {
 	private var  username:String=""
 	private val driver = DriverType.POSTGRESQL
 	/* DB connection */
-	
+	  /* user name  */
 	val userNameLabel = new Label("User name :")
-	val userNameField = new TextField{  
+	val userNameField = new TextField{
+    
 	  text.onChange{(_,oldText,newText)=>
 	  updateUSername(newText)    
 	  }
   }
-	username="postgres"
+  userNameField.setText("postgres")
+	username=userNameField.getText()
 	userNameField.setTooltip(new Tooltip("enter the username of your database."))
   if((username==null)||(username.equals(""))){
 	  username=System.getProperty("user.name")
   }
-  userNameField.setPromptText(username)
+
+  userNameField.setPromptText("Example : postgres")
+   /* password */
   val pwdLabel = new Label("Password :")
   val showPwdBox = new CheckBox("Show password") {
 	selected = false
@@ -97,10 +101,12 @@ class DatabaseConfig extends VBox with LazyLogging {
 			visible <== !passwordPWDField.visible
 			text.onChange{(_,oldText,newText)=>
 			updatePassword(newText)
+			 
 			}
   }
   passwordTextField.setTooltip(new Tooltip("enter the password of your database."))
-  passwordTextField.setPromptText("postgres")
+  passwordTextField.setPromptText("Password")
+  /* host name */
   val hostNameLabel = new Label("Host name :")
   val hostNameField = new TextField {
 	  text.onChange{(_,oldText,newText)=>
@@ -112,14 +118,16 @@ class DatabaseConfig extends VBox with LazyLogging {
   if((hostname==null)||(hostname.equals(""))){
 	  hostname="Example : localhost"
   }
-  hostNameField.setPromptText(hostname)
+  hostNameField.setText(hostname)
+  hostNameField.setPromptText("Example : localhost")
   val hostNameWarning = new Label{
 	graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
 			text = "Don't use the term 'localhost', but the real IP address or fully qualified name of the server."
 			wrapText = true
   }
   hostNameField.setTooltip(new Tooltip("enter your hostname."));
-  val portLabel = new Label("Port :")
+  /* Port */
+  val portLabel = new Label("Port : ")
   val portField = new NumericTextField{   
 	  text.onChange{
 		  (_,oldText,newText)=>
@@ -128,20 +136,16 @@ class DatabaseConfig extends VBox with LazyLogging {
 		  }
 	  }
   }
-  portField.setPromptText("5432")
+  portField.setPromptText("Example : 5432")
+  portField.setText("5432")
   portField.setTooltip(new Tooltip("enter the port of your database(default:5432)."));
   val testConnectionHyperlink = new Hyperlink("Test connection") {
 	  onAction = handle {
 	    
 		/*test connection database*/ 
-		//  DatabaseConnection.testConnectionToPostgres(userNameField,passwordTextField,hostNameField,portField) 
+	
 	    DatabaseConnection.testDbConnection(driver,userNameField,passwordTextField,hostNameField,portField,true,true) 
-		// dialgoConnectionSuccess()
-		//      if(DatabaseConnection.testConnectionToPostgres1(userNameField,passwordTextField,hostNameField,portField)==false){
-		//        //connection to database failed
-		//        dialgoConnectionFail()
-		//      }
-
+	
 	    }
   }
 
@@ -159,9 +163,10 @@ class DatabaseConfig extends VBox with LazyLogging {
   Seq(
 		userNameField, passwordPWDField, passwordTextField, hostNameField, hostNameWarning, portField
 		).foreach { node =>
-		node.minWidth = 120
-		//node.prefWidth <== parentStage.width
+		node.minWidth = 370
+		node.prefWidth <== 570
     }
+  
 
 //VBox & HBox spacing
   private val V_SPACING = 10
@@ -186,7 +191,7 @@ class DatabaseConfig extends VBox with LazyLogging {
 			  content = List(userNameLabel, userNameField)
 		  },
 	    new HBox {
-		    spacing = H_SPACING
+		    spacing = 1.5*H_SPACING
 		    content = List(pwdLabel,dbPwdPane, showPwdBox)
 		  },
 		  new HBox {
@@ -194,15 +199,19 @@ class DatabaseConfig extends VBox with LazyLogging {
 				content = List(
 					hostNameLabel,
 					new VBox {
+					  spacing = H_SPACING
 						content = List(hostNameField, hostNameWarning)
 					}
 				)
 	  	},
 	   new HBox {
-	      spacing = H_SPACING
+	      spacing = 2*H_SPACING
 		    content = List(portLabel, portField)
 	    },
-	      testConnectionHyperlink
+	    ScalaFxUtils.newVSpacer(minH = 10),
+	    testConnectionHyperlink,
+      ScalaFxUtils.newVSpacer(minH = 14),
+      ScalaFxUtils.newVSpacer(minH = 10)
       )
    })
 
