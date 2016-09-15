@@ -122,7 +122,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   val pwxConfigLabel = new HBox {
     content = List(
       new Label("Full path to "),
-      new BoldLabel("Proline Web Extension (PWX)", upperCase = false),
+      new BoldLabel("Sequence Repository", upperCase = false),
       new Label(" configuration file :")
     )
   }
@@ -132,9 +132,10 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       _onPwxConfigTextChange(newText)
     }
   }
+   pwxConfigField.setTooltip(new Tooltip("full path to Sequence repository configuration file."));
   val pwxConfigBrowse = new Button("Browse...") {
     onAction = handle {
-    /* _browsePwxConfigFile */
+    /* _browseSeqReposConfigFile */
       }
   }
   val pwxConfigNbLabel = new Label {
@@ -187,8 +188,14 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
         spacing = 5
         content = Seq(serverConfigField, serverConfigBrowse)
       },
+       ScalaFxUtils.newVSpacer(minH = 10),
+      pwxConfigLabel,
+       new HBox {
+        spacing = 5
+        content = Seq(pwxConfigField, pwxConfigBrowse)
+      },
       new StackPane {
-        content = List(serverConfigNbLabel, serverConfigWarningLabel)
+        content = List(serverConfigNbLabel, serverConfigWarningLabel,pwxConfigWarningLabel)
         alignmentInParent = Pos.BaselineLeft
       },
       ScalaFxUtils.newVSpacer(minH = 10),
