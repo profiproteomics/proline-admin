@@ -32,6 +32,7 @@ import fr.proline.admin.gui.component.configuration.form.DatabaseConfig
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import fr.proline.admin.postgres.install.CheckInstalledPostgres
+import fr.proline.admin.postgres.install._
 
 /**
  * Graphical interface for Proline-Admin wizard:quick edit for admin and server file (.conf).
@@ -97,7 +98,9 @@ class QuickStart extends Application {
 
   def start(stage: javafx.stage.Stage): Unit = {   
     /*check if postgres is installed */
-
+    
+     CheckInstalledPostgres.checkPostgres()
+     
     /* Locate 'config' folder */
     
      val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
@@ -123,9 +126,9 @@ class QuickStart extends Application {
      QuickStart.panelState="panelConfig"
      QuickStart.stage = new Stage(stage) {
       scene = new Scene(QuickStart.root)
-      width = 720
-      height = 420
-      minWidth = 720
+      width = 820
+      height = 520
+      minWidth = 620
       minHeight = 420
       title = "Proline Admin quick setup"
     }
