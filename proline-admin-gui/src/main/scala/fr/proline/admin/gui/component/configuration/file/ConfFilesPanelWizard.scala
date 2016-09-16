@@ -13,7 +13,6 @@ import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
 
-//import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.QuickStart
 import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.config.AdminConfigFile
@@ -62,7 +61,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     )
   }
   val adminConfigField = new TextField {
-    text = QuickStart.adminConfPath
+    if (QuickStart.adminConfPath != null) text = QuickStart.adminConfPath
     text.onChange { (_, oldText, newText) =>
       _onAdminConfigTextChange(newText)
       updateAdminConf(newText)
@@ -119,23 +118,24 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   
   /* PWX configuration file will be selected automatically */
   
-  val pwxConfigLabel = new HBox {
+  val seqReposConfigLabel = new HBox {
     content = List(
       new Label("Full path to "),
       new BoldLabel("Sequence Repository", upperCase = false),
       new Label(" configuration file :")
     )
   }
-  val pwxConfigField = new TextField() {
-    if (QuickStart.pwxConfPath != null) text = QuickStart.pwxConfPath
+  val seqReposConfigField = new TextField() {
+   if (QuickStart.seqRepoConfPath != null) text = QuickStart.seqRepoConfPath
     text.onChange { (_, oldText, newText) =>
-      _onPwxConfigTextChange(newText)
+      _onSeqReposConfigTextChange(newText)
+      updateSeqReposConf(newText)
     }
   }
-   pwxConfigField.setTooltip(new Tooltip("full path to Sequence repository configuration file."));
+   seqReposConfigField.setTooltip(new Tooltip("full path to Sequence repository configuration file."));
   val pwxConfigBrowse = new Button("Browse...") {
     onAction = handle {
-    /* _browseSeqReposConfigFile */
+       _browseSequenceRepositoryFile
       }
   }
   val pwxConfigNbLabel = new Label {
@@ -144,7 +144,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     style = GREY_ITALIC
     visible = false
   }
-  val pwxConfigWarningLabel = new Label {
+  val seqReposConfigWarningLabel = new Label {
     text = NOT_MATCHING_WARNING_TEXT
     alignmentInParent = Pos.BottomLeft
     style = NOT_MATCHING_WARNING_STYLE
@@ -160,7 +160,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   Seq(
     adminConfigField,
     serverConfigField,
-    pwxConfigField
+    seqReposConfigField
   ).foreach { f =>
       f.hgrow = Priority.Always
     }
@@ -189,13 +189,13 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
         content = Seq(serverConfigField, serverConfigBrowse)
       },
        ScalaFxUtils.newVSpacer(minH = 10),
-      pwxConfigLabel,
+      seqReposConfigLabel,
        new HBox {
         spacing = 5
-        content = Seq(pwxConfigField, pwxConfigBrowse)
+        content = Seq(seqReposConfigField, pwxConfigBrowse)
       },
       new StackPane {
-        content = List(serverConfigNbLabel, serverConfigWarningLabel,pwxConfigWarningLabel)
+        content = List(serverConfigNbLabel, serverConfigWarningLabel,seqReposConfigWarningLabel)
         alignmentInParent = Pos.BaselineLeft
       },
       ScalaFxUtils.newVSpacer(minH = 10),
@@ -226,7 +226,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       
       adminConfigFile = new AdminConfigFile(newText)
       _setServerConfPathField()
-      _setPwxConfPathField()
+   
 
       /* Additional action */ 
       
@@ -244,16 +244,6 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     )
   }
 
-  /* Try to get and set PWX config file path in dedicated textField */
-  
-  private def _setPwxConfPathField() {
-    _setConfPathField(
-      pathOptInAdminConfig = adminConfigFile.getPwxConfigPath(),
-      field = pwxConfigField,
-      nbLabel = pwxConfigNbLabel,
-      warningLabel = pwxConfigWarningLabel
-    )
-  }
 
   /* Try to get and set config file path in dedicated textField */
   
@@ -298,15 +288,15 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       warningLabel = serverConfigWarningLabel
     )
   }
-  private def _onPwxConfigTextChange(newText: String) {
-    pwxConfigWarningLabel.text = NOT_MATCHING_WARNING_TEXT
-    pwxConfigWarningLabel.style = NOT_MATCHING_WARNING_STYLE
+  private def _onSeqReposConfigTextChange(newText: String) {
+    seqReposConfigWarningLabel.text = NOT_MATCHING_WARNING_TEXT
+    seqReposConfigWarningLabel.style = NOT_MATCHING_WARNING_STYLE
 
     _onConfigTextChange(
       newText,
       pathInConfig = pwxConfigPathInAdminConfig,
       nbLabel = pwxConfigNbLabel,
-      warningLabel = pwxConfigWarningLabel
+      warningLabel = seqReposConfigWarningLabel
     )
   }
   def showIn(stage: Stage): String = {
@@ -376,6 +366,14 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     if (filePath != null) serverConfigField.text = filePath
   }
   
+  /* browse Sequence Repository configuration file: set global variable and update field */
+ 
+  private def _browseSequenceRepositoryFile() {
+     ProlineConfigFileChooserWizard.setForProlineServerConf(seqReposConfigField.text())
+     val filePath = ProlineConfigFileChooserWizard.showIn(QuickStart.stage)
+    if (filePath != null) seqReposConfigField.text = filePath
+    
+  }
  /* update adminConf  global variables */
   
   def updateAdminConf(adminconf:String){
@@ -388,10 +386,10 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     QuickStart.serverConfPath=serverConf
   }
   
-  /* update PWX global variable */
+  /* update sequebce repository global variable */
   
-  def updatePwxConf(pwxConf:String){
-    QuickStart.pwxConfPath=pwxConf
+  def updateSeqReposConf(seqReposConf:String){
+    QuickStart.seqRepoConfPath=seqReposConf
     
   }
   
@@ -405,8 +403,8 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   def setProlineServerConfFile(newPath: String) { serverConfigField.text = newPath }
   def setProlineServerConfFile(newPathOpt: Option[String]) { setProlineServerConfFile(newPathOpt.getOrElse("")) }
 
-  def getPwxConfFile(): String = pwxConfigField.text()
-  def setPwxConfFile(newPath: String) { pwxConfigField.text = newPath }
+  def getPwxConfFile(): String = seqReposConfigField.text()
+  def setPwxConfFile(newPath: String) { seqReposConfigField.text = newPath }
   def setPwxConfFile(newPathOpt: Option[String]) { setPwxConfFile(newPathOpt.getOrElse("")) }
 
   /* Check the form, return a boolean. Display or hide warnings depending on form conformity */
@@ -414,7 +412,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   def checkForm(allowEmptyPaths: Boolean = true): Boolean = Seq(
     (adminConfigField, adminConfigWarningLabel),
     (serverConfigField, serverConfigWarningLabel),
-    (pwxConfigField, pwxConfigWarningLabel)
+    (seqReposConfigField, seqReposConfigWarningLabel)
   ).forall { case (f, w) => this.checkFileFromField(f, w, allowEmptyPaths) }
 
   /* Save conf file(s) path in global variables and in admin config file */
@@ -423,7 +421,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
 
     val selectedAdminConfigPath = adminConfigField.text()
     val selectedServerConfigPath = serverConfigField.text()
-    val selectedPwxConfigPath = pwxConfigField.text()
+    val selectedPwxConfigPath = seqReposConfigField.text()
 
     /* Update global variables */
     
@@ -459,7 +457,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       serverConfigNbLabel,
       serverConfigWarningLabel,
       pwxConfigNbLabel,
-      pwxConfigWarningLabel
+      seqReposConfigWarningLabel
     ).foreach(_.visible = false)
   }
 }
