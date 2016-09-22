@@ -97,10 +97,12 @@ object QuickStart extends LazyLogging {
 class QuickStart extends Application {
 
   def start(stage: javafx.stage.Stage): Unit = {   
-    /*check if postgres is installed */
-    
+   
+    /*check if postgres is installed 
+     
      CheckInstalledPostgres.checkPostgres()
      
+     */
     /* Locate 'config' folder */
     
      val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
