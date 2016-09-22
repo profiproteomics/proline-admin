@@ -14,16 +14,25 @@ object CheckInstalledPostgres {
   
   /* check postgre and showmeaaage  alert if not installed  */
   
+  val checkregistry=new CheckRegistry()
    def checkPostgres():Unit={
     if(isWindows()){
-     val checkregistry=new CheckRegistry()
-     if(!checkregistry.readRegistry("HKEY_LOCAL_MACHINE\\SOFTWARE\\","PostgreSQL")){
+     
+     if(!checkregistry.readRegistry("HKEY_LOCAL_MACHINE\\SOFTWARE\\","PostgreSQL","reg query")){
      ShowPopupWindow(
           wTitle = "Software PostgreSQL",
           wText = "Check if PostgreSQL is installed ! "
         )
-        // QuickStart.stage.close() 
      }
+    }
+    if(isUnix()){
+      if(!checkregistry.readRegistry("","psql","which")){
+      ShowPopupWindow(
+          wTitle = "Software PostgreSQL",
+          wText = "Check if PostgreSQL is installed ! "
+       )
+     }
+      
     }
   }
   

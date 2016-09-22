@@ -9,11 +9,11 @@ import scala.util.control.Breaks._
  **/
 class CheckRegistry {
   
-   def readRegistry(location:String,key:String):Boolean={
+   def readRegistry(location:String,key:String,command:String):Boolean={
      var registryExist:Boolean=false
      
      try{
-       var process:Process=Runtime.getRuntime().exec("reg query " + location)
+       var process:Process=Runtime.getRuntime().exec(command+" "+ location)
        val reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
        var line : String ="";
        try{
