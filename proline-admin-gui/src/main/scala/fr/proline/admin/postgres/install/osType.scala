@@ -26,7 +26,7 @@ object CheckInstalledPostgres {
      }
     }
     if(isUnix()){
-      if(!checkregistry.readRegistry("","psql","which")){
+      if(!checkregistry.readRegistry("psql","psql","which")){
       ShowPopupWindow(
           wTitle = "Software PostgreSQL",
           wText = "Check if PostgreSQL is installed ! "
