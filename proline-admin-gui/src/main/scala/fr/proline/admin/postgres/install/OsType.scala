@@ -4,15 +4,18 @@ import scala.collection.mutable.ArrayBuffer
 import fr.proline.admin.postgres.install._
 import fr.proline.admin.gui.util.ShowPopupWindow
 import fr.proline.admin.gui.QuickStart
+
 /**
  * check version of os and check if postgresq is installed  
+ *
  **/
+
 object CheckInstalledPostgres {
   
   private  var  OS:String=System.getProperty("os.name").toLowerCase()
   private  var command:String=_
   
-  /* check postgre and showmeaaage  alert if not installed  */
+  /* check postgresql and alert if not installed  */
   
   val checkregistry=new CheckRegistry()
    def checkPostgres():Unit={
@@ -25,18 +28,18 @@ object CheckInstalledPostgres {
         )
      }
     }
+    
     if(isUnix()){
       if(!checkregistry.readRegistry("psql","psql","which")){
       ShowPopupWindow(
           wTitle = "Software PostgreSQL",
           wText = "Check if PostgreSQL is installed ! "
        )
-     }
-      
+     } 
     }
   }
   
-  /* get the operating system:Windows or unix */
+  /* get the operating system: Windows or Unix */
   
   def isWindows():Boolean={
     return (OS.indexOf("win") >= 0)
