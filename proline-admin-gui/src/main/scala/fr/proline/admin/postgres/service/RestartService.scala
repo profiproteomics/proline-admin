@@ -1,5 +1,5 @@
 package fr.proline.admin.postgres.service
-import com.sun.security.auth._
+
 import java.io.IOException
 import java.io._
 import java.io.StringWriter
@@ -17,25 +17,7 @@ object AllDone extends Exception {
 }
 object RestartService {
   
-  /*check if user is admin in windows */
-  
-  def isAdminInWindows():Boolean={
-    var isAdmin:Boolean=false
-    if(CheckInstalledPostgres.isWindows()){
-     val groups:Array[String]=(new com.sun.security.auth.module.NTSystem()).getGroupIDs()
-     for(group<- groups){
-       if(group.equals("S-1-5-32-544")){
-       isAdmin= true 
-       }
-     }
-    }
-     return isAdmin
-  }
-  /*check id user is admin in unix */
-  
-  def isAdminInUnix():Boolean={
-    return true 
-  }
+ 
   /* get service name with different PostgreSQL versions */
   def getServiceNameInWindows(serviceName:String):String={
      var name:String=""
@@ -66,8 +48,7 @@ object RestartService {
     
    val serviceStop="cmd.exe /c sc stop "+serviceName
    val serviceStart="cmd.exe /c sc start "+serviceName
-  
-   
+
     try{ 
        var process:Process=Runtime.getRuntime().exec(serviceStop)
        process.waitFor()
