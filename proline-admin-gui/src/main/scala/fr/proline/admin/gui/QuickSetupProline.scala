@@ -129,9 +129,9 @@ class QuickStart extends Application {
      QuickStart.stage = new Stage(stage) {
       scene = new Scene(QuickStart.root)
       width = 820
-      height = 520
+      height = 570
       minWidth = 620
-      minHeight = 420
+      minHeight = 570
       title = "Proline Admin quick setup"
     }
      QuickStart.stage.show()

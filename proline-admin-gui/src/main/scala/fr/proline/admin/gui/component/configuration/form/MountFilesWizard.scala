@@ -137,6 +137,7 @@ class MonutFiles extends VBox  with LazyLogging {
   contentNode= new VBox {
     spacing = 2 * V_SPACING
     content = List(
+    ScalaFxUtils.newVSpacer(minH = 5),
     new HBox {
       spacing = H_SPACING
       content = List(rawFilesMpLabel, addRawFilesMpButton)
@@ -152,8 +153,10 @@ class MonutFiles extends VBox  with LazyLogging {
           content = List(resultFilesMpLabel, addResultFilesMpButton)
         },
         resultFilesMpBox,
+   
+        ScalaFxUtils.newVSpacer(minH = 15),
         ScalaFxUtils.newVSpacer(minH = 10),
-        ScalaFxUtils.newVSpacer(minH = 8),
+        ScalaFxUtils.newVSpacer(minH = 15),
         ScalaFxUtils.newVSpacer(minH = 10)
         
       )

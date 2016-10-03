@@ -4,7 +4,7 @@ import java.io._
 import java.io.StringWriter
 import scala.util.control.Breaks._
 /** 
- * check if software isn installed 
+ * check if software is installed 
  **/
 class CheckRegistry {
   

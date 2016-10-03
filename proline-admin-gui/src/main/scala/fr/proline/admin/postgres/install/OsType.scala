@@ -24,12 +24,13 @@ object CheckInstalledPostgres {
      if(!checkregistry.readRegistry("HKEY_LOCAL_MACHINE\\SOFTWARE\\","PostgreSQL","reg query")){
      ShowPopupWindow(
           wTitle = "Software PostgreSQL",
-          wText = "Check if PostgreSQL is installed ! "
+          wText = "Check if PostgreSQL is installed , you should  have Administrateur rights ! "
         )
      }
     }
     
     if(isUnix()){
+      
       if(!checkregistry.readRegistry("psql","psql","which")){
       ShowPopupWindow(
           wTitle = "Software PostgreSQL",

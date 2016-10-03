@@ -148,6 +148,17 @@ class DatabaseConfig extends VBox with LazyLogging {
 	
 	    }
   }
+  
+   val optimizePostgresql = new Hyperlink("Optimize PostgreSQL") {
+	  onAction = handle {
+	    
+		/*require :
+		 * -PostgreSQL is installed
+		 * - Administrateur rights. 
+		 * */ 
+	
+	    }
+  }
 
 /*
  * ****** *
@@ -182,7 +193,7 @@ class DatabaseConfig extends VBox with LazyLogging {
       
     title = "Step 2 : edit database connection", 
    contentNode = new VBox {
-	  padding = Insets(5)
+	  padding = Insets(30)
 	  spacing = V_SPACING
 	  alignment = Pos.BaselineRight
 	  content = List(
@@ -208,9 +219,15 @@ class DatabaseConfig extends VBox with LazyLogging {
 	      spacing = 2*H_SPACING
 		    content = List(portLabel, portField)
 	    },
+	   
+	    ScalaFxUtils.newVSpacer(minH = 11),
 	    ScalaFxUtils.newVSpacer(minH = 10),
-	    testConnectionHyperlink,
-      ScalaFxUtils.newVSpacer(minH = 14),
+	     new HBox {
+	      spacing = 95*H_SPACING
+		    content = List(optimizePostgresql,testConnectionHyperlink)
+	    },
+	   
+      ScalaFxUtils.newVSpacer(minH = 10),
       ScalaFxUtils.newVSpacer(minH = 10)
       )
    })
