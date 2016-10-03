@@ -29,6 +29,7 @@ import scalafx.stage.FileChooser.ExtensionFilter
 
 import fr.profi.util.scalafx.TitledBorderPane
 import javafx.scene.control.Tooltip
+import fr.proline.admin.postgres.install._
 
 /**
  * 
@@ -116,7 +117,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     visible = false
   }
   
-  /* PWX configuration file will be selected automatically */
+  /* Sequence Repository configuration file will be selected automatically */
   
   val seqReposConfigLabel = new HBox {
     content = List(
@@ -150,7 +151,37 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     style = NOT_MATCHING_WARNING_STYLE
     visible = false
   }
-
+  
+  /* Select data directory */
+  
+  val dataDirectoryLabel = new HBox {
+    content = List(
+      new Label("Full path to "),
+      new BoldLabel("Data Directory", upperCase = false),
+      new Label(" to optimize PostgreSQL ( Optionnal ) : ")
+    )
+  }
+  val dataDirectoryField = new TextField() {
+    text.onChange { (_, oldText, newText) =>
+    
+    }
+  }
+  dataDirectoryField.setTooltip(new Tooltip("full path to postgreSQL data Directory."));
+   val dataDirectoryBrowse = new Button("Browse...") {
+    onAction = handle {
+      
+      /* check if postgreSQL is installed on unix and windows */ 
+      
+      if(CheckInstalledPostgres.isWindows()){
+        CheckInstalledPostgres.checkPostgres()
+       }
+      if(CheckInstalledPostgres.isUnix()){
+         CheckInstalledPostgres.checkPostgres()
+       }
+     }
+  }
+  dataDirectoryBrowse.setTooltip(new Tooltip("Browse postgreSQL data Directory. "));
+  
   /*
    * ****** *
    * LAYOUT *
@@ -160,7 +191,8 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   Seq(
     adminConfigField,
     serverConfigField,
-    seqReposConfigField
+    seqReposConfigField,
+    dataDirectoryField
   ).foreach { f =>
       f.hgrow = Priority.Always
     }
@@ -193,6 +225,12 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
        new HBox {
         spacing = 5
         content = Seq(seqReposConfigField, pwxConfigBrowse)
+      },
+      ScalaFxUtils.newVSpacer(minH = 10),
+      dataDirectoryLabel,
+       new HBox {
+        spacing = 5
+        content = Seq(dataDirectoryField, dataDirectoryBrowse)
       },
       new StackPane {
         content = List(serverConfigNbLabel, serverConfigWarningLabel,seqReposConfigWarningLabel)
