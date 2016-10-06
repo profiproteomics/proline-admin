@@ -30,7 +30,8 @@ import scalafx.stage.FileChooser.ExtensionFilter
 import fr.profi.util.scalafx.TitledBorderPane
 import javafx.scene.control.Tooltip
 import fr.proline.admin.postgres.install._
-
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.component.ButtonsPanelQStart
 /**
  * 
  * Step 1 : window to search and add configurations files
@@ -46,6 +47,8 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   adminConfigFile = QuickStart.getAdminConfigFile().getOrElse(null)
   QuickStart.panelState="panelConfig"
   private val V_SPACING = 10
+
+   
   /*
    * ********** *
    * COMPONENTS *
@@ -133,14 +136,14 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       updateSeqReposConf(newText)
     }
   }
-   seqReposConfigField.setTooltip(new Tooltip("full path to Sequence repository configuration file."));
+   seqReposConfigField.setTooltip(new Tooltip("full path to sequence repository configuration file."));
   val pwxConfigBrowse = new Button("Browse...") {
     onAction = handle {
        _browseSequenceRepositoryFile
       }
   }
   val pwxConfigNbLabel = new Label {
-    text = "NB: this information was taken from ProlinAdmin configuration."
+    text = "NB: this information was taken from ProlineAdmin configuration."
     alignmentInParent = Pos.BottomLeft
     style = GREY_ITALIC
     visible = false
@@ -157,16 +160,22 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   val dataDirectoryLabel = new HBox {
     content = List(
       new Label("Full path to "),
-      new BoldLabel("Data Directory", upperCase = false),
-      new Label(" to optimize PostgreSQL ( Optionnal ) : ")
+      new BoldLabel("postgreSQL data directory", upperCase = false),
+      new Label(" to optimize yout database server (optional) : ")
     )
   }
   val dataDirectoryField = new TextField() {
+   if (QuickStart.postgresqlDataDir != null) text =  QuickStart.postgresqlDataDir
     text.onChange { (_, oldText, newText) =>
+    updateDataDirectoryPath(newText) 
+    
+    /* update global variable for the first object prolineConfigurationpanel of ButtonsPAnelQstart */ 
+    
+    ButtonsPanelQStart.prolineConfigFilesPanel.setDataDirectoryPath(QuickStart.postgresqlDataDir)
     
     }
   }
-  dataDirectoryField.setTooltip(new Tooltip("full path to postgreSQL data Directory."));
+  dataDirectoryField.setTooltip(new Tooltip("full path to postgreSQL data Directory .Example : ..\\PostgreSQL\\9.x\\data"));
    val dataDirectoryBrowse = new Button("Browse...") {
     onAction = handle {
       
@@ -178,6 +187,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       if(CheckInstalledPostgres.isUnix()){
          CheckInstalledPostgres.checkPostgres()
        }
+      _browseDataDir()
      }
   }
   dataDirectoryBrowse.setTooltip(new Tooltip("Browse postgreSQL data Directory. "));
@@ -281,8 +291,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       warningLabel = serverConfigWarningLabel
     )
   }
-
-
+  
   /* Try to get and set config file path in dedicated textField */
   
   private def _setConfPathField(pathOptInAdminConfig: Option[String], field: TextField, nbLabel: Label, warningLabel: Label) {
@@ -412,6 +421,19 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     if (filePath != null) seqReposConfigField.text = filePath
     
   }
+  
+  /* browse data directory of PostgreSQL */
+ private def _browseDataDir() {
+    val file = FxUtils.browseDirectory(
+      dcTitle = "Select PostgreSQL data directory",
+      dcInitialDir = dataDirectoryField.text()
+    )
+    val newPath = file.getPath()
+    if (file != null) {
+      dataDirectoryField.text = newPath
+     QuickStart.postgresqlDataDir=newPath
+    }
+  }
  /* update adminConf  global variables */
   
   def updateAdminConf(adminconf:String){
@@ -430,13 +452,18 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     QuickStart.seqRepoConfPath=seqReposConf
     
   }
+  /* update data directory global variable */
+  
+  def updateDataDirectoryPath(dataDirectoryPath:String){
+    QuickStart.postgresqlDataDir=dataDirectoryPath
+  }
   
   /* Getters/Setters for textFields */
   
   def getProlineAdminConfFile(): String = adminConfigField.text()
   def setProlineAdminConfFile(newPath: String) { adminConfigField.text = newPath }
   def setProlineAdminConfFile(newPathOpt: Option[String]) { setProlineAdminConfFile(newPathOpt.getOrElse("")) }
-
+  def setDataDirectoryPath(path:String){dataDirectoryField.text=path}
   def getProlineServerConfFile(): String = serverConfigField.text()
   def setProlineServerConfFile(newPath: String) { serverConfigField.text = newPath }
   def setProlineServerConfFile(newPathOpt: Option[String]) { setProlineServerConfFile(newPathOpt.getOrElse("")) }

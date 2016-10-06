@@ -54,10 +54,6 @@ object RestartService {
        process.waitFor()
        process==Runtime.getRuntime().exec(serviceStart)
      
-//        ShowPopupWindow(
-//          wTitle = "Service PostgreSQL ",
-//          wText = ""+message+" ! "
-//       )
     }
     catch{
        case e: Exception => e.printStackTrace

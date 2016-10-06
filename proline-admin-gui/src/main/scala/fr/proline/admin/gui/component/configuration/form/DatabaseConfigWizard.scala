@@ -53,6 +53,9 @@ import java.net.UnknownHostException;
 
 import fr.proline.repository.DriverType
 import javafx.scene.control.Tooltip
+import fr.proline.admin.gui.component.configuration.form._
+import fr.proline.admin.gui.util.ShowPopupWindow
+
 /**
  * Step 2 : a window to edit database configuration's file .
  */
@@ -149,15 +152,22 @@ class DatabaseConfig extends VBox with LazyLogging {
 	    }
   }
   
+  /* optimize configuration of database server postgresql.conf */
+  
    val optimizePostgresql = new Hyperlink("Optimize PostgreSQL") {
 	  onAction = handle {
-	    
-		/*require :
-		 * -PostgreSQL is installed
-		 * - Administrateur rights. 
-		 * */ 
-	
+	    if((!QuickStart.postgresqlDataDir.isEmpty())&&(QuickStart.postgresqlDataDir!=null)&&(QuickStart.postgresqlDataDir!="")){
+	      val postgresConfigFile=QuickStart.postgresqlDataDir.replaceAll("\\\\", "/").concat("""/postgresql.conf""")
+	      val PostgresConfig=new PostgresConfigFormWizard(postgresConfigFile)
+	      PostgresConfig._setAllToOptimized()
+	    }else
+	    { 
+	      ShowPopupWindow(
+          wTitle = "Invalid PostgreSQL's Path",
+          wText = "Select valid PostgreSQL Path!"
+        )
 	    }
+	   }
   }
 
 /*

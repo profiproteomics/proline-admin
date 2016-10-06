@@ -42,6 +42,7 @@ object QuickStart extends LazyLogging {
   /* Configuration files and dirs */
   var targetPath: String = _
   var adminConfPath: String = _
+  var adminConfPathBackSlach: String=_
   var serverConfPath: String = _
   var pwxConfPath: String = _
   var postgresqlDataDir: String = _
@@ -54,7 +55,7 @@ object QuickStart extends LazyLogging {
   var mzdbFiles:Map[String,String] =Map()
   var resultFiles:Map[String,String]=Map()
   var firstCallToDataDir = true
-
+ 
   def adminConfPathIsEmpty(): Boolean = StringUtils.isEmpty(adminConfPath)
   def serverConfPathIsEmpty(): Boolean = StringUtils.isEmpty(serverConfPath)
   def pwxConfPathIsEmpty(): Boolean = StringUtils.isEmpty(pwxConfPath)
@@ -106,6 +107,7 @@ class QuickStart extends Application {
     /* Locate 'config' folder */
     
      val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
+     QuickStart.adminConfPathBackSlach= new File(srcPath).getParent()+"\\\\config\\\\application.conf"
      QuickStart.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
      val configPath = QuickStart.targetPath + """/config/"""
      
@@ -122,18 +124,18 @@ class QuickStart extends Application {
      require(QuickStart.stage == null, "stage is already instantiated")
    
     /* initialise first panel */
-    
+   
      QuickStart.buttonsPanel = ButtonsPanelQStart()
      QuickStart.mainPanel=new ProlineConfigFilesPanelQStart()
      QuickStart.panelState="panelConfig"
-     QuickStart.stage = new Stage(stage) {
+     QuickStart.stage = new Stage(stage){
       scene = new Scene(QuickStart.root)
       width = 820
       height = 570
       minWidth = 620
       minHeight = 570
       title = "Proline Admin quick setup"
-    }
+     }
      QuickStart.stage.show()
      
     /* .conf files exists */

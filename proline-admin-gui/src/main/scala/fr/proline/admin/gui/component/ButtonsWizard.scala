@@ -44,7 +44,7 @@ import fr.proline.admin.gui.process.config._
 object ButtonsPanelQStart extends  LazyLogging {
 
 	/*initialize panels */
-	private val prolineConfigFilesPanel=new ProlineConfigFilesPanelQStart() 
+  val prolineConfigFilesPanel=new ProlineConfigFilesPanelQStart() 
 	private val Databaseconfig=new DatabaseConfig() 
 	private val monutfiles=new MonutFiles()
 
@@ -58,13 +58,15 @@ object ButtonsPanelQStart extends  LazyLogging {
 	private val serverConfigFileOpt =
 	  if (isEmpty(QuickStart.serverConfPath)) None
 	else Option( new ServerConfigFile(QuickStart.serverConfPath) )
-
 	private val serverConfigOpt = serverConfigFileOpt.map(_.read()).flatten
-	
+
 	private val pwxConfigFileOpt =
 	if (isEmpty(QuickStart.pwxConfPath)) None
 		else Option(new PwxConfigFile(QuickStart.pwxConfPath))
 	var buttonValue:String=_
+	private var adminConfPathToSave:String=_
+	
+	
 	/**
 	 * ******* *
 	 * BUTTONS *
@@ -137,9 +139,9 @@ object ButtonsPanelQStart extends  LazyLogging {
 					}
 		}
 		previousButton.setVisible(false)
-
+    
 	  /* set panel in mainPAnel when next button applied */ 
-
+   
 	 private def panelStateOnNext(){
      if(QuickStart.panelState.equals("panelConfig")){
 		   QuickStart.mainPanel.getChildren().clear()
@@ -147,6 +149,7 @@ object ButtonsPanelQStart extends  LazyLogging {
 			 QuickStart.panelState="Databaseconfig"
 			}else{
 			  if(QuickStart.panelState.equals("Databaseconfig")){
+			   
 				  QuickStart.mainPanel.getChildren().clear()
 					QuickStart.mainPanel.getChildren().add(monutfiles)
 					QuickStart.panelState="mountfiles"
@@ -202,7 +205,7 @@ object ButtonsPanelQStart extends  LazyLogging {
 		}
 			
 		/* save params in file admin .conf */
-			
+		
     private def _parseToAdminConfig() = AdminConfig(
 		  filePath=QuickStart.adminConfPath,
 			serverConfigFilePath=Option(QuickStart.serverConfPath),
@@ -228,8 +231,16 @@ object ButtonsPanelQStart extends  LazyLogging {
     /* save params in admin .conf and server .conf */
 
     private def saveParamsInFileConfig(){
+
 		  val newAdminConfig = _parseToAdminConfig()
 			adminConfigFile.write(newAdminConfig)
+			val adminConfigFileOpt = adminConfigFile.getPostgreSqlDataDir()
+      if((!QuickStart.postgresqlDataDir.isEmpty())&&(QuickStart.postgresqlDataDir!=null))
+      { 
+        if((adminConfigFileOpt.isEmpty)||(adminConfigFileOpt!=QuickStart.postgresqlDataDir)){
+            adminConfigFile.setPostgreSqlDataDir(QuickStart.postgresqlDataDir)
+         }
+      }
 			if (serverConfigOpt.isDefined) {
 			  val newServerConfig = _parseToServerConfig()
 				serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
