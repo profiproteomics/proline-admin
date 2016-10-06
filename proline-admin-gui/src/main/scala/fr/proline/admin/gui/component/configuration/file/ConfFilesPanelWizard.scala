@@ -175,6 +175,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     
     }
   }
+  dataDirectoryField.setPromptText("Example : ..\\PostgreSQL\\9.x\\data")
   dataDirectoryField.setTooltip(new Tooltip("full path to postgreSQL data Directory .Example : ..\\PostgreSQL\\9.x\\data"));
    val dataDirectoryBrowse = new Button("Browse...") {
     onAction = handle {
