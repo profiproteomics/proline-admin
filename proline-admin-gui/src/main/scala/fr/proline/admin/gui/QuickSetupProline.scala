@@ -33,7 +33,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import fr.proline.admin.postgres.install.CheckInstalledPostgres
 import fr.proline.admin.postgres.install._
-
+import collection.mutable.HashMap
 /**
  * Graphical interface for Proline-Admin wizard:quick edit for admin and server file (.conf).
  */
@@ -55,7 +55,8 @@ object QuickStart extends LazyLogging {
   var mzdbFiles:Map[String,String] =Map()
   var resultFiles:Map[String,String]=Map()
   var firstCallToDataDir = true
- 
+  var globalParameters=new HashMap[String,String]()
+  
   def adminConfPathIsEmpty(): Boolean = StringUtils.isEmpty(adminConfPath)
   def serverConfPathIsEmpty(): Boolean = StringUtils.isEmpty(serverConfPath)
   def pwxConfPathIsEmpty(): Boolean = StringUtils.isEmpty(pwxConfPath)

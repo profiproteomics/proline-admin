@@ -54,7 +54,7 @@ object ButtonsPanelQStart extends  LazyLogging {
 	require(adminConfigOpt.isDefined, "admin config is undefined")
 	private val adminConfig = adminConfigOpt.get
 	private val driverTypeOpt = adminConfig.driverType
-
+ 
 	private val serverConfigFileOpt =
 	  if (isEmpty(QuickStart.serverConfPath)) None
 	else Option( new ServerConfigFile(QuickStart.serverConfPath) )
@@ -64,7 +64,7 @@ object ButtonsPanelQStart extends  LazyLogging {
 	if (isEmpty(QuickStart.pwxConfPath)) None
 		else Option(new PwxConfigFile(QuickStart.pwxConfPath))
 	var buttonValue:String=_
-	private var adminConfPathToSave:String=_
+
 	
 	
 	/**
@@ -153,10 +153,11 @@ object ButtonsPanelQStart extends  LazyLogging {
 				  QuickStart.mainPanel.getChildren().clear()
 					QuickStart.mainPanel.getChildren().add(monutfiles)
 					QuickStart.panelState="mountfiles"
-				  }
+					checkGlobalVaribales()
+					
 				}
     }
-
+		}
     /* when previous button is called*/
 		
     def panelStateOnPrevious(){
@@ -231,7 +232,7 @@ object ButtonsPanelQStart extends  LazyLogging {
     /* save params in admin .conf and server .conf */
 
     private def saveParamsInFileConfig(){
-
+      
 		  val newAdminConfig = _parseToAdminConfig()
 			adminConfigFile.write(newAdminConfig)
 			val adminConfigFileOpt = adminConfigFile.getPostgreSqlDataDir()
@@ -246,6 +247,27 @@ object ButtonsPanelQStart extends  LazyLogging {
 				serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
 			}
 		}
+    
+    /*check global variable*/
+    
+     private def checkGlobalVaribales(){
+      var pramasIsMsissing=false
+      var missingparams=new StringBuilder()
+      QuickStart.globalParameters.keys.foreach { x =>
+        
+        if(QuickStart.globalParameters(x)==null||QuickStart.globalParameters(x).isEmpty()||QuickStart.globalParameters(x)==""){
+          pramasIsMsissing=true
+          missingparams++=x.+(" ")
+        }
+      }
+      if(pramasIsMsissing){
+          ShowPopupWindow(
+          wTitle = "Paramters are missing",
+          wText = "Check some parametes are missing : "+missingparams+"!"
+        )
+      }   
+    }
+     
 	  /* close window */
 			
 		private def closeStage(){

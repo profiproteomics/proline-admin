@@ -157,15 +157,6 @@ class MonutFiles extends VBox  with LazyLogging {
         
       )
   })
-//  val scrollPane = new ScrollPane();
-//  scrollPane.setContent(mountPointsSettings);
-//  scrollPane.setFitToWidth(true);
-//  val t=new VBox()
-//  t.getChildren().addAll(scrollPane)
-//  val mountPointsWithDisableNote = new VBox {
-//    spacing = 20
-//    content = List(disableMpNoteLabel, t)
-//  }
 
   /* VBox layout and content */
   

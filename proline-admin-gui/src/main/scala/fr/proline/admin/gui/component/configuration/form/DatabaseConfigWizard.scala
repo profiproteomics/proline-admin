@@ -271,4 +271,9 @@ class DatabaseConfig extends VBox with LazyLogging {
   private def dialgoConnectionFail(){
     new Alert(AlertType.INFORMATION, "Connection test failed !!!").showAndWait()
   }
+   /*set global variables */
+   QuickStart.globalParameters+=("adminConf"->QuickStart.adminConfPath,"serverConf"->QuickStart.serverConfPath,"seqReposConf"->QuickStart.seqRepoConfPath)
+   QuickStart.globalParameters+=("userName"->QuickStart.userName,"password"->QuickStart.passwordUser,"hostName"->QuickStart.hostNameUser,"port"->QuickStart.port.toString())
+  
+ 
  }
