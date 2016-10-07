@@ -46,9 +46,9 @@ object ButtonsPanelQStart extends  LazyLogging {
 	/*initialize panels */
   val prolineConfigFilesPanel=new ProlineConfigFilesPanelQStart() 
 	private val Databaseconfig=new DatabaseConfig() 
-	private val monutfiles=new MonutFiles()
+	//private val monutfiles=new MonutFiles()
 
-  
+  private val monutfiles=new MountFilesContent()
 	private val adminConfigFile = new AdminConfigFile(QuickStart.adminConfPath)
   private val adminConfigOpt = adminConfigFile.read()
 	require(adminConfigOpt.isDefined, "admin config is undefined")
