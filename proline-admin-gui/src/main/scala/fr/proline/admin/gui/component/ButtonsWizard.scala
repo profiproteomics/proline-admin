@@ -255,18 +255,32 @@ object ButtonsPanelQStart extends  LazyLogging {
       var missingparams=new StringBuilder()
       QuickStart.globalParameters.keys.foreach { x =>
         
-        if(QuickStart.globalParameters(x)==null||QuickStart.globalParameters(x).isEmpty()||QuickStart.globalParameters(x)==""){
+        if(QuickStart.globalParameters(x)==null||QuickStart.globalParameters(x).isEmpty()){
           pramasIsMsissing=true
-          missingparams++=x.+(" ")
+          missingparams++=matchParameters(x).+(".")
+          
         }
       }
       if(pramasIsMsissing){
+         
           ShowPopupWindow(
           wTitle = "Paramters are missing",
-          wText = "Check some parametes are missing : "+missingparams+"!"
+          wText = "Some parametes are missing : "+missingparams+""
         )
       }   
     }
+     
+   private def matchParameters(param:String):String= param match{
+     case "adminConf" =>"Proline Admin configuration file"
+     case "serverConf" =>"Proline server configuration file"
+     case "seqReposConf" =>"Sequence repository configuration file"
+     case "userName" =>"User name"
+     case "password" =>"Password"
+     case "hostName" =>"Hostname"
+     case"port"=>"Port number"
+     case _=>"other parameter"
+     }
+   
      
 	  /* close window */
 			
