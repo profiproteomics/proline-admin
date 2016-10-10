@@ -253,15 +253,19 @@ class DatabaseConfig extends VBox with LazyLogging {
   /* update global variables */
   private def updateUSername(name:String){
 	  QuickStart.userName=name
+	  QuickStart.globalParameters+=("userName"->QuickStart.userName)
   }
   private def updatePassword(passUser:String){
 	  QuickStart.passwordUser=passUser
+	   QuickStart.globalParameters+=("password"->QuickStart.passwordUser)
   }
   private def updateHost(hostname:String){
 	  QuickStart.hostNameUser=hostname
+	   QuickStart.globalParameters+=("hostName"->QuickStart.hostNameUser)
   }
   private def updatePort(portnumber:Int){
 	  QuickStart.port=portnumber
+	   QuickStart.globalParameters+=("port"->QuickStart.port.toString())
   }
   /* testConnectionToPostgres */
   
@@ -274,6 +278,6 @@ class DatabaseConfig extends VBox with LazyLogging {
    /*set global variables */
    QuickStart.globalParameters+=("adminConf"->QuickStart.adminConfPath,"serverConf"->QuickStart.serverConfPath,"seqReposConf"->QuickStart.seqRepoConfPath)
    QuickStart.globalParameters+=("userName"->QuickStart.userName,"password"->QuickStart.passwordUser,"hostName"->QuickStart.hostNameUser,"port"->QuickStart.port.toString())
-  
+   
  
  }

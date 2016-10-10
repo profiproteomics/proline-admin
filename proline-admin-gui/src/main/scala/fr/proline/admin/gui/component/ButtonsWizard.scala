@@ -170,7 +170,7 @@ object ButtonsPanelQStart extends  LazyLogging {
 						QuickStart.mainPanel.getChildren().clear()
 						QuickStart.mainPanel.getChildren().add(Databaseconfig)
 						QuickStart.panelState="Databaseconfig"
-						//for ((k,v) <- QuickStart.rawFiles) System.out.println((k, v))
+						for ((k,v) <- QuickStart.rawFiles) System.out.println((k, v))
 					  }
 				  }
 		}
@@ -233,15 +233,13 @@ object ButtonsPanelQStart extends  LazyLogging {
 
     private def saveParamsInFileConfig(){
       
+      /*save proline admin params */
+     
 		  val newAdminConfig = _parseToAdminConfig()
 			adminConfigFile.write(newAdminConfig)
-			val adminConfigFileOpt = adminConfigFile.getPostgreSqlDataDir()
-      if((!QuickStart.postgresqlDataDir.isEmpty())&&(QuickStart.postgresqlDataDir!=null))
-      { 
-        if((adminConfigFileOpt.isEmpty)||(adminConfigFileOpt!=QuickStart.postgresqlDataDir)){
-            adminConfigFile.setPostgreSqlDataDir(QuickStart.postgresqlDataDir)
-         }
-      }
+			
+		  /* Save proline server parameters */
+		  
 			if (serverConfigOpt.isDefined) {
 			  val newServerConfig = _parseToServerConfig()
 				serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
@@ -257,15 +255,15 @@ object ButtonsPanelQStart extends  LazyLogging {
         
         if(QuickStart.globalParameters(x)==null||QuickStart.globalParameters(x).isEmpty()){
           pramasIsMsissing=true
-          missingparams++=matchParameters(x).+(".")
+          missingparams++=matchParameters(x).+("   ")
           
         }
       }
       if(pramasIsMsissing){
          
           ShowPopupWindow(
-          wTitle = "Paramters are missing",
-          wText = "Some parametes are missing : "+missingparams+""
+          wTitle = "Check Parameters",
+          wText = "Check if parameters are missing : "+missingparams+""
         )
       }   
     }
