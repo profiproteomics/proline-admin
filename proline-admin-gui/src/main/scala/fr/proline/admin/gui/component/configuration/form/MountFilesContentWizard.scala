@@ -8,6 +8,7 @@ import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
 import fr.proline.admin.gui.QuickStart
 import fr.proline.admin.gui.component.configuration.file._
+
 class MountFilesContent extends AbstractMountFilesWizard  {
  
  var mountfiles=new MonutFiles()
