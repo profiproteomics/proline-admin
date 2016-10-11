@@ -193,17 +193,22 @@ class MonutFiles extends VBox  with LazyLogging {
 
     val rawMp = serverConfig.rawFilesMountPoints
     if (rawMp.isEmpty) _addRawFilesMountPoint()
-    else rawMp.foreach { case (k, v) => _addRawFilesMountPoint(k, v) }
-   
+    else rawMp.foreach { 
+      case (k, v) => _addRawFilesMountPoint(k, v) 
+      QuickStart.rawFiles+=(k->v)
+    } 
     val mzdbMp = serverConfig.mzdbFilesMountPoints
     if (mzdbMp.isEmpty) _addMzdbFilesMountPoint()
-    else mzdbMp.foreach { case (k, v) => _addMzdbFilesMountPoint(k, v) }
-   
+    else mzdbMp.foreach { 
+      case (k, v) => _addMzdbFilesMountPoint(k, v) 
+      QuickStart.mzdbFiles+=(k->v)
+    }
     val resultMp = serverConfig.resultFilesMountPoints
     if (resultMp.isEmpty) _addResultFilesMountPoint()
-    else resultMp.foreach { case (k, v) => _addResultFilesMountPoint(k, v)
-     
-       }
+    else resultMp.foreach { 
+      case (k, v) => _addResultFilesMountPoint(k, v)
+      QuickStart.resultFiles+=(k->v)
+    }
     
   }
   

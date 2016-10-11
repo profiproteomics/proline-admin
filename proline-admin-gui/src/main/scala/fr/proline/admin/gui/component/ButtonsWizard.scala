@@ -167,10 +167,9 @@ object ButtonsPanelQStart extends  LazyLogging {
 			QuickStart.panelState="panelConfig"
 			}else{
 					 if(QuickStart.panelState.equals("mountfiles")){
-						QuickStart.mainPanel.getChildren().clear()
-						QuickStart.mainPanel.getChildren().add(Databaseconfig)
-						QuickStart.panelState="Databaseconfig"
-						for ((k,v) <- QuickStart.rawFiles) System.out.println((k, v))
+						  QuickStart.mainPanel.getChildren().clear()
+						  QuickStart.mainPanel.getChildren().add(Databaseconfig)
+						  QuickStart.panelState="Databaseconfig"
 					  }
 				  }
 		}
