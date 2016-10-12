@@ -55,6 +55,7 @@ import fr.proline.repository.DriverType
 import javafx.scene.control.Tooltip
 import fr.proline.admin.gui.component.configuration.form._
 import fr.proline.admin.gui.util.ShowPopupWindow
+import java.io.File
 
 /**
  * Step 2 : a window to edit database configuration's file .
@@ -156,16 +157,18 @@ class DatabaseConfig extends VBox with LazyLogging {
   
    val optimizePostgresql = new Hyperlink("Optimize PostgreSQL") {
 	  onAction = handle {
-	    if((!QuickStart.postgresqlDataDir.isEmpty())&&(QuickStart.postgresqlDataDir!=null)&&(QuickStart.postgresqlDataDir!="")){
+	    if((QuickStart.postgresqlDataDir!=null)&&(!QuickStart.postgresqlDataDir.isEmpty())){
 	      val postgresConfigFile=QuickStart.postgresqlDataDir.replaceAll("\\\\", "/").concat("""/postgresql.conf""")
-	      val PostgresConfig=new PostgresConfigFormWizard(postgresConfigFile)
-	      PostgresConfig._setAllToOptimized()
+	      if(new File(postgresConfigFile).exists()){
+	        val PostgresConfig=new PostgresConfigFormWizard(postgresConfigFile)
+	        PostgresConfig.pgConfigDefaults
+	      }else{
+	        invalidPathPopup()
+	      }
+	      
 	    }else
 	    { 
-	      ShowPopupWindow(
-          wTitle = "Invalid PostgreSQL's Path",
-          wText = "Select valid PostgreSQL Path!"
-        )
+	       invalidPathPopup()
 	    }
 	   }
   }
@@ -274,6 +277,13 @@ class DatabaseConfig extends VBox with LazyLogging {
   }
   private def dialgoConnectionFail(){
     new Alert(AlertType.INFORMATION, "Connection test failed !!!").showAndWait()
+  }
+  /*show message */
+  private def invalidPathPopup(){
+    ShowPopupWindow(
+          wTitle = "Invalid PostgreSQL's Path",
+          wText = "Select a valid PostgreSQL Path ! "
+        )
   }
    /*set global variables */
    QuickStart.globalParameters+=("adminConf"->QuickStart.adminConfPath,"serverConf"->QuickStart.serverConfPath,"seqReposConf"->QuickStart.seqRepoConfPath)

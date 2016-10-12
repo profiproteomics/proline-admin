@@ -424,14 +424,17 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   }
   
   /* browse data directory of PostgreSQL */
+  
  private def _browseDataDir() {
-    val file = FxUtils.browseDirectory(
+    val file = FxUtils.browseDirectoryWizard(
       dcTitle = "Select PostgreSQL data directory",
       dcInitialDir = dataDirectoryField.text()
     )
-    val newPath = file.getPath()
+  
+   
     if (file != null) {
-      dataDirectoryField.text = newPath
+     val newPath = file.getPath()
+     dataDirectoryField.text = newPath
      QuickStart.postgresqlDataDir=newPath
     }
   }
