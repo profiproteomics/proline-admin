@@ -282,7 +282,7 @@ class DatabaseConfig extends VBox with LazyLogging {
   private def invalidPathPopup(){
     ShowPopupWindow(
           wTitle = "Invalid PostgreSQL's Path",
-          wText = "Select a valid PostgreSQL Path ! "
+          wText = "Select a valid PostgreSQL's data directory Path in step 1 ! "
         )
   }
    /*set global variables */
