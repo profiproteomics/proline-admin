@@ -7,7 +7,7 @@ import fr.profi.util.ThreadLogger
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
-import fr.proline.admin.service.user.{ CreateProject, CreateUser }
+import fr.proline.admin.service.user.{CreateProject,CreateUser,DeleteProject}
 import fr.proline.repository.UncachedDataStoreConnectorFactory
 
 object RunCommand extends App with LazyLogging {
@@ -36,6 +36,17 @@ object RunCommand extends App with LazyLogging {
 
     @Parameter(names = Array("--description", "-desc"), description = "The project description", required = false)
     var projectDescription: String = ""
+  }
+
+   @Parameters(commandNames = Array("delete_project"), commandDescription = "Delete project", separators = "=")
+  private object DeleteProjectCommand extends JCommandReflection {
+   
+    
+    @Parameter(names = Array("--project_id", "-pid"), description = "The project id to delete", required = true)
+    var projectId: Int = 0
+    @Parameter(names = Array("--drop", "-d"), description = "drop entire project's databases (MSI and LCMS)", required = false)
+    var dropDatabases: String = "false"
+  
   }
 
   @Parameters(commandNames = Array("create_user"), commandDescription = "Create new user account", separators = "=")
@@ -115,7 +126,7 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(ExportDbUnitDTDsCommand)
     jCmd.addCommand(ExportMsiDbStatsCommand)
     jCmd.addCommand(UpgradeDatabasesCommand)
-
+    jCmd.addCommand(DeleteProjectCommand)
     // Try to parse the command line
     var parsedCommand = ""
     try {
@@ -143,6 +154,13 @@ object RunCommand extends App with LazyLogging {
           this.logger.info("project with id='" + projectId + "' has been created !")
 
         }
+       
+       case DeleteProjectCommand.Parameters.firstName => {
+         import fr.proline.admin.service.user.DeleteProject
+          this.logger.info("project with id="+DeleteProjectCommand.projectId+" will be  deleted !")
+          val projectId=DeleteProject(dsConnectorFactory,DeleteProjectCommand.projectId,DeleteProjectCommand.dropDatabases)
+        }
+    
         case CreateUserCommand.Parameters.firstName => {
           import fr.proline.admin.service.user.CreateUser
           val pswd = if (CreateUserCommand.userPassword.isEmpty()) None else Some(CreateUserCommand.userPassword)
