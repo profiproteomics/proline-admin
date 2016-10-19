@@ -79,7 +79,7 @@ class DeleteProject( dsConnectorFactory: IDataStoreConnectorFactory,projectId:Lo
             udsEM.remove(project)
             logger.info("project #"+projectId+" has been deleted.")
         }else{
-          logger.error("project #"+projectId+" does not exist .")
+          logger.error("project #"+projectId+" does not exist in uds_db.")
         }
       //drop databases (MSI and LCMS)
       if(dropDatabases=="true"){
