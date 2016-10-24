@@ -24,6 +24,7 @@ import fr.proline.repository.ProlineDatabaseType
 import fr.proline.core.orm.uds.Dataset
 import fr.proline.core.orm.uds.repository.DatasetRepository
 import fr.proline.core.orm.uds.IdentificationDataset
+import javax.persistence.FlushModeType
 
 /**
  *  Delete project 
@@ -41,6 +42,7 @@ class DeleteProject( dsConnectorFactory: IDataStoreConnectorFactory,projectId:Lo
     val udsEM = udsDbCtx.getEntityManager
     var localUdsTransaction: EntityTransaction = null
     var udsTransacOK: Boolean = false
+    udsEM.setFlushMode(FlushModeType.COMMIT)
     try {
  
       if(!udsDbCtx.isInTransaction){
@@ -85,9 +87,8 @@ class DeleteProject( dsConnectorFactory: IDataStoreConnectorFactory,projectId:Lo
       if(dropDatabases=="true"){
         
         try{
-         udsEM.createNativeQuery("DROP DATABASE  IF EXISTS  msi_db_project_"+projectId)
-        
-         udsEM.createNativeQuery("DROP DATABASE  IF EXISTS  lcms_db_project_"+projectId)
+         udsEM.createNativeQuery("DROP DATABASE  IF EXISTS  msi_db_project_"+projectId).executeUpdate()
+         udsEM.createNativeQuery("DROP DATABASE  IF EXISTS  lcms_db_project_"+projectId).executeUpdate()
          
         }
          catch {
