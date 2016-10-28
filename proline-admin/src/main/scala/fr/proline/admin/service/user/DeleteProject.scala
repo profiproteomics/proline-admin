@@ -102,7 +102,7 @@ class DeleteProject( dsConnectorFactory: IDataStoreConnectorFactory,projectId:Lo
       }
       
     } finally {
-
+      udsEM.setFlushMode(FlushModeType.AUTO)
       udsDbCtx.close()
       udsDbConnector.close()
  
