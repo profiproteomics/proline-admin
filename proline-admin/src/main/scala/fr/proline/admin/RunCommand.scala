@@ -41,11 +41,11 @@ object RunCommand extends App with LazyLogging {
    @Parameters(commandNames = Array("delete_project"), commandDescription = "Delete project", separators = "=")
   private object DeleteProjectCommand extends JCommandReflection {
    
-    
     @Parameter(names = Array("--project_id", "-pid"), description = "The project id to delete", required = true)
     var projectId: Int = 0
-    @Parameter(names = Array("--drop", "-d"), description = "drop entire project's databases (MSI and LCMS)", required = false)
-    var dropDatabases: String = "false"
+    
+    @Parameter(names = Array("--drop", "-d"), description = "Drop entire project databases (MSI and LCMS)", required = false)
+    var dropDatabases: Boolean = false
   
   }
 
@@ -151,13 +151,13 @@ object RunCommand extends App with LazyLogging {
             CreateProjectCommand.ownerId
           )
 
-          this.logger.info("project with id='" + projectId + "' has been created !")
+          this.logger.info(s"Project with id=$projectId has been created !")
 
         }
        
        case DeleteProjectCommand.Parameters.firstName => {
          import fr.proline.admin.service.user.DeleteProject
-          this.logger.info("project with id="+DeleteProjectCommand.projectId+" will be  deleted !")
+          this.logger.info(s"Project with id=${DeleteProjectCommand.projectId} will be deleted !")
           val projectId=DeleteProject(dsConnectorFactory,DeleteProjectCommand.projectId,DeleteProjectCommand.dropDatabases)
         }
     
