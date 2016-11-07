@@ -95,8 +95,6 @@ class DeleteProject(
             ezDBC.execute("DROP DATABASE IF EXISTS msi_db_project_" + projectId)
             ezDBC.execute("DROP DATABASE IF EXISTS lcms_db_project_" + projectId)
           }
-          //udsEM.createNativeQuery("DROP DATABASE IF EXISTS msi_db_project_" + projectId).executeUpdate()
-          //udsEM.createNativeQuery("DROP DATABASE IF EXISTS lcms_db_project_" + projectId).executeUpdate()
         } catch {
           case t: Throwable => logger.error("Error while dropping MSI and LCMS databases", t)
         }
