@@ -162,6 +162,20 @@ def execPgDump(host:String,port:Integer,user:String,passWord:String,msiDb:String
 		if(!pathDestinationProject.exists())
 		{
 			if(pathDestinationProject.mkdir()){
+			  	/* option of pg_dump
+							  -p, –port=PORT database server port number
+								-i, –ignore-version proceed even when server version mismatches
+								-h, –host=HOSTNAME database server host or socket directory
+								-U, –username=NAME connect as specified database user
+								-W, –password force password prompt (should happen automatically)
+								-d, –dbname=NAME connect to database name
+								-v, –verbose verbose mode
+								-F, –format=c|t|p output file format (custom, tar, plain text)
+								-c, –clean clean (drop) schema prior to create
+								-b, –blobs include large objects in dump
+								-v, –verbose verbose mode
+								-f, –file=FILENAME output file name
+					*/
 							//pg_dump msi_db
 							logger.info("Starting to backup database # "+msiDb)
 						  var cmd = Seq(pathSrcDump,"-i","-h",host,"-p",port.toString,"-U",user,"-F","c","-b","-v","-f",new File(pathDestinationProject,"\\"+msiDb+".sql").getCanonicalPath(),msiDb)
@@ -174,7 +188,7 @@ def execPgDump(host:String,port:Integer,user:String,passWord:String,msiDb:String
 							logger.info("Starting to save schema only # uds_db")
 							cmd = Seq(pathSrcDump,"-i","-h",host,"-p",port.toString,"-U",user,"--schema-only","-F","c","-b","-v","-f",new File(pathDestinationProject,"\\uds_db_schema.sql").getCanonicalPath(),"uds_db")
 							execute(cmd)
-							
+						
 			}else{
 				logger.error("failed trying to create the directory pg_dump_project_"+projectId+"")
 			}
