@@ -156,10 +156,8 @@ def execute(command: Seq[String]) {
 
 def execPgDump(host:String,port:Integer,user:String,passWord:String,msiDb:String,lcmsDb:String,pathDestination:String,pathSource:String,projectId:Long){
   
-	val pathSrc= new File(pathSource).getCanonicalPath()
 	val pathDestinationProject=new File(pathDestination,"\\pg_dump_project_"+projectId)
-	val pathSrcDump=pathSrc+"\\pg_dump"
-	val pathSrcPsql=pathSrc+"\\psql"
+	val pathSrcDump=new File(pathSource,"\\pg_dump").getCanonicalPath()
 	try{
 	  if(!pathDestinationProject.exists()){
 	     if(pathDestinationProject.mkdir()){
