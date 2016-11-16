@@ -7,7 +7,7 @@ import fr.profi.util.ThreadLogger
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
-import fr.proline.admin.service.user.{CreateProject,CreateUser,DeleteProject}
+import fr.proline.admin.service.user.{CreateProject,CreateUser,DeleteProject,ArchiveProject}
 import fr.proline.repository.UncachedDataStoreConnectorFactory
 
 object RunCommand extends App with LazyLogging {
@@ -97,7 +97,20 @@ object RunCommand extends App with LazyLogging {
 
   @Parameters(commandNames = Array("upgrade_dbs"), commandDescription = "Upgrade all databases to the latest format", separators = "=")
   private object UpgradeDatabasesCommand extends JCommandReflection
-
+  
+  @Parameters(commandNames = Array("archive_project"), commandDescription = "archive project", separators = "=")
+   private object ArchiveProjectCommand extends JCommandReflection {
+   
+    @Parameter(names = Array("--project_id", "-p"), description = "The project id to archive from UDS_DB", required = true)
+    var projectId: Int = 0
+  
+    @Parameter(names = Array("--postgreSQL_bin_directory", "-bd"), description = "The path of the directory bin of PostreSQL", required = true)
+    var dirBinPath: String = ""
+    
+    @Parameter(names = Array("--dump_directory", "-dd"), description = "The path of the directory where the project will be stored", required = true)
+    var dirDestinationPath: String = ""
+    
+  }
   var hasDsConnectorFactory = false
   lazy val dsConnectorFactory: UncachedDataStoreConnectorFactory = {
 
@@ -127,6 +140,7 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(ExportMsiDbStatsCommand)
     jCmd.addCommand(UpgradeDatabasesCommand)
     jCmd.addCommand(DeleteProjectCommand)
+    jCmd.addCommand(ArchiveProjectCommand)
     // Try to parse the command line
     var parsedCommand = ""
     try {
@@ -160,7 +174,11 @@ object RunCommand extends App with LazyLogging {
           this.logger.info(s"Project with id=${DeleteProjectCommand.projectId} will be deleted !")
           val projectId=DeleteProject(dsConnectorFactory,DeleteProjectCommand.projectId,DeleteProjectCommand.dropDatabases)
         }
-    
+       case ArchiveProjectCommand.Parameters.firstName => {
+         import fr.proline.admin.service.user.ArchiveProject
+          
+          ArchiveProject(dsConnectorFactory,ArchiveProjectCommand.projectId,ArchiveProjectCommand.dirBinPath,ArchiveProjectCommand.dirDestinationPath)
+        }
         case CreateUserCommand.Parameters.firstName => {
           import fr.proline.admin.service.user.CreateUser
           val pswd = if (CreateUserCommand.userPassword.isEmpty()) None else Some(CreateUserCommand.userPassword)
