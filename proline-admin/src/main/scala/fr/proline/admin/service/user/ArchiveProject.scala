@@ -17,6 +17,7 @@ import fr.proline.core.dal.DoJDBCWork
 
 import java.io._
 import java.util.Date
+import java.text.SimpleDateFormat
 import scala.sys.process.Process
 import scala.sys.process.ProcessLogger
 
@@ -134,7 +135,8 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
             }
             //update serialized properties 
             if (!array.has("archived")) {
-              array.addProperty("archived", new Date().toString)
+              val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+              array.addProperty("archived", sdf.format(new Date()).toString())
               project.setSerializedProperties(array.toString())
               udsEM.merge(project)
             }
