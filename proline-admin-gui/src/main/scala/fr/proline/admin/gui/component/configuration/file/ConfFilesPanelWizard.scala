@@ -101,7 +101,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     content = List(
       new Label("Full path to "),
       new BoldLabel("Sequence Repository", upperCase = false),
-      new Label(" configuration file :"))
+      new Label(" configuration file ( optional ):"))
   }
   val seqReposConfigField = new TextField() {
     if (QuickStart.seqRepoConfPath != null) text = QuickStart.seqRepoConfPath
