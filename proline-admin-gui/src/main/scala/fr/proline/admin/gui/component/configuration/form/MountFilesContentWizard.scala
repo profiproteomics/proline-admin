@@ -15,7 +15,6 @@ class MountFilesContent extends AbstractMountFilesWizard  {
  setContentNode(
     new VBox {
       alignmentInParent = Pos.TOP_RIGHT
-      spacing = 5
       minWidth = 730
       maxWidth = 730
       content = List(

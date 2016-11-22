@@ -67,26 +67,21 @@ class DatabaseConfig extends VBox with LazyLogging {
 	 * COMPONENTS *
 	 * ********** *
 	 */
-  private var  hostname:String = ""
-	private var  addr:InetAddress =null
-	private var  username:String=""
+
+  QuickStart.hostNameUser="localhost"
+	QuickStart.userName="postgres"
 	private val driver = DriverType.POSTGRESQL
+	QuickStart.passwordUser=""
 	/* DB connection */
 	  /* user name  */
 	val userNameLabel = new Label("User name :")
 	val userNameField = new TextField{
-    
+    if(QuickStart.userName!=null) text=QuickStart.userName
 	  text.onChange{(_,oldText,newText)=>
 	  updateUSername(newText)    
 	  }
   }
-  userNameField.setText("postgres")
-	username=userNameField.getText()
 	userNameField.setTooltip(new Tooltip("enter the username of your database."))
-  if((username==null)||(username.equals(""))){
-	  username=System.getProperty("user.name")
-  }
-
   userNameField.setPromptText("Example : postgres")
    /* password */
   val pwdLabel = new Label("Password :")
@@ -105,7 +100,6 @@ class DatabaseConfig extends VBox with LazyLogging {
 			visible <== !passwordPWDField.visible
 			text.onChange{(_,oldText,newText)=>
 			updatePassword(newText)
-			 
 			}
   }
   passwordTextField.setTooltip(new Tooltip("enter the password of your database."))
@@ -113,22 +107,12 @@ class DatabaseConfig extends VBox with LazyLogging {
   /* host name */
   val hostNameLabel = new Label("Host name :")
   val hostNameField = new TextField {
+    if(QuickStart.hostNameUser!=null) text=QuickStart.hostNameUser
 	  text.onChange{(_,oldText,newText)=>
 	  updateHost(newText)
 	  }
   }
-  addr = InetAddress.getLocalHost();
-  hostname = addr.getHostName();
-  if((hostname==null)||(hostname.equals(""))){
-	  hostname="Example : localhost"
-  }
-  hostNameField.setText(hostname)
   hostNameField.setPromptText("Example : localhost")
-  val hostNameWarning = new Label{
-	graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
-			text = "Don't use the term 'localhost', but the real IP address or fully qualified name of the server."
-			wrapText = true
-  }
   hostNameField.setTooltip(new Tooltip("enter your hostname."));
   /* Port */
   val portLabel = new Label("Port : ")
@@ -147,8 +131,8 @@ class DatabaseConfig extends VBox with LazyLogging {
 	  onAction = handle {
 	    
 		/*test connection database*/ 
-	
-	    DatabaseConnection.testDbConnection(driver,userNameField,passwordTextField,hostNameField,portField,true,true) 
+	    System.out.println("driver"+driver+" /userName"+QuickStart.userName+" /passwordUser"+QuickStart.passwordUser+" /hostNameUser"+QuickStart.hostNameUser+" /port"+QuickStart.port)
+	    DatabaseConnection.testDbConnection(driver,QuickStart.userName,passwordTextField.getText(),QuickStart.hostNameUser,QuickStart.port,true,true) 
 	
 	    }
   }
@@ -172,7 +156,7 @@ class DatabaseConfig extends VBox with LazyLogging {
 	    }
 	   }
   }
-
+optimizePostgresql.setVisible(false);
 /*
  * ****** *
  * LAYOUT *
@@ -185,10 +169,16 @@ class DatabaseConfig extends VBox with LazyLogging {
 		  ).foreach(_.minWidth = 60)
 
   Seq(
-		userNameField, passwordPWDField, passwordTextField, hostNameField, hostNameWarning, portField
+		 passwordTextField
 		).foreach { node =>
 		node.minWidth = 370
-		node.prefWidth <== 570
+		node.prefWidth <== 670
+    }
+  Seq(
+		userNameField, hostNameField, portField
+		).foreach { node =>
+		node.minWidth = 370
+		node.prefWidth <== 760
     }
   
 
@@ -204,44 +194,41 @@ class DatabaseConfig extends VBox with LazyLogging {
   }
     val dbConnectionSettings = new TitledBorderPane(
       
-    title = "Step 2 : edit database connection", 
+   title = "Step 2 : edit database connection", 
    contentNode = new VBox {
-	  padding = Insets(30)
-	  spacing = V_SPACING
-	  alignment = Pos.BaselineRight
-	  content = List(
+	 minWidth = 360
+   prefWidth = 360
+   spacing = 5
+	  content = Seq(
+	    userNameLabel,
 		  new HBox {
-			  spacing = H_SPACING
-			  content = List(userNameLabel, userNameField)
+			  spacing = 5
+			  content = Seq(userNameField)
 		  },
+		  ScalaFxUtils.newVSpacer(minH = 10),
+      pwdLabel,
 	    new HBox {
-		    spacing = 1.5*H_SPACING
-		    content = List(pwdLabel,dbPwdPane, showPwdBox)
+		    spacing = 5
+		    content = List(dbPwdPane, showPwdBox)
 		  },
+		   ScalaFxUtils.newVSpacer(minH = 10),
+		   hostNameLabel,
 		  new HBox {
-				spacing = H_SPACING
-				content = List(
-					hostNameLabel,
-					new VBox {
-					  spacing = H_SPACING
-						content = List(hostNameField, hostNameWarning)
-					}
-				)
+				spacing = 5
+				content =Seq(hostNameField)
 	  	},
+	   ScalaFxUtils.newVSpacer(minH = 10),
+	   portLabel,
 	   new HBox {
-	      spacing = 2*H_SPACING
-		    content = List(portLabel, portField)
+	      spacing = 5
+		    content = Seq( portField)
 	    },
-	   
-	    ScalaFxUtils.newVSpacer(minH = 11),
 	    ScalaFxUtils.newVSpacer(minH = 10),
 	     new HBox {
 	      spacing = 95*H_SPACING
 		    content = List(optimizePostgresql,testConnectionHyperlink)
 	    },
-	   
-      ScalaFxUtils.newVSpacer(minH = 10),
-      ScalaFxUtils.newVSpacer(minH = 10)
+      ScalaFxUtils.newVSpacer(minH = 12)
       )
    })
 
@@ -269,14 +256,6 @@ class DatabaseConfig extends VBox with LazyLogging {
   private def updatePort(portnumber:Int){
 	  QuickStart.port=portnumber
 	   QuickStart.globalParameters+=("port"->QuickStart.port.toString())
-  }
-  /* testConnectionToPostgres */
-  
-  private def dialgoConnectionSuccess(){
-    new Alert(AlertType.INFORMATION, "Connection test successed !!!").showAndWait()
-  }
-  private def dialgoConnectionFail(){
-    new Alert(AlertType.INFORMATION, "Connection test failed !!!").showAndWait()
   }
   /*show message */
   private def invalidPathPopup(){
