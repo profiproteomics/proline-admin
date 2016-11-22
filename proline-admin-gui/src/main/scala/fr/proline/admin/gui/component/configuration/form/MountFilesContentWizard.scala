@@ -17,6 +17,7 @@ class MountFilesContent extends AbstractMountFilesWizard  {
       alignmentInParent = Pos.TOP_RIGHT
       minWidth = 730
       maxWidth = 730
+      maxHeight =400
       content = List(
         mountfiles
       )

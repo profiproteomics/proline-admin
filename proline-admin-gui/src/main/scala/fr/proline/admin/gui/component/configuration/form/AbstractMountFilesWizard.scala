@@ -17,7 +17,5 @@ abstract class AbstractMountFilesWizard extends CustomScrollPane(hBarPolicy = Sc
 
 
   /* Initialize form to null */
-  maxHeight=570
-    
-  
+  maxHeight=391
 }
