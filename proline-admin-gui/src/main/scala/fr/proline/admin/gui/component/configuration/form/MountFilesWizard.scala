@@ -49,13 +49,12 @@ import javafx.scene.control.Tooltip
 /**
  * Step 3 : window to add mount files :RAW files ,MZDB files and Resultfiles  .
  */
-class MonutFiles extends VBox  with LazyLogging {
+class MonutFiles extends VBox with LazyLogging {
 
   private val serverConfigFileOpt =
     if (isEmpty(QuickStart.serverConfPath)) None
-    else Option( new ServerConfigFile(QuickStart.serverConfPath))
+    else Option(new ServerConfigFile(QuickStart.serverConfPath))
   private val serverConfigOpt = serverConfigFileOpt.map(_.read()).flatten
- 
 
   /*
    * ********** *
@@ -63,51 +62,53 @@ class MonutFiles extends VBox  with LazyLogging {
    * ********** *
    */
 
- /* Mount points */
+  /* Mount points */
+
   val disableMpNoteLabel = new Label() {
     text = "Proline server configuration file must be provided to enable mount points setup.\n" +
       """See menu "Select configuration files"."""
     style = "-fx-font-style: italic;-fx-font-weigth: bold;"
     visible = false
   }
-  
+
   /* to add rawfiles */
+
   val rawFilesMountPoints = ArrayBuffer[MountPointPanelObservable]()
   val rawFilesMpLabel = new BoldLabel("Raw files :", upperCase = false)
   val addRawFilesMpButton = new Button("Add") {
     onAction = handle {
-       onAction = handle { 
-         _addRawFilesMountPoint() 
-         QuickStart.rawFiles=_getMountPointsMap(rawFilesMountPoints)
-           
-       }
+      onAction = handle {
+        _addRawFilesMountPoint()
+        QuickStart.rawFiles = _getMountPointsMap(rawFilesMountPoints)
+
+      }
     }
   }
   addRawFilesMpButton.setTooltip(new Tooltip("click to add raw file."))
   val rawFilesMpBox = new VBox { spacing = 10 }
-  
+
   /* to add mzdb files */
-  
+
   val mzdbFilesMountPoints = ArrayBuffer[MountPointPanelObservable]()
   val mzdbFilesMpLabel = new BoldLabel("mzDB files :", upperCase = false)
   val addMzdbFilesMpButton = new Button("Add") {
-    onAction = handle { 
+    onAction = handle {
       _addMzdbFilesMountPoint()
-       QuickStart.mzdbFiles=_getMountPointsMap(mzdbFilesMountPoints)
+      QuickStart.mzdbFiles = _getMountPointsMap(mzdbFilesMountPoints)
     }
   }
   addMzdbFilesMpButton.setTooltip(new Tooltip("click to add mzdb file."))
   /*to add result files */
-  
+
   val mzdbFilesMpBox = new VBox { spacing = 10 }
   val resultFilesMountPoints = ArrayBuffer[MountPointPanelObservable]()
   val resultFilesMpLabel = new BoldLabel("Result files :", upperCase = false)
   val addResultFilesMpButton = new Button("Add") {
-    onAction = handle { 
-      
-     _addResultFilesMountPoint()
-     QuickStart.resultFiles=_getMountPointsMap(resultFilesMountPoints)
-    
+    onAction = handle {
+
+      _addResultFilesMountPoint()
+      QuickStart.resultFiles = _getMountPointsMap(resultFilesMountPoints)
+
     }
   }
   addResultFilesMpButton.setTooltip(new Tooltip("click to add resultfile."))
@@ -122,25 +123,24 @@ class MonutFiles extends VBox  with LazyLogging {
   /* Size & Resize properties */
 
   Seq(
-    rawFilesMpLabel, mzdbFilesMpLabel, resultFilesMpLabel
-  ).foreach(_.minHeight = 25)
+    rawFilesMpLabel, mzdbFilesMpLabel, resultFilesMpLabel).foreach(_.minHeight = 25)
 
   /* VBox & HBox spacing */
-  
+
   private val V_SPACING = 10
   private val H_SPACING = 5
 
-   /* Mount points */
-  
+  /* Mount points */
+
   val mountPointsSettings = new TitledBorderPane(
-  title = "Step 3 : add mounts points", 
-  contentNode= new VBox {
-    spacing = 2 * V_SPACING
-    content = List(
-    ScalaFxUtils.newVSpacer(minH = 5),
-    new HBox {
-      spacing = H_SPACING
-      content = List(rawFilesMpLabel, addRawFilesMpButton)
+    title = "Step 3 : add mounts points",
+    contentNode = new VBox {
+      spacing = 2 * V_SPACING
+      content = List(
+        ScalaFxUtils.newVSpacer(minH = 5),
+        new HBox {
+          spacing = H_SPACING
+          content = List(rawFilesMpLabel, addRawFilesMpButton)
         },
         rawFilesMpBox,
         new HBox {
@@ -153,25 +153,22 @@ class MonutFiles extends VBox  with LazyLogging {
           content = List(resultFilesMpLabel, addResultFilesMpButton)
         },
         resultFilesMpBox,
-        ScalaFxUtils.newVSpacer(minH = 10)
-        
-      )
-  })
+        ScalaFxUtils.newVSpacer(minH = 10))
+    })
 
   /* VBox layout and content */
-  
-  alignment = Pos.Center
-  alignmentInParent = Pos.Center
+
+  alignment = Pos.CENTER_RIGHT
+  alignmentInParent = Pos.CENTER_RIGHT
   spacing = 4 * V_SPACING
   content = List(
-   ScalaFxUtils.newVSpacer(minH =1),
-   mountPointsSettings,
-  
-   ScalaFxUtils.newVSpacer(minH = 9)
-  )
-  
+    ScalaFxUtils.newVSpacer(minH = 1),
+    mountPointsSettings,
+
+    ScalaFxUtils.newVSpacer(minH = 9))
+
   /* Mount points */
-  
+
   if (serverConfigOpt.isEmpty) {
 
     /* Disable mount points if server config is undefined */
@@ -193,25 +190,27 @@ class MonutFiles extends VBox  with LazyLogging {
 
     val rawMp = serverConfig.rawFilesMountPoints
     if (rawMp.isEmpty) _addRawFilesMountPoint()
-    else rawMp.foreach { 
-      case (k, v) => _addRawFilesMountPoint(k, v) 
-      QuickStart.rawFiles+=(k->v)
-    } 
+    else rawMp.foreach {
+      case (k, v) =>
+        _addRawFilesMountPoint(k, v)
+        QuickStart.rawFiles += (k -> v)
+    }
     val mzdbMp = serverConfig.mzdbFilesMountPoints
     if (mzdbMp.isEmpty) _addMzdbFilesMountPoint()
-    else mzdbMp.foreach { 
-      case (k, v) => _addMzdbFilesMountPoint(k, v) 
-      QuickStart.mzdbFiles+=(k->v)
+    else mzdbMp.foreach {
+      case (k, v) =>
+        _addMzdbFilesMountPoint(k, v)
+        QuickStart.mzdbFiles += (k -> v)
     }
     val resultMp = serverConfig.resultFilesMountPoints
     if (resultMp.isEmpty) _addResultFilesMountPoint()
-    else resultMp.foreach { 
-      case (k, v) => _addResultFilesMountPoint(k, v)
-      QuickStart.resultFiles+=(k->v)
+    else resultMp.foreach {
+      case (k, v) =>
+        _addResultFilesMountPoint(k, v)
+        QuickStart.resultFiles += (k -> v)
     }
-    
+
   }
-  
 
   private def _getMountPointsMap(mpArray: ArrayBuffer[MountPointPanelObservable]): Map[String, String] = {
     (
@@ -220,84 +219,75 @@ class MonutFiles extends VBox  with LazyLogging {
         (k, v) = (mp.getKey, mp.getValue);
         if k.isEmpty == false && v.isEmpty == false
       ) yield k -> v //doubleQuoted(v)
-
-    ).toMap
+      ).toMap
   }
   private def _toServerConfig() = ServerConfig(
     rawFilesMountPoints = _getMountPointsMap(rawFilesMountPoints),
     mzdbFilesMountPoints = _getMountPointsMap(mzdbFilesMountPoints),
-    resultFilesMountPoints = _getMountPointsMap(resultFilesMountPoints)
-  )
-  
+    resultFilesMountPoints = _getMountPointsMap(resultFilesMountPoints))
+
   /* Add stuff to define another raw_files mount point */
-  
+
   private def _addRawFilesMountPoint(
     key: String = "",
-    value: String = ""
-  ) {
-      def _onRawFileMpDelete(mp: MountPointPanelObservable): Unit = {
-        rawFilesMountPoints -= mp
-        rawFilesMpBox.content = rawFilesMountPoints
-      }
-    val mp= new MountPointPanelObservable(
+    value: String = "") {
+    def _onRawFileMpDelete(mp: MountPointPanelObservable): Unit = {
+      rawFilesMountPoints -= mp
+      rawFilesMpBox.content = rawFilesMountPoints
+    }
+    val mp = new MountPointPanelObservable(
       key = key,
       value = value,
       onDeleteAction = _onRawFileMpDelete,
-      parentStage = QuickStart.stage   
-    )
-    rawFilesMountPoints +=mp
+      parentStage = QuickStart.stage)
+    rawFilesMountPoints += mp
     rawFilesMpBox.content = rawFilesMountPoints
   }
-  
-  /* Add stuff to define another mzdb_files mount point */ 
-  
+
+  /* Add stuff to define another mzdb_files mount point */
+
   private def _addMzdbFilesMountPoint(
     key: String = "",
-    value: String = ""
-  ){
-      def _onMzdbFileMpDelete(mp: MountPointPanelObservable): Unit = {
-        mzdbFilesMountPoints -= mp
-        mzdbFilesMpBox.content = mzdbFilesMountPoints
-      }
-      mzdbFilesMountPoints += new MountPointPanelObservable(
-        key = key,
-        value = value,
-        onDeleteAction = _onMzdbFileMpDelete,
-        parentStage = QuickStart.stage
-      )
+    value: String = "") {
+    def _onMzdbFileMpDelete(mp: MountPointPanelObservable): Unit = {
+      mzdbFilesMountPoints -= mp
       mzdbFilesMpBox.content = mzdbFilesMountPoints
+    }
+    mzdbFilesMountPoints += new MountPointPanelObservable(
+      key = key,
+      value = value,
+      onDeleteAction = _onMzdbFileMpDelete,
+      parentStage = QuickStart.stage)
+    mzdbFilesMpBox.content = mzdbFilesMountPoints
 
   }
-   /* Add stuff to define another result_files mount point */
-  
+  /* Add stuff to define another result_files mount point */
+
   private def _addResultFilesMountPoint(
     key: String = "",
-    value: String = ""
-  ){
-     def _onResultFileMpDelete(mp: MountPointPanelObservable): Unit = {
-       resultFilesMountPoints -= mp
-       resultFilesMpBox.content = resultFilesMountPoints
-     }
-     resultFilesMountPoints += new MountPointPanelObservable(
-       key = key,
-       value = value,
-       onDeleteAction = _onResultFileMpDelete,
-       parentStage = QuickStart.stage
-     )
-     resultFilesMpBox.content = resultFilesMountPoints
-   }
- }
- 
+    value: String = "") {
+    def _onResultFileMpDelete(mp: MountPointPanelObservable): Unit = {
+      resultFilesMountPoints -= mp
+      resultFilesMpBox.content = resultFilesMountPoints
+    }
+    resultFilesMountPoints += new MountPointPanelObservable(
+      key = key,
+      value = value,
+      onDeleteAction = _onResultFileMpDelete,
+      parentStage = QuickStart.stage)
+    resultFilesMpBox.content = resultFilesMountPoints
+  }
+}
+
 class MountPointPanelObservable(
   parentStage: Stage,
   onDeleteAction: (MountPointPanelObservable) => Unit,
   key: String = "",
-  value: String = ""
-) extends HBox {
+  value: String = "") extends HBox {
   val thisMountPoint = this
 
   /* Components */
-  
+
   val keyField = new TextField {
     minWidth = 144
     maxWidth = 144
@@ -321,13 +311,12 @@ class MountPointPanelObservable(
       val dir = FileBrowsing.browseDirectory(
         dcTitle = "Select mount point directory",
         dcInitialDir = valueField.text(),
-        dcInitOwner = parentStage
-      )
+        dcInitOwner = parentStage)
       if (dir != null) valueField.text = dir.getAbsolutePath()
     }
   }
   browseButton.setTooltip(new Tooltip("browse the path."))
-  
+
   val removeButton = new Button("Remove") {
     minWidth = 60
     maxWidth = 60
@@ -335,13 +324,13 @@ class MountPointPanelObservable(
   }
 
   /* Layout */
-  
+
   spacing = 10
   alignment = Pos.Center
   content = List(keyField, equalLabel, valueField, browseButton, removeButton)
 
   /* Features */
-  
+
   def getKey = keyField.text()
   def getValue = valueField.text()
 }

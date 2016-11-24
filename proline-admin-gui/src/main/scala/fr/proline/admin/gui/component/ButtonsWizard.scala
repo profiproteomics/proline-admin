@@ -5,36 +5,20 @@ import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
 import scalafx.geometry.Pos
 import scalafx.application.Platform
-import scalafx.beans.property.BooleanProperty
-import scalafx.beans.property.BooleanProperty.sfxBooleanProperty2jfx
 import scalafx.geometry.Insets
 import scalafx.scene.control.Button
-import scalafx.scene.layout.VBox
-import scalafx.scene.control.Label
-import scalafx.scene.control.TextField
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.Priority
-import scalafx.scene.layout.StackPane
 import scalafx.scene.Scene
-import fr.proline.admin.gui.component.configuration.ConfigurationTabbedWindow
-import fr.proline.admin.gui.component.resource.ResourcesTabbedWindow
 import fr.proline.admin.gui.process._
 import fr.proline.admin.gui.util._
-import fr.proline.admin.service.db.SetupProline
-import fr.proline.admin.service.db.migration.UpgradeAllDatabases
-import scalafx.scene.control.TabPane
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
-import fr.profi.util.scalafx.BoldLabel
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle._
-import fr.proline.admin.gui.component.configuration.tab._
-import fr.profi.util.scalafx.TitledBorderPane
-import fr.proline.admin.gui.component.configuration.file.ProlineConfigFilesPanel
 import fr.proline.admin.gui.component.configuration.file.ProlineConfigFilesPanelQStart
 import fr.proline.admin.gui.QuickStart
 import fr.proline.admin.gui.component.configuration.form._
-import fr.proline.admin.gui.component.configuration.form.DatabaseConfig
 import fr.proline.admin.gui.process.config._
 
 /**
@@ -45,8 +29,6 @@ object ButtonsPanelQStart extends LazyLogging {
   /*initialize panels */
   val prolineConfigFilesPanel = new ProlineConfigFilesPanelQStart()
   private val Databaseconfig = new DatabaseConfig()
-  //private val monutfiles=new MonutFiles()
-
   private val monutfiles = new MountFilesContent()
   private val adminConfigFile = new AdminConfigFile(QuickStart.adminConfPath)
   private val adminConfigOpt = adminConfigFile.read()
@@ -58,11 +40,7 @@ object ButtonsPanelQStart extends LazyLogging {
     if (isEmpty(QuickStart.serverConfPath)) None
     else Option(new ServerConfigFile(QuickStart.serverConfPath))
   private val serverConfigOpt = serverConfigFileOpt.map(_.read()).flatten
-
-  private val pwxConfigFileOpt =
-    if (isEmpty(QuickStart.pwxConfPath)) None
-    else Option(new PwxConfigFile(QuickStart.pwxConfPath))
-  var buttonValue: String = _
+  private var buttonValue: String = _
 
   /**
    * ******* *
@@ -123,8 +101,6 @@ object ButtonsPanelQStart extends LazyLogging {
       padding = Insets(10)
       spacing = 10
       content = Seq(
-        //TODO: enable me replayWizardButton,
-        //ScalaFxUtils.newVSpacer(),
         cancelButton,
         ScalaFxUtils.newHSpacer(),
         ScalaFxUtils.newHSpacer(),
@@ -139,6 +115,7 @@ object ButtonsPanelQStart extends LazyLogging {
 
   private def panelStateOnNext() {
     if (QuickStart.panelState.equals("panelConfig")) {
+
       QuickStart.mainPanel.getChildren().clear()
       QuickStart.mainPanel.getChildren().add(Databaseconfig)
       QuickStart.panelState = "Databaseconfig"
@@ -148,15 +125,15 @@ object ButtonsPanelQStart extends LazyLogging {
         QuickStart.mainPanel.getChildren().clear()
         QuickStart.mainPanel.getChildren().add(monutfiles)
         QuickStart.panelState = "mountfiles"
-        //checkGlobalVaribales()
-
       }
     }
   }
+
   /* when previous button is called*/
 
   def panelStateOnPrevious() {
     if (QuickStart.panelState.equals("Databaseconfig")) {
+
       QuickStart.mainPanel.getChildren().clear()
       QuickStart.mainPanel.getChildren().add(prolineConfigFilesPanel)
       QuickStart.panelState = "panelConfig"
@@ -237,40 +214,6 @@ object ButtonsPanelQStart extends LazyLogging {
       serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
     }
   }
-
-  /*check global variable*/
-
-  private def checkGlobalVaribales() {
-    var pramasIsMsissing = false
-    var missingparams = new StringBuilder()
-    QuickStart.globalParameters.keys.foreach { x =>
-
-      if (QuickStart.globalParameters(x) == null || QuickStart.globalParameters(x).isEmpty()) {
-        pramasIsMsissing = true
-        missingparams ++= matchParameters(x).+("   ")
-
-      }
-    }
-    if (pramasIsMsissing) {
-
-      ShowPopupWindow(
-        wTitle = "Check Parameters",
-        wText = "Check if parameters are missing : " + missingparams + "")
-    }
-  }
-
-  private def matchParameters(param: String): String = param match {
-    case "adminConf" => "Proline Admin configuration file"
-    case "serverConf" => "Proline server configuration file"
-    case "seqReposConf" => "Sequence repository configuration file"
-    case "userName" => "User name"
-    case "password" => "Password"
-    case "hostName" =>
-      "Hostname"
-      case"port" => "Port number"
-      case _ => "other parameter"
-  }
-
   /* close window */
 
   private def closeStage() {
