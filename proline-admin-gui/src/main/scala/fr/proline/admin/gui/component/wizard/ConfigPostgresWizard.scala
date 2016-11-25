@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.component.configuration.form
+package fr.proline.admin.gui.component.wizard
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -43,7 +43,7 @@ import fr.profi.util.scalafx.IntegerTextField
 import fr.profi.util.scalafx.NumericTextField
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.seq2obsBuff
-
+import fr.proline.admin.gui.component.configuration.form._
 
 
 /**

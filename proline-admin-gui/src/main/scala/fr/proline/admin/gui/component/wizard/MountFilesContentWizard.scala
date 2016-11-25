@@ -1,12 +1,9 @@
-package fr.proline.admin.gui.component.configuration.form
+package fr.proline.admin.gui.component.wizard
 
 import fr.proline.admin.gui.component.configuration.form._
 import scalafx.Includes._
-import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.layout.VBox
-import scalafx.stage.Stage
-import fr.proline.admin.gui.QuickStart
 import fr.proline.admin.gui.component.configuration.file._
 
 class MountFilesContent extends AbstractMountFilesWizard  {

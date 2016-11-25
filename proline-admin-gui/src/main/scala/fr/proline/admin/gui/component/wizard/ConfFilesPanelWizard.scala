@@ -1,7 +1,6 @@
-package fr.proline.admin.gui.component.configuration.file
+package fr.proline.admin.gui.component.wizard
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scalafx.Includes._
 import scalafx.geometry.Pos
 import scalafx.scene.control.Button
@@ -12,27 +11,25 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
-
 import fr.proline.admin.gui.QuickStart
 import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.util.ShowPopupWindow
-
 import fr.profi.util.scala.ScalaUtils._
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.BoldLabel
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle._
 import fr.proline.admin.gui.QuickStart
-
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
-
 import fr.profi.util.scalafx.TitledBorderPane
 import javafx.scene.control.Tooltip
 import fr.proline.admin.postgres.install._
 import fr.proline.admin.gui.util.FxUtils
-
+import scalafx.scene.control.Button.sfxButton2jfx
+import scalafx.scene.control.TextField.sfxTextField2jfx
+import fr.proline.admin.gui.component.configuration.file._
 /**
  *
  * Step 1 : window to search and add configurations files

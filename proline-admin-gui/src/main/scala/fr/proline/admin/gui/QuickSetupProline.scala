@@ -19,13 +19,13 @@ import scala.util.matching.Regex
 
 import fr.proline.admin.gui.component.ButtonsPanelQStart
 import fr.proline.admin.gui.component.configuration.file.ProlineConfigFileChooser
-import fr.proline.admin.gui.component.configuration.file.ProlineConfigFileChooserWizard
+import fr.proline.admin.gui.component.wizard.ProlineConfigFileChooserWizard
 import fr.proline.admin.gui.process.ProlineAdminConnectionWizard
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.util.ConfirmationDialog
-import fr.proline.admin.gui.component.configuration.file.ProlineConfigFilesPanelQStart
-import fr.proline.admin.gui.component.configuration.form.DatabaseConfig
+import fr.proline.admin.gui.component.wizard._
+
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

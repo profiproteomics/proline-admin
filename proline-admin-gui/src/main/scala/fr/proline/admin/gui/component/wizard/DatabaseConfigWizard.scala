@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.component.configuration.form
+package fr.proline.admin.gui.component.wizard
 
 import com.typesafe.scalalogging.LazyLogging
 

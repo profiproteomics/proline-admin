@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.component.configuration.form
+package fr.proline.admin.gui.component.wizard
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -80,7 +80,6 @@ class MonutFiles extends VBox with LazyLogging {
       onAction = handle {
         _addRawFilesMountPoint()
         QuickStart.rawFiles = _getMountPointsMap(rawFilesMountPoints)
-
       }
     }
   }

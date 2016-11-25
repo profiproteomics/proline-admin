@@ -1,9 +1,7 @@
-package fr.proline.admin.gui.component.configuration.file
+package fr.proline.admin.gui.component.wizard
 
 import com.typesafe.scalalogging.LazyLogging
-
 import java.io.File
-
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 import scalafx.stage.Stage

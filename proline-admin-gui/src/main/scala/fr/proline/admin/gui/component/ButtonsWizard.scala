@@ -1,7 +1,6 @@
 package fr.proline.admin.gui.component
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scalafx.Includes._
 import scalafx.geometry.Pos
 import scalafx.application.Platform
@@ -16,10 +15,11 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle._
-import fr.proline.admin.gui.component.configuration.file.ProlineConfigFilesPanelQStart
+import fr.proline.admin.gui.component.wizard._
 import fr.proline.admin.gui.QuickStart
 import fr.proline.admin.gui.component.configuration.form._
 import fr.proline.admin.gui.process.config._
+import fr.proline.admin.gui.component.wizard.MountFilesContent
 
 /**
  * Create  panel contains buttons : cancel ,previous and next .
