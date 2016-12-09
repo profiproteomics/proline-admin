@@ -127,7 +127,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
                 csvPrinter.flush()
                 csvPrinter.close()
-
+                logger.info("Project with id= "+projectId+" has been archived .")
               }
             } catch {
               case t: Throwable => logger.error("Error while archiving project", t)
