@@ -73,61 +73,72 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
             try {
               logger.info(s"Starting to backup the project #$projectId....")
 
-              //pgdump  databases for a project 
+              //pg_dump  databases for a project
+
               logger.info(s"Starting to pg_dump of MSI,LCMS and schema of UDS databases...")
               if (execPgDump(externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(), externalDbMsi.getDbName(), externalDbLcms.getDbName(), pathDestination, pathSource, projectId)) {
                 val fileToWrite = new File(pathDestination, "\\project_" + projectId + "\\uds_db_data.csv")
 
                 var csvPrinter: CSVPrinter = null
 
-                csvPrinter = new CSVPrinter(new FileWriter(fileToWrite.getAbsoluteFile()), CSVFormat.MYSQL.withDelimiter('#'));
+                csvPrinter = new CSVPrinter(new FileWriter(fileToWrite.getAbsoluteFile()), CSVFormat.MYSQL.withDelimiter('#').withNullString("null"));
 
                 //rows project 
-
-                csvPrinter.printRecord(projectId.toString, project.getName(), project.getDescription(), project.getCreationTimestamp(), project.getSerializedProperties(), project.getOwner().getId().toString,
+                val serializedProperties = Option(project.getSerializedProperties())
+                csvPrinter.printRecord("project", projectId.toString, project.getName(), project.getDescription(), project.getCreationTimestamp(), serializedProperties.getOrElse(""), project.getOwner().getId().toString,
                   project.getLockExpirationTimestamp(), project.getLockUserID());
 
-                //rows of externaldb(msi)
+                //rows of external_db(msi)
 
-                csvPrinter.printRecord(externalDbMsi.getId().toString, externalDbMsi.getDbName(), externalDbMsi.getConnectionMode(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(),
+                csvPrinter.printRecord("externaldbmsi", externalDbMsi.getId().toString, externalDbMsi.getDbName(), externalDbMsi.getConnectionMode(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(),
                   externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getType(), externalDbMsi.getDbVersion(), externalDbMsi.getIsBusy().toString, externalDbMsi.getSerializedProperties())
 
-                // rows of externaldb(lcms)
+                // rows of external_db(lcms)
 
-                csvPrinter.printRecord(externalDbLcms.getId().toString, externalDbLcms.getDbName(), externalDbLcms.getConnectionMode(), externalDbLcms.getDbUser(), externalDbLcms.getDbPassword(),
+                csvPrinter.printRecord("externaldblcms", externalDbLcms.getId().toString, externalDbLcms.getDbName(), externalDbLcms.getConnectionMode(), externalDbLcms.getDbUser(), externalDbLcms.getDbPassword(),
                   externalDbLcms.getHost(), externalDbLcms.getPort(), externalDbLcms.getType(), externalDbLcms.getDbVersion(), externalDbLcms.getIsBusy().toString, externalDbLcms.getSerializedProperties())
                 DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
+
                   // rows of project_db_map
 
                   ezDBC.selectAndProcess(" SELECT project_id,external_db_id FROM project_db_map WHERE project_id=" + projectId) { record =>
                     if (record.getLong("project_id") > 0 && record.getLong("external_db_id") > 0) {
 
-                      csvPrinter.printRecord(record.getLong("project_id").toString, record.getLong("external_db_id").toString)
+                      csvPrinter.printRecord("projectdbmap", record.getLong("project_id").toString, record.getLong("external_db_id").toString)
                     }
                   }
-                  //rows of dataset
-                  csvPrinter.printRecord("dataset")
+                  //rows of data_set
+
                   ezDBC.selectAndProcess(" SELECT id,number,name,description ,type ,keywords ,creation_timestamp ,modification_log,children_count ,serialized_properties, result_set_id ,result_summary_id ,aggregation_id ,fractionation_id ,quant_method_id ,parent_dataset_id ,project_id FROM data_set WHERE project_id=" + projectId) { record =>
-                    if (record.getLong("id") > 0 && record.getInt("number") >= 0 && record.getString("name") != null && record.getString("type") != null && record.getInt("children_count") >= 0 && record.getLong("project_id") > 0) {
-                      csvPrinter.printRecord(record.getLong("id").toString, record.getInt("number").toString, record.getString("name"), record.getString("description"), record.getString("type"), record.getString("keywords"),
-                        record.getString("creation_timestamp"), record.getString("modification_log"), record.getInt("children_count").toString, record.getStringOption("serialized_properties"), record.getLong("result_set_id").toString,
+                    if (record.getLong("id") > 0 && record.getInt("number") >= 0 && record.getString("name") != null && record.getString("type") != null && record.getInt("children_count") >= 0 && record.getLong("project_id") >= 0) {
+
+                      csvPrinter.printRecord("dataset", record.getLong("id").toString, record.getInt("number").toString, record.getString("name"), record.getStringOption("description").getOrElse(""), record.getString("type"), record.getStringOption("keywords").getOrElse(""),
+                        record.getString("creation_timestamp"), record.getStringOption("modification_log").getOrElse(""), record.getInt("children_count").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getLong("result_set_id").toString,
                         record.getLong("result_summary_id").toString, record.getLong("aggregation_id").toString, record.getLong("fractionation_id").toString, record.getLong("quant_method_id").toString, record.getLong("parent_dataset_id").toString,
                         record.getLong("project_id").toString)
                     }
                   }
-                  //rows of run_identification
-                  csvPrinter.printRecord("runidentification")
+                  // rows of run_identification
 
                   ezDBC.selectAndProcess(" SELECT id,serialized_properties,run_id,raw_file_identifier FROM run_identification WHERE id in (SELECT id FROM data_set WHERE project_id=" + projectId + ")") { record =>
                     if (record.getLong("id") > 0) {
-                      csvPrinter.printRecord(record.getLong("id").toString, record.getString("serialized_properties"), record.getLong("run_id").toString, record.getString("raw_file_identifier"))
+                      csvPrinter.printRecord("runidentification", record.getLong("id").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getLong("run_id").toString, record.getStringOption("raw_file_identifier").getOrElse(""))
+                    }
+                  }
+
+                  // rows of project_user_account_map
+                  ezDBC.selectAndProcess(" SELECT project_id,user_account_id,serialized_properties,write_permission FROM project_user_account_map WHERE project_id=" + projectId) { record =>
+                    if ((record.getLong("project_id") > 0) && (record.getLong("user_account_id") > 0) && (record.getString("write_permission") != null)) {
+                      csvPrinter.printRecord("projectuseraccount", record.getLong("project_id").toString, record.getLong("user_account_id").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getBoolean("write_permission").toString)
                     }
                   }
                 }
 
                 csvPrinter.flush()
                 csvPrinter.close()
-                logger.info("Project with id= "+projectId+" has been archived .")
+                // set the file only readable 
+                fileToWrite.setWritable(false)
+                logger.info("Project with id= " + projectId + " has been archived .")
               }
             } catch {
               case t: Throwable => logger.error("Error while archiving project", t)
