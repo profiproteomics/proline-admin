@@ -44,7 +44,6 @@ import fr.profi.util.scalafx.NumericTextField
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.seq2obsBuff
 
-
 /**
  * *********************************** *
  * All components for one Config param *
@@ -54,8 +53,7 @@ case class PgFormLine(
   checkBox: CheckBox,
   nameLabel: Label,
   slider: ConfigParamSlider,
-  valueNode: Node
-)
+  valueNode: Node)
 
 /**
  * ***************************************************************** *
@@ -85,7 +83,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
 
   /* Warning */
   val warningAboutRestartText = "WARNING: Changes will be effective only after a restart of the PostgreSQL service."
-  val warningAboutRestartLabel = new Label{
+  val warningAboutRestartLabel = new Label {
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     text = warningAboutRestartText
   }
@@ -95,9 +93,9 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
     text = "Ticks marked with a star correspond to optimized values."
     style = "-fx-font-style:italic;"
   }
-  
-//  /* Physical memory viewer */
-//  val physicalMemoryLabel = new Label("Physical memory")
+
+  //  /* Physical memory viewer */
+  //  val physicalMemoryLabel = new Label("Physical memory")
   //TODO: Physical memory viewer
 
   /* Sliders & co */
@@ -115,14 +113,14 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
     val paramFormat = formatByParam(labeledParam)
     val unit = paramFormat.unitString
     val formatter = paramFormat.formatter
-//    val initValueOpt = pgConfigInitSettings.get( PostgresOptimizableParamEnum.getParamConfigKey(labeledParam) )
-    val initValue = pgConfigInitSettings( PostgresOptimizableParamEnum.getParamConfigKey(labeledParam) )
+    //    val initValueOpt = pgConfigInitSettings.get( PostgresOptimizableParamEnum.getParamConfigKey(labeledParam) )
+    val initValue = pgConfigInitSettings(PostgresOptimizableParamEnum.getParamConfigKey(labeledParam))
     val initiallyCommented = initValue.commented
 
     /* Check box: unselected if param is commented out */
-    val checkBox = new CheckBox() { 
-//      selected = initValueOpt.isDefined
-      selected = ! initiallyCommented
+    val checkBox = new CheckBox() {
+      //      selected = initValueOpt.isDefined
+      selected = !initiallyCommented
     }
 
     /* Name of the param */
@@ -207,15 +205,11 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
             minutesField,
             new Label("min") {
               minWidth = 15
-            }
-          )
+            })
         }
 
-      } 
-      
-      /* FOR BYTE AMOUNTS */
-      else if (paramType == BYTES) {
-        
+      } /* FOR BYTE AMOUNTS */ else if (paramType == BYTES) {
+
         /* Components */
         val numericField = new NumericTextField(0) {
           setMinValue(0)
@@ -232,22 +226,20 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
           val bytesAmount = slider.value.longValue()
           val asString = formatBytesAmount(
             bytesAmount = bytesAmount,
-            numberFormat = "%.2f%s"
-          )
+            numberFormat = "%.2f%s")
           val (asBigDecimal, unitValue) = parseBytesAmount(asString)
-          
+
           // TODO: use BigDecimal to handle the desire level of precision (number of digits after point)
-          val finalValue = if (asBigDecimal.doubleValue() == math.round(asBigDecimal.doubleValue) ) {
+          val finalValue = if (asBigDecimal.doubleValue() == math.round(asBigDecimal.doubleValue)) {
             asBigDecimal.setScale(0, BigDecimal.RoundingMode.HALF_UP)
             asBigDecimal.longValue().toString
           } else asBigDecimal.doubleValue.toString()
-          
+
           // If new value is greater than old one
-          if( bytesAmount > toLong(oldValue) ) {
+          if (bytesAmount > toLong(oldValue)) {
             numericField.setValue(finalValue)
             unitBox.selectionModel().select(unitValue)
-          } 
-          // Else
+          } // Else
           else {
             unitBox.selectionModel().select(unitValue)
             numericField.setValue(finalValue)
@@ -292,10 +284,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
           spacing = 8
           content = Seq(numericField, unitBox)
         }
-      } 
-      
-      /* FOR FLOATS AND INTEGERS */
-      else {
+      } /* FOR FLOATS AND INTEGERS */ else {
 
         /* Component */
         val numericField = new NumericTextField(0) {
@@ -310,7 +299,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
             def _updateFieldWithSliderValue() {
               this.setValue("%.1f".formatLocal(java.util.Locale.US, slider.value.doubleValue()))
             }
-            
+
             def _updateSliderWithFieldsValue() {
               slider.value = this.getBigDecimal().toDouble
             }
@@ -319,15 +308,12 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
               try { _updateFieldWithSliderValue() }
               catch { case t: Throwable => { slider.value = toDouble(oldValue) } }
             }
-            
-            this.text.onChange {  (_, oldValue, newValue) =>
+
+            this.text.onChange { (_, oldValue, newValue) =>
               try { _updateSliderWithFieldsValue() }
               catch { case t: Throwable => { this.text = oldValue } }
             }
-          }
-
-          /* For integer values */
-          else {
+          } /* For integer values */ else {
 
             setIntergersOnly(true)
             setMinValue(sliderMinAsLong)
@@ -369,8 +355,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
               numericField,
               new Label(unit) {
                 minWidth = 70
-              }
-            )
+              })
           }
         }
       }
@@ -381,13 +366,13 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
 
     /* First change slider default value (= min) to be sure some change event will be thrown */
     // Otherwise, if new value = min vlaue, related field +/- box won't be updated
-    slider.value =  slider.value() + slider.majorTickUnit()
+    slider.value = slider.value() + slider.majorTickUnit()
 
     /* Initialize values */
     slider.value = {
       paramFormat.parser(initValue.valueString).toDouble
-//      if (initValueOpt.isDefined) paramFormat.parser(initValueOpt.get.valueString).toDouble
-//      else pgConfigDefaults(labeledParam).suggestedValue.toDouble
+      //      if (initValueOpt.isDefined) paramFormat.parser(initValueOpt.get.valueString).toDouble
+      //      else pgConfigDefaults(labeledParam).suggestedValue.toDouble
     }
 
     /* Add to buffers and map */
@@ -404,8 +389,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
       nameLabels.length == paramsLen &&
       sliders.length == paramsLen &&
       valueNodes.length == paramsLen,
-    "Incorrect number of components in PostgresSettingsForm"
-  )
+    "Incorrect number of components in PostgresSettingsForm")
 
   /* Buttons */
   val setAllToOptimizedButton = new Button("Set all to optimized value") {
@@ -416,7 +400,6 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
     wrapText = true
     onAction = handle { _setAllToDefault() }
   }
-
 
   /*
    * ****** *
@@ -433,8 +416,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
       (checkBoxes(i), 0, i),
       (nameLabels(i), 1, i),
       (sliders(i), 2, i),
-      (valueNodes(i), 3, i)
-    )
+      (valueNodes(i), 3, i))
   }
 
   val paramsGridPane = new GridPane {
@@ -492,9 +474,8 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
     valueAsString: String,
     configFileLines: Array[String],
     configFileLinesLen: Int,
-    newLinesBuffer: ArrayBuffer[String]
-  ): ConfigFileKVLine = {
-    
+    newLinesBuffer: ArrayBuffer[String]): ConfigFileKVLine = {
+
     val pattern = ("""^#\s*(""" + configLineKey + """)\s*=?\s*([\w\.]+)\s*(#.+)*""").r
 
     /* First, try to find it as a commented line in lines array */
@@ -509,29 +490,28 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
 
       /* Create and return updated KVLine */
       require(line.startsWith("#"), s"The KVLine to be created must begin by '#' ($line)")
-      
+
       //TODO: improve by doing it all at the same time
       val oldKVLine = ConfigFileKVLine(
         line = line,
         index = lineIndex,
         key = kvMatch.group(1),
         valueString = kvMatch.group(2),
-        valueStartIdx = kvMatch.start(2), 
+        valueStartIdx = kvMatch.start(2),
         valueEndIdx = kvMatch.end(2),
-        commented = true
-      )
-      
+        commented = true)
+
       return oldKVLine.toNewKVLine(valueAsString, commented = false)
-      
-//      return ConfigFileKVLine(
-//        line = line.drop(1),
-//        index = lineIndex,
-//        key = kvMatch.group(1),
-//        valueString = kvMatch.group(2),
-//        valueStartIdx = kvMatch.start(2) - 1, //-1 because initial '#' has been removed
-//        valueEndIdx = kvMatch.end(2) - 1,
-//        commented = false
-//      )
+
+      //      return ConfigFileKVLine(
+      //        line = line.drop(1),
+      //        index = lineIndex,
+      //        key = kvMatch.group(1),
+      //        valueString = kvMatch.group(2),
+      //        valueStartIdx = kvMatch.start(2) - 1, //-1 because initial '#' has been removed
+      //        valueEndIdx = kvMatch.end(2) - 1,
+      //        commented = false
+      //      )
     }
 
     /* If key wasn't found, append line to file */
@@ -560,25 +540,19 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
     compoByParam.foreach {
       case (labeledParam, formLine) =>
 
-        val valueAsString = formatByParam(labeledParam).formatter(formLine.slider.value.doubleValue())
+        var valueAsString = formatByParam(labeledParam).formatter(formLine.slider.value.doubleValue())
         val commentLine = !formLine.checkBox.selected()
-
         val configLineKey = PostgresOptimizableParamEnum.getParamConfigKey(labeledParam)
-        val oldConfigKVLineOpt = pgConfigFile.lineByKey.get(configLineKey)
-
-        val newConfigKVLineOpt: Option[ConfigFileKVLine] = {
+        var oldConfigKVLineOpt = pgConfigFile.lineByKey.get(configLineKey)
+        var newConfigKVLineOpt: Option[ConfigFileKVLine] = {
 
           /* If KVLine is already known, update it */
           if (oldConfigKVLineOpt.isDefined) {
-            val oldConfigKVLine = oldConfigKVLineOpt.get
-
-            if (commentLine) Some(oldConfigKVLine.comment())
-            else Some(oldConfigKVLine.toNewKVLine(valueAsString, commented = false)) //commentLine
-          }
-          
-          /* Otherwise line is commented or doesn't exist */
-          else {
-
+            var oldConfigKVLine = oldConfigKVLineOpt.get
+            if (commentLine) {
+              Some(oldConfigKVLine.comment())
+            } else { Some(oldConfigKVLine.toNewKVLine(valueAsString, commented = false)) } //commentLine
+          } /* Otherwise line is commented or doesn't exist */ else {
             /* Don't change or create commented parameters */
             if (commentLine) None
 
@@ -589,8 +563,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
                 valueAsString,
                 configFileLines,
                 configFileLinesLen,
-                newLinesBuffer
-              )
+                newLinesBuffer)
 
               Some(newLine)
             }
@@ -599,9 +572,11 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
 
         /* Change in map and lines array if needed */
         if (newConfigKVLineOpt.isDefined) {
-          val newConfigKVLine = newConfigKVLineOpt.get
+          var value="= "+valueAsString
+          var newConfigKVLine = newConfigKVLineOpt.get
           pgConfigFile.lineByKey(configLineKey) = newConfigKVLine
-          configFileLines(newConfigKVLine.index) = newConfigKVLine.line //newConfigKVLine.toString()
+          var tempConfigKVLine=newConfigKVLine.line.replaceAll("=(\\s)*(\\S+)",value)
+          configFileLines(newConfigKVLine.index) = tempConfigKVLine //newConfigKVLine.toString()
         }
     }
 
@@ -628,8 +603,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
     ShowPopupWindow(
       wTitle = "Warning",
       wText = warningAboutRestartText,
-      wParent = Option(parentStage)
-    )
+      wParent = Option(parentStage))
 
     println("<br>INFO - postgresql.conf successfully updated !<br>")
     logger.info("postgresql.conf successfully updated !")

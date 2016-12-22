@@ -27,7 +27,7 @@ case class ConfigFileKVLine(
   line: String,
   index: Int,
   key: String,
-  valueString: String,
+  var valueString: String,
   valueStartIdx: Int,
   valueEndIdx: Int,
   commented: Boolean = false
@@ -58,7 +58,6 @@ case class ConfigFileKVLine(
       commented = true
     )
   }
-
   /** Create a new KVLine, corresponding to this one, UNcommented **/
   def uncomment(): ConfigFileKVLine = {
 
