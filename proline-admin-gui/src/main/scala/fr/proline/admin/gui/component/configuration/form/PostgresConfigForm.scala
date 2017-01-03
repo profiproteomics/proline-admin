@@ -599,9 +599,14 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
 
         /* Change in map and lines array if needed */
         if (newConfigKVLineOpt.isDefined) {
-          val newConfigKVLine = newConfigKVLineOpt.get
+          var value="= "+valueAsString
+          var newConfigKVLine = newConfigKVLineOpt.get
+          pgConfigFile.lineByKey(configLineKey) = newConfigKVLine
           pgConfigFile.lineByKey(configLineKey) = newConfigKVLine
           configFileLines(newConfigKVLine.index) = newConfigKVLine.line //newConfigKVLine.toString()
+          var tempConfigKVLine=newConfigKVLine.line.replaceAll("=(\\s)*(\\S+)",value)
+          configFileLines(newConfigKVLine.index) = tempConfigKVLine //newConfigKVLine.toString()
+
         }
     }
 
