@@ -132,7 +132,7 @@ class MonutFiles extends VBox with LazyLogging {
   /* Mount points */
 
   val mountPointsSettings = new TitledBorderPane(
-    title = "Step 3 : add mounts points",
+    title = "Step 3: define your file locations",
     contentNode = new VBox {
       spacing = 2 * V_SPACING
       content = List(

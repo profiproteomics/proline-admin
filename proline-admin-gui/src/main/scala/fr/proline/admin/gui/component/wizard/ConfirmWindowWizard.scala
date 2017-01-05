@@ -42,7 +42,7 @@ class ConfirmWindowWizard(
 
     root = new VBox {
       alignment = Pos.Center
-      spacing = 25
+      spacing = 35
       padding = Insets(10)
       
       content = List(
@@ -57,7 +57,7 @@ class ConfirmWindowWizard(
             new Button("cancel") {
               onAction = handle { popup.close() }
             },
-            new Button("OK") {
+            new Button("  OK  ") {
               onAction = handle { QuickStart.stage.close() }
             })
 
