@@ -110,7 +110,7 @@ class QuickStart extends Application {
     /*locate application .CONF file of proline server */
 
     val serverConf = new File(srcPath).getParentFile().getParentFile().toString().replaceAll("\\\\", "/")
-    searchConfFileSeqReposServer("ws", "seqrepo", serverConf)
+    searchConfFileSeqReposServer("server", "seqrepo", serverConf)
 
     require(QuickStart.stage == null, "stage is already instantiated")
 
