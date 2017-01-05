@@ -26,7 +26,6 @@ import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.util.ConfirmationDialog
 import fr.proline.admin.gui.component.wizard._
 
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import fr.proline.admin.postgres.install.CheckInstalledPostgres
@@ -42,7 +41,6 @@ object QuickStart extends LazyLogging {
   var adminConfPath: String = _
   var adminConfPathBackSlach: String = _
   var serverConfPath: String = _
-  var pwxConfPath: String = _
   var postgresqlDataDir: String = _
   var seqRepoConfPath: String = _
   var userName: String = _
@@ -57,7 +55,6 @@ object QuickStart extends LazyLogging {
 
   def adminConfPathIsEmpty(): Boolean = StringUtils.isEmpty(adminConfPath)
   def serverConfPathIsEmpty(): Boolean = StringUtils.isEmpty(serverConfPath)
-  def pwxConfPathIsEmpty(): Boolean = StringUtils.isEmpty(pwxConfPath)
   def postgresDataDirIsEmpty(): Boolean = StringUtils.isEmpty(postgresqlDataDir)
 
   /* parse Admin config file */
@@ -98,11 +95,6 @@ class QuickStart extends Application {
 
   def start(stage: javafx.stage.Stage): Unit = {
 
-    /*check if postgres is installed 
-     
-     CheckInstalledPostgres.checkPostgres()
-     
-     */
     /* Locate 'config' folder */
 
     val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()

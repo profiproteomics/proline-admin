@@ -6,6 +6,7 @@ import scalafx.geometry.Pos
 import scalafx.application.Platform
 import scalafx.geometry.Insets
 import scalafx.scene.control.Button
+import scalafx.scene.control.Button._
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.Priority
 import scalafx.scene.Scene
@@ -20,6 +21,9 @@ import fr.proline.admin.gui.QuickStart
 import fr.proline.admin.gui.component.configuration.form._
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.component.wizard.MountFilesContent
+import scalafx.scene.control.Label
+import fr.proline.admin.gui.IconResource
+
 
 /**
  * Create  panel contains buttons : cancel ,previous and next .
@@ -70,8 +74,15 @@ object ButtonsPanelQStart extends LazyLogging {
 
   val cancelButton = new Button("Cancel") {
     onAction = handle {
-      closeStage()
+     
+      confirmDialog()
     }
+  }
+   /* Warning */
+  val warningAboutExitText = "WARNING: Are you sure  to exit setup ? "
+  val warningAboutExitLabel = new Label {
+    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+    text = warningAboutExitText
   }
 
   /**
@@ -213,6 +224,16 @@ object ButtonsPanelQStart extends LazyLogging {
       val newServerConfig = _parseToServerConfig()
       serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
     }
+  }
+  
+  /*confirm dialog */
+
+  private def confirmDialog() {
+       ShowConfirmWindow(
+      wTitle = "Warning",
+      wText = warningAboutExitText,
+      wParent = Option(QuickStart.stage)
+      )
   }
   /* close window */
 
