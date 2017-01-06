@@ -121,7 +121,7 @@ class QuickStart extends Application {
     QuickStart.panelState = "panelConfig"
     QuickStart.stage = new Stage(stage) {
       scene = new Scene(QuickStart.root)
-      width = 820
+      width = 850
       height = 570
       minWidth = 620
       minHeight = 570

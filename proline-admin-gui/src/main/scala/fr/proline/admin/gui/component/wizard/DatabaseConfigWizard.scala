@@ -128,20 +128,19 @@ class DatabaseConfig extends VBox with LazyLogging {
   }
   portField.setPromptText("Example : 5432")
   portField.setText("5432")
-  portField.setTooltip(new Tooltip("enter the port of your database(default:5432)."));
-  val testConnectionHyperlink = new Hyperlink("Test connection") {
-    onAction = handle {
+  portField.setTooltip(new Tooltip("enter the port of your database(default:5432)."))
+  val testConnectionButton = new Button("Test connection") {
+           onAction = handle {
 
       /*test connection database*/
       if ((QuickStart.userName != null) && (passwordTextField.getText() != null) && (QuickStart.hostNameUser != null) && (QuickStart.port > 0))
         DatabaseConnection.testDbConnection(driver, QuickStart.userName, passwordTextField.getText(), QuickStart.hostNameUser, QuickStart.port, true, true)
 
     }
-  }
-
+            }
   /* optimize configuration of database server postgresql.conf */
 
-  val optimizePostgresql = new Hyperlink("Manage PostgreSQL") {
+  val optimizePostgresqlButton = new Button("Manage PostgreSQL") {
     onAction = handle {
       new ConfigurationTabbedWindowWizard().showAndWait()
     }
@@ -212,7 +211,7 @@ class DatabaseConfig extends VBox with LazyLogging {
         ScalaFxUtils.newVSpacer(minH = 10),
         new HBox {
           spacing = 110 * H_SPACING
-          content = List(optimizePostgresql, testConnectionHyperlink)
+          content = List(optimizePostgresqlButton, testConnectionButton)
         },
         ScalaFxUtils.newVSpacer(minH = 12))
     })

@@ -74,7 +74,7 @@ class MonutFiles extends VBox with LazyLogging {
   /* to add rawfiles */
 
   val rawFilesMountPoints = ArrayBuffer[MountPointPanelObservable]()
-  val rawFilesMpLabel = new BoldLabel("Raw files :", upperCase = false)
+  val rawFilesMpLabel = new BoldLabel("Raw files path    :", upperCase = false)
   val addRawFilesMpButton = new Button("Add") {
     onAction = handle {
       onAction = handle {
@@ -89,7 +89,7 @@ class MonutFiles extends VBox with LazyLogging {
   /* to add mzdb files */
 
   val mzdbFilesMountPoints = ArrayBuffer[MountPointPanelObservable]()
-  val mzdbFilesMpLabel = new BoldLabel("mzDB files :", upperCase = false)
+  val mzdbFilesMpLabel = new BoldLabel("mzDB files path  :", upperCase = false)
   val addMzdbFilesMpButton = new Button("Add") {
     onAction = handle {
       _addMzdbFilesMountPoint()
@@ -101,7 +101,7 @@ class MonutFiles extends VBox with LazyLogging {
 
   val mzdbFilesMpBox = new VBox { spacing = 10 }
   val resultFilesMountPoints = ArrayBuffer[MountPointPanelObservable]()
-  val resultFilesMpLabel = new BoldLabel("Result files :", upperCase = false)
+  val resultFilesMpLabel = new BoldLabel("Result files path :", upperCase = false)
   val addResultFilesMpButton = new Button("Add") {
     onAction = handle {
 
@@ -132,7 +132,7 @@ class MonutFiles extends VBox with LazyLogging {
   /* Mount points */
 
   val mountPointsSettings = new TitledBorderPane(
-    title = "Step 3: define your file locations",
+    title = "Step 3 : define your file locations",
     contentNode = new VBox {
       spacing = 2 * V_SPACING
       content = List(
