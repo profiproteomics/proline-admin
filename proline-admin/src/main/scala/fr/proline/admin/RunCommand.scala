@@ -101,7 +101,7 @@ object RunCommand extends App with LazyLogging {
   @Parameters(commandNames = Array("archive_project"), commandDescription = "archive project", separators = "=")
    private object ArchiveProjectCommand extends JCommandReflection {
    
-    @Parameter(names = Array("--project_id", "-p"), description = "The project id to archive", required = true)
+    @Parameter(names = Array("--project_id", "-pid"), description = "The project id to archive", required = true)
     var projectId: Int = 0
   
     @Parameter(names = Array("--postgreSQL_bin_directory", "-bd"), description = "The path of the directory bin of PostreSQL", required = true)
@@ -109,7 +109,6 @@ object RunCommand extends App with LazyLogging {
     
     @Parameter(names = Array("--project_directory_path", "-dd"), description = "The path of the directory where the project will be stored", required = true)
     var projectDirectoryPath: String = ""
-    
   }
   
    @Parameters(commandNames = Array("restore_project"), commandDescription = "restore project", separators = "=")

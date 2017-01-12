@@ -58,6 +58,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
           val externalDbLcms = ExternalDbRepository.findExternalByTypeAndProject(udsEM, fr.proline.repository.ProlineDatabaseType.LCMS, project)
 
           // get the properties of the project to update
+          
           val properties = project.getSerializedProperties()
           var parser = new JsonParser()
           var array: JsonObject = null
@@ -144,12 +145,13 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
               case t: Throwable => logger.error("Error while archiving project", t)
             }
             //update serialized properties 
-            if (!array.has("archived")) {
+            
               val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
               array.addProperty("archived", sdf.format(new Date()).toString())
+              array.addProperty("actif",false)
               project.setSerializedProperties(array.toString())
               udsEM.merge(project)
-            }
+     
           } else {
             logger.error("Some parameters are missing in table uds_db.external_db")
           }
