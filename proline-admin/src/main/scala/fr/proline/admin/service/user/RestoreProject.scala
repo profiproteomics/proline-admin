@@ -77,11 +77,16 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
         val udsDbDataFile = new File(pathDestination + "\\project_" + projectId + "\\uds_db_data.csv")
         var parser = new JsonParser()
         var array: JsonObject = null
+
         /* get project msi and lcms versions */
 
         var versions = getVersions(udsDbDataFile)
-        var msiDbVersionCsv = show(versions.get("msi")).toDouble
-        var lcmsDbVersionCsv = show(versions.get("lcms")).toDouble
+        try {
+          var msiDbVersionCsv = show(versions.get("msi")).toDouble
+          var lcmsDbVersionCsv = show(versions.get("lcms")).toDouble
+        } catch {
+          case e: NumberFormatException => logger.error(" can't convert database version you should upgrade your databases !")
+        }
 
         /* case 1: project exist in uds_db */
 
@@ -92,7 +97,6 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
           val lcmsVersion = externalDbLcms.getDbVersion
           /* parse project properties */
           val properties = project.getSerializedProperties()
-
           try {
             array = parser.parse(properties).getAsJsonObject()
           } catch {
@@ -102,11 +106,14 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
           }
 
           /* case 1.1 : lcms_db and msi_db exist and their references in uds_db */
+          
           if (dataBasesExist == true) {
 
             /* add a property restored : date  */
+
             val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
             array.addProperty("restored", sdf.format(new Date()).toString())
+            array.addProperty("actif", true)
             project.setSerializedProperties(array.toString())
             udsEM.merge(project)
 
@@ -115,7 +122,9 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
             }
             logger.info(" project #" + projectId + "  has been restored .")
           } else {
+
             /* case 1.2 : lcms_db and msi_db does not exist  */
+
             if (localUdsTransaction != null) {
               localUdsTransaction.commit()
             }
@@ -129,6 +138,17 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
               logger.info(s"Starting to restore msi_db and lcms_db ...")
               execPgRestore(externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(), externalDbMsi.getDbName(),
                 externalDbLcms.getDbName(), pathDestination, pathSource, projectId, false)
+            }
+            if (localUdsTransaction != null) {
+              localUdsTransaction.begin()
+            }
+            val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            array.addProperty("restored", sdf.format(new Date()).toString())
+            array.addProperty("actif", true)
+            project.setSerializedProperties(array.toString())
+            udsEM.merge(project)
+            if (localUdsTransaction != null) {
+              localUdsTransaction.commit()
             }
             logger.info(" project #" + projectId + "  has been restored .")
           }
@@ -200,7 +220,6 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
           if ((record != null) && (!record.isEmpty) && (record.split("#")(0) == "externaldblcms"))
             versions += ("lcms" -> record.split("#")(9))
           versions += ("lcmsName" -> record.split("#")(2))
-
         }
       }
     } catch {

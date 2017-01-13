@@ -114,7 +114,7 @@ object RunCommand extends App with LazyLogging {
    @Parameters(commandNames = Array("restore_project"), commandDescription = "restore project", separators = "=")
    private object RestoreProjectCommand extends JCommandReflection {
    
-    @Parameter(names = Array("--project_id", "-p"), description = "The project id to restore ", required = true)
+    @Parameter(names = Array("--project_id", "-pid"), description = "The project id to restore ", required = true)
     var projectId: Int = 0
     
     @Parameter(names = Array("--owner_id", "-oid"), description = "The user account id of the project owner", required = true)

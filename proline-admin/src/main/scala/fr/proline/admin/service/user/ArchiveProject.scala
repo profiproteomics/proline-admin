@@ -72,7 +72,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
           if ((externalDbMsi.getHost() != null) && (!externalDbMsi.getHost().isEmpty) && (externalDbMsi.getDbUser() != null) && (!externalDbMsi.getDbUser().isEmpty) &&
             (externalDbMsi.getDbName() != null) && (!externalDbMsi.getDbName().isEmpty) && (externalDbLcms.getDbName() != null) && (!externalDbLcms.getDbName().isEmpty) && (externalDbMsi.getPort() > 0)) {
             try {
-              logger.info(s"Starting to backup the project #$projectId....")
+              logger.info(s"Starting to backup the project with id = #$projectId....")
 
               //pg_dump  databases for a project
 
