@@ -110,7 +110,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                   }
                   //rows of data_set
 
-                  ezDBC.selectAndProcess(" SELECT id,number,name,description ,type ,keywords ,creation_timestamp ,modification_log,children_count ,serialized_properties, result_set_id ,result_summary_id ,aggregation_id ,fractionation_id ,quant_method_id ,parent_dataset_id ,project_id FROM data_set WHERE project_id=" + projectId) { record =>
+                  ezDBC.selectAndProcess(" SELECT id,number,name,description ,type ,keywords ,creation_timestamp ,modification_log,children_count ,serialized_properties, result_set_id ,result_summary_id ,aggregation_id ,fractionation_id ,quant_method_id ,parent_dataset_id ,project_id FROM data_set WHERE project_id=" + projectId+" order by id asc") { record =>
                     if (record.getLong("id") > 0 && record.getInt("number") >= 0 && record.getString("name") != null && record.getString("type") != null && record.getInt("children_count") >= 0 && record.getLong("project_id") >= 0) {
 
                       csvPrinter.printRecord("dataset", record.getLong("id").toString, record.getInt("number").toString, record.getString("name"), record.getStringOption("description").getOrElse(""), record.getString("type"), record.getStringOption("keywords").getOrElse(""),
@@ -142,7 +142,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                 //update serialized properties
                 val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
                 array.addProperty("archived", sdf.format(new Date()).toString())
-                array.addProperty("actif", false)
+                array.addProperty("active", false)
                 project.setSerializedProperties(array.toString())
                 udsEM.merge(project)
                 logger.info("Project with id= " + projectId + " has been archived .")
