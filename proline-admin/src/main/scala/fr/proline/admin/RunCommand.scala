@@ -7,7 +7,7 @@ import fr.profi.util.ThreadLogger
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
-import fr.proline.admin.service.user.{CreateProject,CreateUser,DeleteProject,ArchiveProject,RestoreProject}
+import fr.proline.admin.service.user.{CreateProject,CreateUser,DeleteProject,ArchiveProject,UnarchiveProject,RestoreProject}
 import fr.proline.repository.UncachedDataStoreConnectorFactory
 
 object RunCommand extends App with LazyLogging {
@@ -111,6 +111,13 @@ object RunCommand extends App with LazyLogging {
     var projectDirectoryPath: String = ""
   }
   
+  @Parameters(commandNames = Array("unarchive_project"), commandDescription = "unarchive project", separators = "=")
+   private object UnarchiveProjectCommand extends JCommandReflection {
+   
+    @Parameter(names = Array("--project_id", "-pid"), description = "The project id to unarchive", required = true)
+    var projectId: Int = 0
+  }
+  
    @Parameters(commandNames = Array("restore_project"), commandDescription = "restore project", separators = "=")
    private object RestoreProjectCommand extends JCommandReflection {
    
@@ -157,6 +164,7 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(UpgradeDatabasesCommand)
     jCmd.addCommand(DeleteProjectCommand)
     jCmd.addCommand(ArchiveProjectCommand)
+    jCmd.addCommand(UnarchiveProjectCommand)
     jCmd.addCommand(RestoreProjectCommand)
     // Try to parse the command line
     var parsedCommand = ""
@@ -195,6 +203,11 @@ object RunCommand extends App with LazyLogging {
          import fr.proline.admin.service.user.ArchiveProject
           
           ArchiveProject(dsConnectorFactory,ArchiveProjectCommand.projectId,ArchiveProjectCommand.BinDirectoryPath,ArchiveProjectCommand.projectDirectoryPath)
+        }
+        case UnarchiveProjectCommand.Parameters.firstName => {
+         import fr.proline.admin.service.user.UnarchiveProject
+          
+          UnarchiveProject(dsConnectorFactory,UnarchiveProjectCommand.projectId)
         }
        case RestoreProjectCommand.Parameters.firstName => {
          import fr.proline.admin.service.user.RestoreProject
