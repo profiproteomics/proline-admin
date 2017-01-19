@@ -104,7 +104,7 @@ object RunCommand extends App with LazyLogging {
     @Parameter(names = Array("--project_id", "-pid"), description = "The project id to archive", required = true)
     var projectId: Int = 0
   
-    @Parameter(names = Array("--postgreSQL_bin_directory", "-bd"), description = "The path of the directory bin of PostreSQL", required = true)
+    @Parameter(names = Array("--postgreSQL_bin_directory", "-db"), description = "The path of the directory bin of PostreSQL", required = true)
     var BinDirectoryPath: String = ""
     
     @Parameter(names = Array("--project_directory_path", "-dd"), description = "The path of the directory where the project will be stored", required = true)
@@ -127,7 +127,7 @@ object RunCommand extends App with LazyLogging {
     @Parameter(names = Array("--owner_id", "-oid"), description = "The user account id of the project owner", required = true)
     var ownerId: Int = 0
   
-    @Parameter(names = Array("--postgreSQL_bin_directory", "-bd"), description = "The path of the directory bin of PostreSQL", required = true)
+    @Parameter(names = Array("--postgreSQL_bin_directory", "-db"), description = "The path of the directory bin of PostreSQL", required = true)
     var BinDirectoryPath: String = ""
     
     @Parameter(names = Array("--project_directory_path", "-dd"), description = "The path of the directory from where the project will be restored", required = true)
