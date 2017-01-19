@@ -141,8 +141,8 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                 fileToWrite.setWritable(false)
                 //update serialized properties
                 val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-                array.addProperty("archived", sdf.format(new Date()).toString())
-                array.addProperty("active", false)
+                array.addProperty("archive_date", sdf.format(new Date()).toString())
+                array.addProperty("is_active", false)
                 project.setSerializedProperties(array.toString())
                 udsEM.merge(project)
                 logger.info("Project with id= " + projectId + " has been archived .")

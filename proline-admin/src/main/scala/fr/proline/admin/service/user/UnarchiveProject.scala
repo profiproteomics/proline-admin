@@ -58,8 +58,8 @@ class UnarchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId
               logger.error("error accessing project properties")
               array = parser.parse("{}").getAsJsonObject()
           }
-          val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-          array.addProperty("active", true)
+          //val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+          array.addProperty("is_active", true)
           project.setSerializedProperties(array.toString())
           udsEM.merge(project)
           if (localUdsTransaction != null) {

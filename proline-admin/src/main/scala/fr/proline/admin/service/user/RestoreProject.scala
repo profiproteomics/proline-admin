@@ -157,15 +157,15 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
             array = parser.parse(properties).getAsJsonObject()
           } catch {
             case e: Exception =>
-             // logger.error("error accessing project properties")
+              // logger.error("error accessing project properties")
               array = parser.parse("{}").getAsJsonObject()
           }
           if (localUdsTransaction != null) {
             localUdsTransaction.commit()
           }
           if (dataBasesExist == true) {
-            renameDataBases(udsDbCtx, projectId, newProjectId)
-           // execPsql(projectId, newProjectId,pathSource)
+            //renameDataBases(udsDbCtx, projectId, newProjectId)
+            // execPsql(projectId, newProjectId,pathSource)
             //update properties for the new project
             if (localUdsTransaction != null) {
               localUdsTransaction.begin()
@@ -524,16 +524,15 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
     }
   }
   // psql rename databases 
-  def execPsql(projectId:Long,newProjectId:Long, pathSource: String){
-     val pathSrcPsql = new File(pathSource, "\\psql").getCanonicalPath()
-     try{
-       var cmd = Seq(pathSrcPsql, "-c","ALTER DATABASE msi_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId+"")
-        execute(cmd)
-       cmd=Seq(pathSrcPsql, "-c","ALTER DATABASE lcms_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId+"")
-       logger.info("cmd # " + cmd)
-       execute(cmd)
-     }
-      catch {
+  def execPsql(projectId: Long, newProjectId: Long, pathSource: String) {
+    val pathSrcPsql = new File(pathSource, "\\psql").getCanonicalPath()
+    try {
+      var cmd = Seq(pathSrcPsql, "-c", "ALTER DATABASE msi_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId + "")
+      execute(cmd)
+      cmd = Seq(pathSrcPsql, "-c", "ALTER DATABASE lcms_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId + "")
+      logger.info("cmd # " + cmd)
+      execute(cmd)
+    } catch {
       case e: Exception => logger.error("error to execute cmd", e)
     }
   }
@@ -583,8 +582,8 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
   // update properties
   def setProperties(array: JsonObject) {
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    array.addProperty("restored", sdf.format(new Date()).toString())
-    array.addProperty("active", true)
+    array.addProperty("restore_date", sdf.format(new Date()).toString())
+    array.addProperty("is_active", true)
   }
   // compare versions of databases
   def compareVersions(dbUpdate: Boolean, msiDbCsv: Double, msiLocal: Double, lcmsDbCsv: Double, lcmsLocal: Double) {

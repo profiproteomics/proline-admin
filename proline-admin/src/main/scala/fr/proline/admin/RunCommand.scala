@@ -7,7 +7,7 @@ import fr.profi.util.ThreadLogger
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
-import fr.proline.admin.service.user.{CreateProject,CreateUser,DeleteProject,ArchiveProject,UnarchiveProject,RestoreProject}
+import fr.proline.admin.service.user.{ CreateProject, CreateUser, DeleteProject, ArchiveProject, UnarchiveProject, RestoreProject }
 import fr.proline.repository.UncachedDataStoreConnectorFactory
 
 object RunCommand extends App with LazyLogging {
@@ -38,15 +38,15 @@ object RunCommand extends App with LazyLogging {
     var projectDescription: String = ""
   }
 
-   @Parameters(commandNames = Array("delete_project"), commandDescription = "Delete project", separators = "=")
+  @Parameters(commandNames = Array("delete_project"), commandDescription = "Delete project", separators = "=")
   private object DeleteProjectCommand extends JCommandReflection {
-   
+
     @Parameter(names = Array("--project_id", "-pid"), description = "The project id to delete", required = true)
     var projectId: Int = 0
-    
+
     @Parameter(names = Array("--drop", "-d"), description = "Drop entire project databases (MSI and LCMS)", required = false)
     var dropDatabases: Boolean = false
-  
+
   }
 
   @Parameters(commandNames = Array("create_user"), commandDescription = "Create new user account", separators = "=")
@@ -91,49 +91,49 @@ object RunCommand extends App with LazyLogging {
     @Parameter(names = Array("--dir_path", "-d"), description = "The path to the export directory", required = true)
     var dirPath: String = ""
   }
-  
+
   @Parameters(commandNames = Array("create_missing_dbs"), commandDescription = "Create missing MSI and LCMS databases", separators = "=")
   private object CreateMissingDbsCommand extends JCommandReflection
 
   @Parameters(commandNames = Array("upgrade_dbs"), commandDescription = "Upgrade all databases to the latest format", separators = "=")
   private object UpgradeDatabasesCommand extends JCommandReflection
-  
+
   @Parameters(commandNames = Array("archive_project"), commandDescription = "archive project", separators = "=")
-   private object ArchiveProjectCommand extends JCommandReflection {
-   
+  private object ArchiveProjectCommand extends JCommandReflection {
+
     @Parameter(names = Array("--project_id", "-pid"), description = "The project id to archive", required = true)
     var projectId: Int = 0
-  
+
     @Parameter(names = Array("--postgreSQL_bin_directory", "-db"), description = "The path of the directory bin of PostreSQL", required = true)
     var BinDirectoryPath: String = ""
-    
+
     @Parameter(names = Array("--project_directory_path", "-dd"), description = "The path of the directory where the project will be stored", required = true)
     var projectDirectoryPath: String = ""
   }
-  
+
   @Parameters(commandNames = Array("unarchive_project"), commandDescription = "unarchive project", separators = "=")
-   private object UnarchiveProjectCommand extends JCommandReflection {
-   
+  private object UnarchiveProjectCommand extends JCommandReflection {
+
     @Parameter(names = Array("--project_id", "-pid"), description = "The project id to unarchive", required = true)
     var projectId: Int = 0
   }
-  
-   @Parameters(commandNames = Array("restore_project"), commandDescription = "restore project", separators = "=")
-   private object RestoreProjectCommand extends JCommandReflection {
-   
+
+  @Parameters(commandNames = Array("restore_project"), commandDescription = "restore project", separators = "=")
+  private object RestoreProjectCommand extends JCommandReflection {
+
     @Parameter(names = Array("--project_id", "-pid"), description = "The project id to restore ", required = true)
     var projectId: Int = 0
-    
+
     @Parameter(names = Array("--owner_id", "-oid"), description = "The user account id of the project owner", required = true)
     var ownerId: Int = 0
-  
+
     @Parameter(names = Array("--postgreSQL_bin_directory", "-db"), description = "The path of the directory bin of PostreSQL", required = true)
     var BinDirectoryPath: String = ""
-    
+
     @Parameter(names = Array("--project_directory_path", "-dd"), description = "The path of the directory from where the project will be restored", required = true)
     var projectDirectoryPath: String = ""
   }
-   
+
   var hasDsConnectorFactory = false
   lazy val dsConnectorFactory: UncachedDataStoreConnectorFactory = {
 
@@ -187,32 +187,31 @@ object RunCommand extends App with LazyLogging {
           val projectId = CreateProject(
             CreateProjectCommand.projectName,
             CreateProjectCommand.projectDescription,
-            CreateProjectCommand.ownerId
-          )
+            CreateProjectCommand.ownerId)
 
           this.logger.info(s"Project with id=$projectId has been created !")
 
         }
-       
-       case DeleteProjectCommand.Parameters.firstName => {
-         import fr.proline.admin.service.user.DeleteProject
+
+        case DeleteProjectCommand.Parameters.firstName => {
+          import fr.proline.admin.service.user.DeleteProject
           this.logger.info(s"Project with id=${DeleteProjectCommand.projectId} will be deleted !")
-          val projectId=DeleteProject(dsConnectorFactory,DeleteProjectCommand.projectId,DeleteProjectCommand.dropDatabases)
+          val projectId = DeleteProject(dsConnectorFactory, DeleteProjectCommand.projectId, DeleteProjectCommand.dropDatabases)
         }
-       case ArchiveProjectCommand.Parameters.firstName => {
-         import fr.proline.admin.service.user.ArchiveProject
-          
-          ArchiveProject(dsConnectorFactory,ArchiveProjectCommand.projectId,ArchiveProjectCommand.BinDirectoryPath,ArchiveProjectCommand.projectDirectoryPath)
+        case ArchiveProjectCommand.Parameters.firstName => {
+          import fr.proline.admin.service.user.ArchiveProject
+
+          ArchiveProject(dsConnectorFactory, ArchiveProjectCommand.projectId, ArchiveProjectCommand.BinDirectoryPath, ArchiveProjectCommand.projectDirectoryPath)
         }
         case UnarchiveProjectCommand.Parameters.firstName => {
-         import fr.proline.admin.service.user.UnarchiveProject
-          
-          UnarchiveProject(dsConnectorFactory,UnarchiveProjectCommand.projectId)
+          import fr.proline.admin.service.user.UnarchiveProject
+
+          UnarchiveProject(dsConnectorFactory, UnarchiveProjectCommand.projectId)
         }
-       case RestoreProjectCommand.Parameters.firstName => {
-         import fr.proline.admin.service.user.RestoreProject
-          
-          RestoreProject(dsConnectorFactory,RestoreProjectCommand.projectId,RestoreProjectCommand.ownerId,RestoreProjectCommand.BinDirectoryPath,RestoreProjectCommand.projectDirectoryPath)
+        case RestoreProjectCommand.Parameters.firstName => {
+          import fr.proline.admin.service.user.RestoreProject
+
+          RestoreProject(dsConnectorFactory, RestoreProjectCommand.projectId, RestoreProjectCommand.ownerId, RestoreProjectCommand.BinDirectoryPath, RestoreProjectCommand.projectDirectoryPath)
         }
         case CreateUserCommand.Parameters.firstName => {
           import fr.proline.admin.service.user.CreateUser
@@ -240,13 +239,13 @@ object RunCommand extends App with LazyLogging {
           import fr.proline.admin.service.db.maintenance.ExportMsiDbStats
           ExportMsiDbStats(dsConnectorFactory, ExportMsiDbStatsCommand.dirPath)
         }
-        case CreateMissingDbsCommand.Parameters.firstName => {            
+        case CreateMissingDbsCommand.Parameters.firstName => {
           helper.sql.createMissingDatabases(SetupProline.config.udsDBConfig, dsConnectorFactory)
         }
         case UpgradeDatabasesCommand.Parameters.firstName => {
           if (dsConnectorFactory.isInitialized) {
             logger.info("Upgrading all Proline Databases...")
-            
+
             UpgradeAllDatabases(dsConnectorFactory)
           } else {
             logger.error("Unable to initialize DataStoreConnectorFactory instance")
