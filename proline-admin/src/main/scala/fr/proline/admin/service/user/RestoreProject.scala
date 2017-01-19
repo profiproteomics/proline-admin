@@ -545,32 +545,32 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
     try {
       if (pathDestinationProject.exists()) {
 
-        if (new File(pathDestinationProject.getCanonicalPath(), "\\msi_db_project_" + projectId + ".sql").exists()) {
+        if (new File(pathDestinationProject.getCanonicalPath(), "\\msi_db_project_" + projectId + ".bak").exists()) {
           //pg_restore msi_db
           logger.info("Starting to restore database # " + msiDb)
 
-          var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "msi_db_project_" + newProjectId, "-v", pathDestinationProject + "\\msi_db_project_" + projectId + ".sql")
+          var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "msi_db_project_" + newProjectId, "-v", pathDestinationProject + "\\msi_db_project_" + projectId + ".bak")
           logger.info("cmd # " + cmd)
           execute(cmd)
         } else {
-          logger.error("the file msi_db_project_" + projectId + ".sql does not exist !")
+          logger.error("the file msi_db_project_" + projectId + ".bak does not exist !")
         }
-        if (new File(pathDestinationProject.getCanonicalPath(), "\\lcms_db_project_" + projectId + ".sql").exists()) {
+        if (new File(pathDestinationProject.getCanonicalPath(), "\\lcms_db_project_" + projectId + ".bak").exists()) {
           //pg_restore lcms_Db
           logger.info("Starting to restore database # " + lcmsDb)
-          var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "lcms_db_project_" + newProjectId, "-v", pathDestinationProject + "\\lcms_db_project_" + projectId + ".sql")
+          var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "lcms_db_project_" + newProjectId, "-v", pathDestinationProject + "\\lcms_db_project_" + projectId + ".bak")
           execute(cmd)
         } else {
-          logger.error("the file lcms_db_project_" + projectId + ".sql does not exist !")
+          logger.error("the file lcms_db_project_" + projectId + ".bak does not exist !")
         }
         if (udsDb == true) {
-          if (new File(pathDestinationProject.getCanonicalPath(), "\\uds_db.sql").exists()) {
+          if (new File(pathDestinationProject.getCanonicalPath(), "\\uds_db_schema.bak").exists()) {
             //pg_restore uds_db schema
             logger.info("Starting to restore schema only # uds_db")
-            var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "uds_db", "-v", pathDestinationProject + "\\uds_db_data")
+            var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "uds_db", "-v", pathDestinationProject + "\\uds_db_schema.bak")
             execute(cmd)
           } else {
-            logger.error("the file uds_db.sql does not exist !")
+            logger.error("the file uds_db_schema.sql does not exist !")
           }
         }
       } else {

@@ -110,7 +110,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                   }
                   //rows of data_set
 
-                  ezDBC.selectAndProcess(" SELECT id,number,name,description ,type ,keywords ,creation_timestamp ,modification_log,children_count ,serialized_properties, result_set_id ,result_summary_id ,aggregation_id ,fractionation_id ,quant_method_id ,parent_dataset_id ,project_id FROM data_set WHERE project_id=" + projectId+" order by id asc") { record =>
+                  ezDBC.selectAndProcess(" SELECT id,number,name,description ,type ,keywords ,creation_timestamp ,modification_log,children_count ,serialized_properties, result_set_id ,result_summary_id ,aggregation_id ,fractionation_id ,quant_method_id ,parent_dataset_id ,project_id FROM data_set WHERE project_id=" + projectId + " order by id asc") { record =>
                     if (record.getLong("id") > 0 && record.getInt("number") >= 0 && record.getString("name") != null && record.getString("type") != null && record.getInt("children_count") >= 0 && record.getLong("project_id") >= 0) {
 
                       csvPrinter.printRecord("dataset", record.getLong("id").toString, record.getInt("number").toString, record.getString("name"), record.getStringOption("description").getOrElse(""), record.getString("type"), record.getStringOption("keywords").getOrElse(""),
@@ -213,15 +213,15 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 						 */
           //pg_dump msi_db
           logger.info("Starting to backup database # " + msiDb)
-          var cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject, "\\" + msiDb + ".sql").getCanonicalPath(), msiDb)
+          var cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject, "\\" + msiDb + ".bak").getCanonicalPath(), msiDb)
           execute(cmd)
           //pg_dump lcms_Db
           logger.info("Starting to backup database # " + lcmsDb)
-          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject, "\\" + lcmsDb + ".sql").getCanonicalPath(), lcmsDb)
+          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject, "\\" + lcmsDb + ".bak").getCanonicalPath(), lcmsDb)
           execute(cmd)
           //pg_dump uds_db
           logger.info("Starting to save schema only # uds_db")
-          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "--schema-only", "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject, "\\uds_db_schema.sql").getCanonicalPath(), "uds_db")
+          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "--schema-only", "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject, "\\uds_db_schema.bak").getCanonicalPath(), "uds_db")
           execute(cmd)
           pgDumpIsOk = true
         } else {
