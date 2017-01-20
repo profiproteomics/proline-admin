@@ -91,12 +91,12 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
                 //rows of external_db(msi)
 
-                csvPrinter.printRecord("externaldbmsi", externalDbMsi.getId().toString, externalDbMsi.getDbName(), externalDbMsi.getConnectionMode(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(),
+                csvPrinter.printRecord("external_db_msi", externalDbMsi.getId().toString, externalDbMsi.getDbName(), externalDbMsi.getConnectionMode(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(),
                   externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getType(), externalDbMsi.getDbVersion(), externalDbMsi.getIsBusy().toString, externalDbMsi.getSerializedProperties())
 
                 // rows of external_db(lcms)
 
-                csvPrinter.printRecord("externaldblcms", externalDbLcms.getId().toString, externalDbLcms.getDbName(), externalDbLcms.getConnectionMode(), externalDbLcms.getDbUser(), externalDbLcms.getDbPassword(),
+                csvPrinter.printRecord("external_db_lcms", externalDbLcms.getId().toString, externalDbLcms.getDbName(), externalDbLcms.getConnectionMode(), externalDbLcms.getDbUser(), externalDbLcms.getDbPassword(),
                   externalDbLcms.getHost(), externalDbLcms.getPort(), externalDbLcms.getType(), externalDbLcms.getDbVersion(), externalDbLcms.getIsBusy().toString, externalDbLcms.getSerializedProperties())
                 DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
 
@@ -105,7 +105,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                   ezDBC.selectAndProcess(" SELECT project_id,external_db_id FROM project_db_map WHERE project_id=" + projectId) { record =>
                     if (record.getLong("project_id") > 0 && record.getLong("external_db_id") > 0) {
 
-                      csvPrinter.printRecord("projectdbmap", record.getLong("project_id").toString, record.getLong("external_db_id").toString)
+                      csvPrinter.printRecord("project_db_map", record.getLong("project_id").toString, record.getLong("external_db_id").toString)
                     }
                   }
                   //rows of data_set
@@ -113,7 +113,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                   ezDBC.selectAndProcess(" SELECT id,number,name,description ,type ,keywords ,creation_timestamp ,modification_log,children_count ,serialized_properties, result_set_id ,result_summary_id ,aggregation_id ,fractionation_id ,quant_method_id ,parent_dataset_id ,project_id FROM data_set WHERE project_id=" + projectId + " order by id asc") { record =>
                     if (record.getLong("id") > 0 && record.getInt("number") >= 0 && record.getString("name") != null && record.getString("type") != null && record.getInt("children_count") >= 0 && record.getLong("project_id") >= 0) {
 
-                      csvPrinter.printRecord("dataset", record.getLong("id").toString, record.getInt("number").toString, record.getString("name"), record.getStringOption("description").getOrElse(""), record.getString("type"), record.getStringOption("keywords").getOrElse(""),
+                      csvPrinter.printRecord("data_set", record.getLong("id").toString, record.getInt("number").toString, record.getString("name"), record.getStringOption("description").getOrElse(""), record.getString("type"), record.getStringOption("keywords").getOrElse(""),
                         record.getString("creation_timestamp"), record.getStringOption("modification_log").getOrElse(""), record.getInt("children_count").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getLong("result_set_id").toString,
                         record.getLong("result_summary_id").toString, record.getLong("aggregation_id").toString, record.getLong("fractionation_id").toString, record.getLong("quant_method_id").toString, record.getLong("parent_dataset_id").toString,
                         record.getLong("project_id").toString)
@@ -123,14 +123,14 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
                   ezDBC.selectAndProcess(" SELECT id,serialized_properties,run_id,raw_file_identifier FROM run_identification WHERE id in (SELECT id FROM data_set WHERE project_id=" + projectId + ")") { record =>
                     if (record.getLong("id") > 0) {
-                      csvPrinter.printRecord("runidentification", record.getLong("id").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getLong("run_id").toString, record.getStringOption("raw_file_identifier").getOrElse(""))
+                      csvPrinter.printRecord("run_identification", record.getLong("id").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getLong("run_id").toString, record.getStringOption("raw_file_identifier").getOrElse(""))
                     }
                   }
 
                   // rows of project_user_account_map
                   ezDBC.selectAndProcess(" SELECT project_id,user_account_id,serialized_properties,write_permission FROM project_user_account_map WHERE project_id=" + projectId) { record =>
                     if ((record.getLong("project_id") > 0) && (record.getLong("user_account_id") > 0) && (record.getString("write_permission") != null)) {
-                      csvPrinter.printRecord("projectuseraccount", record.getLong("project_id").toString, record.getLong("user_account_id").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getBoolean("write_permission").toString)
+                      csvPrinter.printRecord("project_user_account", record.getLong("project_id").toString, record.getLong("user_account_id").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getBoolean("write_permission").toString)
                     }
                   }
                 }

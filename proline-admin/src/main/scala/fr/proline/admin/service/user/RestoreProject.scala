@@ -152,6 +152,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
           //insert data in uds_db 
           val newProjectId = upsertDataUdsEm(udsEM, udsDbDataFile, userId)
           val newProject = udsEM.find(classOf[Project], newProjectId)
+          dataBasesExist = dataBaseExists(udsDbCtx, newProjectId)
           val properties = newProject.getSerializedProperties()
           try {
             array = parser.parse(properties).getAsJsonObject()
@@ -164,8 +165,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
             localUdsTransaction.commit()
           }
           if (dataBasesExist == true) {
-            //renameDataBases(udsDbCtx, projectId, newProjectId)
-            // execPsql(projectId, newProjectId,pathSource)
+            renameDataBases(udsDbCtx, projectId, newProjectId)
             //update properties for the new project
             if (localUdsTransaction != null) {
               localUdsTransaction.begin()
@@ -232,7 +232,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
         csvRecords.foreach { rec =>
           val record = rec.get(0)
 
-          if ((record != null) && (!record.isEmpty) && (record.split("#")(0) == "externaldbmsi")) {
+          if ((record != null) && (!record.isEmpty) && (record.split("#")(0) == "external_db_msi")) {
             versions += ("msi" -> record.split("#")(9))
             versions += ("host" -> record.split("#")(6))
             versions += ("port" -> record.split("#")(7))
@@ -240,7 +240,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
             versions += ("pw" -> record.split("#")(5))
             versions += ("msiName" -> record.split("#")(2))
           }
-          if ((record != null) && (!record.isEmpty) && (record.split("#")(0) == "externaldblcms"))
+          if ((record != null) && (!record.isEmpty) && (record.split("#")(0) == "external_db_lcms"))
             versions += ("lcms" -> record.split("#")(9))
           versions += ("lcmsName" -> record.split("#")(2))
         }
@@ -301,7 +301,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
           //insert data in table external_db
 
-          if ((record != null) && (!record.isEmpty) && (record.split("#")(0) == "externaldbmsi")) {
+          if ((record != null) && (!record.isEmpty) && (record.split("#")(0) == "external_db_msi")) {
             val externalDbId = record.split("#")(1).toLong
             //val name = record.split("#")(2)
             val name = "msi_db_project_" + newProjectId
@@ -341,7 +341,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
               logger.error(" trying to insert null in table uds_db.external_db")
             }
           }
-          if ((record != null) && (!record.isEmpty) && (record.split("#")(0) == "externaldblcms")) {
+          if ((record != null) && (!record.isEmpty) && (record.split("#")(0) == "external_db_lcms")) {
             val externalDbId = record.split("#")(1).toLong
             //val name = record.split("#")(2)
             val name = "lcms_db_project_" + newProjectId
@@ -383,7 +383,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
           // insert data in DataSet
 
-          if ((record != null) && (!record.isEmpty) && (record.split("#")(0) == "dataset")) {
+          if ((record != null) && (!record.isEmpty) && (record.split("#")(0) == "data_set")) {
             val id = record.split("#")(1).toLong
             val number = record.split("#")(2).toInt
             val name = record.split("#")(3)
@@ -413,8 +413,10 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                 udsDataset.setCreationTimestamp(creationTimestamp)
                 udsDataset.setDescription(description)
                 udsDataset.setType(Dataset.DatasetType.valueOf(dbType))
-                udsDataset.setResultSetId(resultSetId)
-                udsDataset.setResultSummaryId(resultSummaryId)
+                if(resultSetId>0)
+                  udsDataset.setResultSetId(resultSetId)else udsDataset.setResultSetId(null)
+                if(resultSummaryId>0)    
+                 udsDataset.setResultSummaryId(resultSummaryId)else udsDataset.setResultSummaryId(null)
                 udsDataset.setKeywords(keyWords)
                 udsDataset.setModificationLog(modificationLog)
                 udsDataset.setName(name)
@@ -495,14 +497,14 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
     }
   }
 
-  // force disconnect all other clients from the database to be renamed
+  // rename databases if its exists 
 
   def renameDataBases(udsContext: UdsDbConnectionContext, projectId: Long, newProjectId: Long) {
     logger.debug("renaming MSI and LCMS databases ... ")
     try {
       DoJDBCWork.withEzDBC(udsContext) { ezDBC =>
-        ezDBC.execute("SELECT * FROM pg_stat_activity WHERE datname = 'msi_db_project_" + projectId + "';ALTER DATABASE msi_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId)
-        //ezDBC.execute("ALTER DATABASE lcms_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId)
+        ezDBC.execute("ALTER DATABASE msi_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId)
+        ezDBC.execute("ALTER DATABASE lcms_db_project_" + projectId + " RENAME TO lcms_db_project_" + newProjectId)
       }
     } catch {
       case t: Throwable => logger.error("Error while renaming  MSI and LCMS databases", t)
@@ -523,19 +525,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
       logger.error("Command has failed !")
     }
   }
-  // psql rename databases 
-  def execPsql(projectId: Long, newProjectId: Long, pathSource: String) {
-    val pathSrcPsql = new File(pathSource, "\\psql").getCanonicalPath()
-    try {
-      var cmd = Seq(pathSrcPsql, "-c", "ALTER DATABASE msi_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId + "")
-      execute(cmd)
-      cmd = Seq(pathSrcPsql, "-c", "ALTER DATABASE lcms_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId + "")
-      logger.info("cmd # " + cmd)
-      execute(cmd)
-    } catch {
-      case e: Exception => logger.error("error to execute cmd", e)
-    }
-  }
+
   //pg_restore databases 
   def execPgRestore(host: String, port: Integer, user: String, passWord: String, msiDb: String, lcmsDb: String, pathDestination: String, pathSource: String, projectId: Long, newProjectId: Long, udsDb: Boolean) {
 
@@ -589,7 +579,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
   def compareVersions(dbUpdate: Boolean, msiDbCsv: Double, msiLocal: Double, lcmsDbCsv: Double, lcmsLocal: Double) {
     if (dbUpdate) {
       if ((msiDbCsv > msiLocal) || (lcmsDbCsv > lcmsLocal)) {
-        logger.info("you should upgrade your databases after restoring project !")
+        logger.info("you should upgrade your databases !")
       }
       if ((msiDbCsv < msiLocal) || (lcmsDbCsv < lcmsLocal)) {
         UpgradeAllDatabases(dsConnectorFactory)
