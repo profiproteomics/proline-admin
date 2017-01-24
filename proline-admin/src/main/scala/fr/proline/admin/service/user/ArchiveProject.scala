@@ -29,6 +29,8 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.apache.commons.csv.CSVRecord
 
+import org.zeroturnaround.zip.ZipUtil
+
 /**
  *  pg_dump  :
  *  msi_db ,lcms_db ,uds_db only schema databases
@@ -78,7 +80,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
               logger.info(s"Starting to pg_dump of MSI,LCMS and schema of UDS databases...")
               if (execPgDump(externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(), externalDbMsi.getDbName(), externalDbLcms.getDbName(), pathDestination, pathSource, projectId)) {
-                val fileToWrite = new File(pathDestination, "\\project_" + projectId + "\\uds_db_data.csv")
+                val fileToWrite = new File(pathDestination, "\\project_" + projectId + "\\uds_db_data.tsv")
 
                 var csvPrinter: CSVPrinter = null
 
@@ -91,12 +93,12 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
                 //rows of external_db(msi)
 
-                csvPrinter.printRecord("external_db_msi", externalDbMsi.getId().toString, externalDbMsi.getDbName(), externalDbMsi.getConnectionMode(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(),
+                csvPrinter.printRecord("external_db", externalDbMsi.getId().toString, externalDbMsi.getDbName(), externalDbMsi.getConnectionMode(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(),
                   externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getType(), externalDbMsi.getDbVersion(), externalDbMsi.getIsBusy().toString, externalDbMsi.getSerializedProperties())
 
                 // rows of external_db(lcms)
 
-                csvPrinter.printRecord("external_db_lcms", externalDbLcms.getId().toString, externalDbLcms.getDbName(), externalDbLcms.getConnectionMode(), externalDbLcms.getDbUser(), externalDbLcms.getDbPassword(),
+                csvPrinter.printRecord("external_db", externalDbLcms.getId().toString, externalDbLcms.getDbName(), externalDbLcms.getConnectionMode(), externalDbLcms.getDbUser(), externalDbLcms.getDbPassword(),
                   externalDbLcms.getHost(), externalDbLcms.getPort(), externalDbLcms.getType(), externalDbLcms.getDbVersion(), externalDbLcms.getIsBusy().toString, externalDbLcms.getSerializedProperties())
                 DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
 
@@ -137,7 +139,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
                 csvPrinter.flush()
                 csvPrinter.close()
-                // set the file only readable 
+                // set the file readable only  
                 fileToWrite.setWritable(false)
                 //update serialized properties
                 val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -150,8 +152,8 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
             } catch {
               case t: Throwable => logger.error("Error while archiving project", t)
             }
-            //update serialized properties 
-
+            //zip directory 
+             ZipUtil.pack(new File(pathDestination,"project_" + projectId),new File(pathDestination,"project_" + projectId+".zip"))
           } else {
             logger.error("Some parameters are missing in table uds_db.external_db")
           }
@@ -166,9 +168,9 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
         localUdsTransaction.commit()
         udsTransacOK = true
       }
-
+    
     } finally {
-
+      
       udsEM.setFlushMode(FlushModeType.AUTO)
       udsDbCtx.close()
       udsDbConnector.close()
@@ -247,6 +249,28 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
       logger.error(err)
     }
   }
+//  def zip(out: String, files: Iterable[String]) = {
+//
+//    val zip = new ZipOutputStream(new FileOutputStream(out))
+//    try {
+//      files.foreach { name =>
+//        try {
+//          zip.putNextEntry(new ZipEntry(name))
+//          val in = new BufferedInputStream(new FileInputStream(name))
+//          var b = in.read()
+//          while (b > -1) {
+//            zip.write(b)
+//            b = in.read()
+//          }
+//        } finally {
+//          in.close()
+//          zip.closeEntry()
+//        }
+//      }
+//    } finally {
+//      zip.close()
+//    }
+//  }
 }
 
 object ArchiveProject {
