@@ -13,7 +13,7 @@ import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.DriverType
 import fr.proline.core.orm.uds.ExternalDb
 import fr.proline.core.orm.uds.Project
-import fr.proline.core.orm.uds.{ UserAccount, ProjectUserAccountMapPK, ProjectUserAccountMap, Dataset, Aggregation, Fractionation, QuantitationMethod }
+import fr.proline.core.orm.uds.{ UserAccount, ProjectUserAccountMapPK, ProjectUserAccountMap, Dataset, Aggregation, Fractionation, QuantitationMethod,IdentificationDataset }
 import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.context._
 import fr.proline.core.dal.DoJDBCReturningWork
@@ -346,11 +346,18 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                 val aggregation = udsEM.find(classOf[Aggregation], aggregationId)
                 val fraction = udsEM.find(classOf[Fractionation], fractionationId)
                 val quantitationMethod = udsEM.find(classOf[QuantitationMethod], quantMethodId)
-                val udsDataset = new Dataset(udsProject)
+                var udsDataset:Dataset=null 
+                if(Dataset.DatasetType.valueOf(dbType).equals(Dataset.DatasetType.IDENTIFICATION)){
+                  udsDataset= new IdentificationDataset()
+                  udsDataset.setProject(udsProject)
+                  udsDataset.setType(Dataset.DatasetType.IDENTIFICATION)
+                }else{
+                  udsDataset= new Dataset(udsProject)
+                  udsDataset.setType(Dataset.DatasetType.valueOf(dbType))
+                }
                 udsDataset.setChildrenCount(childrenCount)
                 udsDataset.setCreationTimestamp(creationTimestamp)
                 udsDataset.setDescription(description)
-                udsDataset.setType(Dataset.DatasetType.valueOf(dbType))
                 if (resultSetId > 0)
                   udsDataset.setResultSetId(resultSetId) else udsDataset.setResultSetId(null)
                 if (resultSummaryId > 0)
@@ -438,17 +445,17 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
   // rename databases if its exists 
 
-  def renameDataBases(udsContext: UdsDbConnectionContext, projectId: Long, newProjectId: Long) {
-    logger.debug("renaming MSI and LCMS databases ... ")
-    try {
-      DoJDBCWork.withEzDBC(udsContext) { ezDBC =>
-        ezDBC.execute("ALTER DATABASE msi_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId)
-        ezDBC.execute("ALTER DATABASE lcms_db_project_" + projectId + " RENAME TO lcms_db_project_" + newProjectId)
-      }
-    } catch {
-      case t: Throwable => logger.error("Error while renaming  MSI and LCMS databases", t)
-    }
-  }
+//  def renameDataBases(udsContext: UdsDbConnectionContext, projectId: Long, newProjectId: Long) {
+//    logger.debug("renaming MSI and LCMS databases ... ")
+//    try {
+//      DoJDBCWork.withEzDBC(udsContext) { ezDBC =>
+//        ezDBC.execute("ALTER DATABASE msi_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId)
+//        ezDBC.execute("ALTER DATABASE lcms_db_project_" + projectId + " RENAME TO lcms_db_project_" + newProjectId)
+//      }
+//    } catch {
+//      case t: Throwable => logger.error("Error while renaming  MSI and LCMS databases", t)
+//    }
+//  }
 
   // execute command as sequence of string 
 
