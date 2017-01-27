@@ -13,7 +13,7 @@ import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.DriverType
 import fr.proline.core.orm.uds.ExternalDb
 import fr.proline.core.orm.uds.Project
-import fr.proline.core.orm.uds.{ UserAccount, ProjectUserAccountMapPK, ProjectUserAccountMap, Dataset, Aggregation, Fractionation, QuantitationMethod,IdentificationDataset }
+import fr.proline.core.orm.uds.{ UserAccount, ProjectUserAccountMapPK, ProjectUserAccountMap, Dataset, Aggregation, Fractionation, QuantitationMethod, IdentificationDataset }
 import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.context._
 import fr.proline.core.dal.DoJDBCReturningWork
@@ -64,7 +64,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
         var project = udsEM.find(classOf[Project], projectId)
         var user = udsEM.find(classOf[UserAccount], userId)
-        val udsDbDataFile = new File(pathDestination + "\\project_" + projectId + "\\uds_db_data.tsv")
+        val udsDbDataFile = new File(pathDestination + File.separator + "project_" + projectId + File.separator + "uds_db_data.tsv")
         var parser = new JsonParser()
         var array: JsonObject = null
         var versions = getVersions(udsDbDataFile)
@@ -346,13 +346,13 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                 val aggregation = udsEM.find(classOf[Aggregation], aggregationId)
                 val fraction = udsEM.find(classOf[Fractionation], fractionationId)
                 val quantitationMethod = udsEM.find(classOf[QuantitationMethod], quantMethodId)
-                var udsDataset:Dataset=null 
-                if(Dataset.DatasetType.valueOf(dbType).equals(Dataset.DatasetType.IDENTIFICATION)){
-                  udsDataset= new IdentificationDataset()
+                var udsDataset: Dataset = null
+                if (Dataset.DatasetType.valueOf(dbType).equals(Dataset.DatasetType.IDENTIFICATION)) {
+                  udsDataset = new IdentificationDataset()
                   udsDataset.setProject(udsProject)
                   udsDataset.setType(Dataset.DatasetType.IDENTIFICATION)
-                }else{
-                  udsDataset= new Dataset(udsProject)
+                } else {
+                  udsDataset = new Dataset(udsProject)
                   udsDataset.setType(Dataset.DatasetType.valueOf(dbType))
                 }
                 udsDataset.setChildrenCount(childrenCount)
@@ -445,17 +445,17 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
   // rename databases if its exists 
 
-//  def renameDataBases(udsContext: UdsDbConnectionContext, projectId: Long, newProjectId: Long) {
-//    logger.debug("renaming MSI and LCMS databases ... ")
-//    try {
-//      DoJDBCWork.withEzDBC(udsContext) { ezDBC =>
-//        ezDBC.execute("ALTER DATABASE msi_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId)
-//        ezDBC.execute("ALTER DATABASE lcms_db_project_" + projectId + " RENAME TO lcms_db_project_" + newProjectId)
-//      }
-//    } catch {
-//      case t: Throwable => logger.error("Error while renaming  MSI and LCMS databases", t)
-//    }
-//  }
+  //  def renameDataBases(udsContext: UdsDbConnectionContext, projectId: Long, newProjectId: Long) {
+  //    logger.debug("renaming MSI and LCMS databases ... ")
+  //    try {
+  //      DoJDBCWork.withEzDBC(udsContext) { ezDBC =>
+  //        ezDBC.execute("ALTER DATABASE msi_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId)
+  //        ezDBC.execute("ALTER DATABASE lcms_db_project_" + projectId + " RENAME TO lcms_db_project_" + newProjectId)
+  //      }
+  //    } catch {
+  //      case t: Throwable => logger.error("Error while renaming  MSI and LCMS databases", t)
+  //    }
+  //  }
 
   // execute command as sequence of string 
 
@@ -475,34 +475,34 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
   //pg_restore databases 
   def execPgRestore(host: String, port: Integer, user: String, passWord: String, msiDb: String, lcmsDb: String, pathDestination: String, pathSource: String, projectId: Long, newProjectId: Long, udsDb: Boolean) {
 
-    val pathDestinationProject = new File(pathDestination + "\\project_" + projectId)
-    val pathSrcPgRestore = new File(pathSource, "\\pg_restore").getCanonicalPath()
+    val pathDestinationProject = new File(pathDestination + File.separator + "project_" + projectId)
+    val pathSrcPgRestore = new File(pathSource + File.separator + "pg_restore").getCanonicalPath()
     try {
       if (pathDestinationProject.exists()) {
 
-        if (new File(pathDestinationProject.getCanonicalPath(), "\\msi_db_project_" + projectId + ".bak").exists()) {
+        if (new File(pathDestinationProject.getCanonicalPath() + File.separator + "msi_db_project_" + projectId + ".bak").exists()) {
           //pg_restore msi_db
           logger.info("Starting to restore database # " + msiDb)
 
-          var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "msi_db_project_" + newProjectId, "-v", pathDestinationProject + "\\msi_db_project_" + projectId + ".bak")
+          var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "msi_db_project_" + newProjectId, "-v", pathDestinationProject + File.separator + "msi_db_project_" + projectId + ".bak")
           logger.info("cmd # " + cmd)
           execute(cmd)
         } else {
           logger.error("the file msi_db_project_" + projectId + ".bak does not exist !")
         }
-        if (new File(pathDestinationProject.getCanonicalPath(), "\\lcms_db_project_" + projectId + ".bak").exists()) {
+        if (new File(pathDestinationProject.getCanonicalPath() + File.separator + "lcms_db_project_" + projectId + ".bak").exists()) {
           //pg_restore lcms_Db
           logger.info("Starting to restore database # " + lcmsDb)
-          var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "lcms_db_project_" + newProjectId, "-v", pathDestinationProject + "\\lcms_db_project_" + projectId + ".bak")
+          var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "lcms_db_project_" + newProjectId, "-v", pathDestinationProject + File.separator + "lcms_db_project_" + projectId + ".bak")
           execute(cmd)
         } else {
           logger.error("the file lcms_db_project_" + projectId + ".bak does not exist !")
         }
         if (udsDb == true) {
-          if (new File(pathDestinationProject.getCanonicalPath(), "\\uds_db_schema.bak").exists()) {
+          if (new File(pathDestinationProject.getCanonicalPath() + File.separator + "uds_db_schema.bak").exists()) {
             //pg_restore uds_db schema
             logger.info("Starting to restore schema only # uds_db")
-            var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "uds_db", "-v", pathDestinationProject + "\\uds_db_schema.bak")
+            var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "uds_db", "-v", pathDestinationProject + File.separator + "uds_db_schema.bak")
             execute(cmd)
           } else {
             logger.error("the file uds_db_schema.sql does not exist !")

@@ -80,7 +80,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
               logger.info(s"Starting to pg_dump of MSI,LCMS and schema of UDS databases...")
               if (execPgDump(externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(), externalDbMsi.getDbName(), externalDbLcms.getDbName(), pathDestination, pathSource, projectId)) {
-                val fileToWrite = new File(pathDestination, "\\project_" + projectId + "\\uds_db_data.tsv")
+                val fileToWrite = new File(pathDestination + File.separator + "project_" + projectId + File.separator + "uds_db_data.tsv")
 
                 var csvPrinter: CSVPrinter = null
 
@@ -153,7 +153,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
               case t: Throwable => logger.error("Error while archiving project", t)
             }
             //zip directory 
-             ZipUtil.pack(new File(pathDestination,"project_" + projectId),new File(pathDestination,"project_" + projectId+".zip"))
+            ZipUtil.pack(new File(pathDestination + File.separator + "project_" + projectId), new File(pathDestination + File.separator + "project_" + projectId + ".zip"))
           } else {
             logger.error("Some parameters are missing in table uds_db.external_db")
           }
@@ -168,9 +168,9 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
         localUdsTransaction.commit()
         udsTransacOK = true
       }
-    
+
     } finally {
-      
+
       udsEM.setFlushMode(FlushModeType.AUTO)
       udsDbCtx.close()
       udsDbConnector.close()
@@ -192,8 +192,8 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
   def execPgDump(host: String, port: Integer, user: String, passWord: String, msiDb: String, lcmsDb: String, pathDestination: String, pathSource: String, projectId: Long): Boolean = {
 
-    val pathDestinationProject = new File(pathDestination, "\\project_" + projectId)
-    val pathSrcDump = new File(pathSource, "\\pg_dump").getCanonicalPath()
+    val pathDestinationProject = new File(pathDestination + File.separator + "project_" + projectId)
+    val pathSrcDump = new File(pathSource + File.separator + "pg_dump").getCanonicalPath()
     var pgDumpIsOk: Boolean = false
     try {
       if (!pathDestinationProject.exists()) {
@@ -215,15 +215,15 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 						 */
           //pg_dump msi_db
           logger.info("Starting to backup database # " + msiDb)
-          var cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject, "\\" + msiDb + ".bak").getCanonicalPath(), msiDb)
+          var cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + msiDb + ".bak").getCanonicalPath(), msiDb)
           execute(cmd)
           //pg_dump lcms_Db
           logger.info("Starting to backup database # " + lcmsDb)
-          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject, "\\" + lcmsDb + ".bak").getCanonicalPath(), lcmsDb)
+          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + lcmsDb + ".bak").getCanonicalPath(), lcmsDb)
           execute(cmd)
           //pg_dump uds_db
           logger.info("Starting to save schema only # uds_db")
-          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "--schema-only", "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject, "\\uds_db_schema.bak").getCanonicalPath(), "uds_db")
+          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "--schema-only", "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + "uds_db_schema.bak").getCanonicalPath(), "uds_db")
           execute(cmd)
           pgDumpIsOk = true
         } else {
@@ -249,28 +249,6 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
       logger.error(err)
     }
   }
-//  def zip(out: String, files: Iterable[String]) = {
-//
-//    val zip = new ZipOutputStream(new FileOutputStream(out))
-//    try {
-//      files.foreach { name =>
-//        try {
-//          zip.putNextEntry(new ZipEntry(name))
-//          val in = new BufferedInputStream(new FileInputStream(name))
-//          var b = in.read()
-//          while (b > -1) {
-//            zip.write(b)
-//            b = in.read()
-//          }
-//        } finally {
-//          in.close()
-//          zip.closeEntry()
-//        }
-//      }
-//    } finally {
-//      zip.close()
-//    }
-//  }
 }
 
 object ArchiveProject {

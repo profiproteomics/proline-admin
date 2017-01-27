@@ -13,8 +13,6 @@ import fr.proline.repository._
 import java.io._
 import java.util.Date
 import java.text.SimpleDateFormat
-import scala.sys.process.Process
-import scala.sys.process.ProcessLogger
 import scala.collection.JavaConversions._
 
 import com.google.gson.JsonObject
