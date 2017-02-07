@@ -19,7 +19,6 @@ import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scala.TypesafeConfigWrapper._
 
-
 ////////////////////////////////////////////////////////////////
 // FIXME! write/set methods in this file are incredibly ugly. //
 // Learn to use Typesage Config properly !                    //
@@ -32,7 +31,7 @@ import fr.profi.util.scala.TypesafeConfigWrapper._
  */
 
 /** Model what is in the ProlineAdmin configuration file, corresponding to ProlineSettingsForm fields **/
-case class AdminConfig (
+case class AdminConfig(
   filePath: String,
   var serverConfigFilePath: Option[String] = None,
   var pwxConfigFilePath: Option[String] = None,
@@ -43,14 +42,13 @@ case class AdminConfig (
   var dbUserName: Option[String] = None,
   var dbPassword: Option[String] = None,
   var dbHost: Option[String] = None,
-  var dbPort: Option[Int] = None
-)
+  var dbPort: Option[Int] = None)
 
 /** Parse and write ProlineAdmin configuration file */
 class AdminConfigFile(val path: String) extends LazyLogging {
   //TODO: object?
 
-  require( path != null && path.isEmpty() == false, "Configuration file path must not be null nor empty." )
+  require(path != null && path.isEmpty() == false, "Configuration file path must not be null nor empty.")
   private val adminConfigFile = new File(path)
 
   /** Get Config object from file **/
@@ -74,9 +72,7 @@ class AdminConfigFile(val path: String) extends LazyLogging {
           dbUserName = config.getStringOpt("auth-config.user"),
           dbPassword = config.getStringOpt("auth-config.password"),
           dbHost = config.getStringOpt("host-config.host"),
-          dbPort = config.getIntOpt("host-config.port")
-        )
-      )
+          dbPort = config.getIntOpt("host-config.port")))
     } catch {
       case t: Throwable => {
         logger.error("Error occured while reading server configuration file", t.getMessage())
@@ -103,17 +99,17 @@ class AdminConfigFile(val path: String) extends LazyLogging {
     //Reload config in case there are some (hand-made) changes
     getTypesafeConfig().getStringOpt("postgresql-data-dir")
   }
-  
+
   /** Look for seq-repo-config-file only **/
   def getSeqRepoConfigPath(): Option[String] = {
-      //Reload config in case there are some (hand-made) changes
-      getTypesafeConfig().getStringOpt("seq-repo-config-file")
+    //Reload config in case there are some (hand-made) changes
+    getTypesafeConfig().getStringOpt("seq-repo-config-file")
   }
 
   /** Set server-config-file only **/
   def setServerConfigPath(newPath: String) = {
     /* Don't change if it's the same as the old one */
-    if ( Option(newPath) != getServerConfigPath() ) {
+    if (Option(newPath) != getServerConfigPath()) {
       _updateKey(configKey = "server-config-file", configValue = newPath)
     }
   }
@@ -129,17 +125,17 @@ class AdminConfigFile(val path: String) extends LazyLogging {
   /** Set postgresql-data-dir only **/
   def setPostgreSqlDataDir(newPath: String) = {
     /* Don't change if it's the same as the old one */
-    if ( Option(newPath) != getPostgreSqlDataDir() ) {
+    if (Option(newPath) != getPostgreSqlDataDir()) {
       _updateKey(configKey = "postgresql-data-dir", configValue = newPath)
     }
   }
 
   /** Set seq-repo-config-file only **/
   def setSeqRepoConfigPath(newPath: String) = {
-      /* Don't change if it's the same as the old one */
-      if ( Option(newPath) != getSeqRepoConfigPath() ) {
-        _updateKey(configKey = "seq-repo-config-file", configValue = newPath)
-      }
+    /* Don't change if it's the same as the old one */
+    if (Option(newPath) != getSeqRepoConfigPath()) {
+      _updateKey(configKey = "seq-repo-config-file", configValue = newPath)
+    }
   }
 
   /** Set server-config-file or postgresql-data-dir only **/
@@ -155,39 +151,35 @@ class AdminConfigFile(val path: String) extends LazyLogging {
           if (line matches s""".*$configKey.*""") {
             val correctNewPath = ScalaUtils.doubleBackSlashes(configValue)
             s"""$configKey = "$correctNewPath""""
-          } 
-          
-          else line
+          } else line
 
         }.mkString(LINE_SEPARATOR)
-      }
-
-    finally { src.close() }
+      } finally { src.close() }
 
     /* Write updated config */
     val out = new FileWriter(adminConfigFile)
     try { out.write(newLines) }
     finally { out.close() }
-    
-//          /* Create new config (merge with old) */
-//          //val newConfig = ConfigFactory.parseMap(Map("server-config-file" -> newPath))
-//          //      println("newPath: " + newPath + "**")
-//          val correctNewPath = newPath.replaceAll("""\\""", """\\\\""")
-//          //      println("correctNewPath: " + correctNewPath + "**")
-//          val toParse = s"""server-config-file = "$correctNewPath""""
-//          //      println("toParse: " + toParse + "**")
-//          val newConfig = ConfigFactory.parseString(toParse)
-//          val mergedConfig = newConfig.withFallback(getTypeSafeConfig())
-//    
-//          /* Write in file */
-//          synchronized {
-//            val renderOptions = ConfigRenderOptions.concise().setComments(true).setFormatted(true).setJson(false)
-//            val render = mergedConfig.root().render(renderOptions)
-//            val fileWriter = new FileWriter(adminConfigFile)
-//            try { fileWriter.write(render) }
-//            finally { fileWriter.close() }
-//          }
-//        }
+
+    //          /* Create new config (merge with old) */
+    //          //val newConfig = ConfigFactory.parseMap(Map("server-config-file" -> newPath))
+    //          //      println("newPath: " + newPath + "**")
+    //          val correctNewPath = newPath.replaceAll("""\\""", """\\\\""")
+    //          //      println("correctNewPath: " + correctNewPath + "**")
+    //          val toParse = s"""server-config-file = "$correctNewPath""""
+    //          //      println("toParse: " + toParse + "**")
+    //          val newConfig = ConfigFactory.parseString(toParse)
+    //          val mergedConfig = newConfig.withFallback(getTypeSafeConfig())
+    //    
+    //          /* Write in file */
+    //          synchronized {
+    //            val renderOptions = ConfigRenderOptions.concise().setComments(true).setFormatted(true).setJson(false)
+    //            val render = mergedConfig.root().render(renderOptions)
+    //            val fileWriter = new FileWriter(adminConfigFile)
+    //            try { fileWriter.write(render) }
+    //            finally { fileWriter.close() }
+    //          }
+    //        }
   }
 
   /** Write config file **/
@@ -272,10 +264,10 @@ sqlite-config {
 
 /** Model what is in the Proline server (WebCore) configuration file, corresponding to ProlineSettingsForm fields **/
 case class ServerConfig(
-    //serverConfFilePath: String,
-    rawFilesMountPoints: Map[String, String] = Map(),
-    mzdbFilesMountPoints: Map[String, String] = Map(),
-    resultFilesMountPoints: Map[String, String] = Map()) {
+  //serverConfFilePath: String,
+  rawFilesMountPoints: Map[String, String] = Map(),
+  mzdbFilesMountPoints: Map[String, String] = Map(),
+  resultFilesMountPoints: Map[String, String] = Map()) {
 
   def toTypeSafeConfigString(): String = {
     /* Mount points strings */
@@ -300,7 +292,7 @@ case class ServerConfig(
     _addMountPointsToStringBuilder(mzdbFilesMountPoints)
 
     mpStrBuilder ++= "  }"
-    
+
     //return string
     s"""mount_points {
 
@@ -313,7 +305,7 @@ case class ServerConfig(
 /** Parse and write Proline server configuration file */
 class ServerConfigFile(val path: String) extends LazyLogging {
 
-  require( path != null && path.isEmpty() == false, "Configuration file path must not be null nor empty.")
+  require(path != null && path.isEmpty() == false, "Configuration file path must not be null nor empty.")
   val serverConfigFile = new File(path)
 
   /** Read config file **/
@@ -340,9 +332,7 @@ class ServerConfigFile(val path: String) extends LazyLogging {
           //serverConfFilePath = path,
           rawFilesMountPoints = rawFilesMp,
           mzdbFilesMountPoints = mzdbFilesMp,
-          resultFilesMountPoints = resultFilesMp
-        )
-      )
+          resultFilesMountPoints = resultFilesMp))
 
     } catch {
       case t: Throwable => {
@@ -355,8 +345,6 @@ class ServerConfigFile(val path: String) extends LazyLogging {
   /** Write config file **/
   def write(serverConfig: ServerConfig, adminConfig: AdminConfig): Unit = {
     //TODO: write ConfigObject, use from config
-
-   
 
     /* Fill template */
     //TODO: improve (write config)
@@ -476,10 +464,9 @@ class PwxConfigFile(val path: String) extends LazyLogging {
         logger.warn(" fileWriter.close()")
       }
 
-    }
-    catch {
+    } catch {
       //case e: Exception => logger.warn("Can't save settings in PWX application.conf : ", e.getMessage())
-      case e: Exception => ShowPopupWindow("Can't save settings in PWX application.conf\n\n "+ e.getMessage())
+      case e: Exception => ShowPopupWindow("Can't save settings in PWX application.conf\n\n " + e.getMessage())
     }
   }
 }

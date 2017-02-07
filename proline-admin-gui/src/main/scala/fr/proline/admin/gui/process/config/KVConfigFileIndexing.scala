@@ -8,18 +8,19 @@ import scala.io.Source
 import fr.proline.admin.gui.process.config.postgres._
 import fr.profi.util.StringUtils.LINE_SEPARATOR
 
-
-/** *********************************************** *
+/**
+ * *********************************************** *
  * Model an informative line in configuration file, *
  * e.g. containing a key/value pair.                *
- * ********************************************** **/
+ * ********************************************** *
+ */
 
-trait ConfigFileLine{
-  
+trait ConfigFileLine {
+
   val line: String
   val index: Int
   val commented: Boolean
-  
+
   //def toNewLine
 }
 
@@ -30,8 +31,7 @@ case class ConfigFileKVLine(
   var valueString: String,
   valueStartIdx: Int,
   valueEndIdx: Int,
-  commented: Boolean = false
-) extends ConfigFileLine {
+  commented: Boolean = false) extends ConfigFileLine {
 
   /*private var valueStartIdx: Int = -1
   private var valueEndIdx: Int = -1
@@ -55,8 +55,7 @@ case class ConfigFileKVLine(
       valueString,
       valueStartIdx + 1,
       valueEndIdx + 1,
-      commented = true
-    )
+      commented = true)
   }
   /** Create a new KVLine, corresponding to this one, UNcommented **/
   def uncomment(): ConfigFileKVLine = {
@@ -70,13 +69,12 @@ case class ConfigFileKVLine(
       valueString,
       valueStartIdx - 1,
       valueEndIdx - 1,
-      commented = true
-    )
+      commented = true)
   }
-  
+
   /** Update value string and related fields: line & end idx. Return a new object **/
   def toNewKVLine(newValueString: String, commented: Boolean = false): ConfigFileKVLine = {
-    
+
     //Comment or uncomment line if needed
     val oldKVLine = {
       if (commented) this.comment()
@@ -98,7 +96,7 @@ case class ConfigFileKVLine(
 
     // New line features
     val newLine = sb.result()
-    val newValueEndIdx = oldValueStartIdx + newValueString.length -1
+    val newValueEndIdx = oldValueStartIdx + newValueString.length - 1
 
     // New line
     ConfigFileKVLine(
@@ -108,16 +106,15 @@ case class ConfigFileKVLine(
       newValueString,
       oldKVLine.valueStartIdx,
       newValueEndIdx,
-      commented
-    )
+      commented)
   }
-  
-//  override def toString(): String = {
-//    if(valueStartIdx == -1 || valueEndIdx == -1) line
-//    else {
-//      _toString(line, valueString, valueEndIdx)
-//    } 
-//  }
+
+  //  override def toString(): String = {
+  //    if(valueStartIdx == -1 || valueEndIdx == -1) line
+  //    else {
+  //      _toString(line, valueString, valueEndIdx)
+  //    } 
+  //  }
   override def toString(): String = this.line
 
   /*
@@ -148,18 +145,18 @@ case class ConfigFileKVLine(
  * Trait for configuration files reading/parsing/writing *
  * Based on a key-value model                            *
  * ***************************************************** *
- **/
+ */
 
 trait KVConfigFileIndexing {
 
   /* To be defined in each implementation */
-  def filePath: String 
+  def filePath: String
   //def paramKeys: Array[String]
   protected def parseLine(line: String, lineIdx: Int): Option[ConfigFileKVLine]
 
   /** Get config file **/
   lazy private val _configFile = new File(filePath)
-  
+
   /** Get file lines in an array **/
   lazy val lines: Array[String] = {
 
@@ -177,11 +174,11 @@ trait KVConfigFileIndexing {
   }
 
   // TODO: trait + implems
-  
+
   var lineIdx = 0
   lazy val linesArray = lines
   lazy val linesCount = linesArray.length
-    
+
   /** Parse lines and get information by key **/
   lazy val lineByKey: HashMap[String, ConfigFileKVLine] = {
 
@@ -205,7 +202,6 @@ trait KVConfigFileIndexing {
     //println("-> " + lineByKey.values.filter(_.commented).size + " are commented")
     lineByKey
   }
-  
 
   /** String updated to be written in file **/
   override def toString(): String = synchronized {
