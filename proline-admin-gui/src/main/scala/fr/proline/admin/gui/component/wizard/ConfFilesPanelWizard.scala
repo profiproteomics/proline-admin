@@ -25,13 +25,12 @@ import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 import fr.profi.util.scalafx.TitledBorderPane
 import javafx.scene.control.Tooltip
-import fr.proline.admin.postgres.install._
 import fr.proline.admin.gui.util.FxUtils
 import scalafx.scene.control.Button.sfxButton2jfx
 import scalafx.scene.control.TextField.sfxTextField2jfx
 import fr.proline.admin.gui.component.configuration.file._
 import java.io.File
-import java.net.URI
+
 /**
  *
  * Step 1 : window to search and add configurations files
@@ -141,14 +140,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   dataDirectoryField.setTooltip(new Tooltip("full path to postgreSQL data Directory .Example : ..\\PostgreSQL\\9.x\\data"));
   val dataDirectoryBrowse = new Button("Browse...") {
     onAction = handle {
-      /* check if postgreSQL is installed on unix and windows */
-      if (!CheckInstalledPostgres.checkPostgres()) {
-        ShowPopupWindow(
-          wTitle = "Software PostgreSQL",
-          wText = "Check if PostgreSQL is installed , you should  have administrator rights ! ")
-      } else {
-        _browseDataDir()
-      }
+
     }
   }
   dataDirectoryBrowse.setTooltip(new Tooltip("Browse postgreSQL data Directory. "));
@@ -201,9 +193,9 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
         ScalaFxUtils.newVSpacer(minH = 10),
         ScalaFxUtils.newVSpacer(minH = 10),
         ScalaFxUtils.newVSpacer(minH = 10),
+        ScalaFxUtils.newVSpacer(minH = 14),
         ScalaFxUtils.newVSpacer(minH = 10),
-        ScalaFxUtils.newVSpacer(minH = 10),
-        ScalaFxUtils.newVSpacer(minH = 13))
+        ScalaFxUtils.newVSpacer(minH = 11))
     })
   alignment = Pos.Center
   alignmentInParent = Pos.Center

@@ -48,7 +48,7 @@ import fr.profi.util.scalafx.TitledBorderPane
  */
 class ProlineMountFiles extends VBox with LazyLogging {
 
-  maxHeight = Screen.primary.visualBounds.height - 20 // arbitrary margin //816
+  maxHeight = Screen.primary.visualBounds.height - 20 // 
 
   /* Configuration files */
 
@@ -75,6 +75,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
    */
 
   /* Mount points */
+  
   val disableMpNoteLabel = new Label() {
     text = "Proline server configuration file must be provided to enable mount points setup.\n" +
       """See step 1."""
@@ -118,8 +119,6 @@ class ProlineMountFiles extends VBox with LazyLogging {
   //VBox & HBox spacing
   private val V_SPACING = 10
   private val H_SPACING = 5
-
- 
 
   /* DB connection */
   //Set text- and password textfields at the same place in UI
@@ -357,13 +356,12 @@ class ProlineMountFiles extends VBox with LazyLogging {
 
     if (continue) {
 
-
       /* New AdminConfig*/
       val newAdminConfig = _toAdminConfig()
       adminConfigFile.write(newAdminConfig)
       /* seqRepos */
       seqConfigFile.write(newAdminConfig)
-      
+
       if (serverConfigOpt.isDefined) {
 
         /* New ServerConfig */
@@ -400,7 +398,6 @@ class ProlineMountFiles extends VBox with LazyLogging {
     }
   }
 }
-
 
 /**
  * Build 1 mount point panel
@@ -446,7 +443,6 @@ class MountPointPanelWizard(
     maxWidth = 60
     onAction = handle { onDeleteAction(thisMountPoint) }
   }
-
   /* Layout */
   spacing = 10
   alignment = Pos.Center

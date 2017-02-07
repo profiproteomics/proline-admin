@@ -177,18 +177,10 @@ object ButtonsPanelQStart extends LazyLogging {
   private def getButton() {
     buttonValue = nextButton.getText()
     if (buttonValue.equals("Finish")) {
-
       monutfiles.saveForm()
-      closeStage()
+      // closeStage()
     }
   }
-
-  // parse to serverconfig
-
-  private def _parseToServerConfig() = ServerConfig(
-    QuickStart.rawFiles,
-    QuickStart.mzdbFiles,
-    QuickStart.resultFiles)
 
   // confirm dialog 
 

@@ -25,9 +25,6 @@ import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.util.ConfirmationDialog
 import fr.proline.admin.gui.component.wizard._
-
-import fr.proline.admin.postgres.install.CheckInstalledPostgres
-import fr.proline.admin.postgres.install._
 import collection.mutable.HashMap
 /**
  * Graphical interface for Proline-Admin wizard:quick edit for admin and server file (.conf).
@@ -37,7 +34,6 @@ object QuickStart extends LazyLogging {
   /* Configuration files and dirs */
   var targetPath: String = _
   var adminConfPath: String = _
-  // var adminConfPathBackSlach: String = _
   var serverConfPath: String = _
   var postgresqlDataDir: String = _
   var seqRepoConfPath: String = _
@@ -156,7 +152,5 @@ class QuickStart extends Application {
       }
     }
   }
-
- 
 
 }

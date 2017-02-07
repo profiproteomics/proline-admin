@@ -183,6 +183,7 @@ class DatabaseConfig extends VBox with LazyLogging {
     contentNode = new VBox {
       minWidth = 360
       prefWidth = 360
+      minHeight= 300
       spacing = 5
       content = Seq(
         userNameLabel,
