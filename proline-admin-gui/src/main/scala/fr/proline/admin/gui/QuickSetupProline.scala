@@ -26,8 +26,6 @@ import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.util.ConfirmationDialog
 import fr.proline.admin.gui.component.wizard._
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import fr.proline.admin.postgres.install.CheckInstalledPostgres
 import fr.proline.admin.postgres.install._
 import collection.mutable.HashMap
@@ -39,7 +37,7 @@ object QuickStart extends LazyLogging {
   /* Configuration files and dirs */
   var targetPath: String = _
   var adminConfPath: String = _
-  var adminConfPathBackSlach: String = _
+  // var adminConfPathBackSlach: String = _
   var serverConfPath: String = _
   var postgresqlDataDir: String = _
   var seqRepoConfPath: String = _
@@ -98,26 +96,20 @@ class QuickStart extends Application {
     /* Locate 'config' folder */
 
     val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
-    QuickStart.adminConfPathBackSlach = new File(srcPath).getParent() + "\\\\config\\\\application.conf"
     QuickStart.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
     val configPath = QuickStart.targetPath + """/config/"""
 
-    /* Locate application.CONF file and update Proline config in consequence */
+    // Locate application.CONF file and update Proline config in consequence 
 
     val _appConfPath = configPath + "application.conf"
     QuickStart.adminConfPath = _appConfPath
 
-    /*locate application .CONF file of proline server */
-
-    val serverConf = new File(srcPath).getParentFile().getParentFile().toString().replaceAll("\\\\", "/")
-    searchConfFileSeqReposServer("server", "seqrepo", serverConf)
+    // locate application .CONF file of proline server 
 
     require(QuickStart.stage == null, "stage is already instantiated")
 
-    /* initialise first panel */
-
-    QuickStart.buttonsPanel = ButtonsPanelQStart()
     QuickStart.mainPanel = new ProlineConfigFilesPanelQStart()
+    QuickStart.buttonsPanel = ButtonsPanelQStart()
     QuickStart.panelState = "panelConfig"
     QuickStart.stage = new Stage(stage) {
       scene = new Scene(QuickStart.root)
@@ -127,9 +119,10 @@ class QuickStart extends Application {
       minHeight = 570
       title = "Proline Admin quick setup"
     }
+
     QuickStart.stage.show()
 
-    /* .conf files exists */
+    // .conf files exists 
 
     if (new File(_appConfPath).exists()) {
       QuickStart.adminConfPath = _appConfPath
@@ -139,12 +132,12 @@ class QuickStart extends Application {
 
       while (isFileChosen == false) {
         try {
-          ProlineConfigFileChooserWizard.showIn(new Stage) //auto-updates proline conf  
+          ProlineConfigFileChooserWizard.showIn(new Stage) //auto-updates proline .conf  
           isFileChosen = true
 
         } catch {
 
-          /* If the user doesn't select any file ('cancel' or 'close' button) */
+          // If the user doesn't select any file ('cancel' or 'close' button) 
           case e: Exception =>
 
             //TODO: use ChoiceDialog
@@ -163,35 +156,7 @@ class QuickStart extends Application {
       }
     }
   }
-  /* search a file .conf  in such directory */
-  def recursiveListFiles(f: File): Array[File] = {
-    val these = f.listFiles
-    these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
-  }
-  /*search a conf file in a directory */
-  def searchConfFileSeqReposServer(WsDir: String, seqRepoDir: String, filePath: String): Unit = {
-    if ((filePath != null) && (!filePath.equals(""))) {
-      val z: Array[File] = recursiveListFiles(new File(filePath))
-      for (x <- z.filter(f => """application\.conf""".r.findFirstIn(f.getName).isDefined)) {
-        var file = x.toString().replaceAll("\\\\", "/")
-        if (file.contains(WsDir)) {
-          /*File .conf in webcore */
-          if (new File(file).exists())
-            QuickStart.serverConfPath = file
-        }
-        if (file.contains(seqRepoDir)) {
-          /*file .conf in seqrepos*/
-          if (new File(file).exists())
-            QuickStart.seqRepoConfPath = file
-        }
-      }
-    }
-  }
 
-  /* Close UDSdb context on application close  */
+ 
 
-  override def stop() {
-    super.stop()
-    if (UdsRepository.getUdsDbContext() != null) UdsRepository.getUdsDbContext().close
-  }
 }
