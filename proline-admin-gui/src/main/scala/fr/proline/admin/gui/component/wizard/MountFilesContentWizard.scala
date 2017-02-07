@@ -6,19 +6,20 @@ import scalafx.geometry.Pos
 import scalafx.scene.layout.VBox
 import fr.proline.admin.gui.component.configuration.file._
 
-class MountFilesContent extends AbstractMountFilesWizard  {
- 
- var mountfiles=new MonutFiles()
- setContentNode(
+class MountFilesContent extends AbstractMountFilesWizard {
+
+  //var mountfiles=new MonutFiles()
+  var mountfiles = new ProlineMountFiles()
+  setContentNode(
     new VBox {
       alignmentInParent = Pos.TOP_RIGHT
       minWidth = 730
       maxWidth = 730
-      maxHeight =400
+      maxHeight = 400
       content = List(
-        mountfiles
-      )
-    }
-  )
-  
+        mountfiles)
+    })
+  def saveForm() {
+    mountfiles.saveForm()
+  }
 }
