@@ -23,36 +23,25 @@ import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.component.wizard.MountFilesContent
 import scalafx.scene.control.Label
 import fr.proline.admin.gui.IconResource
-
+import java.io.File
 
 /**
  * Create  panel contains buttons : cancel ,previous and next .
  */
 object ButtonsPanelQStart extends LazyLogging {
 
-  /*initialize panels */
+  //initialize panels 
   val prolineConfigFilesPanel = new ProlineConfigFilesPanelQStart()
   private val Databaseconfig = new DatabaseConfig()
-  private val monutfiles = new MountFilesContent()
-  private val adminConfigFile = new AdminConfigFile(QuickStart.adminConfPath)
-  private val adminConfigOpt = adminConfigFile.read()
-  require(adminConfigOpt.isDefined, "admin config is undefined")
-  private val adminConfig = adminConfigOpt.get
-  private val driverTypeOpt = adminConfig.driverType
-
-  private val serverConfigFileOpt =
-    if (isEmpty(QuickStart.serverConfPath)) None
-    else Option(new ServerConfigFile(QuickStart.serverConfPath))
-  private val serverConfigOpt = serverConfigFileOpt.map(_.read()).flatten
+  // private val monutfiles = new MountFilesContent()
   private var buttonValue: String = _
+  var monutfiles: MountFilesContent = null
 
   /**
    * ******* *
    * BUTTONS *
    * ******* *
    */
-
-  /* buttons to navigaute bteweens panel */
 
   val nextButton = new Button("Next") {
     onAction = handle {
@@ -70,15 +59,15 @@ object ButtonsPanelQStart extends LazyLogging {
     }
   }
 
-  /*exit  application */
+  // exit  application 
 
   val cancelButton = new Button("Cancel") {
     onAction = handle {
-     
+
       confirmDialog()
     }
   }
-   /* Warning */
+  // Warning 
   val warningAboutExitText = "WARNING: Are you sure  to exit setup ? "
   val warningAboutExitLabel = new Label {
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
@@ -122,11 +111,13 @@ object ButtonsPanelQStart extends LazyLogging {
   }
   previousButton.setVisible(false)
 
-  /* set panel in mainPAnel when next button applied */
+  // change panel when next button is applied 
 
   private def panelStateOnNext() {
     if (QuickStart.panelState.equals("panelConfig")) {
-
+      prolineConfigFilesPanel.setAdminfield(QuickStart.adminConfPath)
+      prolineConfigFilesPanel.setServerfield(QuickStart.serverConfPath)
+      prolineConfigFilesPanel.setSeqfield(QuickStart.seqRepoConfPath)
       QuickStart.mainPanel.getChildren().clear()
       QuickStart.mainPanel.getChildren().add(Databaseconfig)
       QuickStart.panelState = "Databaseconfig"
@@ -134,16 +125,20 @@ object ButtonsPanelQStart extends LazyLogging {
       if (QuickStart.panelState.equals("Databaseconfig")) {
 
         QuickStart.mainPanel.getChildren().clear()
+        monutfiles = new MountFilesContent()
         QuickStart.mainPanel.getChildren().add(monutfiles)
         QuickStart.panelState = "mountfiles"
       }
     }
   }
 
-  /* when previous button is called*/
+  // change panel when previous button is applied 
 
   def panelStateOnPrevious() {
     if (QuickStart.panelState.equals("Databaseconfig")) {
+      prolineConfigFilesPanel.setAdminfield(QuickStart.adminConfPath)
+      prolineConfigFilesPanel.setServerfield(QuickStart.serverConfPath)
+      prolineConfigFilesPanel.setSeqfield(QuickStart.seqRepoConfPath)
 
       QuickStart.mainPanel.getChildren().clear()
       QuickStart.mainPanel.getChildren().add(prolineConfigFilesPanel)
@@ -157,7 +152,7 @@ object ButtonsPanelQStart extends LazyLogging {
     }
   }
 
-  /*set visible or not the button in buuton panel */
+  // set visible or not the button in button panel 
 
   private def activePreviousButton() {
     if (QuickStart.panelState.equals("panelConfig")) {
@@ -167,7 +162,7 @@ object ButtonsPanelQStart extends LazyLogging {
     }
   }
 
-  /*change buuton next to finisj in the end */
+  // change button next to finish in the end 
 
   private def changeNextToFinish() {
     if (QuickStart.panelState.equals("mountfiles")) {
@@ -177,67 +172,38 @@ object ButtonsPanelQStart extends LazyLogging {
     }
   }
 
-  /*save params and close*/
+  // save parameters and close 
 
   private def getButton() {
     buttonValue = nextButton.getText()
     if (buttonValue.equals("Finish")) {
-      saveParamsInFileConfig()
+
+      monutfiles.saveForm()
       closeStage()
     }
   }
 
-  /* save params in file admin .conf */
-
-  private def _parseToAdminConfig() = AdminConfig(
-    filePath = QuickStart.adminConfPath,
-    serverConfigFilePath = Option(QuickStart.serverConfPath),
-    pwxConfigFilePath = None,
-    pgsqlDataDir = None,
-    seqRepoConfigFilePath = Option(QuickStart.seqRepoConfPath),
-    driverType = driverTypeOpt,
-    prolineDataDir = None,
-    dbUserName = Option(QuickStart.userName),
-    dbPassword = Option(QuickStart.passwordUser),
-    dbHost = Option(QuickStart.hostNameUser),
-    dbPort = Option(QuickStart.port))
-
-  /*parse to serverconfig */
+  // parse to serverconfig
 
   private def _parseToServerConfig() = ServerConfig(
     QuickStart.rawFiles,
     QuickStart.mzdbFiles,
     QuickStart.resultFiles)
 
-  /* save params in admin .conf and server .conf */
-
-  private def saveParamsInFileConfig() {
-
-    /*save proline admin params */
-
-    val newAdminConfig = _parseToAdminConfig()
-    adminConfigFile.write(newAdminConfig)
-
-    /* Save proline server parameters */
-
-    if (serverConfigOpt.isDefined) {
-      val newServerConfig = _parseToServerConfig()
-      serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
-    }
-  }
-  
-  /*confirm dialog */
+  // confirm dialog 
 
   private def confirmDialog() {
-       ShowConfirmWindow(
+
+    ShowConfirmWindow(
       wTitle = "Warning",
       wText = warningAboutExitText,
-      wParent = Option(QuickStart.stage)
-      )
+      wParent = Option(QuickStart.stage))
   }
-  /* close window */
+
+  // close window 
 
   private def closeStage() {
+
     QuickStart.stage.close()
   }
 }
