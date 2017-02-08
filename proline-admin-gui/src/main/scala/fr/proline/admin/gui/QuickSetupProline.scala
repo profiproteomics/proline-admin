@@ -103,8 +103,9 @@ class QuickStart extends Application {
     // locate application .CONF file of proline server 
 
     require(QuickStart.stage == null, "stage is already instantiated")
-
-    QuickStart.mainPanel = new ProlineConfigFilesPanelQStart()
+    val prolineConfigFilesPanel = new ProlineConfigFilesPanelQStart()
+    prolineConfigFilesPanel.validStep()
+    QuickStart.mainPanel = prolineConfigFilesPanel
     QuickStart.buttonsPanel = ButtonsPanelQStart()
     QuickStart.panelState = "panelConfig"
     QuickStart.stage = new Stage(stage) {
@@ -113,7 +114,7 @@ class QuickStart extends Application {
       height = 570
       minWidth = 620
       minHeight = 570
-      title = "Proline Admin quick setup"
+      title = "Proline Admin wizard"
     }
 
     QuickStart.stage.show()

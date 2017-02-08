@@ -115,12 +115,15 @@ object ButtonsPanelQStart extends LazyLogging {
 
   private def panelStateOnNext() {
     if (QuickStart.panelState.equals("panelConfig")) {
-      prolineConfigFilesPanel.setAdminfield(QuickStart.adminConfPath)
-      prolineConfigFilesPanel.setServerfield(QuickStart.serverConfPath)
-      prolineConfigFilesPanel.setSeqfield(QuickStart.seqRepoConfPath)
-      QuickStart.mainPanel.getChildren().clear()
-      QuickStart.mainPanel.getChildren().add(Databaseconfig)
-      QuickStart.panelState = "Databaseconfig"
+      if ((QuickStart.adminConfPath != null) && (!QuickStart.adminConfPath.isEmpty) && (QuickStart.serverConfPath != null) && (!QuickStart.serverConfPath.isEmpty)) {
+        prolineConfigFilesPanel.validStep()
+        prolineConfigFilesPanel.setAdminfield(QuickStart.adminConfPath)
+        prolineConfigFilesPanel.setServerfield(QuickStart.serverConfPath)
+        prolineConfigFilesPanel.setSeqfield(QuickStart.seqRepoConfPath)
+        QuickStart.mainPanel.getChildren().clear()
+        QuickStart.mainPanel.getChildren().add(Databaseconfig)
+        QuickStart.panelState = "Databaseconfig"
+      }
     } else {
       if (QuickStart.panelState.equals("Databaseconfig")) {
 

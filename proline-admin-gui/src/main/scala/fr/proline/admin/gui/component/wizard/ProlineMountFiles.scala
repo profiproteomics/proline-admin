@@ -56,12 +56,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
   private val adminConfigOpt = adminConfigFile.read()
   require(adminConfigOpt.isDefined, "admin config is undefined")
   private val adminConfig = adminConfigOpt.get
-  //
-  private val seqConfigFile = new AdminConfigFile(QuickStart.seqRepoConfPath)
-  private val seqConfigOpt = seqConfigFile.read()
-  require(seqConfigOpt.isDefined, "SeqRepository config is undefined")
-  private val seqConfig = seqConfigOpt.get
-  //  
+
   private val serverConfigFileOpt =
     if (isEmpty(QuickStart.serverConfPath)) None
     else Option(new ServerConfigFile(QuickStart.serverConfPath))
@@ -75,9 +70,9 @@ class ProlineMountFiles extends VBox with LazyLogging {
    */
 
   /* Mount points */
-  
+
   val disableMpNoteLabel = new Label() {
-    text = "Proline server configuration file must be provided to enable mount points setup.\n" +
+    text = "choose a validated Proline server configuration file to enable mount points setup.\n" +
       """See step 1."""
     style = "-fx-font-style: italic;-fx-font-weigth: bold;"
     visible = false
@@ -109,9 +104,6 @@ class ProlineMountFiles extends VBox with LazyLogging {
    * LAYOUT *
    * ****** *
    */
-
-  /* Size & Resize properties */
-  // Labels' width
 
   Seq(
     rawFilesMpLabel, mzdbFilesMpLabel, resultFilesMpLabel).foreach(_.minHeight = 25)
@@ -320,20 +312,6 @@ class ProlineMountFiles extends VBox with LazyLogging {
 
     val errString = new StringBuilder()
 
-    /* Mount points keys */
-    //    val spaceCharPattern = """\s""".r
-    //    val corruptedKeys = (rawFilesMountPoints ++ mzdbFilesMountPoints ++ resultFilesMountPoints).toArray
-    //      .map(_.getKey)
-    //      .filter { key =>
-    //        // no space in key
-    //        spaceCharPattern.findFirstIn(key).isDefined
-    //      }
-    //    
-    //    if (corruptedKeys.isEmpty == false){
-    //      errString ++= "The following mount point names are incorrect: " + corruptedKeys.mkString(", ") + "\n"
-    //    }
-
-    //return 
     errString.result()
   }
 
@@ -359,8 +337,16 @@ class ProlineMountFiles extends VBox with LazyLogging {
       /* New AdminConfig*/
       val newAdminConfig = _toAdminConfig()
       adminConfigFile.write(newAdminConfig)
-      /* seqRepos */
-      seqConfigFile.write(newAdminConfig)
+
+      /* edit seqRepository  .conf is optionnal */
+      if ((QuickStart.seqRepoConfPath != null) && (!QuickStart.seqRepoConfPath.isEmpty)) {
+
+        val seqConfigFile = new AdminConfigFile(QuickStart.seqRepoConfPath)
+        val seqConfigOpt = seqConfigFile.read()
+        require(seqConfigOpt.isDefined, "SeqRepository config file is undefined")
+        val seqConfig = seqConfigOpt.get
+        seqConfigFile.write(newAdminConfig)
+      }
 
       if (serverConfigOpt.isDefined) {
 

@@ -63,9 +63,10 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   }
   val adminConfigField = new TextField {
     if (QuickStart.adminConfPath != null) text = QuickStart.adminConfPath
-    text.onChange { (_, oldText, newText) =>
-      updateAdminConf(newText)
-    }
+    else
+      text.onChange { (_, oldText, newText) =>
+        updateAdminConf(newText)
+      }
   }
   adminConfigField.setTooltip(new Tooltip("full path to proline admin configuration file."));
   val adminConfigBrowse = new Button("Browse...") {
@@ -158,7 +159,12 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     dataDirectoryField).foreach { f =>
       f.hgrow = Priority.Always
     }
-
+  val disableNoteLabel = new Label() {
+    text = "Proline server and Proline admin configuration file cannot be empty.\n" +
+      """ """
+    style = "-fx-font-style: italic;-fx-font-weigth: bold;"
+    visible = false
+  }
   /* Organize and render */
   val configurationsFiles = new TitledBorderPane(
 
@@ -169,7 +175,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       spacing = 5
 
       content = Seq(
-
+        disableNoteLabel,
         adminConfigLabel,
         new HBox {
           spacing = 5
@@ -189,13 +195,11 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
           content = Seq(seqReposConfigField, pwxConfigBrowse)
         },
         ScalaFxUtils.newVSpacer(minH = 10),
-        ScalaFxUtils.newVSpacer(minH = 14),
         ScalaFxUtils.newVSpacer(minH = 10),
         ScalaFxUtils.newVSpacer(minH = 10),
         ScalaFxUtils.newVSpacer(minH = 10),
-        ScalaFxUtils.newVSpacer(minH = 14),
         ScalaFxUtils.newVSpacer(minH = 10),
-        ScalaFxUtils.newVSpacer(minH = 11))
+        ScalaFxUtils.newVSpacer(minH = 10))
     })
   alignment = Pos.Center
   alignmentInParent = Pos.Center
@@ -239,7 +243,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       }
     }
   }
-  /* Browse ProlineAdmin configuration file: set global variable and update field */
+  // Browse ProlineAdmin configuration file: set global variable and update field 
 
   private def _browseAdminConfigFile() {
     ProlineConfigFileChooserWizard.setForProlineAdminConf(adminConfigField.text())
@@ -247,7 +251,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     if (filePath != null) adminConfigField.text = filePath
   }
 
-  /* Browse Proline server configuration file: set global variable and update field */
+  // Browse Proline server configuration file: set global variable and update field
 
   private def _browseServerConfigFile() {
     ProlineConfigFileChooserWizard.setForProlineServerConf(serverConfigField.text())
@@ -255,7 +259,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     if (filePath != null) serverConfigField.text = filePath
   }
 
-  /* browse Sequence Repository configuration file: set global variable and update field */
+  // browse Sequence Repository configuration file: set global variable and update field 
 
   private def _browseSequenceRepositoryFile() {
     ProlineConfigFileChooserWizard.setForProlineServerConf(seqReposConfigField.text())
@@ -263,7 +267,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     if (filePath != null) seqReposConfigField.text = filePath
   }
 
-  /* browse data directory of PostgreSQL */
+  // browse data directory of PostgreSQL
 
   private def _browseDataDir() {
     val file = FxUtils.browseDirectoryWizard(
@@ -277,7 +281,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     }
   }
 
-  /* update adminConf  global variables */
+  // update adminConf  global variables
 
   def updateAdminConf(newText: String) {
     if (isEmpty(newText) == false) {
@@ -285,28 +289,28 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
 
     }
   }
-  /*update server global variables  */
+  // update server global variables  
 
   def updateServerConf(newText: String) {
     if (isEmpty(newText) == false) {
       QuickStart.serverConfPath = normalizeFilePath(newText)
     }
   }
-  /* update sequence repository global variable */
+  // update sequence repository global variable
 
   def updateSeqReposConf(newText: String) {
     if (isEmpty(newText) == false) {
       QuickStart.seqRepoConfPath = normalizeFilePath(newText)
     }
   }
-  /* update data directory global variable */
+  // update data directory global variable 
   def updateDataDirectoryPath(newText: String) {
     if (isEmpty(newText) == false) {
       QuickStart.postgresqlDataDir = normalizeFilePath(newText)
     }
   }
 
-  /* normalize file path */
+  // normalize file path 
 
   def normalizeFilePath(path: String): String = {
     var filePath = path.replaceAll("\\\\", "/")
@@ -314,7 +318,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     return (filePath)
   }
 
-  /* update textfields */
+  // update textfields 
 
   def setAdminfield(text: String) {
     adminConfigField.setText(text)
@@ -325,20 +329,27 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   def setSeqfield(text: String) {
     seqReposConfigField.setText(text)
   }
-  /*get environment var PG_DATA */
+  // get environment var PG_DATA 
   def getPgData(env: String): String = {
     return System.getenv(env)
   }
   def saveForm() {}
-
-  /* Getters/Setters for textFields */
+  // valid parameters before to pass to next step
+  def validStep() {
+    if ((QuickStart.adminConfPath != null) && (!QuickStart.adminConfPath.isEmpty) && (QuickStart.serverConfPath != null) && (!QuickStart.serverConfPath.isEmpty)) {
+      disableNoteLabel.visible = false
+    } else {
+      disableNoteLabel.visible = true
+    }
+  }
+  // Getters/Setters for textFields 
 
   def getProlineAdminConfFile(): String = adminConfigField.text()
   def setProlineAdminConfFile(newPath: String) { adminConfigField.text = newPath }
   def getProlineServerConfFile(): String = serverConfigField.text()
   def setProlineServerConfFile(newPath: String) { serverConfigField.text = newPath }
   def setDataDirectoryPath(path: String) { dataDirectoryField.text = path }
-  /* Check the form */
+  // Check the form
   def checkForm(allowEmptyPaths: Boolean = true): Boolean = Seq(
     (seqReposConfigField, seqReposConfigWarningLabel)).forall { case (f, w) => this.checkFileFromField(f, w, allowEmptyPaths) }
 
