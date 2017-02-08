@@ -70,10 +70,32 @@ class DatabaseConfig extends VBox with LazyLogging {
 	 * ********** *
 	 */
 
-  QuickStart.hostNameUser = "localhost"
-  QuickStart.userName = "postgres"
-  private val driver = DriverType.POSTGRESQL
-  QuickStart.passwordUser = ""
+
+   private val adminConfigFile = new AdminConfigFile(QuickStart.adminConfPath)
+   private val adminConfigOpt = adminConfigFile.read()
+   require(adminConfigOpt.isDefined, "admin config is undefined")
+   private val adminConfig = adminConfigOpt.get
+   private val driver = DriverType.POSTGRESQL
+   
+   def isPrompt(str: String): Boolean = str matches """<.*>"""
+   
+//   val dataDir = adminConfig.prolineDataDir //implicit getOrElse("")
+//   if (isPrompt(dataDir)) dataDirField.promptText = dataDir
+//   else dataDirField.text = dataDir
+
+   val dbUserName = adminConfig.dbUserName
+   if (isPrompt(dbUserName)) QuickStart.userName = dbUserName
+   else QuickStart.userName = dbUserName
+   
+//   we cannot initiliaze password  
+//   val dbPassword = adminConfig.dbPassword
+//   if (isPrompt(dbPassword)) passwordPWDField.promptText = dbPassword
+//   else passwordPWDField.text = dbPassword
+
+   val dbHost = adminConfig.dbHost
+   if (isPrompt(dbHost)) QuickStart.hostNameUser = dbHost
+    else QuickStart.hostNameUser = dbHost
+    
   /* DB connection */
   /* user name  */
   val userNameLabel = new Label("User name :")

@@ -79,7 +79,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
   }
 
   val rawFilesMountPoints = ArrayBuffer[MountPointPanelWizard]()
-  val rawFilesMpLabel = new BoldLabel("Raw files path:", upperCase = false)
+  val rawFilesMpLabel = new BoldLabel("Raw files path: ", upperCase = false)
   val addRawFilesMpButton = new Button("Add") {
     onAction = handle { _addRawFilesMountPoint() }
   }
