@@ -213,12 +213,10 @@ class ProlineMountFiles extends VBox with LazyLogging {
   private def _toAdminConfig() = AdminConfig(
     filePath = adminConfig.filePath,
     serverConfigFilePath = adminConfig.serverConfigFilePath.map(doubleBackSlashes), //FIXME: windows-specific
-    //pwxConfigFilePath = adminConfig.pwxConfigFilePath.map(doubleBackSlashes), //FIXME: windows-specific
-    pwxConfigFilePath = Option(""), //FIXME: windows-specific
-    //pgsqlDataDir = adminConfig.pgsqlDataDir.map(doubleBackSlashes), //FIXME: windows-specific
-    pgsqlDataDir = Option(""), //FIXME: windows-specific
+    pwxConfigFilePath = adminConfig.pwxConfigFilePath.map(doubleBackSlashes), //FIXME: windows-specific
+    pgsqlDataDir = adminConfig.pgsqlDataDir.map(doubleBackSlashes), //FIXME: windows-specific
     driverType = adminConfig.driverType, //immutable in UI
-    prolineDataDir = Option(""), //FIXME: windows-specific
+    prolineDataDir = Option(QuickStart.postgresqlDataDir).map(doubleBackSlashes), //FIXME: windows-specific
     dbUserName = Option(QuickStart.userName),
     dbPassword = Option(QuickStart.passwordUser),
     dbHost = Option(QuickStart.hostNameUser),

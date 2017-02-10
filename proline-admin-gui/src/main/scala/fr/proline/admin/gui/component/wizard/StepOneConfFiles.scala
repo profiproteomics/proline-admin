@@ -32,9 +32,9 @@ import fr.proline.admin.gui.component.configuration.file._
 import java.io.File
 
 /**
- *
- * Step 1 : window to search and add configurations files
- *
+ *********************************************************
+ * Step 1 : panel to add configurations files
+ *********************************************************
  */
 class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit = null) extends VBox with IConfigFilesPanel with LazyLogging {
 

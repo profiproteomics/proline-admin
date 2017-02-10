@@ -614,9 +614,6 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
 
     /* Restart PostgreSQL if needed */
     //TODO : restart PostgreSQL when needed
-   
-
-    
   }
 
 }

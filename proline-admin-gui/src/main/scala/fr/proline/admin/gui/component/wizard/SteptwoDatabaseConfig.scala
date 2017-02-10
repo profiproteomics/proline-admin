@@ -59,9 +59,11 @@ import java.io.File
 import fr.proline.admin.gui.component.configuration._
 import fr.proline.admin.gui.component.configuration.ConfigurationTabbedWindowWizard
 import fr.proline.admin.gui.component.resource.ResourcesTabbedWindow
-/**
- * Step 2 : a window to edit database configuration's file .
- */
+
+/***********************************************************
+ * Step 2 : a panel to initialize and to edit
+ *  database configuration's file .
+ ************************************************************/
 class DatabaseConfig extends VBox with LazyLogging {
 
   /*
@@ -79,18 +81,23 @@ class DatabaseConfig extends VBox with LazyLogging {
    
    def isPrompt(str: String): Boolean = str matches """<.*>"""
    
-//   val dataDir = adminConfig.prolineDataDir //implicit getOrElse("")
-//   if (isPrompt(dataDir)) dataDirField.promptText = dataDir
-//   else dataDirField.text = dataDir
+   //update QuickStart.postgresqlDataDir only when its valid path 
+   
+   val dataDir = adminConfig.prolineDataDir
+   if (new File(dataDir).exists()) {
+     QuickStart.postgresqlDataDir = dataDir
+   }
+
 
    val dbUserName = adminConfig.dbUserName
    if (isPrompt(dbUserName)) QuickStart.userName = dbUserName
    else QuickStart.userName = dbUserName
    
-//   we cannot initiliaze password  
-//   val dbPassword = adminConfig.dbPassword
-//   if (isPrompt(dbPassword)) passwordPWDField.promptText = dbPassword
-//   else passwordPWDField.text = dbPassword
+//   we cannot initialize password ?!
+   
+   val dbPassword = adminConfig.dbPassword
+   if (isPrompt(dbPassword)) QuickStart.passwordUser = dbPassword
+   else QuickStart.passwordUser = dbPassword
 
    val dbHost = adminConfig.dbHost
    if (isPrompt(dbHost)) QuickStart.hostNameUser = dbHost
@@ -122,6 +129,7 @@ class DatabaseConfig extends VBox with LazyLogging {
     text <==> passwordPWDField.text
     promptText <==> passwordPWDField.promptText
     visible <== !passwordPWDField.visible
+    if (QuickStart.passwordUser != null) text = QuickStart.passwordUser
     text.onChange { (_, oldText, newText) =>
       updatePassword(newText)
     }
