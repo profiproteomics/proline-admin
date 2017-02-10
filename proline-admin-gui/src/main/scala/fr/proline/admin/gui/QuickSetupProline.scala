@@ -114,7 +114,7 @@ class QuickStart extends Application {
       height = 570
       minWidth = 620
       minHeight = 570
-      title = "Proline wizard"
+      title = "Proline Admin wizard"
     }
 
     QuickStart.stage.show()

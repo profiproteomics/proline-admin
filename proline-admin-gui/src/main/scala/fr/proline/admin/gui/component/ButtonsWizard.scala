@@ -61,9 +61,8 @@ object ButtonsPanelQStart extends LazyLogging {
 
   // exit  application 
 
-  val cancelButton = new Button("Cancel") {
+  val cancelButton = new Button("Exit") {
     onAction = handle {
-
       confirmDialog()
     }
   }

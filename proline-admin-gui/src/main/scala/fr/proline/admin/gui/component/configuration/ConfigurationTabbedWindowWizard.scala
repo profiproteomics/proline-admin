@@ -4,7 +4,7 @@ import scala.collection.mutable.ArrayBuffer
 
 import scalafx.Includes._
 
-import fr.proline.admin.gui.component.configuration.tab._
+import fr.proline.admin.gui.component.wizard._
 import fr.proline.admin.gui.component.configuration.tab.ConfigFilesSelectionTab
 import fr.proline.admin.gui.component.configuration.tab.IConfigTab
 import fr.proline.admin.gui.util.AbstractTabbedWindow
@@ -12,7 +12,7 @@ import fr.proline.admin.gui.util.ShowPopupWindow
 
 /**
  * ********************************************************************************* *
- * Tabbed window for the configuration of PostgreSQL, Proline datastore, and SeqRepo *
+ * Tabbed window for the configuration of PostgreSQL, Proline datastore              *
  * ********************************************************************************* *
  */
 class ConfigurationTabbedWindowWizard extends AbstractTabbedWindow {
@@ -28,15 +28,13 @@ class ConfigurationTabbedWindowWizard extends AbstractTabbedWindow {
 
   // Tabs are classes so this Stage can be implicitly known as parent
   val iTabs: Seq[IConfigTab] = Seq(
-    
-    new PgHbaConfigTab(),
-    new PostgresConfigTab()
-    
-    //TODO: enable me: new SeqRepoConfigTab()
-  )
+
+    new StepTwoPgConfig(),
+    new StepTwoPostgresConfig() //TODO: enable me: new SeqRepoConfigTab()
+    )
 
   tabPanel.tabs = iTabs
-  
+
   /*
    * ************** *
    * INITIALIZATION *
@@ -50,7 +48,7 @@ class ConfigurationTabbedWindowWizard extends AbstractTabbedWindow {
   tabPanel.selectionModel().selectedIndex.onChange { (a, b, newlySelectedIndex) =>
     iTabs(newlySelectedIndex.intValue).setContent()
   }
-  
+
   /** Trigger 'Apply' action of every tab ('OK' pressed) **/
   protected def runOnOkPressed() {
 
@@ -73,14 +71,10 @@ class ConfigurationTabbedWindowWizard extends AbstractTabbedWindow {
     /* If all checks passed, close window */
     if (tabsInError.isEmpty) {
       thisWindow.close()
-    }
-    
-    /* Otherwise show a popup */
-    else {
+    } /* Otherwise show a popup */ else {
       ShowPopupWindow(
         wTitle = "Errors",
-        wText = "There are some errors in the following tab(s):\n" + tabsInError.mkString("\n - ")
-      )
+        wText = "There are some errors in the following tab(s):\n" + tabsInError.mkString("\n - "))
     }
   }
 }
