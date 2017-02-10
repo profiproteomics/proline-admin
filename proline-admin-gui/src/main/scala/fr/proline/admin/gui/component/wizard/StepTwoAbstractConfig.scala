@@ -64,7 +64,6 @@ trait StepTwoAbstractConfig extends IConfigTabContent {
   protected def init() {
     /* Add warnings to default components */
     setConfigFilePanelEnhancedContent(warningsAsVBox)
-    System.out.println("initial value "+configFilesPanel.getPgDataDir())
     /* Update warnings */
     _updateWorkingFile(configFilesPanel.getPgDataDir())
     onApplyWorkingFilesPressed()
@@ -97,7 +96,6 @@ trait StepTwoAbstractConfig extends IConfigTabContent {
       currentFilePath = newDirPath + "/" + _workingFileName
       val fileExists = new File(currentFilePath).exists()
       QuickStart.postgresqlDataDir=newDirPath
-      System.out.println(" this is the path "+QuickStart.postgresqlDataDir)
       workingFileLabel.text = WORKING_FILE + currentFilePath
       if (!fileExists) workingFileWarning.text = INEXISTING_WORKING_FILE
 
