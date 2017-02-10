@@ -12,6 +12,7 @@ import scalafx.stage.Modality
 import scalafx.stage.Stage
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.QuickStart
 import scalafx.scene.layout.VBox
 
 /**
@@ -80,6 +81,18 @@ object ShowPopupWindow {
     wText: String,
     wTitle: String = "",
     wParent: Option[Stage] = Option(Main.stage),
+    isResizable: Boolean = false
+  ) {
+    new PopupWindow(wTitle, wText, wParent, isResizable).showAndWait()
+  }
+
+}
+object ShowPopupWindowWizard {
+
+  def apply(
+    wText: String,
+    wTitle: String = "",
+    wParent: Option[Stage] = Option(QuickStart.stage),
     isResizable: Boolean = false
   ) {
     new PopupWindow(wTitle, wText, wParent, isResizable).showAndWait()

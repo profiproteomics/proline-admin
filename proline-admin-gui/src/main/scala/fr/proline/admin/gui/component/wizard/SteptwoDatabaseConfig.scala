@@ -164,7 +164,7 @@ class DatabaseConfig extends VBox with LazyLogging {
 
       /*test connection database*/
       if ((QuickStart.userName != null) && (passwordTextField.getText() != null) && (QuickStart.hostNameUser != null) && (QuickStart.port > 0))
-        DatabaseConnection.testDbConnection(driver, QuickStart.userName, passwordTextField.getText(), QuickStart.hostNameUser, QuickStart.port, true, true)
+        DatabaseConnection.testDbConnectionToWizard(driver, QuickStart.userName, passwordTextField.getText(), QuickStart.hostNameUser, QuickStart.port, true, true)
 
     }
             }

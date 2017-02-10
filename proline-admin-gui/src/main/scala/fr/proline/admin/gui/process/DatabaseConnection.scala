@@ -10,6 +10,7 @@ import java.sql.Connection
 
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.util.ShowPopupWindow
+import fr.proline.admin.gui.util.ShowPopupWindowWizard
 import fr.proline.repository.DriverType
 
 /**
@@ -63,7 +64,10 @@ object DatabaseConnection extends LazyLogging {
           wTitle = "Test connection to database",
           wText = "The connection to the database has been successfully established !"
         )
-
+        ShowPopupWindowWizard(
+          wTitle = "Test connection to database",
+          wText = "The connection to the database has been successfully established !"
+        ) 
         // return isSuccess
         true
       }
@@ -81,7 +85,7 @@ object DatabaseConnection extends LazyLogging {
             s"Note: you may also check that your $driverType server is running.\n\n" +
             "Got the following error:\n" + errorMsg
         )
-
+        
         // return isSuccess
         false
       }
@@ -138,5 +142,64 @@ object DatabaseConnection extends LazyLogging {
     //TODO: implement me?
     Failure(UnhandledDriverTypeException(DriverType.SQLITE))
   }
+ def testDbConnectionToWizard(
+    driverType: DriverType,
+    userName: String,
+    password: String,
+    host: String,
+    port: Int,
+    showSuccessPopup: Boolean,
+    showFailurePopup: Boolean
+  ): Boolean = { //return connectionEstablished
+    
+    require( driverType != null, "driverType is null")
+
+    val tryConnection: Try[Connection] = driverType match {
+
+      case DriverType.POSTGRESQL => testConnectionToPostgres(userName, password, host, port)
+
+      case DriverType.H2         => testConnectionToH2(userName, password, host, port)
+
+      case DriverType.SQLITE     => testConnectionToSQLite(userName, password, host, port)
+
+      case _                     => Failure(UnknownDriverTypeException(driverType))
+      //case _                     => (false, Some(UnknownDriverTypeException(driverType)))
+    }
+
+    /* Log +/- popup */
+    tryConnection match {
+      
+      case Success(connection) => {
+        logger.debug("Successfully connected to database !")
+
+        if (showSuccessPopup) 
+        ShowPopupWindowWizard(
+          wTitle = "Test connection to database",
+          wText = "The connection to the database has been successfully established !"
+        ) 
+        // return isSuccess
+        true
+      }
+
+      case Failure(t) => {
+        
+        //logger.debug("Unable to connect to database", errorOpt.get)
+        val errorMsg = t.getMessage()
+        logger.warn("Unable to connect to database:\n" + errorMsg)
+
+        if (showFailurePopup) ShowPopupWindowWizard(
+          wTitle = "Test connection to database",
+          wText = "The connection to the database could not be established with this configuration.\n\n" +
+            "Check that your Proline configuration (Database connection parameters) is correct.\n" +
+            s"Note: you may also check that your $driverType server is running.\n\n" +
+            "Got the following error:\n" + errorMsg
+        )
+        
+        // return isSuccess
+        false
+      }
+    }
+  }
+
 
 }
