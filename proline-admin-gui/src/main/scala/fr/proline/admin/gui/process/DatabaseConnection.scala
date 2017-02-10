@@ -10,9 +10,8 @@ import java.sql.Connection
 
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.util.ShowPopupWindow
-import fr.proline.admin.gui.util.ShowPopupWindowWizard
 import fr.proline.repository.DriverType
-
+import fr.proline.admin.gui.QuickStart
 /**
  * Custom exceptions
  **/
@@ -63,11 +62,8 @@ object DatabaseConnection extends LazyLogging {
         if (showSuccessPopup) ShowPopupWindow(
           wTitle = "Test connection to database",
           wText = "The connection to the database has been successfully established !"
+           
         )
-        ShowPopupWindowWizard(
-          wTitle = "Test connection to database",
-          wText = "The connection to the database has been successfully established !"
-        ) 
         // return isSuccess
         true
       }
@@ -173,9 +169,10 @@ object DatabaseConnection extends LazyLogging {
         logger.debug("Successfully connected to database !")
 
         if (showSuccessPopup) 
-        ShowPopupWindowWizard(
+        ShowPopupWindow(
           wTitle = "Test connection to database",
-          wText = "The connection to the database has been successfully established !"
+          wText = "The connection to the database has been successfully established !",
+          wParent =Option(QuickStart.stage)
         ) 
         // return isSuccess
         true
@@ -187,12 +184,13 @@ object DatabaseConnection extends LazyLogging {
         val errorMsg = t.getMessage()
         logger.warn("Unable to connect to database:\n" + errorMsg)
 
-        if (showFailurePopup) ShowPopupWindowWizard(
+        if (showFailurePopup) ShowPopupWindow(
           wTitle = "Test connection to database",
           wText = "The connection to the database could not be established with this configuration.\n\n" +
             "Check that your Proline configuration (Database connection parameters) is correct.\n" +
             s"Note: you may also check that your $driverType server is running.\n\n" +
-            "Got the following error:\n" + errorMsg
+            "Got the following error:\n" + errorMsg,
+           wParent =Option(QuickStart.stage)
         )
         
         // return isSuccess

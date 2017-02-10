@@ -87,15 +87,3 @@ object ShowPopupWindow {
   }
 
 }
-object ShowPopupWindowWizard {
-
-  def apply(
-    wText: String,
-    wTitle: String = "",
-    wParent: Option[Stage] = Option(QuickStart.stage),
-    isResizable: Boolean = false
-  ) {
-    new PopupWindow(wTitle, wText, wParent, isResizable).showAndWait()
-  }
-
-}
