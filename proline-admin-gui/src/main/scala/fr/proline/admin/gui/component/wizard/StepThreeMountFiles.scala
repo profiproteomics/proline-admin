@@ -98,7 +98,8 @@ class ProlineMountFiles extends VBox with LazyLogging {
     onAction = handle { _addResultFilesMountPoint() }
   }
   val resultFilesMpBox = new VBox { spacing = 10 }
-
+ // Warning 
+  val warningAboutExitText = "WARNING: Are you sure  to save and exit ? "
   /*
    * ****** *
    * LAYOUT *
@@ -361,9 +362,13 @@ class ProlineMountFiles extends VBox with LazyLogging {
       if (connectionEstablished) {
 
         /* Log and close dialog if config is valid */
+        
+        ShowConfirmWindow(
+                  wTitle = "Warning",
+                  wText = warningAboutExitText,
+                  wParent = Option(QuickStart.stage)
+             )
         logger.info("Configuration file(s) successfully updated !")
-        QuickStart.stage.close()
-
       } else {
 
         /* If DB can't be reached, allow to save configuration anyway */
@@ -377,7 +382,6 @@ class ProlineMountFiles extends VBox with LazyLogging {
           ProlineAdminConnection.loadProlineConf(verbose = true)
         }
       }
-      //}
       QuickStart.stage.scene().setCursor(Cursor.DEFAULT)
     }
   }

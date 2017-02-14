@@ -33,9 +33,8 @@ object ButtonsPanelQStart extends LazyLogging {
   //initialize panels 
   val prolineConfigFilesPanel = new ProlineConfigFilesPanelQStart()
   private val Databaseconfig = new DatabaseConfig()
-  // private val monutfiles = new MountFilesContent()
   private var buttonValue: String = _
-  var monutfiles: MountFilesContent = null
+  var mountFiles: MountFilesContent = null
 
   /**
    * ******* *
@@ -127,8 +126,8 @@ object ButtonsPanelQStart extends LazyLogging {
       if (QuickStart.panelState.equals("Databaseconfig")) {
 
         QuickStart.mainPanel.getChildren().clear()
-        monutfiles = new MountFilesContent()
-        QuickStart.mainPanel.getChildren().add(monutfiles)
+        mountFiles = new MountFilesContent()
+        QuickStart.mainPanel.getChildren().add(mountFiles)
         QuickStart.panelState = "mountfiles"
       }
     }
@@ -179,8 +178,8 @@ object ButtonsPanelQStart extends LazyLogging {
   private def getButton() {
     buttonValue = nextButton.getText()
     if (buttonValue.equals("Finish")) {
-      monutfiles.saveForm()
-      // closeStage()
+      mountFiles.saveForm()
+
     }
   }
 
