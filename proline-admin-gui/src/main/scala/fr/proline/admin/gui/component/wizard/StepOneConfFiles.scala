@@ -315,13 +315,10 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   // normalize file path 
 
   def normalizeFilePath(path: String): String = {
- //      return Paths.get(path).normalize().toString()
-    var filePath = path.replaceAll("\\\\", "/")
-    filePath = new File(path).getCanonicalPath()
-    return (filePath)
+    return Paths.get(path).normalize().toString()
   }
 
-  // update textfields 
+  // update textFields 
 
   def setAdminfield(text: String) {
     adminConfigField.setText(text)
@@ -333,6 +330,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     seqReposConfigField.setText(text)
   }
   // get environment var PG_DATA 
+  
   def getPgData(env: String): String = {
     return System.getenv(env)
   }
