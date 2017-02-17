@@ -98,7 +98,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
     onAction = handle { _addResultFilesMountPoint() }
   }
   val resultFilesMpBox = new VBox { spacing = 10 }
- // Warning 
+  // Warning 
   val warningAboutExitText = "WARNING: Are you sure  to save and exit ? "
   /*
    * ****** *
@@ -213,10 +213,11 @@ class ProlineMountFiles extends VBox with LazyLogging {
 
   private def _toAdminConfig() = AdminConfig(
     filePath = adminConfig.filePath,
-    serverConfigFilePath = adminConfig.serverConfigFilePath.map(doubleBackSlashes), //FIXME: windows-specific
+    serverConfigFilePath = Option(QuickStart.serverConfPath).map(doubleBackSlashes), //FIXME: windows-specific
     pwxConfigFilePath = adminConfig.pwxConfigFilePath.map(doubleBackSlashes), //FIXME: windows-specific
-    pgsqlDataDir = adminConfig.pgsqlDataDir.map(doubleBackSlashes), //FIXME: windows-specific
-    driverType = adminConfig.driverType, //immutable in UI
+    pgsqlDataDir = Option(QuickStart.postgresqlDataDir).map(doubleBackSlashes), //FIXME: windows-specific
+    seqRepoConfigFilePath = Option(QuickStart.seqRepoConfPath).map(doubleBackSlashes),
+    driverType = adminConfig.driverType, //
     prolineDataDir = Option(QuickStart.postgresqlDataDir).map(doubleBackSlashes), //FIXME: windows-specific
     dbUserName = Option(QuickStart.userName),
     dbPassword = Option(QuickStart.passwordUser),
@@ -339,35 +340,28 @@ class ProlineMountFiles extends VBox with LazyLogging {
 
       /* edit seqRepository  .conf is optionnal */
       if ((QuickStart.seqRepoConfPath != null) && (!QuickStart.seqRepoConfPath.isEmpty)) {
-
         val seqConfigFile = new AdminConfigFile(QuickStart.seqRepoConfPath)
         val seqConfigOpt = seqConfigFile.read()
         require(seqConfigOpt.isDefined, "SeqRepository config file is undefined")
         val seqConfig = seqConfigOpt.get
         seqConfigFile.write(newAdminConfig)
       }
-
       if (serverConfigOpt.isDefined) {
-
         /* New ServerConfig */
         val newServerConfig = _toServerConfig()
         serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
-
       }
-
       /* Test connection to database */
-      // Don't try to reach database. Here we just want to know if config is valid, not if Proline is set up
       val connectionEstablished = _testDbConnection(newAdminConfig, false, false)
 
       if (connectionEstablished) {
 
         /* Log and close dialog if config is valid */
-        
+
         ShowConfirmWindow(
-                  wTitle = "Warning",
-                  wText = warningAboutExitText,
-                  wParent = Option(QuickStart.stage)
-             )
+          wTitle = "Warning",
+          wText = warningAboutExitText,
+          wParent = Option(QuickStart.stage))
         logger.info("Configuration file(s) successfully updated !")
       } else {
 

@@ -30,6 +30,8 @@ import scalafx.scene.control.Button.sfxButton2jfx
 import scalafx.scene.control.TextField.sfxTextField2jfx
 import fr.proline.admin.gui.component.configuration.file._
 import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  *********************************************************
@@ -59,7 +61,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     content = List(
       new Label("Full path to "),
       new BoldLabel("ProlineAdmin", upperCase = false),
-      new Label(" configuration file :"))
+      new Label(" configuration file application.conf :"))
   }
   val adminConfigField = new TextField {
     if (QuickStart.adminConfPath != null) text = QuickStart.adminConfPath
@@ -81,7 +83,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     content = List(
       new Label("Full path to "),
       new BoldLabel("Proline server", upperCase = false),
-      new Label(" configuration file :"))
+      new Label(" configuration file application.conf :"))
   }
   val serverConfigField = new TextField() {
     if (QuickStart.serverConfPath != null) text = QuickStart.serverConfPath
@@ -100,7 +102,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     content = List(
       new Label("Full path to "),
       new BoldLabel("Sequence Repository", upperCase = false),
-      new Label(" configuration file ( optional ):"))
+      new Label(" configuration file application.conf ( optional ):"))
   }
   val seqReposConfigField = new TextField() {
     if (QuickStart.seqRepoConfPath != null) text = QuickStart.seqRepoConfPath
@@ -313,6 +315,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   // normalize file path 
 
   def normalizeFilePath(path: String): String = {
+ //      return Paths.get(path).normalize().toString()
     var filePath = path.replaceAll("\\\\", "/")
     filePath = new File(path).getCanonicalPath()
     return (filePath)

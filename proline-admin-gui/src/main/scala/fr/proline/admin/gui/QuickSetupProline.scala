@@ -41,11 +41,7 @@ object QuickStart extends LazyLogging {
   var passwordUser: String = _
   var hostNameUser: String = _
   var port: Int = 5432
-  var rawFiles: Map[String, String] = Map()
-  var mzdbFiles: Map[String, String] = Map()
-  var resultFiles: Map[String, String] = Map()
   var firstCallToDataDir = true
-  var globalParameters = new HashMap[String, String]()
 
   def adminConfPathIsEmpty(): Boolean = StringUtils.isEmpty(adminConfPath)
   def serverConfPathIsEmpty(): Boolean = StringUtils.isEmpty(serverConfPath)

@@ -60,10 +60,12 @@ import fr.proline.admin.gui.component.configuration._
 import fr.proline.admin.gui.component.configuration.ConfigurationTabbedWindowWizard
 import fr.proline.admin.gui.component.resource.ResourcesTabbedWindow
 
-/***********************************************************
+/**
+ * *********************************************************
  * Step 2 : a panel to initialize and to edit
- *  database configuration's file .
- ************************************************************/
+ *          database configuration's file .
+ * **********************************************************
+ */
 class DatabaseConfig extends VBox with LazyLogging {
 
   /*
@@ -72,37 +74,35 @@ class DatabaseConfig extends VBox with LazyLogging {
 	 * ********** *
 	 */
 
+  private val adminConfigFile = new AdminConfigFile(QuickStart.adminConfPath)
+  private val adminConfigOpt = adminConfigFile.read()
+  require(adminConfigOpt.isDefined, "admin config is undefined")
+  private val adminConfig = adminConfigOpt.get
+  private val driver = DriverType.POSTGRESQL
 
-   private val adminConfigFile = new AdminConfigFile(QuickStart.adminConfPath)
-   private val adminConfigOpt = adminConfigFile.read()
-   require(adminConfigOpt.isDefined, "admin config is undefined")
-   private val adminConfig = adminConfigOpt.get
-   private val driver = DriverType.POSTGRESQL
-   
-   def isPrompt(str: String): Boolean = str matches """<.*>"""
-   
-   //update QuickStart.postgresqlDataDir only when its valid path 
-   
-   val dataDir = adminConfig.prolineDataDir
-   if (new File(dataDir).exists()) {
-     QuickStart.postgresqlDataDir = dataDir
-   }
+  def isPrompt(str: String): Boolean = str matches """<.*>"""
 
+  //update QuickStart.postgresqlDataDir only when its valid path 
 
-   val dbUserName = adminConfig.dbUserName
-   if (isPrompt(dbUserName)) QuickStart.userName = dbUserName
-   else QuickStart.userName = dbUserName
-   
-//   we cannot initialize password ?!
-   
-   val dbPassword = adminConfig.dbPassword
-   if (isPrompt(dbPassword)) QuickStart.passwordUser = dbPassword
-   else QuickStart.passwordUser = dbPassword
+  val dataDir = adminConfig.prolineDataDir
+  if (new File(dataDir).exists()) {
+    QuickStart.postgresqlDataDir = dataDir
+  }
 
-   val dbHost = adminConfig.dbHost
-   if (isPrompt(dbHost)) QuickStart.hostNameUser = dbHost
-    else QuickStart.hostNameUser = dbHost
-    
+  val dbUserName = adminConfig.dbUserName
+  if (isPrompt(dbUserName)) QuickStart.userName = dbUserName
+  else QuickStart.userName = dbUserName
+
+  //   we cannot initialize password ?!
+
+  val dbPassword = adminConfig.dbPassword
+  if (isPrompt(dbPassword)) QuickStart.passwordUser = dbPassword
+  else QuickStart.passwordUser = dbPassword
+
+  val dbHost = adminConfig.dbHost
+  if (isPrompt(dbHost)) QuickStart.hostNameUser = dbHost
+  else QuickStart.hostNameUser = dbHost
+
   /* DB connection */
   /* user name  */
   val userNameLabel = new Label("User name :")
@@ -160,14 +160,14 @@ class DatabaseConfig extends VBox with LazyLogging {
   portField.setText("5432")
   portField.setTooltip(new Tooltip("enter the port of your database(default:5432)."))
   val testConnectionButton = new Button("Test connection") {
-           onAction = handle {
+    onAction = handle {
 
       /*test connection database*/
       if ((QuickStart.userName != null) && (passwordTextField.getText() != null) && (QuickStart.hostNameUser != null) && (QuickStart.port > 0))
         DatabaseConnection.testDbConnectionToWizard(driver, QuickStart.userName, passwordTextField.getText(), QuickStart.hostNameUser, QuickStart.port, true, true)
 
     }
-            }
+  }
   /* optimize configuration of database server postgresql.conf */
 
   val optimizePostgresqlButton = new Button("Manage PostgreSQL") {
@@ -213,7 +213,7 @@ class DatabaseConfig extends VBox with LazyLogging {
     contentNode = new VBox {
       minWidth = 360
       prefWidth = 360
-      minHeight= 300
+      minHeight = 300
       spacing = 5
       content = Seq(
         userNameLabel,
@@ -254,25 +254,20 @@ class DatabaseConfig extends VBox with LazyLogging {
   content = List(
     ScalaFxUtils.newVSpacer(minH = 1),
     dbConnectionSettings)
+
   /* update global variables */
+
   private def updateUSername(name: String) {
     QuickStart.userName = name
-    QuickStart.globalParameters += ("userName" -> QuickStart.userName)
   }
   private def updatePassword(passUser: String) {
     QuickStart.passwordUser = passUser
-    QuickStart.globalParameters += ("password" -> QuickStart.passwordUser)
   }
   private def updateHost(hostname: String) {
     QuickStart.hostNameUser = hostname
-    QuickStart.globalParameters += ("hostName" -> QuickStart.hostNameUser)
   }
   private def updatePort(portnumber: Int) {
     QuickStart.port = portnumber
-    QuickStart.globalParameters += ("port" -> QuickStart.port.toString())
   }
-  /*set global variables */
-  QuickStart.globalParameters += ("adminConf" -> QuickStart.adminConfPath, "serverConf" -> QuickStart.serverConfPath, "seqReposConf" -> QuickStart.seqRepoConfPath)
-  QuickStart.globalParameters += ("userName" -> QuickStart.userName, "password" -> QuickStart.passwordUser, "hostName" -> QuickStart.hostNameUser, "port" -> QuickStart.port.toString())
 
 }
