@@ -155,7 +155,7 @@ object RunCommand extends App with LazyLogging {
 
     @Parameter(names = Array("--owner_id", "-oid"), description = "The user account id ", required = true)
     var userId: Int = 0
-    @Parameter(names = Array("--password", "-p"), description = "the new password", required = false)
+    @Parameter(names = Array("--password", "-p"), description = "The new password", required = false)
     var password: String = ""
   }
 

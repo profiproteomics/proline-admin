@@ -4,13 +4,12 @@ import com.typesafe.scalalogging.LazyLogging
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.context._
-import fr.proline.core.orm.uds.{ Project => UdsProject, UserAccount => UdsUser }
+import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import javax.persistence.EntityTransaction
-import fr.proline.repository.DriverType
 
 /**
- * Reset password ,if password is indefined use 'proline' as default password .
+ * Reset password ,if password is indefined , 'proline' used as default password .
  *
  */
 class ResetPassword(
@@ -27,21 +26,17 @@ class ResetPassword(
 
       // Creation UDS entity manager
       val udsEM = udsDbContext.getEntityManager
-
       val udsUser = udsEM.find(classOf[UdsUser], userId)
       if (udsUser != null) {
-
         // reset user password 
-
         udsUser.setPasswordHash(sha256Hex(password))
         udsEM.merge(udsUser)
-
       } else {
-        logger.info(s" user with id '${userId}'does not exist ")
+        logger.info(s" user with id= ${userId} does not exist ")
       }
     }
     if (isTxOk) {
-      logger.debug("Your password has been succefully reset")
+      logger.info("Your password has been succefully reset")
     } else {
       logger.error(" can't reset password !")
     }
@@ -78,7 +73,7 @@ object ResetPassword extends LazyLogging {
       val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
 
       try {
-        // Create user
+        // reset password
         val password = if (pswd.isDefined) pswd.get else "proline"
         val resetPassword = new ResetPassword(udsDbContext, userId, password)
         resetPassword.run()
@@ -91,11 +86,10 @@ object ResetPassword extends LazyLogging {
         } catch {
           case exClose: Exception => logger.error("Error closing UDS Db Context", exClose)
         }
-
       }
 
     } finally {
-
+      //close connector
       if (localUdsDbConnector && (udsDbConnector != null)) {
         udsDbConnector.close()
       }
