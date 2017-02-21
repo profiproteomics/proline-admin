@@ -22,9 +22,12 @@ object RunCommand extends App with LazyLogging {
     }
   }
 
+  /**set up proline command */
+
   @Parameters(commandNames = Array("setup"), commandDescription = "Set Up the Proline databases", separators = "=")
   private object SetupProlineCommand extends JCommandReflection
 
+  /** create project command */
   @Parameters(commandNames = Array("create_project"), commandDescription = "Create new project", separators = "=")
   private object CreateProjectCommand extends JCommandReflection {
 
@@ -38,6 +41,7 @@ object RunCommand extends App with LazyLogging {
     var projectDescription: String = ""
   }
 
+  /** create user command */
   @Parameters(commandNames = Array("delete_project"), commandDescription = "Delete project", separators = "=")
   private object DeleteProjectCommand extends JCommandReflection {
 
@@ -49,6 +53,7 @@ object RunCommand extends App with LazyLogging {
 
   }
 
+  /** create user command */
   @Parameters(commandNames = Array("create_user"), commandDescription = "Create new user account", separators = "=")
   private object CreateUserCommand extends JCommandReflection {
     @Parameter(names = Array("--login", "-l"), description = "The user account login", required = true)
@@ -59,6 +64,7 @@ object RunCommand extends App with LazyLogging {
 
   }
 
+  /** dump msi db command */
   @Parameters(commandNames = Array("dump_msi_db"), commandDescription = "Dump MSIdb content into an XML file", separators = "=")
   private object DumpMsiDbCommand extends JCommandReflection {
 
@@ -69,35 +75,42 @@ object RunCommand extends App with LazyLogging {
     var filePath: String = ""
   }
 
+  /** dump ps db  */
   @Parameters(commandNames = Array("dump_ps_db"), commandDescription = "Dump PSdb content into an XML file", separators = "=")
   private object DumpPsDbCommand extends JCommandReflection {
     @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
     var filePath: String = ""
   }
 
+  /** dump uds db  command */
   @Parameters(commandNames = Array("dump_uds_db"), commandDescription = "Dump UDSdb content into an XML file", separators = "=")
   private object DumpUdsDbCommand extends JCommandReflection {
     @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
     var filePath: String = ""
   }
 
+  /** export dbunits command */
   @Parameters(commandNames = Array("export_dbunit_dtds"), commandDescription = "Export DBUnit DTD files", separators = "=")
   private object ExportDbUnitDTDsCommand extends JCommandReflection {
     @Parameter(names = Array("--dir_path", "-d"), description = "The path to the export directory", required = true)
     var dirPath: String = ""
   }
+  /** export msidb stats command */
   @Parameters(commandNames = Array("export_msidb_stats"), commandDescription = "Export some statitics about MSIdb", separators = "=")
   private object ExportMsiDbStatsCommand extends JCommandReflection {
     @Parameter(names = Array("--dir_path", "-d"), description = "The path to the export directory", required = true)
     var dirPath: String = ""
   }
 
+  /** create missing dbs command */
   @Parameters(commandNames = Array("create_missing_dbs"), commandDescription = "Create missing MSI and LCMS databases", separators = "=")
   private object CreateMissingDbsCommand extends JCommandReflection
 
+  /** upgarde all dbs command */
   @Parameters(commandNames = Array("upgrade_dbs"), commandDescription = "Upgrade all databases to the latest format", separators = "=")
   private object UpgradeDatabasesCommand extends JCommandReflection
 
+  /** archive project command */
   @Parameters(commandNames = Array("archive_project"), commandDescription = "archive project", separators = "=")
   private object ArchiveProjectCommand extends JCommandReflection {
 
@@ -111,6 +124,7 @@ object RunCommand extends App with LazyLogging {
     var projectDirectoryPath: String = ""
   }
 
+  /** unarchive project command */
   @Parameters(commandNames = Array("unarchive_project"), commandDescription = "unarchive project", separators = "=")
   private object UnarchiveProjectCommand extends JCommandReflection {
 
@@ -118,6 +132,7 @@ object RunCommand extends App with LazyLogging {
     var projectId: Int = 0
   }
 
+  /** restore project command */
   @Parameters(commandNames = Array("restore_project"), commandDescription = "restore project", separators = "=")
   private object RestoreProjectCommand extends JCommandReflection {
 
@@ -132,6 +147,16 @@ object RunCommand extends App with LazyLogging {
 
     @Parameter(names = Array("--project_directory_path", "-dd"), description = "The path of the directory from where the project will be restored", required = true)
     var projectDirectoryPath: String = ""
+  }
+
+  /** reset password command */
+  @Parameters(commandNames = Array("reset_password"), commandDescription = "reset password", separators = "=")
+  private object ResetPasswordCommand extends JCommandReflection {
+
+    @Parameter(names = Array("--owner_id", "-oid"), description = "The user account id ", required = true)
+    var userId: Int = 0
+    @Parameter(names = Array("--password", "-p"), description = "the new password", required = false)
+    var password: String = ""
   }
 
   var hasDsConnectorFactory = false
@@ -156,6 +181,7 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(SetupProlineCommand)
     jCmd.addCommand(CreateProjectCommand)
     jCmd.addCommand(CreateUserCommand)
+    jCmd.addCommand(ResetPasswordCommand)
     jCmd.addCommand(DumpMsiDbCommand)
     jCmd.addCommand(DumpPsDbCommand)
     jCmd.addCommand(DumpUdsDbCommand)
@@ -166,6 +192,8 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(ArchiveProjectCommand)
     jCmd.addCommand(UnarchiveProjectCommand)
     jCmd.addCommand(RestoreProjectCommand)
+    
+    
     // Try to parse the command line
     var parsedCommand = ""
     try {
@@ -217,6 +245,12 @@ object RunCommand extends App with LazyLogging {
           import fr.proline.admin.service.user.CreateUser
           val pswd = if (CreateUserCommand.userPassword.isEmpty()) None else Some(CreateUserCommand.userPassword)
           CreateUser(CreateUserCommand.userLogin, pswd)
+        }
+        
+         case ResetPasswordCommand.Parameters.firstName => {
+          import fr.proline.admin.service.user.ResetPassword
+          val pswd = if (ResetPasswordCommand.password.isEmpty()) None else Some(ResetPasswordCommand.password)
+          ResetPassword(ResetPasswordCommand.userId, pswd)
         }
         case DumpMsiDbCommand.Parameters.firstName => {
           import fr.proline.admin.service.db.maintenance.DumpDatabase
