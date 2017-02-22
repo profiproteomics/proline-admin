@@ -153,9 +153,9 @@ object RunCommand extends App with LazyLogging {
   @Parameters(commandNames = Array("reset_password"), commandDescription = "reset password", separators = "=")
   private object ResetPasswordCommand extends JCommandReflection {
 
-    @Parameter(names = Array("--owner_id", "-oid"), description = "The user account id ", required = true)
+    @Parameter(names = Array("--user_id", "-uid"), description = "The user account id ", required = true)
     var userId: Int = 0
-    @Parameter(names = Array("--password", "-p"), description = "The new password", required = false)
+    @Parameter(names = Array("--new_password", "-np"), description = "The new password", required = false)
     var password: String = ""
   }
 
