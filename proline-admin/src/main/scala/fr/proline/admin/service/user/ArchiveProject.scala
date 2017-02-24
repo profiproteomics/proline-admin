@@ -15,7 +15,7 @@ import fr.proline.core.dal.DoJDBCReturningWork
 import fr.proline.repository._
 import fr.proline.core.dal.DoJDBCWork
 
-import java.io._
+import java.io.{ File, IOException, FileWriter }
 import java.util.Date
 import java.text.SimpleDateFormat
 import scala.sys.process.Process
@@ -28,7 +28,8 @@ import com.google.gson.JsonParser
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.apache.commons.csv.CSVRecord
-
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.filefilter.WildcardFileFilter
 import org.zeroturnaround.zip.ZipUtil
 
 /**
@@ -136,47 +137,46 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                     }
                   }
                 }
-
                 csvPrinter.flush()
                 csvPrinter.close()
                 // set the file readable only  
                 fileToWrite.setWritable(false)
                 //update serialized properties
-                val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
                 array.addProperty("archive_date", sdf.format(new Date()).toString())
                 array.addProperty("is_active", false)
                 project.setSerializedProperties(array.toString())
                 udsEM.merge(project)
-                logger.info("Project with id= " + projectId + " has been archived .")
+                ZipUtil.pack(new File(pathDestination + File.separator + "project_" + projectId), new File(pathDestination + File.separator + "project_" + projectId + ".zip"))
+                deleteDirectory(new File(pathDestination + File.separator + "project_" + projectId))
+                logger.info(s"Project with id= $projectId has been archived .")
               }
             } catch {
               case t: Throwable => logger.error("Error while archiving project", t)
             }
-            //zip directory 
-            ZipUtil.pack(new File(pathDestination + File.separator + "project_" + projectId), new File(pathDestination + File.separator + "project_" + projectId + ".zip"))
           } else {
             logger.error("Some parameters are missing in table uds_db.external_db")
           }
 
         } else {
-          logger.error("project #" + projectId + " does not exist in uds_db database")
+          logger.error(s"project # $projectId does not exist in uds_db database")
         }
       } else {
-        logger.error("Some parameters are missing for the project #" + projectId + " check if project id ,source path or destination path are empty or null")
+        logger.error(s"Invalid parameters for the project # $projectId")
       }
       if (localUdsTransaction != null) {
         localUdsTransaction.commit()
         udsTransacOK = true
       }
-
     } finally {
-
       udsEM.setFlushMode(FlushModeType.AUTO)
       udsDbCtx.close()
       udsDbConnector.close()
     }
   }
+
   //execute command as sequence of string
+
   def execute(command: Seq[String]): Boolean = {
     var exeCmd: Boolean = true
     logger.debug("Executing " + command.mkString(" "))
@@ -193,42 +193,53 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
     return exeCmd
   }
 
+  // dump all databases 
+
   def execPgDump(host: String, port: Integer, user: String, msiDb: String, lcmsDb: String, pathDestination: String, pathSource: String, projectId: Long): Boolean = {
 
     val pathDestinationProject = new File(pathDestination + File.separator + "project_" + projectId)
-    val pathSrcDump = new File(pathSource + File.separator + "pg_dump").getCanonicalPath()
-    var pgDumpIsOk: Boolean = false
+    val pathSrcDump = FileUtils.getFile(new File(pathSource), "pg_dump").getPath()
+    val msiBackUpFile = FileUtils.getFile(pathDestinationProject, msiDb + ".bak")
+    val lcmsBackUpFile = FileUtils.getFile(pathDestinationProject, lcmsDb + ".bak")
+    val udsBackUpFile = FileUtils.getFile(pathDestinationProject, "uds_db_schema.bak")
+    // create the files 
+    var pgDumpAll: Boolean = false
     try {
       if (!pathDestinationProject.exists()) {
         if (pathDestinationProject.mkdir()) {
+          /**
+           * options of pg_dump
+           * -p, –port=PORT database server port number
+           * -i, –ignore-version proceed even when server version mismatches
+           * -h, –host=HOSTNAME database server host or socket directory
+           * -U, –username=NAME connect as specified database user
+           * -W, –password force password prompt (should happen automatically)
+           * -d, –dbname=NAME connect to database name
+           * -v, –verbose verbose mode
+           * -F, –format=c|t|p output file format (custom, tar, plain text)
+           * -c, –clean clean (drop) schema prior to create
+           * -b, –blobs include large objects in dump
+           * -v, –verbose verbose mode
+           * -f, –file=FILENAME output file name
+           */
 
-          /* options of pg_dump 
-							  -p, –port=PORT database server port number
-								-i, –ignore-version proceed even when server version mismatches
-								-h, –host=HOSTNAME database server host or socket directory
-								-U, –username=NAME connect as specified database user
-								-W, –password force password prompt (should happen automatically)
-								-d, –dbname=NAME connect to database name
-								-v, –verbose verbose mode
-								-F, –format=c|t|p output file format (custom, tar, plain text)
-								-c, –clean clean (drop) schema prior to create
-								-b, –blobs include large objects in dump
-								-v, –verbose verbose mode
-								-f, –file=FILENAME output file name
-						 */
-          //pg_dump msi_db
           logger.info("Starting to backup database # " + msiDb)
-          var cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + msiDb + ".bak").getCanonicalPath(), msiDb)
-          pgDumpIsOk = execute(cmd)
-          //pg_dump lcms_Db
-          logger.info("Starting to backup database # " + lcmsDb)
-          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + lcmsDb + ".bak").getCanonicalPath(), lcmsDb)
-          pgDumpIsOk = execute(cmd)
-          //pg_dump uds_db
-          logger.info("Starting to save schema only # uds_db")
-          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "--schema-only", "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + "uds_db_schema.bak").getCanonicalPath(), "uds_db")
-          pgDumpIsOk = execute(cmd)
+          var cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", msiBackUpFile.getPath(), msiDb)
+          val pgDumpMsi = execute(cmd)
 
+          logger.info("Starting to backup database # " + lcmsDb)
+          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", lcmsBackUpFile.getPath(), lcmsDb)
+          val pgDumpLcms = execute(cmd)
+
+          logger.info("Starting to backup schema  # uds_db")
+          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "--schema-only", "-F", "c", "-b", "-v", "-f", udsBackUpFile.getPath(), "uds_db")
+          val pgDumpUds = execute(cmd)
+
+          if (pgDumpMsi && pgDumpLcms && pgDumpUds) {
+            pgDumpAll = true
+          } else {
+            deleteDirectory(pathDestinationProject)
+          }
         } else {
           logger.error("failed trying to create the directory project_" + projectId + "")
         }
@@ -238,7 +249,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
     } catch {
       case e: Exception => logger.error("error to execute cmd", e)
     }
-    return pgDumpIsOk
+    return pgDumpAll
   }
 
   def stdout(out: String) {
@@ -250,6 +261,16 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
       logger.debug(err)
     } else {
       logger.error(err)
+    }
+  }
+
+  //delete directory
+
+  def deleteDirectory(directoryName: File) {
+    try {
+      FileUtils.deleteDirectory(directoryName)
+    } catch {
+      case ioe: IOException => ioe.printStackTrace()
     }
   }
 }
