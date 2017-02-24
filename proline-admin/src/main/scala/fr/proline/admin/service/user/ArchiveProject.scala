@@ -79,7 +79,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
               //pg_dump  databases for a project
 
               logger.info(s"Starting to pg_dump of MSI,LCMS and schema of UDS databases...")
-              if (execPgDump(externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(), externalDbMsi.getDbName(), externalDbLcms.getDbName(), pathDestination, pathSource, projectId)) {
+              if (execPgDump(externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getDbUser(), externalDbMsi.getDbName(), externalDbLcms.getDbName(), pathDestination, pathSource, projectId)) {
                 val fileToWrite = new File(pathDestination + File.separator + "project_" + projectId + File.separator + "uds_db_data.tsv")
 
                 var csvPrinter: CSVPrinter = null
@@ -89,7 +89,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                 //rows project 
                 val serializedProperties = Option(project.getSerializedProperties())
                 csvPrinter.printRecord("project", projectId.toString, project.getName(), project.getDescription(), project.getCreationTimestamp(), serializedProperties.getOrElse(""), project.getOwner().getId().toString,
-                  project.getLockExpirationTimestamp(), project.getLockUserID());
+                  project.getLockExpirationTimestamp(), project.getLockUserID())
 
                 //rows of external_db(msi)
 
@@ -177,7 +177,8 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
     }
   }
   //execute command as sequence of string
-  def execute(command: Seq[String]) {
+  def execute(command: Seq[String]): Boolean = {
+    var exeCmd: Boolean = true
     logger.debug("Executing " + command.mkString(" "))
     process = Process(command).run(ProcessLogger(out => stdout(out), err => stderr(err)))
     val exitCode = process.exitValue
@@ -186,11 +187,13 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
     logger.debug("Exit code is '" + exitCode + "'")
     // check exit code
     if (exitCode != 0) {
+      exeCmd = false
       logger.error("Command has failed !")
     }
+    return exeCmd
   }
 
-  def execPgDump(host: String, port: Integer, user: String, passWord: String, msiDb: String, lcmsDb: String, pathDestination: String, pathSource: String, projectId: Long): Boolean = {
+  def execPgDump(host: String, port: Integer, user: String, msiDb: String, lcmsDb: String, pathDestination: String, pathSource: String, projectId: Long): Boolean = {
 
     val pathDestinationProject = new File(pathDestination + File.separator + "project_" + projectId)
     val pathSrcDump = new File(pathSource + File.separator + "pg_dump").getCanonicalPath()
@@ -215,17 +218,17 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 						 */
           //pg_dump msi_db
           logger.info("Starting to backup database # " + msiDb)
-          var cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + msiDb + ".bak").getCanonicalPath(), msiDb)
-          execute(cmd)
+          var cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + msiDb + ".bak").getCanonicalPath(), msiDb)
+          pgDumpIsOk = execute(cmd)
           //pg_dump lcms_Db
           logger.info("Starting to backup database # " + lcmsDb)
-          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + lcmsDb + ".bak").getCanonicalPath(), lcmsDb)
-          execute(cmd)
+          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + lcmsDb + ".bak").getCanonicalPath(), lcmsDb)
+          pgDumpIsOk = execute(cmd)
           //pg_dump uds_db
           logger.info("Starting to save schema only # uds_db")
-          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "--schema-only", "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + "uds_db_schema.bak").getCanonicalPath(), "uds_db")
-          execute(cmd)
-          pgDumpIsOk = true
+          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "--schema-only", "-F", "c", "-b", "-v", "-f", new File(pathDestinationProject + File.separator + "uds_db_schema.bak").getCanonicalPath(), "uds_db")
+          pgDumpIsOk = execute(cmd)
+
         } else {
           logger.error("failed trying to create the directory project_" + projectId + "")
         }
