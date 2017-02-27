@@ -16,6 +16,7 @@ import fr.proline.repository._
 import fr.proline.core.dal.DoJDBCWork
 
 import java.io.{ File, IOException, FileWriter }
+import java.nio.file.{ Files, Path, Paths }
 import java.util.Date
 import java.text.SimpleDateFormat
 import scala.sys.process.Process
@@ -75,11 +76,12 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
           if ((externalDbMsi.getHost() != null) && (!externalDbMsi.getHost().isEmpty) && (externalDbMsi.getDbUser() != null) && (!externalDbMsi.getDbUser().isEmpty) &&
             (externalDbMsi.getDbName() != null) && (!externalDbMsi.getDbName().isEmpty) && (externalDbLcms.getDbName() != null) && (!externalDbLcms.getDbName().isEmpty) && (externalDbMsi.getPort() > 0)) {
             try {
-              logger.info(s"Starting to backup the project with id = #$projectId....")
+              logger.info(s"Starting to backup the project with id = #$projectId...")
 
               //pg_dump  databases for a project
 
               logger.info(s"Starting to pg_dump of MSI,LCMS and schema of UDS databases...")
+
               if (execPgDump(externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getDbUser(), externalDbMsi.getDbName(), externalDbLcms.getDbName(), pathDestination, pathSource, projectId)) {
                 val fileToWrite = new File(pathDestination + File.separator + "project_" + projectId + File.separator + "uds_db_data.tsv")
 
@@ -87,7 +89,8 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
                 csvPrinter = new CSVPrinter(new FileWriter(fileToWrite.getAbsoluteFile()), CSVFormat.MYSQL.withDelimiter('#').withNullString("null"));
 
-                //rows project 
+                //rows of project (uds)
+
                 val serializedProperties = Option(project.getSerializedProperties())
                 csvPrinter.printRecord("project", projectId.toString, project.getName(), project.getDescription(), project.getCreationTimestamp(), serializedProperties.getOrElse(""), project.getOwner().getId().toString,
                   project.getLockExpirationTimestamp(), project.getLockUserID())
@@ -105,15 +108,16 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
                   // rows of project_db_map
 
-                  ezDBC.selectAndProcess(" SELECT project_id,external_db_id FROM project_db_map WHERE project_id=" + projectId) { record =>
+                  ezDBC.selectAndProcess(s" SELECT project_id,external_db_id FROM project_db_map WHERE project_id=$projectId ") { record =>
                     if (record.getLong("project_id") > 0 && record.getLong("external_db_id") > 0) {
 
                       csvPrinter.printRecord("project_db_map", record.getLong("project_id").toString, record.getLong("external_db_id").toString)
                     }
                   }
+
                   //rows of data_set
 
-                  ezDBC.selectAndProcess(" SELECT id,number,name,description ,type ,keywords ,creation_timestamp ,modification_log,children_count ,serialized_properties, result_set_id ,result_summary_id ,aggregation_id ,fractionation_id ,quant_method_id ,parent_dataset_id ,project_id FROM data_set WHERE project_id=" + projectId + " order by id asc") { record =>
+                  ezDBC.selectAndProcess(s" SELECT id,number,name,description ,type ,keywords ,creation_timestamp ,modification_log,children_count ,serialized_properties, result_set_id ,result_summary_id ,aggregation_id ,fractionation_id ,quant_method_id ,parent_dataset_id ,project_id FROM data_set WHERE project_id=$projectId  order by id asc") { record =>
                     if (record.getLong("id") > 0 && record.getInt("number") >= 0 && record.getString("name") != null && record.getString("type") != null && record.getInt("children_count") >= 0 && record.getLong("project_id") >= 0) {
 
                       csvPrinter.printRecord("data_set", record.getLong("id").toString, record.getInt("number").toString, record.getString("name"), record.getStringOption("description").getOrElse(""), record.getString("type"), record.getStringOption("keywords").getOrElse(""),
@@ -124,14 +128,14 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                   }
                   // rows of run_identification
 
-                  ezDBC.selectAndProcess(" SELECT id,serialized_properties,run_id,raw_file_identifier FROM run_identification WHERE id in (SELECT id FROM data_set WHERE project_id=" + projectId + ")") { record =>
+                  ezDBC.selectAndProcess(s" SELECT id,serialized_properties,run_id,raw_file_identifier FROM run_identification WHERE id in (SELECT id FROM data_set WHERE project_id=$projectId)") { record =>
                     if (record.getLong("id") > 0) {
                       csvPrinter.printRecord("run_identification", record.getLong("id").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getLong("run_id").toString, record.getStringOption("raw_file_identifier").getOrElse(""))
                     }
                   }
 
                   // rows of project_user_account_map
-                  ezDBC.selectAndProcess(" SELECT project_id,user_account_id,serialized_properties,write_permission FROM project_user_account_map WHERE project_id=" + projectId) { record =>
+                  ezDBC.selectAndProcess(s" SELECT project_id,user_account_id,serialized_properties,write_permission FROM project_user_account_map WHERE project_id=$projectId") { record =>
                     if ((record.getLong("project_id") > 0) && (record.getLong("user_account_id") > 0) && (record.getString("write_permission") != null)) {
                       csvPrinter.printRecord("project_user_account", record.getLong("project_id").toString, record.getLong("user_account_id").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getBoolean("write_permission").toString)
                     }
@@ -141,14 +145,23 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                 csvPrinter.close()
                 // set the file readable only  
                 fileToWrite.setWritable(false)
+
                 //update serialized properties
                 val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
                 array.addProperty("archive_date", sdf.format(new Date()).toString())
                 array.addProperty("is_active", false)
                 project.setSerializedProperties(array.toString())
                 udsEM.merge(project)
+                if (localUdsTransaction != null) {
+                  localUdsTransaction.commit()
+                  udsTransacOK = true
+                }
+                //zip directory 
                 ZipUtil.pack(new File(pathDestination + File.separator + "project_" + projectId), new File(pathDestination + File.separator + "project_" + projectId + ".zip"))
+
+                //get only zip directory 
                 deleteDirectory(new File(pathDestination + File.separator + "project_" + projectId))
+
                 logger.info(s"Project with id= $projectId has been archived .")
               }
             } catch {
@@ -164,10 +177,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
       } else {
         logger.error(s"Invalid parameters for the project # $projectId")
       }
-      if (localUdsTransaction != null) {
-        localUdsTransaction.commit()
-        udsTransacOK = true
-      }
+
     } finally {
       udsEM.setFlushMode(FlushModeType.AUTO)
       udsDbCtx.close()
@@ -198,15 +208,19 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
   def execPgDump(host: String, port: Integer, user: String, msiDb: String, lcmsDb: String, pathDestination: String, pathSource: String, projectId: Long): Boolean = {
 
     val pathDestinationProject = new File(pathDestination + File.separator + "project_" + projectId)
-    val pathSrcDump = FileUtils.getFile(new File(pathSource), "pg_dump").getPath()
-    val msiBackUpFile = FileUtils.getFile(pathDestinationProject, msiDb + ".bak")
-    val lcmsBackUpFile = FileUtils.getFile(pathDestinationProject, lcmsDb + ".bak")
-    val udsBackUpFile = FileUtils.getFile(pathDestinationProject, "uds_db_schema.bak")
+
     // create the files 
     var pgDumpAll: Boolean = false
     try {
-      if (!pathDestinationProject.exists()) {
-        if (pathDestinationProject.mkdir()) {
+      val path = Paths.get(pathDestinationProject.getPath)
+      if (!Files.exists(path)) {
+        try {
+          Files.createDirectories(path)
+          println("path " + path)
+          val pathSrcDump = FileUtils.getFile(new File(pathSource), "pg_dump").getPath()
+          val msiBackUpFile = FileUtils.getFile(pathDestinationProject, msiDb + ".bak")
+          val lcmsBackUpFile = FileUtils.getFile(pathDestinationProject, lcmsDb + ".bak")
+          val udsBackUpFile = FileUtils.getFile(pathDestinationProject, "uds_db_schema.bak")
           /**
            * options of pg_dump
            * -p, –port=PORT database server port number
@@ -222,15 +236,15 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
            * -v, –verbose verbose mode
            * -f, –file=FILENAME output file name
            */
-
+          println("msiBackUpFile : " + msiBackUpFile.getPath())
           logger.info("Starting to backup database # " + msiDb)
           var cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", msiBackUpFile.getPath(), msiDb)
           val pgDumpMsi = execute(cmd)
-
+          println("lcmsBackUpFile : " + lcmsBackUpFile.getPath())
           logger.info("Starting to backup database # " + lcmsDb)
           cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", lcmsBackUpFile.getPath(), lcmsDb)
           val pgDumpLcms = execute(cmd)
-
+          println("uds : " + udsBackUpFile.getPath())
           logger.info("Starting to backup schema  # uds_db")
           cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "--schema-only", "-F", "c", "-b", "-v", "-f", udsBackUpFile.getPath(), "uds_db")
           val pgDumpUds = execute(cmd)
@@ -240,11 +254,11 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
           } else {
             deleteDirectory(pathDestinationProject)
           }
-        } else {
-          logger.error("failed trying to create the directory project_" + projectId + "")
+        } catch {
+          case ioe: IOException => ioe.printStackTrace()
         }
       } else {
-        logger.error("the directory project_" + projectId + " already exist !")
+        logger.error(s"the directory project_$projectId already exist !")
       }
     } catch {
       case e: Exception => logger.error("error to execute cmd", e)

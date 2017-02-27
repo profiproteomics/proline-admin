@@ -36,24 +36,26 @@ import org.apache.commons.csv.CSVRecord
 
 /**
  *  pg_restore  :
- *  -msi_db ,lcms_db ,uds_db only schema databases
- *  -some selected rows from uds_db database for the current project
+ *
+ *  msi_db ,lcms_db ,uds_db only schema databases
+ *  some selected rows from uds_db database for the current project
  *
  */
+
 class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: Long, userId: Long, pathSource: String, pathDestination: String) extends ICommandWork with LazyLogging {
   var process: Process = null
-
+  var dataBasesExist: Boolean = false
   def doWork() {
     val udsDbConnector = dsConnectorFactory.getUdsDbConnector
     val udsDbCtx = new UdsDbConnectionContext(udsDbConnector)
     val udsEM = udsDbCtx.getEntityManager
     var localUdsTransaction: EntityTransaction = null
     var udsTransacOK: Boolean = false
-    var dataBasesExist: Boolean = false
     var dbVersions: Boolean = false
     try {
+
       // check  databases lcms_db and msi_db exist 
-      dataBasesExist = dataBaseExists(udsDbCtx, projectId)
+
       udsEM.setFlushMode(FlushModeType.COMMIT)
       if (!udsDbCtx.isInTransaction) {
         localUdsTransaction = udsEM.getTransaction()
@@ -62,77 +64,19 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
       }
       if ((projectId > 0) && (userId > 0) && (pathSource != null) && (!pathSource.isEmpty) && (pathDestination != null) && (!pathDestination.isEmpty)) {
 
-        var project = udsEM.find(classOf[Project], projectId)
-        var user = udsEM.find(classOf[UserAccount], userId)
         val udsDbDataFile = new File(pathDestination + File.separator + "project_" + projectId + File.separator + "uds_db_data.tsv")
         var parser = new JsonParser()
         var array: JsonObject = null
+
         var versions = getVersions(udsDbDataFile)
 
-        // case 1: project exist in uds_db 
+        logger.info(s" import project # $projectId in uds_db database")
+        //insert data in uds_db 
+        val newProjectId = upsertDataUdsEm(udsEM, udsDbDataFile, userId)
+        val newProject = udsEM.find(classOf[Project], newProjectId)
+        dataBasesExist = dataBaseExists(udsDbCtx, newProjectId)
+        if (!dataBasesExist) {
 
-        if ((project != null) && (user != null)) {
-          val externalDbMsi = ExternalDbRepository.findExternalByTypeAndProject(udsEM, fr.proline.repository.ProlineDatabaseType.MSI, project)
-          val externalDbLcms = ExternalDbRepository.findExternalByTypeAndProject(udsEM, fr.proline.repository.ProlineDatabaseType.LCMS, project)
-          // parse project properties 
-          val properties = project.getSerializedProperties()
-          try {
-            array = parser.parse(properties).getAsJsonObject()
-          } catch {
-            case e: Exception =>
-              logger.error("error accessing project properties")
-              array = parser.parse("{}").getAsJsonObject()
-          }
-
-          // case 1.1 : project exist in uds_db ; lcms_db and msi_db exists    
-
-          if (dataBasesExist == true) {
-            //compare versions 
-            //add two properties: restore_date : date  ; is_active :true 
-            setProperties(array)
-            project.setSerializedProperties(array.toString())
-            udsEM.merge(project)
-            if (localUdsTransaction != null) {
-              localUdsTransaction.commit()
-            }
-            logger.info(" project #" + projectId + "  has been restored .")
-          } else {
-
-            //case 1.2 : lcms_db and msi_db does not exist 
-
-            if (localUdsTransaction != null) {
-              localUdsTransaction.commit()
-            }
-            //create lcms and msi databases 
-            createDataBases(udsDbCtx, projectId)
-            //pg_restore databases 
-            if ((externalDbMsi.getHost() != null) && (!externalDbMsi.getHost().isEmpty) && (externalDbMsi.getDbUser() != null) && (!externalDbMsi.getDbUser().isEmpty) &&
-              (externalDbMsi.getDbName() != null) && (!externalDbMsi.getDbName().isEmpty) && (externalDbLcms.getDbName() != null) && (!externalDbLcms.getDbName().isEmpty) &&
-              (externalDbMsi.getPort() > 0)) {
-              logger.info(s"Starting to restore msi_db and lcms_db ...")
-              execPgRestore(externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(), externalDbMsi.getDbName(),
-                externalDbLcms.getDbName(), pathDestination, pathSource, projectId, projectId, false)
-            }
-            if (localUdsTransaction != null) {
-              localUdsTransaction.begin()
-            }
-            setProperties(array)
-            project.setSerializedProperties(array.toString())
-            udsEM.merge(project)
-            if (localUdsTransaction != null) {
-              localUdsTransaction.commit()
-            }
-            logger.info(" project #" + projectId + "  has been restored .")
-          }
-        } else {
-
-          // case 2: project does not exist in uds_db 
-
-          logger.info("import project #" + projectId + "  in uds_db database")
-          //insert data in uds_db 
-          val newProjectId = upsertDataUdsEm(udsEM, udsDbDataFile, userId)
-          val newProject = udsEM.find(classOf[Project], newProjectId)
-          dataBasesExist = dataBaseExists(udsDbCtx, newProjectId)
           val properties = newProject.getSerializedProperties()
           try {
             array = parser.parse(properties).getAsJsonObject()
@@ -144,20 +88,19 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
             localUdsTransaction.commit()
           }
 
-          // create lcms_db and msi_db databases 
+          // create new lcms_db_project and msi_db_project ,can not be in transaction
 
           createDataBases(udsDbCtx, newProjectId)
 
-          //pg_restore databases 
+          //pg_restore 
 
           if ((!show(versions.get("host")).isEmpty) && (!show(versions.get("user")).isEmpty) && (show(versions.get("port")).toInt > 0)) {
             execPgRestore(show(versions.get("host")).toLowerCase(), show(versions.get("port")).toInt, show(versions.get("user")), show(versions.get("pw")), show(versions.get("msiName")),
               show(versions.get("lcmsName")), pathDestination, pathSource, projectId, newProjectId, false)
           }
 
-          //case 1.2 : lcms_db and msi_db does not exist 
-
           //update properties for the new project
+
           if (localUdsTransaction != null) {
             localUdsTransaction.begin()
           }
@@ -167,11 +110,12 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
           if (localUdsTransaction != null) {
             localUdsTransaction.commit()
           }
-          logger.info(" project with id #" + projectId + "  has been restored with a new project id #" + newProjectId + " .")
-
+          logger.info(s" project with id  # $projectId has been restored with a new project id # $newProjectId .")
+        } else {
+          logger.error("databases exists")
         }
       } else {
-        logger.error("Some parameters are missing for the project #" + projectId + " check  project id ,source path, destination path or owner id values !")
+        logger.error(s"Inavalid parameters for the project with id # $projectId ")
       }
 
     } finally {
@@ -230,7 +174,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
     val csvFileParser = new CSVParser(reader, CSVFormat.MYSQL.withNullString("null"))
     try {
       val user = udsEM.find(classOf[UserAccount], userId)
-      require(user != null, "undefined user with id=" + userId)
+      require(user != null, s"undefined user with id=$userId")
       val udsProject = new Project(user)
       var csvRecords = csvFileParser.getRecords()
       if ((csvRecords != null) && (!csvRecords.isEmpty)) {
@@ -406,17 +350,17 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
     return newProjectId
   }
   //check if databases exists
-  def dataBaseExists(udsContext: UdsDbConnectionContext, projectId: Long): Boolean = {
-    var dataBasesExist = false
-    try {
 
+  def dataBaseExists(udsContext: UdsDbConnectionContext, projectId: Long): Boolean = {
+    dataBasesExist = false
+    try {
       var nbMsi = 0
       var nbLcms = 0
       DoJDBCWork.withEzDBC(udsContext) { ezDBC =>
-        ezDBC.selectAndProcess("SELECT count(1) as nbrmsi FROM pg_database WHERE datname='msi_db_project_" + projectId + "'") { record =>
+        ezDBC.selectAndProcess(s"SELECT count(1) as nbrmsi FROM pg_database WHERE datname='msi_db_project_$projectId'") { record =>
           nbMsi = record.getInt("nbrmsi")
         }
-        ezDBC.selectAndProcess("SELECT count(1) as nbrlcms FROM pg_database WHERE datname='lcms_db_project_" + projectId + "'") { record =>
+        ezDBC.selectAndProcess(s"SELECT count(1) as nbrlcms FROM pg_database WHERE datname='lcms_db_project_$projectId'") { record =>
           nbLcms = record.getInt("nbrlcms")
         }
       }
@@ -424,7 +368,7 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
         dataBasesExist = true
       }
     } catch {
-      case t: Throwable => logger.error("Error while checking MSI and LCMS databases", t)
+      case e: Throwable => logger.error("Error while checking MSI and LCMS databases", e)
     }
     return dataBasesExist
   }
@@ -435,27 +379,13 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
     logger.info("creating MSI and LCMS databases ... ")
     try {
       DoJDBCWork.withEzDBC(udsContext) { ezDBC =>
-        ezDBC.execute("CREATE DATABASE msi_db_project_" + projectId)
-        ezDBC.execute("CREATE DATABASE lcms_db_project_" + projectId)
+        ezDBC.execute(s"CREATE DATABASE msi_db_project_$projectId")
+        ezDBC.execute(s"CREATE DATABASE lcms_db_project_$projectId")
       }
     } catch {
       case t: Throwable => logger.error("Error while creating MSI and LCMS databases", t)
     }
   }
-
-  // rename databases if its exists 
-
-  //  def renameDataBases(udsContext: UdsDbConnectionContext, projectId: Long, newProjectId: Long) {
-  //    logger.debug("renaming MSI and LCMS databases ... ")
-  //    try {
-  //      DoJDBCWork.withEzDBC(udsContext) { ezDBC =>
-  //        ezDBC.execute("ALTER DATABASE msi_db_project_" + projectId + " RENAME TO msi_db_project_" + newProjectId)
-  //        ezDBC.execute("ALTER DATABASE lcms_db_project_" + projectId + " RENAME TO lcms_db_project_" + newProjectId)
-  //      }
-  //    } catch {
-  //      case t: Throwable => logger.error("Error while renaming  MSI and LCMS databases", t)
-  //    }
-  //  }
 
   // execute command as sequence of string 
 
@@ -481,26 +411,24 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
       if (pathDestinationProject.exists()) {
 
         if (new File(pathDestinationProject.getCanonicalPath() + File.separator + "msi_db_project_" + projectId + ".bak").exists()) {
-          //pg_restore msi_db
-          logger.info("Starting to restore database # " + msiDb)
-
+          //pg_restore msi_db_project_x.bak
+          logger.info(s"Starting to restore database # $msiDb")
           var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "msi_db_project_" + newProjectId, "-v", pathDestinationProject + File.separator + "msi_db_project_" + projectId + ".bak")
-          logger.info("cmd # " + cmd)
           execute(cmd)
         } else {
           logger.error("the file msi_db_project_" + projectId + ".bak does not exist !")
         }
         if (new File(pathDestinationProject.getCanonicalPath() + File.separator + "lcms_db_project_" + projectId + ".bak").exists()) {
-          //pg_restore lcms_Db
-          logger.info("Starting to restore database # " + lcmsDb)
+          //pg_restore lcms_Db_project_x.bak
+          logger.info(s"Starting to restore database # $lcmsDb")
           var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "lcms_db_project_" + newProjectId, "-v", pathDestinationProject + File.separator + "lcms_db_project_" + projectId + ".bak")
           execute(cmd)
         } else {
-          logger.error("the file lcms_db_project_" + projectId + ".bak does not exist !")
+          logger.error(s"the file lcms_db_project_$projectId.bak does not exist !")
         }
         if (udsDb == true) {
           if (new File(pathDestinationProject.getCanonicalPath() + File.separator + "uds_db_schema.bak").exists()) {
-            //pg_restore uds_db schema
+            //pg_restore uds_db_schema.bak
             logger.info("Starting to restore schema only # uds_db")
             var cmd = Seq(pathSrcPgRestore, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "uds_db", "-v", pathDestinationProject + File.separator + "uds_db_schema.bak")
             execute(cmd)
@@ -509,13 +437,15 @@ class RestoreProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
           }
         }
       } else {
-        logger.error("the directory project_" + projectId + " does not exist !")
+        logger.error(s"the directory project_$projectId does not exist !")
       }
     } catch {
       case e: Exception => logger.error("error to execute cmd", e)
     }
   }
+  
   // update properties
+  
   def setProperties(array: JsonObject) {
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     array.addProperty("restore_date", sdf.format(new Date()).toString())
