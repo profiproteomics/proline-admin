@@ -156,6 +156,7 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
                   localUdsTransaction.commit()
                   udsTransacOK = true
                 }
+
                 //zip directory 
                 ZipUtil.pack(new File(pathDestination + File.separator + "project_" + projectId), new File(pathDestination + File.separator + "project_" + projectId + ".zip"))
 
@@ -207,16 +208,14 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
 
   def execPgDump(host: String, port: Integer, user: String, msiDb: String, lcmsDb: String, pathDestination: String, pathSource: String, projectId: Long): Boolean = {
 
-    val pathDestinationProject = new File(pathDestination + File.separator + "project_" + projectId)
-
+    val pathDestinationProject = pathDestination + File.separator + "project_" + projectId
     // create the files 
     var pgDumpAll: Boolean = false
     try {
-      val path = Paths.get(pathDestinationProject.getPath)
+      val path = Paths.get(pathDestinationProject)
       if (!Files.exists(path)) {
         try {
           Files.createDirectories(path)
-          println("path " + path)
           val pathSrcDump = FileUtils.getFile(new File(pathSource), "pg_dump").getPath()
           val msiBackUpFile = FileUtils.getFile(pathDestinationProject, msiDb + ".bak")
           val lcmsBackUpFile = FileUtils.getFile(pathDestinationProject, lcmsDb + ".bak")
@@ -236,15 +235,15 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
            * -v, –verbose verbose mode
            * -f, –file=FILENAME output file name
            */
-          println("msiBackUpFile : " + msiBackUpFile.getPath())
+
           logger.info("Starting to backup database # " + msiDb)
           var cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", msiBackUpFile.getPath(), msiDb)
           val pgDumpMsi = execute(cmd)
-          println("lcmsBackUpFile : " + lcmsBackUpFile.getPath())
+
           logger.info("Starting to backup database # " + lcmsDb)
           cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", lcmsBackUpFile.getPath(), lcmsDb)
           val pgDumpLcms = execute(cmd)
-          println("uds : " + udsBackUpFile.getPath())
+
           logger.info("Starting to backup schema  # uds_db")
           cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "--schema-only", "-F", "c", "-b", "-v", "-f", udsBackUpFile.getPath(), "uds_db")
           val pgDumpUds = execute(cmd)
@@ -252,13 +251,13 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
           if (pgDumpMsi && pgDumpLcms && pgDumpUds) {
             pgDumpAll = true
           } else {
-            deleteDirectory(pathDestinationProject)
+            deleteDirectory(new File(pathDestinationProject))
           }
         } catch {
           case ioe: IOException => ioe.printStackTrace()
         }
       } else {
-        logger.error(s"the directory project_$projectId already exist !")
+        logger.error("the directory already exist with the same path")
       }
     } catch {
       case e: Exception => logger.error("error to execute cmd", e)
