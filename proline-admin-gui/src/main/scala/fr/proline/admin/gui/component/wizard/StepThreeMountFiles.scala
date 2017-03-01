@@ -347,10 +347,14 @@ class ProlineMountFiles extends VBox with LazyLogging {
         seqConfigFile.write(newAdminConfig)
       }
       if (serverConfigOpt.isDefined) {
+        
         /* New ServerConfig */
+        
         val newServerConfig = _toServerConfig()
         serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
+        
       }
+      
       /* Test connection to database */
       val connectionEstablished = _testDbConnection(newAdminConfig, false, false)
 
@@ -362,11 +366,11 @@ class ProlineMountFiles extends VBox with LazyLogging {
           wTitle = "Warning",
           wText = warningAboutExitText,
           wParent = Option(QuickStart.stage))
-        logger.info("Configuration file(s) successfully updated !")
+          
       } else {
 
         /* If DB can't be reached, allow to save configuration anyway */
-        val isConfirmed = GetConfirmation(
+          val isConfirmed = GetConfirmation(
           title = "Invalid configuration",
           text = "The connection to the database can't be established with these settings.\n" +
             "Do you want to save this configuration anyway?")
