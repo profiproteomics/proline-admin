@@ -4,7 +4,7 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigRenderOptions
 import com.typesafe.scalalogging.LazyLogging
-
+import scala.util.matching.Regex
 import scala.collection.JavaConversions._
 import scala.collection.mutable.StringBuilder
 import scala.io.Source
@@ -18,27 +18,13 @@ import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scala.TypesafeConfigWrapper._
 
-/**parse and write Sequence Repository parsing rules file*/
+/** parse and edit Sequence Repository parsing rules file **/
 
 class ParsingRulesFile(val path: String) extends LazyLogging {
 
   require(path != null && path.isEmpty() == false, "Parsing Rules file must not be null nor empty")
   private val parsingRulesFile = new File(path)
-  //  def test() = {
-  //    val parsing = ConfigFactory.parseFile(parsingRulesFile)
-  //    System.out.println("list " + parsing.getStringList("local-fasta-directories").toList)
-  //    System.out.println("2" + parsing.getObjectList("parsing-rules").toList)
-  //    //
-  //    parsing.getObjectList("parsing-rules").toList.foreach {
-  //      rule =>
-  //        rule.map {
-  //          case (k, v) =>
-  //            k -> v.unwrapped().toString()
-  //            System.out.println("k : " + k + "v : " + v.unwrapped().toString())
-  //        }
-  //    }
-  //
-  //  }
+
   /** read parsingRules  file **/
   def read() = {
     try {
@@ -56,22 +42,15 @@ class ParsingRulesFile(val path: String) extends LazyLogging {
 
       /* retrieve parsing rule file */
 
-      def getParsingRules(): ListBuffer[Map[Object, String]] = {
-        var parsingRulesList: ListBuffer[Map[Object, String]] = ListBuffer(Map())
-        var mp: Map[Object, String] = Map()
+      def getParsingRules(): ListBuffer[Any] = {
+        var parsingRulesList: ListBuffer[Any] = ListBuffer()
         parsing.getObjectList("parsing-rules").toList.foreach {
-          rule =>
-            {
-              rule.map {
-                case (k, v) => { mp += (k -> v.unwrapped().toString()) }
-              }
-              parsingRulesList += mp
-            }
+          rule => parsingRulesList += rule
         }
         parsingRulesList
       }
 
-      /* retrieve deafult accession */
+      /* retrieve default protein accession */
 
       def getDefaultProteinAccession(): Option[String] = {
         parsing.getStringOpt("default-protein-accession")
@@ -94,7 +73,9 @@ class ParsingRulesFile(val path: String) extends LazyLogging {
         None
     }
   }
+
   /** write parsing rule file **/
+
   def write(parsingRule: ParsingRule): Unit = synchronized {
     /*write in template in model of parsing rule */
     val parsingRuleTemplate = s"""
@@ -111,7 +92,7 @@ parsing-rules = ${parsingRule.toTypeSafeParsingRulesString()}
 
 //Default Java Regex with capturing group for protein accession if fasta file name doesn't match parsing_rules RegEx
 // >(\\S+) :  String after '>' and before first space
-default-protein-accession ="${parsingRule.defaultProteinAccession.getOrElse(">(\\S+)")}"
+default-protein-accession ="${ScalaUtils.doubleBackSlashes(parsingRule.defaultProteinAccession.getOrElse(">(\\S+)"))}"
 
 """
     /* Print in file (overwrite old parsing rule File) */
@@ -125,22 +106,20 @@ default-protein-accession ="${parsingRule.defaultProteinAccession.getOrElse(">(\
 }
 
 /** Model what in the sequence repository parsing rules file */
+
 case class ParsingRule(
-  localFastaDirectories: ListBuffer[String] = ListBuffer(),
-  parsingRules: ListBuffer[Map[Object, String]] = ListBuffer(Map()),
-  defaultProteinAccession: Option[String]) {
+  var localFastaDirectories: ListBuffer[String] = ListBuffer(),
+  var parsingRules: ListBuffer[Any] = ListBuffer(),
+  var defaultProteinAccession: Option[String]) {
 
   //update local fasta directory  
 
   def toTypeSafeFastaDirString(): String = {
-    val mpStrBuilder = new StringBuilder()
-    val lastElement = localFastaDirectories.last
-    localFastaDirectories.foreach { dir =>
-      if (dir != lastElement) { mpStrBuilder ++= s""" "${ScalaUtils.doubleBackSlashes(dir)}" """ + "," }
-      else {
-        mpStrBuilder ++= s""" "${ScalaUtils.doubleBackSlashes(dir)}" """
-      }
 
+    val mpStrBuilder = new StringBuilder()
+    val lastElement = localFastaDirectories.toList.last
+    localFastaDirectories.foreach { dir =>
+      if (dir.equals(lastElement)) mpStrBuilder ++= s""" "${ScalaUtils.doubleBackSlashes(dir)}" """ else mpStrBuilder ++= s""" "${ScalaUtils.doubleBackSlashes(dir)}" """ + ","
     }
     mpStrBuilder.result
   }
@@ -148,39 +127,91 @@ case class ParsingRule(
   // update parsing rules file 
 
   def toTypeSafeParsingRulesString(): String = {
+
     val mpStrBuilder = new StringBuilder()
-    val lastElement = parsingRules.last
+    val newConvertedList = parsingRules.toList.map(_.asInstanceOf[Rule])
+    val lastElement = newConvertedList.last
     mpStrBuilder ++= " [ "
-    parsingRules.foreach { ruleObject =>
+    newConvertedList.foreach { ruleObject =>
       if (ruleObject != lastElement) {
         mpStrBuilder ++= "{" + LINE_SEPARATOR
-        ruleObject.map {
-          case (k, v) => {
-            mpStrBuilder ++= s"""  $k.ParsingRulesEnum.NAME = "$v " """ + "," + LINE_SEPARATOR
-            mpStrBuilder ++= s"""  $k.ParsingRulesEnum.FASTANAME = "$v " """ + "," + LINE_SEPARATOR
-            mpStrBuilder ++= s"""  $k.ParsingRulesEnum.FASTAVERSION = "$v " """ + "," + LINE_SEPARATOR
-            mpStrBuilder ++= s"""  $k.ParsingRulesEnum.PROTEINACCESSION = "$v " """ + LINE_SEPARATOR
-          }
-        }
-        mpStrBuilder ++= "},"
+
+        mpStrBuilder ++= ruleObject.newRule() + LINE_SEPARATOR
+
+        mpStrBuilder ++= "} ," + LINE_SEPARATOR
       } else {
         mpStrBuilder ++= "{" + LINE_SEPARATOR
-        ruleObject.map {
-          case (k, v) => { mpStrBuilder ++= s"""  $k = "$v " """ + "," + LINE_SEPARATOR }
-        }
+
+        mpStrBuilder ++= ruleObject.newRule()
+
         mpStrBuilder ++= "}"
       }
     }
     mpStrBuilder ++= " ] "
     mpStrBuilder.result
   }
-  //update default protein accession 
-}
-//
-object ParsingRulesEnum extends Enumeration {
 
-  val NAME = Value("name")
-  val FASTANAME = Value("fasta-name")
-  val FASTAVERSION = Value("fasta-version")
-  val PROTEINACCESSION = Value("protein-accession") //etc.
+  //set default protein accession
+
+  def setDefaultProteinAccesion(newDefProAcc: Option[String]) = {
+    defaultProteinAccession = newDefProAcc
+  }
+
+}
+
+// Model to create one rule 
+
+case class Rule(var name: String, var fastaNames: ListBuffer[String], var fastaVersion: String, var proteinAccession: String) {
+
+  require(name != null && name.isEmpty() == false, "missing argument name in rule")
+  require(fastaVersion != null && fastaVersion.isEmpty() == false, "missing argument Fasta version in rule")
+  require(fastaNames != null && fastaNames.size() > 0, "missing argument fasta names in rule")
+  require(proteinAccession != null && proteinAccession.isEmpty() == false, "missing argument protein accession in rule")
+
+  def newRule(): String = {
+    var strRule = new StringBuilder()
+    strRule ++= " name="
+    strRule ++= s""" "$name" , """ + LINE_SEPARATOR
+    strRule ++= " fasta-name=["
+    val lastElement = fastaNames.toList.last
+    fastaNames.foreach { fastaName =>
+      if (fastaName.equals(lastElement)) strRule ++= s""" "$fastaName"  """ else strRule ++= s""" "$fastaName" , """
+    }
+    strRule ++= "]," + LINE_SEPARATOR
+    strRule ++= " fasta-version="
+    strRule ++= s""" "${ScalaUtils.doubleBackSlashes(fastaVersion)}" ,""" + LINE_SEPARATOR
+    strRule ++= " protein-accession="
+    strRule ++= s""" "${ScalaUtils.doubleBackSlashes(proteinAccession)}" """ + LINE_SEPARATOR
+    return strRule.result
+  }
+
+  //update rule name
+
+  def updateName(newName: String): String = {
+    require(newName != null && newName.isEmpty() == false, "missing argument name in rule")
+    name = newName
+    return newRule()
+  }
+
+  //update Fasta name
+  def updateFastaName(fastaNameList: ListBuffer[String]): String = {
+    require(fastaNameList != null && fastaNameList.size() > 0, "missing argument fasta names in rule")
+    fastaNames = fastaNameList
+    return newRule()
+  }
+
+  //update fasta version
+  def updateFastaVersion(newFastaVersion: String): String = {
+    require(newFastaVersion != null && newFastaVersion.isEmpty() == false, "missing argument Fasta version in rule")
+    fastaVersion = newFastaVersion
+    return newRule()
+  }
+
+  // update protein accession 
+  def updateProteinAccession(newProtAccession: String): String = {
+    require(newProtAccession != null && newProtAccession.isEmpty() == false, "missing argument protein accession in rule")
+    proteinAccession = newProtAccession
+    return newRule()
+  }
+
 }
