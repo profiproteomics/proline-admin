@@ -1,4 +1,4 @@
-package src.main.scala.fr.proline.admin.gui.component.wizard
+package fr.proline.admin.gui.process.config.wizard
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
