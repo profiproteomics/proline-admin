@@ -14,7 +14,7 @@ import com.google.gson.JsonParser
  *  Delete user : update serialized properties.
  *
  */
-class DeleteUser(
+class DisableUser(
   udsDbContext: DatabaseConnectionContext,
   userId: Long) extends LazyLogging {
 
@@ -53,7 +53,7 @@ class DeleteUser(
   }
 }
 
-object DeleteUser extends LazyLogging {
+object DisableUser extends LazyLogging {
 
   def apply(userId: Long) {
 
@@ -82,7 +82,7 @@ object DeleteUser extends LazyLogging {
 
       try {
         // delete user 
-        val deleteUser = new DeleteUser(udsDbContext, userId)
+        val deleteUser = new DisableUser(udsDbContext, userId)
         deleteUser.run()
 
       } finally {
