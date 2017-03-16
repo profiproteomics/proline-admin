@@ -7,7 +7,7 @@ import fr.profi.util.ThreadLogger
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
-import fr.proline.admin.service.user.{ CreateProject, CreateUser, DeleteProject, ArchiveProject, UnarchiveProject, RestoreProject }
+import fr.proline.admin.service.user.{ CreateProject, CreateUser, DeleteUser, DeleteProject, ArchiveProject, UnarchiveProject, RestoreProject ,ResetPassword }
 import fr.proline.repository.UncachedDataStoreConnectorFactory
 
 object RunCommand extends App with LazyLogging {
@@ -41,7 +41,7 @@ object RunCommand extends App with LazyLogging {
     var projectDescription: String = ""
   }
 
-  /** create user command */
+  /** delete project command */
   @Parameters(commandNames = Array("delete_project"), commandDescription = "Delete project", separators = "=")
   private object DeleteProjectCommand extends JCommandReflection {
 
@@ -159,6 +159,15 @@ object RunCommand extends App with LazyLogging {
     var password: String = ""
   }
 
+  /** delete user command */
+
+  @Parameters(commandNames = Array("delete_user"), commandDescription = "delete user", separators = "=")
+  private object DeleteUserCommand extends JCommandReflection {
+
+    @Parameter(names = Array("--user_id", "-uid"), description = "The user account id ", required = true)
+    var userId: Int = 0
+  }
+
   var hasDsConnectorFactory = false
   lazy val dsConnectorFactory: UncachedDataStoreConnectorFactory = {
 
@@ -192,8 +201,8 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(ArchiveProjectCommand)
     jCmd.addCommand(UnarchiveProjectCommand)
     jCmd.addCommand(RestoreProjectCommand)
-    
-    
+    jCmd.addCommand(DeleteUserCommand)
+
     // Try to parse the command line
     var parsedCommand = ""
     try {
@@ -246,9 +255,9 @@ object RunCommand extends App with LazyLogging {
           val pswd = if (CreateUserCommand.userPassword.isEmpty()) None else Some(CreateUserCommand.userPassword)
           CreateUser(CreateUserCommand.userLogin, pswd)
         }
-        
-         case ResetPasswordCommand.Parameters.firstName => {
-          import fr.proline.admin.service.user.ResetPassword
+
+        case ResetPasswordCommand.Parameters.firstName => {
+         
           val pswd = if (ResetPasswordCommand.password.isEmpty()) None else Some(ResetPasswordCommand.password)
           ResetPassword(ResetPasswordCommand.userId, pswd)
         }
@@ -256,6 +265,9 @@ object RunCommand extends App with LazyLogging {
           import fr.proline.admin.service.db.maintenance.DumpDatabase
           val msiDbConnector = dsConnectorFactory.getMsiDbConnector(DumpMsiDbCommand.projectId)
           DumpDatabase(msiDbConnector, DumpMsiDbCommand.filePath)
+        }
+        case DeleteUserCommand.Parameters.firstName => {
+          DeleteUser(DeleteUserCommand.userId)
         }
         case DumpPsDbCommand.Parameters.firstName => {
           import fr.proline.admin.service.db.maintenance.DumpDatabase
