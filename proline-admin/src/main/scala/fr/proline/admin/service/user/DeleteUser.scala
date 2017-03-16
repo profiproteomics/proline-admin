@@ -11,7 +11,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 
 /**
- *  Delete user : update serialized properties.
+ *  disable user : update serialized properties.
  *
  */
 class DisableUser(
@@ -26,7 +26,7 @@ class DisableUser(
       val udsEM = udsDbContext.getEntityManager
       val udsUser = udsEM.find(classOf[UdsUser], userId)
       if (udsUser != null) {
-        // delete user
+        // disable  user
         var parser = new JsonParser()
         var array: JsonObject = null
         val properties = udsUser.getSerializedProperties()
@@ -39,7 +39,8 @@ class DisableUser(
         array.addProperty("is_active", false)
         udsUser.setSerializedProperties(array.toString())
         udsEM.merge(udsUser)
-        // to do : delete user projects ?
+
+        // to do : disable user's projects ?
 
       } else {
         logger.info(s" user with id= ${userId} does not exist ")
@@ -48,7 +49,7 @@ class DisableUser(
     if (isTxOk) {
       logger.info(s"user with id=$userId has been disabled  ")
     } else {
-      logger.error(" can't  delete user !")
+      logger.error(" can't  disable user !")
     }
   }
 }
@@ -81,20 +82,18 @@ object DisableUser extends LazyLogging {
       val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
 
       try {
-        // delete user 
+        // disable  user 
         val deleteUser = new DisableUser(udsDbContext, userId)
         deleteUser.run()
 
       } finally {
         logger.debug("Closing current UDS Db Context")
-
         try {
           udsDbContext.close()
         } catch {
           case exClose: Exception => logger.error("Error closing UDS Db Context", exClose)
         }
       }
-
     } finally {
       //close connector
       if (localUdsDbConnector && (udsDbConnector != null)) {
