@@ -39,14 +39,14 @@ class DisableUser(
         array.addProperty("is_active", false)
         udsUser.setSerializedProperties(array.toString())
         udsEM.merge(udsUser)
-        // to do delete user projects ?
+        // to do : delete user projects ?
 
       } else {
         logger.info(s" user with id= ${userId} does not exist ")
       }
     }
     if (isTxOk) {
-      logger.info(s"user with id=$userId has been deleted ")
+      logger.info(s"user with id=$userId has been disabled  ")
     } else {
       logger.error(" can't  delete user !")
     }
