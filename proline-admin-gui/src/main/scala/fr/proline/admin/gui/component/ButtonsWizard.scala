@@ -42,7 +42,7 @@ object ButtonsPanelQStart extends LazyLogging {
    * ******* *
    */
 
-  val nextButton = new Button("Next") {
+  val nextButton = new Button("Next >") {
     onAction = handle {
       getButton()
       panelStateOnNext()
@@ -50,7 +50,7 @@ object ButtonsPanelQStart extends LazyLogging {
       changeNextToFinish()
     }
   }
-  val previousButton = new Button("Previous") {
+  val previousButton = new Button("< Previous") {
     onAction = handle {
       panelStateOnPrevious()
       activePreviousButton()
@@ -58,6 +58,15 @@ object ButtonsPanelQStart extends LazyLogging {
     }
   }
 
+  // button to skip this step 
+
+  val skipButton = new Button("Skip") {
+    onAction = handle {
+      skipStep()
+      activePreviousButton()
+      changeNextToFinish()
+    }
+  }
   // exit  application 
 
   val cancelButton = new Button("Exit") {
@@ -81,7 +90,8 @@ object ButtonsPanelQStart extends LazyLogging {
   Seq(
     nextButton,
     previousButton,
-    cancelButton).foreach { b =>
+    cancelButton,
+    skipButton).foreach { b =>
       b.prefHeight = 20
       b.prefWidth = 120
       b.styleClass += ("mainButtons")
@@ -104,7 +114,8 @@ object ButtonsPanelQStart extends LazyLogging {
         ScalaFxUtils.newHSpacer(),
         ScalaFxUtils.newHSpacer(),
         previousButton,
-        nextButton)
+        nextButton,
+        skipButton)
     }
   }
   previousButton.setVisible(false)
@@ -124,11 +135,12 @@ object ButtonsPanelQStart extends LazyLogging {
       }
     } else {
       if (QuickStart.panelState.equals("Databaseconfig")) {
-
         QuickStart.mainPanel.getChildren().clear()
         mountFiles = new MountFilesContent()
         QuickStart.mainPanel.getChildren().add(mountFiles)
         QuickStart.panelState = "mountfiles"
+        QuickStart.buttonsPanel.getChildren().remove(skipButton)
+
       }
     }
   }
@@ -140,7 +152,6 @@ object ButtonsPanelQStart extends LazyLogging {
       prolineConfigFilesPanel.setAdminfield(QuickStart.adminConfPath)
       prolineConfigFilesPanel.setServerfield(QuickStart.serverConfPath)
       prolineConfigFilesPanel.setSeqfield(QuickStart.seqRepoConfPath)
-
       QuickStart.mainPanel.getChildren().clear()
       QuickStart.mainPanel.getChildren().add(prolineConfigFilesPanel)
       QuickStart.panelState = "panelConfig"
@@ -149,6 +160,7 @@ object ButtonsPanelQStart extends LazyLogging {
         QuickStart.mainPanel.getChildren().clear()
         QuickStart.mainPanel.getChildren().add(Databaseconfig)
         QuickStart.panelState = "Databaseconfig"
+        QuickStart.buttonsPanel.getChildren().add(skipButton)
       }
     }
   }
@@ -169,7 +181,7 @@ object ButtonsPanelQStart extends LazyLogging {
     if (QuickStart.panelState.equals("mountfiles")) {
       nextButton.setText("Finish")
     } else {
-      nextButton.setText("Next")
+      nextButton.setText("Next >")
     }
   }
 
@@ -179,7 +191,6 @@ object ButtonsPanelQStart extends LazyLogging {
     buttonValue = nextButton.getText()
     if (buttonValue.equals("Finish")) {
       mountFiles.saveForm()
-
     }
   }
 
@@ -193,6 +204,29 @@ object ButtonsPanelQStart extends LazyLogging {
       wParent = Option(QuickStart.stage))
   }
 
+  // skip this step 
+  def skipStep() {
+    if (QuickStart.panelState.equals("panelConfig")) {
+      if ((QuickStart.adminConfPath != null) && (!QuickStart.adminConfPath.isEmpty)) {
+        prolineConfigFilesPanel.validStep()
+        prolineConfigFilesPanel.setAdminfield(QuickStart.adminConfPath)
+        prolineConfigFilesPanel.setServerfield(QuickStart.serverConfPath)
+        prolineConfigFilesPanel.setSeqfield(QuickStart.seqRepoConfPath)
+        QuickStart.mainPanel.getChildren().clear()
+        QuickStart.mainPanel.getChildren().add(Databaseconfig)
+        QuickStart.panelState = "Databaseconfig"
+      }
+    } else {
+      if (QuickStart.panelState.equals("Databaseconfig")) {
+        QuickStart.mainPanel.getChildren().clear()
+        mountFiles = new MountFilesContent()
+        QuickStart.mainPanel.getChildren().add(mountFiles)
+        QuickStart.panelState = "mountfiles"
+        QuickStart.buttonsPanel.getChildren().remove(skipButton)
+      }
+    }
+
+  }
   // close window 
 
   private def closeStage() {

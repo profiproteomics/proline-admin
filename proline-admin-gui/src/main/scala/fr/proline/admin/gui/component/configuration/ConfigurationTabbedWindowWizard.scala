@@ -28,7 +28,6 @@ class ConfigurationTabbedWindowWizard extends AbstractTabbedWindow {
 
   // Tabs are classes so this Stage can be implicitly known as parent
   val iTabs: Seq[IConfigTab] = Seq(
-
     new StepTwoPgConfig(),
     new StepTwoPostgresConfig() //TODO: enable me: new SeqRepoConfigTab()
     )

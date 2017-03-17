@@ -162,7 +162,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       f.hgrow = Priority.Always
     }
   val disableNoteLabel = new Label() {
-    text = "Proline server and Proline admin configuration file cannot be empty.\n" +
+    text = "Proline server and Proline admin configuration file should not be empty.\n" +
       """ """
     style = "-fx-font-style: italic;-fx-font-weigth: bold;"
     visible = false

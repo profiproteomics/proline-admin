@@ -25,7 +25,7 @@ import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.util.ConfirmationDialog
 import fr.proline.admin.gui.component.wizard._
-import collection.mutable.HashMap
+
 /**
  * Graphical interface for Proline-Admin wizard:quick edit for admin and server file (.conf).
  */
@@ -53,6 +53,7 @@ object QuickStart extends LazyLogging {
     if (adminConfPathIsEmpty()) return None
     else Option(new AdminConfigFile(QuickStart.adminConfPath))
   }
+
   /*
    * Panels:
    * panel of buttons :next ,previous and cancel
