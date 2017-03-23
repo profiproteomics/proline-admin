@@ -76,7 +76,6 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
   /* Build store */
   val projectViews = UdsRepository.getAllProjects().toBuffer[Project].sortBy(_.getId).map(new ProjectView(_))
   protected lazy val tableLines  = ObservableBuffer(projectViews)
-
   /* Project ID */
   val idCol = new TableColumn[ProjectView, Long]("ID") {
     cellValueFactory = { _.value.id }
@@ -102,6 +101,7 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
   /* Project name */
   val projectNameCol = new TableColumn[ProjectView, String]("Name") {
     cellValueFactory = { _.value.name }
+    
   }
 
   /* Project description */
@@ -114,16 +114,42 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
       }
     }
   }
-
+  
+ /*column of schema version default  = no.version */
+  
+  val projectVersionCol = new TableColumn[ProjectView,String]("Schema version (Msi-Lcms)") {
+    cellValueFactory = { _.value.version }
+     cellFactory = { _ =>
+      new TableCell[ProjectView, String] {
+        style = "-fx-alignment: CENTER;"
+        item.onChange { (_, _, newValue) => text = newValue }
+      }
+    }
+  }
+  
+ /* column of Database size */ 
+  
+  val projectSizeCol = new TableColumn[ProjectView, String]("Size (Msi-Lcms)") {
+    cellValueFactory = {_.value.size }
+     cellFactory = { _ =>
+      new TableCell[ProjectView, String] {
+        style = "-fx-alignment: CENTER;"
+        item.onChange { (_, _, newValue) => text = newValue }
+      }
+    }
+  }
+  
   /* Get JavaFx columns to fill table view */
-  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[ProjectView, _]] = List(idCol, ownerCol, projectNameCol, projectDescCol)
+  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[ProjectView, _]] = List(idCol, ownerCol, projectNameCol, projectDescCol, projectVersionCol, projectSizeCol)
 
   /* Set columns width */
   this.applyPercentWidth(List(
     (idCol, 10),
     (ownerCol, 10),
-    (projectNameCol, 80),
-    (projectDescCol, 50)
+    (projectVersionCol,20),
+    (projectNameCol,50),
+    (projectDescCol, 50),
+    (projectSizeCol,20)
   ))
   
   /* Initialize table content */
