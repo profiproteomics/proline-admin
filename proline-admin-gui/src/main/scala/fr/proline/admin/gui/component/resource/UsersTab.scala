@@ -87,15 +87,20 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
   val pwdHashCol = new TableColumn[UserView, String]("Password hash") {
     cellValueFactory = { _.value.pwdHash }
   }
-
+  
+  /* creation mode */
+  val creationModeCol = new TableColumn[UserView, String]("Creation mode") {
+    cellValueFactory = { _.value.mode }
+  }
   /* Get JavaFx columns to fill table view */
-  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[UserView, _]] = List(idCol, loginCol, pwdHashCol)
+  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[UserView, _]] = List(idCol, loginCol,creationModeCol, pwdHashCol)
 
   /* Set columns width */
   this.applyPercentWidth(List(
     (idCol, 10),
     (loginCol, 20),
-    (pwdHashCol, 70)
+    (creationModeCol ,20),
+    (pwdHashCol,50)
   ))
   
   /* Initialize table content */

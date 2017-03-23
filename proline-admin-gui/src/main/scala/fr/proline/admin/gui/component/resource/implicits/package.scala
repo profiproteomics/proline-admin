@@ -37,8 +37,6 @@ package object implicits {
       vesrion.append(msiVersion).append(" - ").append(lcmsVersion)
       vesrion.toString
     }
-   // taille db
-    
   }
 
   /**
@@ -52,5 +50,6 @@ package object implicits {
     val id = new ObjectProperty(this, "id", udsUserAccount.getId)
     val pwdHash = new ObjectProperty(this, "pwdHash", udsUserAccount.getPasswordHash)
     val serializedProps = new ObjectProperty(this, "serializedProps", udsUserAccount.getSerializedProperties)
+    val mode = new ObjectProperty(this,"mode",udsUserAccount.getCreationMode())
   }
 }

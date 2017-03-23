@@ -147,8 +147,8 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
     (idCol, 10),
     (ownerCol, 10),
     (projectVersionCol,20),
-    (projectNameCol,50),
-    (projectDescCol, 50),
+    (projectNameCol,40),
+    (projectDescCol, 40),
     (projectSizeCol,20)
   ))
   
