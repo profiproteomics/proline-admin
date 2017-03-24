@@ -86,14 +86,14 @@ class ProlineMountFiles extends VBox with LazyLogging {
   val rawFilesMpBox = new VBox { spacing = 10 }
 
   val mzdbFilesMountPoints = ArrayBuffer[MountPointPanelWizard]()
-  val mzdbFilesMpLabel = new BoldLabel("mzDB files path:", upperCase = false)
+  val mzdbFilesMpLabel = new BoldLabel("mzDB files path: ", upperCase = false)
   val addMzdbFilesMpButton = new Button("Add") {
     onAction = handle { _addMzdbFilesMountPoint() }
   }
   val mzdbFilesMpBox = new VBox { spacing = 10 }
 
   val resultFilesMountPoints = ArrayBuffer[MountPointPanelWizard]()
-  val resultFilesMpLabel = new BoldLabel("Result files path:", upperCase = false)
+  val resultFilesMpLabel = new BoldLabel("Result files path: ", upperCase = false)
   val addResultFilesMpButton = new Button("Add") {
     onAction = handle { _addResultFilesMountPoint() }
   }
@@ -361,7 +361,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
         /* Log and close dialog if config is valid */
 
         ShowConfirmWindow(
-          wTitle = "Warning",
+          wTitle = "WARNING",
           wText = warningAboutExitText,
           wParent = Option(QuickStart.stage))
 

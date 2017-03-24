@@ -75,7 +75,7 @@ object ButtonsPanelQStart extends LazyLogging {
     }
   }
   // Warning 
-  val warningAboutExitText = "WARNING: Are you sure  to exit setup ? "
+  val warningAboutExitText = "WARNING: Are you sure you want to exit setup? "
   val warningAboutExitLabel = new Label {
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     text = warningAboutExitText
@@ -199,7 +199,7 @@ object ButtonsPanelQStart extends LazyLogging {
   private def confirmDialog() {
 
     ShowConfirmWindow(
-      wTitle = "Warning",
+      wTitle = "WARNING",
       wText = warningAboutExitText,
       wParent = Option(QuickStart.stage))
   }

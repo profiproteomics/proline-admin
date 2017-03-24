@@ -34,9 +34,9 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
- *********************************************************
+ * ********************************************************
  * Step 1 : panel to add configurations files
- *********************************************************
+ * ********************************************************
  */
 class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit = null) extends VBox with IConfigFilesPanel with LazyLogging {
 
@@ -61,7 +61,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     content = List(
       new Label("Full path to "),
       new BoldLabel("ProlineAdmin", upperCase = false),
-      new Label(" configuration file application.conf :"))
+      new Label(" configuration file application.conf: "))
   }
   val adminConfigField = new TextField {
     if (QuickStart.adminConfPath != null) text = QuickStart.adminConfPath
@@ -83,7 +83,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     content = List(
       new Label("Full path to "),
       new BoldLabel("Proline server", upperCase = false),
-      new Label(" configuration file application.conf :"))
+      new Label(" configuration file application.conf: "))
   }
   val serverConfigField = new TextField() {
     if (QuickStart.serverConfPath != null) text = QuickStart.serverConfPath
@@ -102,7 +102,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     content = List(
       new Label("Full path to "),
       new BoldLabel("Sequence Repository", upperCase = false),
-      new Label(" configuration file application.conf ( optional ):"))
+      new Label(" configuration file application.conf ( optional ): "))
   }
   val seqReposConfigField = new TextField() {
     if (QuickStart.seqRepoConfPath != null) text = QuickStart.seqRepoConfPath
@@ -125,7 +125,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     content = List(
       new Label("Full path to "),
       new BoldLabel("postgreSQL data directory", upperCase = false),
-      new Label(" to optimize yout database server ( optional ) : "))
+      new Label(" to optimize yout database server ( optional ): "))
   }
   val dataDirectoryField = new TextField() {
     //initialise data directory from 
@@ -162,7 +162,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       f.hgrow = Priority.Always
     }
   val disableNoteLabel = new Label() {
-    text = "Proline server and Proline admin configuration file should not be empty.\n" +
+    text = "Proline server and Proline admin configuration files should not be empty.\n" +
       """ """
     style = "-fx-font-style: italic;-fx-font-weigth: bold;"
     visible = false
@@ -170,7 +170,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   /* Organize and render */
   val configurationsFiles = new TitledBorderPane(
 
-    title = "Step 1 : select proline configuration file",
+    title = "Step 1: select proline configuration file",
     contentNode = new VBox {
       minWidth = 360
       prefWidth = 360
@@ -330,7 +330,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
     seqReposConfigField.setText(text)
   }
   // get environment var PG_DATA 
-  
+
   def getPgData(env: String): String = {
     return System.getenv(env)
   }

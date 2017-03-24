@@ -105,7 +105,7 @@ class DatabaseConfig extends VBox with LazyLogging {
 
   /* DB connection */
   /* user name  */
-  val userNameLabel = new Label("User name :")
+  val userNameLabel = new Label("User name: ")
   val userNameField = new TextField {
     if (QuickStart.userName != null) text = QuickStart.userName
     text.onChange { (_, oldText, newText) =>
@@ -115,7 +115,7 @@ class DatabaseConfig extends VBox with LazyLogging {
   userNameField.setTooltip(new Tooltip("enter the username of your database."))
   userNameField.setPromptText("Example : postgres")
   /* password */
-  val pwdLabel = new Label("Password :")
+  val pwdLabel = new Label("Password: ")
   val showPwdBox = new CheckBox("Show password") {
     selected = false
     vgrow = Priority.Always
@@ -137,14 +137,14 @@ class DatabaseConfig extends VBox with LazyLogging {
   passwordTextField.setTooltip(new Tooltip("enter the password of your database."))
   passwordTextField.setPromptText("Password")
   /* host name */
-  val hostNameLabel = new Label("Host name :")
+  val hostNameLabel = new Label("Host name: ")
   val hostNameField = new TextField {
     if (QuickStart.hostNameUser != null) text = QuickStart.hostNameUser
     text.onChange { (_, oldText, newText) =>
       updateHost(newText)
     }
   }
-  hostNameField.setPromptText("Example : localhost")
+  hostNameField.setPromptText("Example: localhost")
   hostNameField.setTooltip(new Tooltip("enter your hostname."));
   /* Port */
   val portLabel = new Label("Port : ")
@@ -156,9 +156,9 @@ class DatabaseConfig extends VBox with LazyLogging {
         }
     }
   }
-  portField.setPromptText("Example : 5432")
+  portField.setPromptText("Example: 5432")
   portField.setText("5432")
-  portField.setTooltip(new Tooltip("enter the port of your database(default:5432)."))
+  portField.setTooltip(new Tooltip("enter the port of your database(default: 5432)."))
   val testConnectionButton = new Button("Test connection") {
     onAction = handle {
 
@@ -209,7 +209,7 @@ class DatabaseConfig extends VBox with LazyLogging {
   }
   val dbConnectionSettings = new TitledBorderPane(
 
-    title = "Step 2 : edit database connection",
+    title = "Step 2: edit database connection",
     contentNode = new VBox {
       minWidth = 360
       prefWidth = 360

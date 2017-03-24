@@ -34,8 +34,6 @@ class ConfirmWindowWizard(
   resizable = isResizable
   if (wParent.isDefined) initOwner(wParent.get)
 
-
-
   scene = new Scene {
 
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
@@ -44,25 +42,24 @@ class ConfirmWindowWizard(
       alignment = Pos.Center
       spacing = 35
       padding = Insets(10)
-      
+
       content = List(
 
         new Label(wText) {
           wrapText = true
-     
+
         },
         new HBox {
           spacing = 175
           content = Seq(
-            new Button("cancel") {
+            new Button("Cancel") {
               onAction = handle { popup.close() }
             },
-            new Button("  OK  ") {
+            new Button("  Ok  ") {
               onAction = handle { QuickStart.stage.close() }
             })
 
-        } 
-        )
+        })
     }
   }
 }
