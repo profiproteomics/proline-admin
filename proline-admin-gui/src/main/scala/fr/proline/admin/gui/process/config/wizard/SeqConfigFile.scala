@@ -52,7 +52,7 @@ class SeqConfigFile(val path: String) extends LazyLogging {
     val seqConfigTemplate = s"""
 proline-config {
    driver-type = "${seqConfig.driverType.map(_.getJdbcURLProtocol()).getOrElse("postgresql")}" // valid values are: h2, postgresql 
-   max-pool-connection=${seqConfig.maxPoolConnection.getOrElse(3)}//Beta properties : specify maximum number of pool connected to DB Server 
+   max-pool-connection=${seqConfig.maxPoolConnection.getOrElse(3)} //Beta properties : specify maximum number of pool connected to DB Server 
 }
 //User and Password to connect to databases server
 auth-config {

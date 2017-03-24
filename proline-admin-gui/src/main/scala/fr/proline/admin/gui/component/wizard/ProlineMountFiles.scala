@@ -42,6 +42,7 @@ import fr.profi.util.scalafx.NumericTextField
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
+import fr.proline.admin.gui.process.config.wizard._
 
 /**
  * Create a modal window to edit Proline configuration's file.
@@ -224,7 +225,15 @@ class ProlineMountFiles extends VBox with LazyLogging {
     dbHost = Option(QuickStart.hostNameUser),
     dbPort = Option(QuickStart.port) //FIXME
     )
-
+  /** get GUI information to create a new SeqRepos Object **/
+  private def _toSeqConfig() = SeqConfig(
+    driverType = adminConfig.driverType,
+    maxPoolConnection = Some(3),
+    dbUserName = Option(QuickStart.userName),
+    dbPassword = Option(QuickStart.passwordUser),
+    dbHost = Option(QuickStart.hostNameUser),
+    dbPort = Option(QuickStart.port),
+    dbUdsDb = Some("uds_db"))
   /** Get GUI information to create new ServerConfig object **/
   private def _getMountPointsMap(mpArray: ArrayBuffer[MountPointPanelWizard]): Map[String, String] = {
     (
@@ -340,11 +349,12 @@ class ProlineMountFiles extends VBox with LazyLogging {
 
       /* edit seqRepository  .conf is optionnal */
       if ((QuickStart.seqRepoConfPath != null) && (!QuickStart.seqRepoConfPath.isEmpty)) {
-        val seqConfigFile = new AdminConfigFile(QuickStart.seqRepoConfPath)
-        val seqConfigOpt = seqConfigFile.read()
-        require(seqConfigOpt.isDefined, "SeqRepository config file is undefined")
+        val seqConfigFile = new SeqConfigFile(QuickStart.seqRepoConfPath)
+        val seqConfigOpt = seqConfigFile.read
+        require(seqConfigOpt.isDefined, "Sequence Repository config file is undefined")
         val seqConfig = seqConfigOpt.get
-        seqConfigFile.write(newAdminConfig)
+        val newSeqConfig = _toSeqConfig()
+        seqConfigFile.write(newSeqConfig)
       }
       if (serverConfigOpt.isDefined) {
         /* New ServerConfig */
