@@ -242,7 +242,30 @@ object UdsRepository extends LazyLogging {
 
     projects
   }
+  /* get all databases */
 
+  def getAllDataBases(): Array[ExternalDb] = {
+    val udsDbContext = this.getUdsDbContext()
+    val udsEM = udsDbContext.getEntityManager()
+    val externalDbs = try {
+      val externalDbClass = classOf[ExternalDb]
+      val jpqlSelectExternalDb = s"FROM ${externalDbClass.getName}"
+      val externalDbList=udsEM.createQuery(jpqlSelectExternalDb,externalDbClass).getResultList()
+      externalDbList.asScala.toArray
+      
+    } catch {
+      case t: Throwable => {
+        synchronized {
+          logger.warn("Can't load ExternalDb from UDSdb :", t)
+          System.err.println("ERROR - Can't load ExternalDb from UDSdb")
+          System.err.println(t.getMessage())
+        }
+        throw t
+      }
+    }
+    externalDbs
+  }
+  
   /**
    *  Get the exhaustive list of Project instances in database, grouped by owner
    */
@@ -292,6 +315,7 @@ object UdsRepository extends LazyLogging {
     }
     size.toString()
   }
+
 }
 
 class DynamicDataStoreConnectorFactory(

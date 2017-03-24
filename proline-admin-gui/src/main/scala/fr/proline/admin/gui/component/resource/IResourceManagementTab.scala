@@ -100,7 +100,7 @@ abstract class AbstractResourceTableView[T] extends TableView[T]{
   /* Table properties */
   hgrow = Priority.Always
   vgrow = Priority.Always
-
+  editable = true
   tableMenuButtonVisible = true
   selectionModel().selectionMode = SelectionMode.MULTIPLE
     //selectionModel().cellSelectionEnabled = true

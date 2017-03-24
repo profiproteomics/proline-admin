@@ -8,6 +8,9 @@ import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import fr.proline.repository.ProlineDatabaseType
 import fr.proline.admin.gui.process.UdsRepository
+import fr.proline.repository.ProlineDatabaseType;
+import fr.proline.repository.ConnectionMode;
+import fr.proline.repository.DriverType;
 
 package object implicits {
 
@@ -18,13 +21,14 @@ package object implicits {
    */
   implicit class ProjectView(udsProject: Project) {
     //class ProjectView(owner:UserAccount, project: Project, schemaVersion: String, dbSize:Double) {
-  
+
     val id = new ObjectProperty(this, "id", udsProject.getId)
     val ownerLogin = new ObjectProperty(this, "owner", udsProject.getOwner.getLogin)
     val name = new ObjectProperty(this, "name", udsProject.getName)
     val description = new ObjectProperty(this, "description", udsProject.getDescription)
     val version = new ObjectProperty(this, "version", dbVersions(udsProject.getExternalDatabases))
-    val size = new ObjectProperty(this, "size",UdsRepository.calculateSize(udsProject.getId))
+    val size = new ObjectProperty(this, "size", UdsRepository.calculateSize(udsProject.getId))
+
     // schema version
     def dbVersions(extDbs: java.util.Set[ExternalDb]): String = {
       val vesrion = new StringBuilder()
@@ -50,6 +54,22 @@ package object implicits {
     val id = new ObjectProperty(this, "id", udsUserAccount.getId)
     val pwdHash = new ObjectProperty(this, "pwdHash", udsUserAccount.getPasswordHash)
     val serializedProps = new ObjectProperty(this, "serializedProps", udsUserAccount.getSerializedProperties)
-    val mode = new ObjectProperty(this,"mode",udsUserAccount.getCreationMode())
+    val mode = new ObjectProperty(this, "mode", udsUserAccount.getCreationMode())
+  }
+  /**
+   * ************************************************************** *
+   * Simplified model for externalDb  to ScalaFx TableView *
+   * ************************************************************** *
+   */
+  implicit class ExternalDbView(externaldb: ExternalDb) {
+    
+    val dbId = new ObjectProperty(this, "dbId", externaldb.getId())
+    val dbName = new ObjectProperty(this, "dbName", externaldb.getDbName())
+    val dbPassword = new ObjectProperty(this, "dbPassword", externaldb.getDbPassword())
+    val dbUser = new ObjectProperty(this, "dbUser", externaldb.getDbUser())
+    val dbVersion = new ObjectProperty(this, "dbVersion", externaldb.getDbVersion().toString)
+    val dbPort = new ObjectProperty(this, "dbPort", externaldb.getPort().toString)
+    val dbHost = new ObjectProperty(this, "dbHost", externaldb.getHost())
+    
   }
 }

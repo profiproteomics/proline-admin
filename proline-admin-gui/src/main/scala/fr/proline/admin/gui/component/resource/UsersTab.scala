@@ -68,7 +68,7 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
   protected lazy val tableLines  = ObservableBuffer(usersViews)
 
   /* ID */
-  val idCol = new TableColumn[UserView, Long]("id") {
+  val idCol = new TableColumn[UserView, Long]("ID") {
     cellValueFactory = { _.value.id }
     cellFactory = { _ =>
       new TableCell[UserView, Long] {

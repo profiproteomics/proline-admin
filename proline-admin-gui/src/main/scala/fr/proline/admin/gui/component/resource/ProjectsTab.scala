@@ -17,6 +17,7 @@ import scalafx.scene.control.TableColumn.sfxTableColumn2jfx
 import scalafx.scene.control.TableView
 import scalafx.scene.control.TextArea
 import scalafx.scene.control.TextField
+import scalafx.scene.control.Button
 import scalafx.scene.layout.ColumnConstraints
 import scalafx.scene.layout.ColumnConstraints.sfxColumnConstraints2jfx
 import scalafx.scene.layout.GridPane
@@ -60,9 +61,9 @@ class ProjectsTab() extends IResourceManagementTab {
   }
 
   content = tabContent
-  
-//  /** Get this tab **/
-//  def apply() = this
+
+  //  /** Get this tab **/
+  //  def apply() = this
 }
 
 /**
@@ -70,12 +71,13 @@ class ProjectsTab() extends IResourceManagementTab {
  * Table to see all projects *
  * ************************* *
  */
-// Defect #13959 : tableau projet – owner – schema_version – taille de la base (Gb)
+
 class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
 
   /* Build store */
   val projectViews = UdsRepository.getAllProjects().toBuffer[Project].sortBy(_.getId).map(new ProjectView(_))
-  protected lazy val tableLines  = ObservableBuffer(projectViews)
+
+  protected lazy val tableLines = ObservableBuffer(projectViews)
   /* Project ID */
   val idCol = new TableColumn[ProjectView, Long]("ID") {
     cellValueFactory = { _.value.id }
@@ -101,7 +103,12 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
   /* Project name */
   val projectNameCol = new TableColumn[ProjectView, String]("Name") {
     cellValueFactory = { _.value.name }
-    
+       cellFactory = { _ =>
+      new TableCell[ProjectView, String] {
+        style = "-fx-alignment: CENTER;"
+        item.onChange { (_, _, newValue) => text = newValue }
+      }
+    }
   }
 
   /* Project description */
@@ -114,31 +121,36 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
       }
     }
   }
-  
- /*column of schema version default  = no.version */
-  
-  val projectVersionCol = new TableColumn[ProjectView,String]("Schema version (Msi-Lcms)") {
+
+  /*column of schema version default  = no.version */
+
+  val projectVersionCol = new TableColumn[ProjectView, String]("Schema version (Msi-Lcms)") {
     cellValueFactory = { _.value.version }
-     cellFactory = { _ =>
+    cellFactory = { _ =>
       new TableCell[ProjectView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
       }
     }
   }
-  
- /* column of Database size */ 
-  
+
+  /* column of database size */
+
   val projectSizeCol = new TableColumn[ProjectView, String]("Size (Msi-Lcms)") {
-    cellValueFactory = {_.value.size }
-     cellFactory = { _ =>
+    cellValueFactory = { _.value.size }
+    cellFactory = { _ =>
       new TableCell[ProjectView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
       }
     }
   }
-  
+
+  /* column contain some button */
+
+  //val actionCol = new TableColumn[ProjectView, Boolean]("Action")
+
+  /*button to delete , update */
   /* Get JavaFx columns to fill table view */
   protected lazy val tableColumns: List[javafx.scene.control.TableColumn[ProjectView, _]] = List(idCol, ownerCol, projectNameCol, projectDescCol, projectVersionCol, projectSizeCol)
 
@@ -146,12 +158,12 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
   this.applyPercentWidth(List(
     (idCol, 10),
     (ownerCol, 10),
-    (projectVersionCol,20),
-    (projectNameCol,40),
+    (projectVersionCol, 20),
+    (projectNameCol, 40),
     (projectDescCol, 40),
-    (projectSizeCol,20)
-  ))
-  
+    (projectSizeCol, 20)
+    ))
+
   /* Initialize table content */
   this.init()
 }
@@ -219,8 +231,7 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
           wTitle = s"Projects belonging to user '${userAccount.getLogin}'",
           wText = text,
           wParent = Option(Main.stage),
-          isResizable = true
-        )
+          isResizable = true)
       }
     }
   }
@@ -256,8 +267,7 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
 
     columnConstraints ++= Seq(
       new ColumnConstraints { percentWidth = 20 },
-      new ColumnConstraints { percentWidth = 80 }
-    )
+      new ColumnConstraints { percentWidth = 80 })
 
     content = ScalaFxUtils.getFormattedGridContent5(Seq(
       (ownerLabel, 0, 0, 1, 1),
@@ -268,16 +278,14 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
       (nameField, 1, 2, 1, 1),
       (nameWarningLabel, 1, 3, 2, 1),
       (descLabel, 0, 4, 1, 1),
-      (descField, 1, 4, 1, 1)
-    ))
+      (descField, 1, 4, 1, 1)))
   }
 
   Seq(
     ownerLabel,
     seeUserProjects,
     nameLabel,
-    descLabel
-  ).foreach(GridPane.setHalignment(_, HPos.Right))
+    descLabel).foreach(GridPane.setHalignment(_, HPos.Right))
 
   /*
    * ************** *
@@ -358,7 +366,7 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
     logger.debug("Create project")
     LaunchAction(
       actionButton = ButtonsPanel.manageResourcesButton,
-//      disableNode = ResourcesTabbedWindow.tabPanel,
+      //      disableNode = ResourcesTabbedWindow.tabPanel,
       actionString = Utils.mkCmd(cmd),
       action = () => {
 
@@ -367,17 +375,17 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
 
         //try {
 
-          /* Create project */
-          val projectCreator = new CreateProject(udsDbContext, newProjectName, newProjectDesc, ownerID)
-          projectCreator.doWork()
-          val projectId = projectCreator.projectId
+        /* Create project */
+        val projectCreator = new CreateProject(udsDbContext, newProjectName, newProjectDesc, ownerID)
+        projectCreator.doWork()
+        val projectId = projectCreator.projectId
 
-          /* Create project databases */
-          if (projectId > 0L) {
-            new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
-          } else {
-            logger.error("Invalid Project Id: " + projectId)
-          }
+        /* Create project databases */
+        if (projectId > 0L) {
+          new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
+        } else {
+          logger.error("Invalid Project Id: " + projectId)
+        }
 
         /*} finally {
           /* Close udsDbContext */
@@ -388,8 +396,7 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
             case exClose: Exception => logger.error("Error closing UDS Db Context", exClose)
           }
         }*/
-      }
-    )
+      })
   }
 }
 
