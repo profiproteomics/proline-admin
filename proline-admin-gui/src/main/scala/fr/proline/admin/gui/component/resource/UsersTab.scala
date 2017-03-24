@@ -81,16 +81,35 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
   /* Login */
   val loginCol = new TableColumn[UserView, String]("Login") {
     cellValueFactory = { _.value.login }
+     cellFactory = { _ =>
+      new TableCell[UserView, String] {
+        style = "-fx-alignment: CENTER;"
+        item.onChange { (_, _, newValue) => text = newValue }
+      }
+    }
   }
 
   /* Password hash */
   val pwdHashCol = new TableColumn[UserView, String]("Password hash") {
     cellValueFactory = { _.value.pwdHash }
+    cellFactory = { _ =>
+    new TableCell[UserView, String] {
+        style = "-fx-alignment: CENTER;"
+        item.onChange { (_, _, newValue) => text = newValue }
+      }
+    }
+    
   }
   
   /* creation mode */
   val creationModeCol = new TableColumn[UserView, String]("Creation mode") {
     cellValueFactory = { _.value.mode }
+         cellFactory = { _ =>
+      new TableCell[UserView, String] {
+        style = "-fx-alignment: CENTER;"
+        item.onChange { (_, _, newValue) => text = newValue }
+      }
+    }
   }
   /* Get JavaFx columns to fill table view */
   protected lazy val tableColumns: List[javafx.scene.control.TableColumn[UserView, _]] = List(idCol, loginCol,creationModeCol, pwdHashCol)

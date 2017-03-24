@@ -103,7 +103,7 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
   /* Project name */
   val projectNameCol = new TableColumn[ProjectView, String]("Name") {
     cellValueFactory = { _.value.name }
-       cellFactory = { _ =>
+      cellFactory = { _ =>
       new TableCell[ProjectView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
