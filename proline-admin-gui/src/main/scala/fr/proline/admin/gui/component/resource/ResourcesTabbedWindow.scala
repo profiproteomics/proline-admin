@@ -20,8 +20,8 @@ class ResourcesTabbedWindow() extends AbstractTabbedWindow {
 
   val tabs: Seq[IResourceManagementTab] = Seq(
       new UsersTab(),
-      new ProjectsTab()
-      //TODO: new DataBasesTab()
+      new ProjectsTab(),
+      new DataBasesTab()
       //TODO: enable me: new PtmsTab(),
       //TODO: enable me: new InstruConfigTab()
   )

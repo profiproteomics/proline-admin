@@ -140,15 +140,14 @@ class DataBasesTable() extends AbstractResourceTableView[ExternalDbView] {
   val actionCol = new TableColumn[ExternalDbView, String]("Action") {
   }
   actionCol.setEditable(true)
-  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[ExternalDbView, _]] = List(idCol, dbNameCol, dbVersionCol, dbPortCol, dbHostCol, actionCol)
+  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[ExternalDbView, _]] = List(idCol, dbNameCol, dbVersionCol, dbPortCol, dbHostCol)
   /* Set columns width */
   this.applyPercentWidth(List(
     (idCol, 15),
     (dbNameCol, 25),
     (dbVersionCol, 20),
     (dbPortCol, 20),
-    (dbHostCol, 20),
-    (actionCol, 20)))
+    (dbHostCol, 20)))
 
   /* Initialize table content */
   this.init()
