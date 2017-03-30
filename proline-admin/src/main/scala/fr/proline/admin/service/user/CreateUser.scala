@@ -16,7 +16,8 @@ import fr.proline.repository.DriverType
 class CreateUser(
   udsDbContext: DatabaseConnectionContext,
   login: String,
-  password: String
+  password: String,
+  isGroupUser: Boolean
 ) extends LazyLogging {
 
   var userId: Long = -1L
@@ -40,6 +41,16 @@ class CreateUser(
       udsUser.setPasswordHash(sha256Hex(password))
       udsUser.setCreationMode("MANUAL")
 
+
+      var serializedPropertiesMap = new java.util.HashMap[String, Object]
+      if (isGroupUser) {
+        serializedPropertiesMap.put("UserGroup","USER")
+      } else {
+        serializedPropertiesMap.put("UserGroup","ADMIN")
+      }
+      udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap);
+      
+      
       udsEM.persist(udsUser)
     }
     
@@ -56,7 +67,7 @@ class CreateUser(
 
 object CreateUser extends LazyLogging {
 
-  def apply(login: String, pswd: Option[String] = None): Long = {
+  def apply(login: String, pswd: Option[String] = None, user: Option[Boolean] = None): Long = {
 
     // Retrieve Proline configuration
     val prolineConf = SetupProline.config
@@ -86,7 +97,8 @@ object CreateUser extends LazyLogging {
       try {
         // Create user
         val password = if (pswd.isDefined) pswd.get else "proline"
-        val userCreator = new CreateUser(udsDbContext, login, password)
+        val isGroupUser = if (user.isDefined) user.get else true
+        val userCreator = new CreateUser(udsDbContext, login, password, isGroupUser)
         userCreator.run()
 
         userId = userCreator.userId
