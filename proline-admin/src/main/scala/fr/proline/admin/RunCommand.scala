@@ -7,7 +7,7 @@ import fr.profi.util.ThreadLogger
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.maintenance.DumpDatabase
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
-import fr.proline.admin.service.user.{ CreateProject, CreateUser, DisableUser, DeleteProject, ArchiveProject, UnarchiveProject, RestoreProject ,ResetPassword }
+import fr.proline.admin.service.user.{ CreateProject, CreateUser, DisableUser, DeleteProject, ArchiveProject, UnarchiveProject, RestoreProject, ResetPassword }
 import fr.proline.repository.UncachedDataStoreConnectorFactory
 
 object RunCommand extends App with LazyLogging {
@@ -22,7 +22,7 @@ object RunCommand extends App with LazyLogging {
     }
   }
 
-  /**set up proline command */
+  /** set up proline command */
 
   @Parameters(commandNames = Array("setup"), commandDescription = "Set Up the Proline databases", separators = "=")
   private object SetupProlineCommand extends JCommandReflection
@@ -176,9 +176,7 @@ object RunCommand extends App with LazyLogging {
     if (!dsConnectorFactory.isInitialized) {
       dsConnectorFactory.initialize(SetupProline.config.udsDBConfig.toNewConnector)
     }
-
     hasDsConnectorFactory = true
-
     dsConnectorFactory
   }
 
@@ -198,9 +196,9 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(ExportMsiDbStatsCommand)
     jCmd.addCommand(UpgradeDatabasesCommand)
     jCmd.addCommand(DeleteProjectCommand)
-    jCmd.addCommand(ArchiveProjectCommand)
-    jCmd.addCommand(UnarchiveProjectCommand)
-    jCmd.addCommand(RestoreProjectCommand)
+    //jCmd.addCommand(ArchiveProjectCommand)
+    //jCmd.addCommand(UnarchiveProjectCommand)
+    //jCmd.addCommand(RestoreProjectCommand)
     jCmd.addCommand(DisableUserCommand)
 
     // Try to parse the command line
@@ -257,7 +255,7 @@ object RunCommand extends App with LazyLogging {
         }
 
         case ResetPasswordCommand.Parameters.firstName => {
-         
+
           val pswd = if (ResetPasswordCommand.password.isEmpty()) None else Some(ResetPasswordCommand.password)
           ResetPassword(ResetPasswordCommand.userId, pswd)
         }
