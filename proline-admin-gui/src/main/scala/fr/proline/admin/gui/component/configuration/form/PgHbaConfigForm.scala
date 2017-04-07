@@ -252,11 +252,13 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
       } else {
         println(s"""Address is not of type: IP/CIDR (found: ${line.addressWithCIDR} within line '$line')""")
         // TODO: handle server names and keywords 
-        if(line.addressWithCIDR.equals("samenet"))
-          ("samenet", -1) 
-          else if(line.addressWithCIDR.equals("samehost"))
+        if (line.addressWithCIDR.equals("samenet"))
+          ("samenet", -1)
+        else if (line.addressWithCIDR.equals("samehost"))
           ("samehost", -1)
-          else ("", -1)
+        else if (line.addressWithCIDR.equals("all"))
+          ("all", -1)
+        else ("", -1)
       }
     }
 
@@ -648,8 +650,8 @@ case class PgHbaLine(
 
     /* IP address follows a correct pattern */
     val ipPattern = {
-      if (addressType == AddressType.IPv4) """(\d+\.\d+\.\d+\.\d+|samenet|samehost)"""
-      else """(([\da-f]*:*)+|samenet|samehost)"""
+      if (addressType == AddressType.IPv4) """(\d+\.\d+\.\d+\.\d+|samenet|samehost|all)"""
+      else """(([\da-f]*:*)+|samenet|samehost|all)"""
     }
     if ((addressField matches ipPattern) == false) {
       errorString ++= "\nIncorrect IP address. Please refer to help.\n"
@@ -847,6 +849,7 @@ object NewDatabaseNameDialog {
  * ********************************* *
  */
 class AdressDialog(
+  all: Boolean,
   samenet: Boolean,
   samehost: Boolean) extends Stage {
 
@@ -859,6 +862,11 @@ class AdressDialog(
    * ********** *
    */
   val tog = new ToggleGroup()
+  val allBox = new RadioButton("all") {
+    selected = all
+    id = "all"
+    toggleGroup = tog
+  }
   val sameNetBox = new RadioButton("samenet") {
     selected = samenet
     id = "samenet"
@@ -887,6 +895,7 @@ class AdressDialog(
    */
 
   val defaultNames = List(
+    allBox,
     sameNetBox,
     sameHostBox)
 
@@ -944,29 +953,31 @@ object NewAdressDialog {
 
   /** Create and show a pre-filled dialog **/
   def apply(
+    all: Boolean = false,
     samenet: Boolean = true,
     samehost: Boolean = false): AdressDialog = {
 
-    val dialog = new AdressDialog(samenet, samehost)
+    val dialog = new AdressDialog(all, samenet, samehost)
     dialog.showAndWait()
     dialog
   }
 
   /** Secondary constructor: parse String in PgHbaFormDialog **/
-  
+
   def apply(string: String): AdressDialog = {
     val namesBuff = new ListBuffer[String]()
-    var (samenet, samehost) = (false, false)
+    var (all, samenet, samehost) = (false, true, false)
 
     val split = string.split(",")
     split.foreach { name =>
       if (name == "samenet") samenet = true
       else if (name == "samehost") samehost = true
-      
+      else if (name == "all") all = true
+
     }
-    this(samenet, samehost)
+    this(all, samenet, samehost)
   }
   /** Implicitly return a String from the dialog :samanet or samehost **/
-  
+
   implicit def dialog2string(dialog: AdressDialog): String = dialog.getString()
 }
