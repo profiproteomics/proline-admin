@@ -31,7 +31,7 @@ abstract class AbstractTabbedWindow extends Stage with LazyLogging {
 
   initModality(Modality.WINDOW_MODAL)
   initOwner(Main.stage)
-  width = 1024
+  width = 1068
   height = 768
   /*
    * ********** *
