@@ -17,6 +17,7 @@ import scalafx.scene.Cursor
 import scalafx.scene.Scene
 import scalafx.scene.control.Button
 import scalafx.scene.control.CheckBox
+import scalafx.scene.control.{ RadioButton, ToggleGroup }
 import scalafx.scene.control.ComboBox
 import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
@@ -74,10 +75,10 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
 
   /* Column names */
   private def _columnNames(addressType: AddressType.Value) = List(
-      
+
     newHSpacer(70),
-    
-    new BoldLabel("Type", upperCase = false){
+
+    new BoldLabel("Type", upperCase = false) {
       tooltip = new Tooltip() {
         text = "Connection type:\n\n" +
           "\"local\" is a Unix-domain socket,\n" +
@@ -85,7 +86,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
           "\"hostssl\" is an SSL-encrypted TCP/IP socket, and \"hostnossl\" is a plain TCP/IP socket."
       }
     },
-    
+
     newHSpacer(110),
 
     new BoldLabel("Database", upperCase = false) {
@@ -96,21 +97,21 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
           "An editor id provided to help you (icon on the rightof the DATABASE field)."
       }
     },
-    
+
     newHSpacer(150),
-    
-    new BoldLabel("User", upperCase = false){
-      tooltip = new Tooltip(){
+
+    new BoldLabel("User", upperCase = false) {
+      tooltip = new Tooltip() {
         text = "User name:\n\n" +
           "Can be \"all\", a user name, a group name prefixed with \"+\", or a comma-separated list thereof.\n" +
           "In both the DATABASE and USER fields you can also write a file name prefixed with \"@\"\n" +
           "to include names from a separate file."
       }
     },
-    
-    newHSpacer(125),
 
-    new BoldLabel("IP address", upperCase = false) {
+    newHSpacer(80),
+
+    new BoldLabel("IP address - Host name", upperCase = false) {
       tooltip = new Tooltip() {
         val sb = new StringBuilder()
         sb ++= "IP address:\n\n"
@@ -129,11 +130,11 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
           sb ++= "\n\nAn IPv6 address must look like:\n"
           sb ++= "X.X.X.X.X.X.X.X where X is an integer between 0 and 256."
         }
-        
+
         text = sb.result()
       }
     },
-    
+
     newHSpacer(50),
 
     new BoldLabel("IPs count", upperCase = false) {
@@ -158,8 +159,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
           "Note that \"password\" sends passwords in clear text;\n" +
           "\"md5\" is preferred since it sends encrypted passwords."
       }
-    }
-  )
+    })
 
   /* IPv4 */
   val ipv4Lines = ArrayBuffer[PgHbaLine]()
@@ -205,17 +205,15 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
       new HBox {
         content = _columnNames(AddressType.IPv4)
       },
-      
-      newVSpacer(10,20),
 
-      ipv4LinesBox
-    )
+      newVSpacer(10, 20),
+
+      ipv4LinesBox)
   }
 
   val ipV4BorderPane = new TitledBorderPane(
     "IPv4",
-    ipv4Panel
-  )
+    ipv4Panel)
 
   /* IPv6 */
   val ipv6Panel = new VBox {
@@ -224,15 +222,13 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
       addIPv6LineButton,
       new HBox { content = _columnNames(AddressType.IPv6) },
       newVSpacer(15, 25),
-      ipv6LinesBox
-    )
+      ipv6LinesBox)
   }
 
   val ipV6BorderPane = new TitledBorderPane(
     "IPv6",
-    ipv6Panel
-  )
-  
+    ipv6Panel)
+
   /* VBox content */
   spacing = 20
   content = Seq(warningLabel, ipV4BorderPane, ipV6BorderPane, wrappedApplyButton)
@@ -253,11 +249,14 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
         val split = line.addressWithCIDR.split("/")
         require(split.length == 2, s"""Address should be of type: IP/CIDR (found: ${line.addressWithCIDR} within line '$line')""")
         (split.head, toInt(split.last))
-      }
-      
-      else {
-       println( s"""Address is not of type: IP/CIDR (found: ${line.addressWithCIDR} within line '$line')""")
-       ("", -1) // TODO: handle server names and keywords 
+      } else {
+        println(s"""Address is not of type: IP/CIDR (found: ${line.addressWithCIDR} within line '$line')""")
+        // TODO: handle server names and keywords 
+        if(line.addressWithCIDR.equals("samenet"))
+          ("samenet", -1) 
+          else if(line.addressWithCIDR.equals("samehost"))
+          ("samehost", -1)
+          else ("", -1)
       }
     }
 
@@ -275,10 +274,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
         maxIpsCount,
         line.method,
         line.commented)
-    }
-
-    /* IPv6 */
-    else {
+    } /* IPv6 */ else {
       val maxIpsCount = math.pow(2, (128 - cidr)).toInt
 
       _addIPv6Line(
@@ -288,8 +284,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
         address,
         maxIpsCount,
         line.method,
-        line.commented
-      )
+        line.commented)
     }
   }
 
@@ -310,8 +305,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
     address: String,
     maxIPCount: Int,
     method: Method.Value,
-    commented: Boolean
-  ) {
+    commented: Boolean) {
 
     /* Action run when line is deleted */
     def _onDeleteAction(line: PgHbaLine): Unit = {
@@ -338,8 +332,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
       address,
       maxIPCount,
       method,
-      commented
-    )
+      commented)
 
     linesBox.content = linesBuffer
   }
@@ -352,12 +345,10 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
     address: String = "",
     maxIPCount: Int = -1,
     method: Method.Value = Method.MD5,
-    commented:Boolean = false
-  ) = {
+    commented: Boolean = false) = {
     _addLine(
       ipv4Lines, ipv4LinesBox, AddressType.IPv4,
-      connectionType, database, user, address, maxIPCount, method, commented
-    )
+      connectionType, database, user, address, maxIPCount, method, commented)
   }
 
   /** Add components to define another IPv6 connection **/
@@ -368,17 +359,15 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
     address: String = "",
     maxIPCount: Int = -1,
     method: Method.Value = Method.MD5,
-    commented: Boolean = false
-  ) = {
+    commented: Boolean = false) = {
     _addLine(
       ipv6Lines, ipv6LinesBox, AddressType.IPv6,
-      connectionType, database, user, address, maxIPCount, method, commented
-    )
+      connectionType, database, user, address, maxIPCount, method, commented)
   }
 
   /** Check if the form is correct, show a popup describing errors if not **/
   def checkForm(): Boolean = {
-    
+
     val sb = new StringBuilder()
     val sb4 = new StringBuilder()
     val sb6 = new StringBuilder()
@@ -420,8 +409,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
     val errorStringIsEmpty = ScalaUtils.isEmpty(errorString)
     if (errorStringIsEmpty == false) ShowPopupWindow(
       wTitle = "Errors in form",
-      wText = errorString
-    )
+      wText = errorString)
 
     errorStringIsEmpty
   }
@@ -437,8 +425,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
     /* Update model */
     pgHbaConfigFile.updateLines(
       ipv4Lines.result().toArray,
-      ipv6Lines.result().toArray
-    )
+      ipv6Lines.result().toArray)
 
     /* Update file */
     synchronized {
@@ -472,8 +459,7 @@ case class PgHbaLine(
   address: String = "",
   maxIPCount: Int = -1,
   method: Method.Value = Method.MD5,
-  commented: Boolean = false
-) extends HBox {
+  commented: Boolean = false) extends HBox {
 
   val thisLine = this
 
@@ -503,14 +489,14 @@ case class PgHbaLine(
     minWidth = 92
     //disable <== ! commentedBox.selected
   }
-  
+
   val databaseField = new TextField {
     promptText = "database"
     text = database
     minWidth = 144
     //disable <== !commentedBox.selected
   }
-  
+
   val databaseDialogIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.EDIT)
     onAction = handle {
@@ -518,26 +504,34 @@ case class PgHbaLine(
     }
     //disable <== !commentedBox.selected
   }
-  
+
+  //disable <== !commentedBox.selected
+
   val userField = new TextField {
     promptText = "user"
     text = user
     minWidth = 125
     //disable <== !commentedBox.selected
   }
-  
+
   val addressField = new TextField {
     promptText = "address"
     text = address
     minWidth = 125
     //disable <== ! commentedBox.selected
- }
-  
+  }
+  val adressDialogIcon = new Hyperlink {
+    graphic = FxUtils.newImageView(IconResource.EDIT)
+    onAction = handle {
+      import NewAdressDialog._
+      addressField.text = NewAdressDialog(addressField.text())
+    }
+  }
   val maxIpCountBox = new ComboBox[Int] {
     items = (0 to 16).map(math.pow(2, _).toInt)
     minWidth = 75
     //disable <== ! commentedBox.selected
- }
+  }
   if (maxIPCount > 0) maxIpCountBox.selectItem(maxIPCount) //use custom wrapper utility because of select(index: Int) ambiguity
 
   val methodBox = new ComboBox[Method.Value] {
@@ -545,7 +539,7 @@ case class PgHbaLine(
     selectionModel().select(method)
     minWidth = 93
     //disable <== ! commentedBox.selected
- }
+  }
 
   val removeButton = new Button("Remove") {
     minWidth = 59
@@ -574,13 +568,13 @@ case class PgHbaLine(
     userField,
     newHSpacer(SPACING),
     addressField,
+    adressDialogIcon,
     newHSpacer(5),
     maxIpCountBox,
     newHSpacer(SPACING),
     methodBox,
     newHSpacer(SPACING),
-    removeButton
-  )
+    removeButton)
 
   /*
    * ******** *
@@ -602,13 +596,19 @@ case class PgHbaLine(
 
     // Compute CIDR: 
     // (number of bytes of IP) - (power of 2 asked to set variable)
-    val maxIpCountIdx = maxIpCountBox.selectionModel().selectedIndex()
-    val cidr: Int =
-      if (addressType == AddressType.IPv4) 32 - maxIpCountIdx
-      else 128 - maxIpCountIdx
+    val adressPattern = """\d+\.\d+\.\d+\.\d+"""
+    val adressPatternIp = """([\da-f]*:*)+"""
+    if ((addressField.getText matches adressPattern) || (addressField.getText matches adressPatternIp)) {
+      val maxIpCountIdx = maxIpCountBox.selectionModel().selectedIndex()
+      val cidr: Int =
+        if (addressType == AddressType.IPv4) 32 - maxIpCountIdx
+        else 128 - maxIpCountIdx
 
-    // return <adress>/<CIDR>
-    addressField + '/' + cidr
+      // return <adress>/<CIDR>
+      addressField + '/' + cidr
+    } else {
+      return addressField
+    }
   }
 
   /** Check line conformity **/
@@ -629,9 +629,9 @@ case class PgHbaLine(
     if (addressField.text().isEmpty()) {
       errorString ++= "The IP address must be specified.\n"
     }
-    if (maxIpCountBox.selectionModel().selectedItem() < 1) {
-      errorString ++= "The maximum of accepted IPs must be specified.\n"
-    }
+    //    if (maxIpCountBox.selectionModel().selectedItem() < 1) {
+    //      errorString ++= "The maximum of accepted IPs must be specified.\n"
+    //    }
     if (methodBox.selectionModel().selectedItem() == null) {
       errorString ++= "The method for password encryption must be specified.\n"
     }
@@ -648,8 +648,8 @@ case class PgHbaLine(
 
     /* IP address follows a correct pattern */
     val ipPattern = {
-      if (addressType == AddressType.IPv4) """\d+\.\d+\.\d+\.\d+"""
-      else """([\da-f]*:*)+"""
+      if (addressType == AddressType.IPv4) """(\d+\.\d+\.\d+\.\d+|samenet|samehost)"""
+      else """(([\da-f]*:*)+|samenet|samehost)"""
     }
     if ((addressField matches ipPattern) == false) {
       errorString ++= "\nIncorrect IP address. Please refer to help.\n"
@@ -685,7 +685,7 @@ class DatabaseNameDialog(
   ) extends Stage {
 
   val thisDialog = this
-  
+
   title = "Edit database(s) name(s)"
 
   /*
@@ -733,8 +733,7 @@ class DatabaseNameDialog(
     allBox,
     sameUserBox,
     sameRoleBox,
-    replicationBox
-  )
+    replicationBox)
 
   /* Buttons */
   val buttonList = Seq(applyButton, cancelButton)
@@ -769,8 +768,7 @@ class DatabaseNameDialog(
 
         newHSpacer(30, 50),
 
-        buttons
-      )
+        buttons)
     }
   }
 
@@ -842,4 +840,132 @@ object NewDatabaseNameDialog {
 
   /** Implicitly return a String from the dialog **/
   implicit def dialog2string(dialog: DatabaseNameDialog): String = dialog.getString()
+}
+/**
+ * ********************************* *
+ * Dialog for database names edition *
+ * ********************************* *
+ */
+class AdressDialog(
+  samenet: Boolean,
+  samehost: Boolean) extends Stage {
+
+  val thisDialog = this
+  title = "Choose a host name"
+
+  /*
+   * ********** *
+   * COMPONENTS *
+   * ********** *
+   */
+  val tog = new ToggleGroup()
+  val sameNetBox = new RadioButton("samenet") {
+    selected = samenet
+    id = "samenet"
+    toggleGroup = tog
+  }
+
+  val sameHostBox = new RadioButton("samehost") {
+    selected = samehost
+    id = "samehost"
+    toggleGroup = tog
+  }
+
+  val applyButton = new Button("Apply") {
+    onAction = handle { _onApplyPressed() }
+  }
+  val cancelButton = new Button("Cancel") {
+    onAction = handle {
+      thisDialog.close()
+    }
+  }
+
+  /*
+   * ****** *
+   * LAYOUT *
+   * ****** *
+   */
+
+  val defaultNames = List(
+    sameNetBox,
+    sameHostBox)
+
+  /* Buttons */
+
+  val buttonList = Seq(applyButton, cancelButton)
+  buttonList.foreach { b =>
+    b.prefWidth <== thisDialog.width
+    b.minHeight = 10
+  }
+  val buttons = new HBox {
+    alignmentInParent = Pos.Center
+    spacing = 20
+    content = buttonList
+  }
+
+  /* Scene */
+  scene = new Scene {
+
+    onKeyPressed = (ke: KeyEvent) => {
+      closeIfEscapePressed(thisDialog, ke)
+      fireIfEnterPressed(applyButton, ke)
+    }
+
+    root = new VBox {
+      alignment = Pos.BaselineLeft
+      padding = Insets(20)
+      spacing = 20
+      minWidth = 300
+      content = defaultNames ++ List(
+        newHSpacer(30, 50),
+        buttons)
+    }
+  }
+
+  /*
+   * ****** *
+   * FEATURES *
+   * ****** *
+   */
+  /** Make sure names string is ok **/
+
+  /** Make string from UI information **/
+  def getString(): String = {
+    val defaults = defaultNames.filter(_.selected()).map(_.id())
+    val sb = new StringBuilder(defaults.mkString(","))
+    sb.result()
+  }
+
+  /** Check names when "apply" is pressed, close dialog and retrun string if OK **/
+  private def _onApplyPressed(): Unit = {
+    thisDialog.close()
+  }
+}
+object NewAdressDialog {
+
+  /** Create and show a pre-filled dialog **/
+  def apply(
+    samenet: Boolean = true,
+    samehost: Boolean = false): AdressDialog = {
+
+    val dialog = new AdressDialog(samenet, samehost)
+    dialog.showAndWait()
+    dialog
+  }
+
+  /** Secondary constructor: parse String in PgHbaFormDialog **/
+  def apply(string: String): AdressDialog = {
+    val namesBuff = new ListBuffer[String]()
+    var (samenet, samehost) = (false, false)
+
+    val split = string.split(",")
+    split.foreach { name =>
+      if (name == "samenet") samenet = true
+      else if (name == "samehost") samehost = true
+      
+    }
+    this(samenet, samehost)
+  }
+  /** Implicitly return a String from the dialog **/
+  implicit def dialog2string(dialog: AdressDialog): String = dialog.getString()
 }
