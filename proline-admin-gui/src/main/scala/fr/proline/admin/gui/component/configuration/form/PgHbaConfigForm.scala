@@ -843,7 +843,7 @@ object NewDatabaseNameDialog {
 }
 /**
  * ********************************* *
- * Dialog for database names edition *
+ * Dialog for host names edition *
  * ********************************* *
  */
 class AdressDialog(
@@ -929,14 +929,13 @@ class AdressDialog(
    */
   /** Make sure names string is ok **/
 
-  /** Make string from UI information **/
   def getString(): String = {
     val defaults = defaultNames.filter(_.selected()).map(_.id())
     val sb = new StringBuilder(defaults.mkString(","))
     sb.result()
   }
 
-  /** Check names when "apply" is pressed, close dialog and retrun string if OK **/
+  /** Check names when "apply" is pressed, close dialog and return string if OK **/
   private def _onApplyPressed(): Unit = {
     thisDialog.close()
   }
@@ -954,6 +953,7 @@ object NewAdressDialog {
   }
 
   /** Secondary constructor: parse String in PgHbaFormDialog **/
+  
   def apply(string: String): AdressDialog = {
     val namesBuff = new ListBuffer[String]()
     var (samenet, samehost) = (false, false)
@@ -966,6 +966,7 @@ object NewAdressDialog {
     }
     this(samenet, samehost)
   }
-  /** Implicitly return a String from the dialog **/
+  /** Implicitly return a String from the dialog :samanet or samehost **/
+  
   implicit def dialog2string(dialog: AdressDialog): String = dialog.getString()
 }
