@@ -631,9 +631,12 @@ case class PgHbaLine(
     if (addressField.text().isEmpty()) {
       errorString ++= "The IP address must be specified.\n"
     }
-    //    if (maxIpCountBox.selectionModel().selectedItem() < 1) {
-    //      errorString ++= "The maximum of accepted IPs must be specified.\n"
-    //    }
+   // val adressPattern = """\d+\.\d+\.\d+\.\d+"""
+    if(addressField.text() matches """(\d+\.\d+\.\d+\.\d+)"""){
+        if (maxIpCountBox.selectionModel().selectedItem() < 1) {
+          errorString ++= "The maximum of accepted IPs must be specified.\n"
+        }
+    }
     if (methodBox.selectionModel().selectedItem() == null) {
       errorString ++= "The method for password encryption must be specified.\n"
     }
