@@ -35,9 +35,9 @@ class ModifyUserGroup(
            serializedPropertiesMap = new java.util.HashMap[String, Object]
          }
          if (isUser) {
-        	 serializedPropertiesMap.put("UserGroup","USER")
+        	 serializedPropertiesMap.put("user_group",UdsUser.UserGroupType.USER.name())
          } else {
-        	 serializedPropertiesMap.put("UserGroup","ADMIN")
+        	 serializedPropertiesMap.put("user_group",UdsUser.UserGroupType.ADMIN.name())
          }
          udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap);
         
