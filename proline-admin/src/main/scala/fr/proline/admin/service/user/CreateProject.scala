@@ -41,16 +41,13 @@ class CreateProject(
 
       // Retrieve the owner => we assume it has been already created
       val udsUser = udsEM.find(classOf[UdsUser], ownerId)
-      require(udsUser != null, "undefined user with id=" + ownerId)
-
-      //println("creating project for user with login '"+ owner.getLogin +"'...")   
+      require(udsUser != null, "undefined user with id=" + ownerId) 
 
       // Create the project
       val udsProject = new UdsProject(udsUser)
       udsProject.setName(projectName)
       udsProject.setDescription(projectDescription)
       udsProject.setCreationTimestamp(fr.profi.util.sql.getTimeAsSQLTimestamp)
-      //udsProject.setOwner(udsUser)
 
       udsEM.persist(udsProject)
 

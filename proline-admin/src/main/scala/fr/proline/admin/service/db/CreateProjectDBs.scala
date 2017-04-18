@@ -48,8 +48,6 @@ class CreateProjectDBs(
       // Store LCMSdb connection settings
       this._insertExtDb(udsEzDBC, lcmsDBConfig.toUdsExternalDb)
 
-      // Release UDSdb connection
-      //if( wasUdsDbConnectionOpened == false ) udsDbContext.closeConnection()
     })
 
     val connectorFactory = DataStoreConnectorFactory.getInstance()
@@ -67,21 +65,15 @@ class CreateProjectDBs(
       localMsiDbConnector = true
     }
 
-    try {
-      //new SetupMsiDB(msiDbConnector, msiDBConfig, config.msiDBDefaults).run()
+    try {     
       setupDbFromDataset(msiDbConnector, msiDBConfig, "/dbunit_init_datasets/msi-db_dataset.xml")
       
-      // TODO: re-enable this importation ?
-      /*def _importAdminInformation(msiEM: EntityManager) {
-
-        val msiAdminInfos = new MsiAdminInfos()
-        msiAdminInfos.setModelVersion(dbConfig.schemaVersion)
-        msiAdminInfos.setDbCreationDate(getTimeAsSQLTimestamp)
-        //udsAdminInfos.setModelUpdateDate()
-        msiEM.persist(msiAdminInfos)
-    
-      }*/
+      val msiDbCtx = new fr.proline.context.MsiDbConnectionContext(msiDbConnector)
       
+      val dbUpgrader = new fr.proline.admin.service.db.migration.UpgradeMsiDbDefinitions(msiDbCtx)
+      dbUpgrader.run()
+      msiDbCtx.close()
+     
     // FIXME: remove ExternalDbs and throw new Exception if error occurs
     } finally {
 

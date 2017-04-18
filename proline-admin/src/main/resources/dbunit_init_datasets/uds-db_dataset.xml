@@ -291,8 +291,8 @@
   <SPEC_TITLE_PARSING_RULE ID="5" RAW_FILE_IDENTIFIER="\[(.+?)\]" FIRST_SCAN="in range (\d+) \(rt=||Scan (\d+) \(rt=" LAST_SCAN="\) to (\d+) \(rt=||Scan (\d+) \(rt=" FIRST_TIME="in range \d+ \(rt=(\d+.\d+)\)||\(rt=(\d+.\d+)\)" LAST_TIME="\) to \d+ \(rt=(\d+.\d+)\)||\(rt=(\d+.\d+)\)"/>
   <SPEC_TITLE_PARSING_RULE ID="6" RAW_FILE_IDENTIFIER="^RawFile: (.+?) FinneganScanNumber:" FIRST_SCAN="FinneganScanNumber: (\d+)" LAST_SCAN="FinneganScanNumber: (\d+)"/>
   <SPEC_TITLE_PARSING_RULE ID="7" RAW_FILE_IDENTIFIER="raw_file_identifier:(.+);" FIRST_CYCLE="first_cycle:(.+);" LAST_CYCLE="last_cycle:(.+);" FIRST_SCAN="first_scan:(.+);" LAST_SCAN="last_scan:(.+);" FIRST_TIME="first_time:(.+);" LAST_TIME="last_time:(.+);"/>
-  <SPEC_TITLE_PARSING_RULE ID="8" RAW_FILE_IDENTIFIER="File:&quot;(\w+)\.wiff&quot;" FIRST_CYCLE="Locus:\d\.\d\.\d\.(\d+)\.\d+ File:" LAST_CYCLE="Locus:\d\.\d\.\d\.(\d+)\.\d+ File:"/>
-  <SPEC_TITLE_PARSING_RULE ID="9" FIRST_SCAN="Spectrum\d+\s+scans:(\d+?)," LAST_SCAN="Spectrum\d+\s+scans:(\d+?),"/>
+  <SPEC_TITLE_PARSING_RULE ID="8" RAW_FILE_IDENTIFIER="File:&quot;(\w+)\.wiff&quot;" FIRST_CYCLE="Locus:\d\.\d\.\d\.(\d+)\.\d+ File:" LAST_CYCLE="Locus:\d\.\d\.\d\.(\d+)\.\d+ File:"/>  
+  <SPEC_TITLE_PARSING_RULE ID="9" FIRST_SCAN="scans:.*?(\d+?).*" LAST_SCAN="scans:.*?(\d+?).*"/>  
   <SPEC_TITLE_PARSING_RULE ID="10" FIRST_SCAN="scan=(\d+)" LAST_SCAN="scan=(\d+)"/>
   <SPEC_TITLE_PARSING_RULE ID="11" RAW_FILE_IDENTIFIER="(.+)\.\d+\.\d+\.\d+$" FIRST_SCAN=".+\.(\d+)\.\d+\.\d+$" LAST_SCAN=".+\.\d+\.(\d+)\.\d+$"/>
   <SPEC_TITLE_PARSING_RULE ID="12" RAW_FILE_IDENTIFIER="File:&quot;(.+?)&quot;," FIRST_SCAN="scan=(\d+)" LAST_SCAN="scan=(\d+)"/>
