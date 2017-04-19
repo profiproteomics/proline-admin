@@ -374,9 +374,8 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
       adminConfigFile.setPwxConfigPath(selectedPwxConfigPath)
     }
 
-    /* Load new config */
-    ProlineAdminConnection.loadProlineConf(verbose = true)
-
+    /* check and Load new config */
+    //ProlineAdminConnection.loadProlineConf(verbose = true)
     /* Reset warnings */
     Seq(
       serverConfigNbLabel,
