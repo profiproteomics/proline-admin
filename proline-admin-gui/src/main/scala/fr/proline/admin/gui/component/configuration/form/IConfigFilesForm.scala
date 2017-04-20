@@ -17,7 +17,13 @@ trait IConfigFilesForm extends Node {
   /* Apply utilities */
   val applyButton = new Button("Apply") {
     onAction = handle {
+    
+      try{
       if (checkForm()) saveForm()
+      }
+      catch {
+        case ade :java.nio.file.AccessDeniedException  => System.out.println("[Error] - Access denied, you should have administrator rights to write in configuration files")
+      }
     }
   }
 

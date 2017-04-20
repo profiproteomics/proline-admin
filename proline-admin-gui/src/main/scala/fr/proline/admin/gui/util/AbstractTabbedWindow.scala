@@ -1,6 +1,5 @@
 package fr.proline.admin.gui.util
 
-
 import com.typesafe.scalalogging.LazyLogging
 import javafx.scene.layout.Priority
 import scalafx.Includes._
@@ -17,7 +16,6 @@ import scalafx.stage.Stage
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.component.configuration.tab._
 import fr.profi.util.scalafx.ScalaFxUtils
-
 
 /**
  * ******************************* *
@@ -42,8 +40,15 @@ abstract class AbstractTabbedWindow extends Stage with LazyLogging {
   val tabPanel = new TabPane {
     vgrow = Priority.ALWAYS
   }
-  
-  protected val okButton = new Button("OK"){ onAction = handle { runOnOkPressed()} }
+
+  protected val okButton = new Button("OK") {
+    onAction = handle {
+      try { runOnOkPressed() }
+      catch {
+        case ade: java.nio.file.AccessDeniedException => System.out.println("[Error] - Access denied, you should have administrator rights to edit configuration files")
+      }
+    }
+  }
   protected val cancelButton = new Button("Cancel") { onAction = handle { thisWindow.close() } }
 
   /*
@@ -64,12 +69,10 @@ abstract class AbstractTabbedWindow extends Stage with LazyLogging {
           alignment = Pos.BottomRight
           spacing = 15
           content = Seq(okButton, cancelButton)
-        }
-      )
+        })
     }
   }
 
-  
   /** Action to run when "OK" is pressed **/
   protected def runOnOkPressed(): Unit
 }
