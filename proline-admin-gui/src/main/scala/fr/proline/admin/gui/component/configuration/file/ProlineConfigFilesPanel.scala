@@ -48,8 +48,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
     content = List(
       new Label("Full path to "),
       new BoldLabel("ProlineAdmin", upperCase = false),
-      new Label(" configuration file :")
-    )
+      new Label(" configuration file :"))
   }
   val adminConfigField = new TextField {
     text = Main.adminConfPath
@@ -71,8 +70,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
     content = List(
       new Label("Full path to "),
       new BoldLabel("Proline server", upperCase = false),
-      new Label(" configuration file :")
-    )
+      new Label(" configuration file :"))
   }
 
   val serverConfigField = new TextField() {
@@ -90,11 +88,11 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
     style = GREY_ITALIC
     visible = false
   }
-  
+
   // These values may be overwritten by checkFileFromField(), so they need to be reset after
   val NOT_MATCHING_WARNING_TEXT = "Warning: This does not correspond to the path specified in ProlineAdmin configuration."
   val NOT_MATCHING_WARNING_STYLE = ITALIC
-  
+
   val serverConfigWarningLabel = new Label {
     text = NOT_MATCHING_WARNING_TEXT
     alignmentInParent = Pos.BottomLeft
@@ -108,8 +106,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
     content = List(
       new Label("Full path to "),
       new BoldLabel("Proline Web Extension (PWX)", upperCase = false),
-      new Label(" configuration file :")
-    )
+      new Label(" configuration file :"))
   }
 
   val pwxConfigField = new TextField() {
@@ -143,8 +140,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
   Seq(
     adminConfigField,
     serverConfigField,
-    pwxConfigField
-  ).foreach { f =>
+    pwxConfigField).foreach { f =>
       f.hgrow = Priority.Always
     }
 
@@ -182,8 +178,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
       new StackPane {
         content = List(pwxConfigNbLabel, pwxConfigWarningLabel)
         alignmentInParent = Pos.BaselineLeft
-      }
-    )
+      })
   }
 
   /*
@@ -212,8 +207,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
       pathOptInAdminConfig = adminConfigFile.getServerConfigPath(),
       field = serverConfigField,
       nbLabel = serverConfigNbLabel,
-      warningLabel = serverConfigWarningLabel
-    )
+      warningLabel = serverConfigWarningLabel)
   }
 
   /** Try to get and set PWX config file path in dedicated textField **/
@@ -222,8 +216,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
       pathOptInAdminConfig = adminConfigFile.getPwxConfigPath(),
       field = pwxConfigField,
       nbLabel = pwxConfigNbLabel,
-      warningLabel = pwxConfigWarningLabel
-    )
+      warningLabel = pwxConfigWarningLabel)
   }
 
   /** Try to get and set config file path in dedicated textField **/
@@ -239,10 +232,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
         field.text = pathInAdminConfig
         nbLabel.visible = true
         warningLabel.visible = false
-      } 
-
-      /* If not, test if it's the same */
-      else {
+      } /* If not, test if it's the same */ else {
         //TODO ? get me back?
         //serverConfigPathInAdminConfig = pathInAdminConfig
         // let the previously referred one ???
@@ -250,10 +240,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
         nbLabel.visible = false
         warningLabel.visible = pathInField != pathInAdminConfig
       }
-    } 
-
-    /* If there is no path in ProlineAdmin config, just hide the putative NB / warning */
-    else {
+    } /* If there is no path in ProlineAdmin config, just hide the putative NB / warning */ else {
       serverConfigNbLabel.visible = false
       serverConfigWarningLabel.visible = false
     }
@@ -268,8 +255,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
       newText,
       pathInConfig = serverConfigPathInAdminConfig,
       nbLabel = serverConfigNbLabel,
-      warningLabel = serverConfigWarningLabel
-    )
+      warningLabel = serverConfigWarningLabel)
   }
   private def _onPwxConfigTextChange(newText: String) {
     pwxConfigWarningLabel.text = NOT_MATCHING_WARNING_TEXT
@@ -279,11 +265,10 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
       newText,
       pathInConfig = pwxConfigPathInAdminConfig,
       nbLabel = pwxConfigNbLabel,
-      warningLabel = pwxConfigWarningLabel
-    )
+      warningLabel = pwxConfigWarningLabel)
   }
   private def _onConfigTextChange(newText: String, pathInConfig: String, nbLabel: Label, warningLabel: Label) {
-  
+
     /* Update labels visibility */
     if (newText.isEmpty() == false &&
       adminConfigField.text().isEmpty() == false) {
@@ -324,8 +309,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
     val filePath = ProlineConfigFileChooser.showIn(parentStage)
     if (filePath != null) pwxConfigField.text = filePath
   }
-  
-  
+
   /* Getters/Setters for textFields */
   def getProlineAdminConfFile(): String = adminConfigField.text()
   def setProlineAdminConfFile(newPath: String) { adminConfigField.text = newPath }
@@ -343,8 +327,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
   def checkForm(allowEmptyPaths: Boolean = true): Boolean = Seq(
     (adminConfigField, adminConfigWarningLabel),
     (serverConfigField, serverConfigWarningLabel),
-    (pwxConfigField, pwxConfigWarningLabel)
-  ).forall { case (f, w) => this.checkFileFromField(f, w, allowEmptyPaths) }
+    (pwxConfigField, pwxConfigWarningLabel)).forall { case (f, w) => this.checkFileFromField(f, w, allowEmptyPaths) }
 
   /** Save conf file(s) path in global variables and in admin config file **/
   def saveForm() {
@@ -357,11 +340,11 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
     if (Main.adminConfPath != selectedAdminConfigPath) Main.adminConfPath = selectedAdminConfigPath
     if (Main.serverConfPath != selectedServerConfigPath) Main.serverConfPath = selectedServerConfigPath
     if (Main.pwxConfPath != selectedPwxConfigPath) Main.pwxConfPath = selectedPwxConfigPath
-    Main.getAdminConfigFile().map{ adminConf =>
-      adminConf.getPostgreSqlDataDir().map( Main.postgresqlDataDir = _ )
-      adminConf.getSeqRepoConfigPath().map( Main.seqRepoConfPath = _ )
+    Main.getAdminConfigFile().map { adminConf =>
+      adminConf.getPostgreSqlDataDir().map(Main.postgresqlDataDir = _)
+      adminConf.getSeqRepoConfigPath().map(Main.seqRepoConfPath = _)
     }
-    
+
     /* Store server config path in admin config if needed */
     if (isEmpty(selectedServerConfigPath) == false &&
       (serverConfigPathInAdminConfig == null || serverConfigPathInAdminConfig != selectedServerConfigPath)) {
@@ -381,8 +364,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
       serverConfigNbLabel,
       serverConfigWarningLabel,
       pwxConfigNbLabel,
-      pwxConfigWarningLabel
-    ).foreach(_.visible = false)
+      pwxConfigWarningLabel).foreach(_.visible = false)
 
     /* Logback */
     val sb = new StringBuilder()
