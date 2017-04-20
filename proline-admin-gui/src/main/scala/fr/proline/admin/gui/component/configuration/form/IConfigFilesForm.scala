@@ -6,7 +6,6 @@ import scalafx.scene.control.Button
 import scalafx.scene.layout.StackPane
 import scalafx.scene.Node
 
-
 /**
  * ****************************** *
  * Trait for each tab 'FormPanel' *
@@ -17,12 +16,11 @@ trait IConfigFilesForm extends Node {
   /* Apply utilities */
   val applyButton = new Button("Apply") {
     onAction = handle {
-    
-      try{
-      if (checkForm()) saveForm()
-      }
-      catch {
-        case ade :java.nio.file.AccessDeniedException  => System.out.println("[Error] - Access denied, you should have administrator rights to write in configuration files")
+
+      try {
+        if (checkForm()) saveForm()
+      } catch {
+        case ade: java.nio.file.AccessDeniedException => System.out.println("[Error] - Access denied, you should have administrator rights to edit configuration files")
       }
     }
   }
