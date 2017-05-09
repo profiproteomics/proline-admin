@@ -43,7 +43,7 @@ class CreateUser(
 
 
       var serializedPropertiesMap = new java.util.HashMap[String, Object]
-      if (isGroupUser) {
+      if (!isGroupUser) {
         serializedPropertiesMap.put("user_group",UdsUser.UserGroupType.USER.name())
       } else {
         serializedPropertiesMap.put("user_group",UdsUser.UserGroupType.ADMIN.name())
@@ -97,7 +97,7 @@ object CreateUser extends LazyLogging {
       try {
         // Create user
         val password = if (pswd.isDefined) pswd.get else "proline"
-        val isGroupUser = if (user.isDefined) user.get else true
+        val isGroupUser = if (user.isDefined) user.get else false
         val userCreator = new CreateUser(udsDbContext, login, password, isGroupUser)
         userCreator.run()
 

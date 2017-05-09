@@ -62,6 +62,8 @@ object RunCommand extends App with LazyLogging {
     @Parameter(names = Array("--password", "-p"), description = "The user password. Default could be used.", required = false)
     var userPassword: String = ""
 
+    @Parameter(names = Array("--admin", "-a"), description = "The parameter to distinguish user as an administrator.", required = false)
+    var groupUser: Boolean = false
   }
 
   /** dump msi db command */
@@ -149,7 +151,7 @@ object RunCommand extends App with LazyLogging {
     var projectDirectoryPath: String = ""
   }
 
-  /** reset password command */
+  /** reset  command */
   @Parameters(commandNames = Array("reset_password"), commandDescription = "reset password", separators = "=")
   private object ResetPasswordCommand extends JCommandReflection {
 
@@ -251,7 +253,7 @@ object RunCommand extends App with LazyLogging {
         case CreateUserCommand.Parameters.firstName => {
           import fr.proline.admin.service.user.CreateUser
           val pswd = if (CreateUserCommand.userPassword.isEmpty()) None else Some(CreateUserCommand.userPassword)
-          CreateUser(CreateUserCommand.userLogin, pswd)
+          CreateUser(CreateUserCommand.userLogin, pswd,Option(CreateUserCommand.groupUser))
         }
 
         case ResetPasswordCommand.Parameters.firstName => {
