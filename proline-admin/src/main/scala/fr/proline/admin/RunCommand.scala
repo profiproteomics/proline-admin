@@ -62,7 +62,7 @@ object RunCommand extends App with LazyLogging {
     @Parameter(names = Array("--password", "-p"), description = "The user password. Default could be used.", required = false)
     var userPassword: String = ""
 
-    @Parameter(names = Array("--admin", "-a"), description = "The parameter to distinguish user as an administrator.", required = false)
+    @Parameter(names = Array("--administrator", "-a"), description = "The parameter to distinguish user as an administrator.", required = false)
     var groupUser: Boolean = false
   }
 
