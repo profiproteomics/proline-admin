@@ -20,6 +20,7 @@ import scalafx.scene.layout.ColumnConstraints.sfxColumnConstraints2jfx
 import scalafx.scene.layout.GridPane
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.VBox
+import scalafx.scene.control.CheckBox
 
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.component.ButtonsPanel
@@ -34,14 +35,13 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.EnhancedTableView
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 
-
 /**
  * ******************* *
  * Content of UsersTab *
  * ******************* *
  */
 class UsersTab() extends IResourceManagementTab {
-  
+
   text = "Users"
 
   protected val newEntryPanel: INewEntryPanel = new NewUserPanel()
@@ -55,7 +55,6 @@ class UsersTab() extends IResourceManagementTab {
   }
 }
 
-
 /**
  * ********************** *
  * Table to see all users *
@@ -65,7 +64,7 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
 
   /* Build store */
   val usersViews = UdsRepository.getAllUserAccounts().toBuffer[UserAccount].sortBy(_.getId).map(new UserView(_))
-  protected lazy val tableLines  = ObservableBuffer(usersViews)
+  protected lazy val tableLines = ObservableBuffer(usersViews)
 
   /* ID */
   val idCol = new TableColumn[UserView, Long]("ID") {
@@ -81,7 +80,7 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
   /* Login */
   val loginCol = new TableColumn[UserView, String]("Login") {
     cellValueFactory = { _.value.login }
-     cellFactory = { _ =>
+    cellFactory = { _ =>
       new TableCell[UserView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
@@ -93,18 +92,18 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
   val pwdHashCol = new TableColumn[UserView, String]("Password hash") {
     cellValueFactory = { _.value.pwdHash }
     cellFactory = { _ =>
-    new TableCell[UserView, String] {
+      new TableCell[UserView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
       }
     }
-    
+
   }
-  
+
   /* creation mode */
   val creationModeCol = new TableColumn[UserView, String]("Creation mode") {
     cellValueFactory = { _.value.mode }
-         cellFactory = { _ =>
+    cellFactory = { _ =>
       new TableCell[UserView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
@@ -112,20 +111,18 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
     }
   }
   /* Get JavaFx columns to fill table view */
-  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[UserView, _]] = List(idCol, loginCol,creationModeCol, pwdHashCol)
+  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[UserView, _]] = List(idCol, loginCol, creationModeCol, pwdHashCol)
 
   /* Set columns width */
   this.applyPercentWidth(List(
     (idCol, 10),
     (loginCol, 20),
-    (creationModeCol ,20),
-    (pwdHashCol,50)
-  ))
-  
+    (creationModeCol, 20),
+    (pwdHashCol, 50)))
+
   /* Initialize table content */
   this.init()
 }
-
 
 /**
  * *********************** *
@@ -133,13 +130,13 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
  * *********************** *
  */
 class NewUserPanel() extends INewEntryPanel with LazyLogging {
-  
+
   /*
    * ********** *
    * COMPONENTS *
    * ********** *
    */
-
+  var userCreator:CreateUser= _
   /* Border title */
   protected val title: String = "Add new user"
 
@@ -149,7 +146,7 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
 
   val EMPTY_LOGIN_MSG = "Empty login"
   val ALREADY_ATTRIBUTED_LOGIN_MSG = "This login is already attributed."
-  
+
   val loginWarningLabel = new Label {
     style = TextStyle.RED_ITALIC
     minHeight = 15
@@ -167,7 +164,11 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
     style = TextStyle.RED_ITALIC
     minHeight = 15
   }
+  // create this user as an administartor 
 
+  val isAdmin = new CheckBox("Add user to administrator group") {
+    selected = false
+  }
   /*
    * ****** *
    * LAYOUT *
@@ -182,8 +183,7 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
 
     columnConstraints ++= Seq(
       new ColumnConstraints { percentWidth = 25 },
-      new ColumnConstraints { percentWidth = 75 }
-    )
+      new ColumnConstraints { percentWidth = 75 })
 
     content = ScalaFxUtils.getFormattedGridContent5(Seq(
       //col, row, colSpan, rowSpan
@@ -194,15 +194,14 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
       (pwField, 1, 3, 1, 1),
       (pwConfirmLabel, 0, 4, 1, 1),
       (pwConfirmField, 1, 4, 1, 1),
-      (pwWarningLabel, 1, 5, 2, 1)
-    ))
+      (isAdmin, 1, 5, 1, 1),
+      (pwWarningLabel, 1, 6, 2, 1)))
   }
 
   Seq(
     loginLabel,
     pwLabel,
-    pwConfirmLabel
-  ).foreach(GridPane.setHalignment(_, HPos.Right))
+    pwConfirmLabel).foreach(GridPane.setHalignment(_, HPos.Right))
 
   /*
    * ************** *
@@ -219,7 +218,7 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
 
   /** Hide warning labels **/
   private def _hideWarnigs() = Seq(loginWarningLabel, pwWarningLabel).foreach(_.visible = false)
-  
+
   /** Clear the form **/
   protected def clearForm(): Unit = {
     Seq(loginField, pwField, pwConfirmField).foreach(_.text = "")
@@ -240,10 +239,7 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
     if (isLoginDefined == false) {
       loginWarningLabel.text = EMPTY_LOGIN_MSG
       loginWarningLabel.visible = true
-    }
-    
-    /* Login is available */
-    else {
+    } /* Login is available */ else {
       isLoginAvailable = {
         if (isLoginDefined) {
           UdsRepository.getAllUserAccounts().exists(_.getLogin() == _login) == false
@@ -260,8 +256,8 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
     val _pw = pwField.text()
     val _pwConfirm = pwConfirmField.text()
     val isPwdConfirmed = _pw == _pwConfirm
-    
-    if (isPwdConfirmed == false){
+
+    if (isPwdConfirmed == false) {
       pwWarningLabel.visible = true
     }
 
@@ -293,11 +289,12 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
         val udsDbContext = UdsRepository.getUdsDbContext()
 
         /* Create user */
+       
         val pswd = if (pswdOpt.isDefined) pswdOpt.get else "proline" //TODO: define in config!
-        val userCreator = new CreateUser(udsDbContext, _login, pswd, true)
+        if (isAdmin.isSelected) { userCreator = new CreateUser(udsDbContext, _login, pswd, true) }
+        else { userCreator = new CreateUser(udsDbContext, _login, pswd, false) }
         userCreator.run()
-      }
-    )
+      })
   }
 
 }
