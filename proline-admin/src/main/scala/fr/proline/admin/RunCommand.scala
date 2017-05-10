@@ -62,7 +62,7 @@ object RunCommand extends App with LazyLogging {
     @Parameter(names = Array("--password", "-p"), description = "The user password. Default could be used.", required = false)
     var userPassword: String = ""
 
-    @Parameter(names = Array("--administrator", "-a"), description = "The parameter to distinguish user as an administrator.", required = false)
+    @Parameter(names = Array("--administrator", "-a"), description = "Add user to administrator group.", required = false)
     var groupUser: Boolean = false
   }
 
@@ -253,7 +253,7 @@ object RunCommand extends App with LazyLogging {
         case CreateUserCommand.Parameters.firstName => {
           import fr.proline.admin.service.user.CreateUser
           val pswd = if (CreateUserCommand.userPassword.isEmpty()) None else Some(CreateUserCommand.userPassword)
-          CreateUser(CreateUserCommand.userLogin, pswd,Option(CreateUserCommand.groupUser))
+          CreateUser(CreateUserCommand.userLogin, pswd, Option(CreateUserCommand.groupUser))
         }
 
         case ResetPasswordCommand.Parameters.firstName => {
