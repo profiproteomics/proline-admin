@@ -41,6 +41,10 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.EnhancedTableView
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 
+import javafx.scene.shape._
+import javafx.animation._
+import javafx.util.Duration
+
 /**
  * ********************** *
  * Content of ProjectsTab *
@@ -252,6 +256,12 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
     prefHeight = 100
     wrapText = true
   }
+   val createdProjectWarningLabel = new Label {
+    text = "Project has been created successfully."
+    style = TextStyle.RED_ITALIC
+    minHeight = 15
+    visible = false
+  }
 
   /*
    * ****** *
@@ -278,7 +288,8 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
       (nameField, 1, 2, 1, 1),
       (nameWarningLabel, 1, 3, 2, 1),
       (descLabel, 0, 4, 1, 1),
-      (descField, 1, 4, 1, 1)))
+      (descField, 1, 4, 1, 1),
+      (createdProjectWarningLabel, 1, 5, 1, 1)))
   }
 
   Seq(
@@ -301,7 +312,7 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
    */
 
   /** Hide warning labels **/
-  private def _hideWarnigs() = Seq(ownerWarningLabel, nameWarningLabel).foreach(_.visible = false)
+  private def _hideWarnigs() = Seq(ownerWarningLabel, nameWarningLabel,createdProjectWarningLabel).foreach(_.visible = false)
 
   /** Clear the form **/
   protected def clearForm(): Unit = {
@@ -349,7 +360,17 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
     /* Result */
     isOwnerDefined && isNameDefined && isNameAvailable
   }
-
+  
+  /** Show a Warning Label when project created **/
+  private def warningCreatedProject(): Unit = {
+    createdProjectWarningLabel.visible = true
+    val ft = new FadeTransition(Duration.millis(2000), createdProjectWarningLabel)
+    ft.setFromValue(1.0)
+    ft.setToValue(0.0)
+    ft.setCycleCount(3)
+    ft.setAutoReverse(false)
+    ft.play()
+  }
   /** Save the form **/
   protected def saveForm(): Unit = {
 
@@ -383,6 +404,8 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
         /* Create project databases */
         if (projectId > 0L) {
           new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
+          warningCreatedProject()
+          
         } else {
           logger.error("Invalid Project Id: " + projectId)
         }

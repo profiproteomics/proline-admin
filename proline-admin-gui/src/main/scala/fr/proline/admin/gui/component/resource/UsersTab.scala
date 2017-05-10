@@ -239,7 +239,7 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
   private def warningCreatedUser(): Unit = {
 
     createdUserWarningLabel.visible = true
-    val ft = new FadeTransition(Duration.millis(1000), createdUserWarningLabel)
+    val ft = new FadeTransition(Duration.millis(2000), createdUserWarningLabel)
     ft.setFromValue(1.0)
     ft.setToValue(0.0)
     ft.setCycleCount(3)
