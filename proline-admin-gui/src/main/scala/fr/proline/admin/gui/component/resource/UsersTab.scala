@@ -35,6 +35,9 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.EnhancedTableView
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 
+import javafx.scene.shape._
+import javafx.animation._
+import javafx.util.Duration
 /**
  * ******************* *
  * Content of UsersTab *
@@ -136,7 +139,7 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
    * COMPONENTS *
    * ********** *
    */
-  var userCreator:CreateUser= _
+  var userCreator: CreateUser = _
   /* Border title */
   protected val title: String = "Add new user"
 
@@ -169,6 +172,12 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
   val isAdmin = new CheckBox("Add user to administrator group") {
     selected = false
   }
+  val createdUserWarningLabel = new Label {
+    text = "User has been created successfully."
+    style = TextStyle.RED_ITALIC
+    minHeight = 15
+    visible = false
+  }
   /*
    * ****** *
    * LAYOUT *
@@ -195,7 +204,8 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
       (pwConfirmLabel, 0, 4, 1, 1),
       (pwConfirmField, 1, 4, 1, 1),
       (isAdmin, 1, 5, 1, 1),
-      (pwWarningLabel, 1, 6, 2, 1)))
+      (pwWarningLabel, 1, 6, 2, 1),
+      (createdUserWarningLabel, 1, 7, 1, 1)))
   }
 
   Seq(
@@ -217,7 +227,7 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
    */
 
   /** Hide warning labels **/
-  private def _hideWarnigs() = Seq(loginWarningLabel, pwWarningLabel).foreach(_.visible = false)
+  private def _hideWarnigs() = Seq(loginWarningLabel, pwWarningLabel, createdUserWarningLabel).foreach(_.visible = false)
 
   /** Clear the form **/
   protected def clearForm(): Unit = {
@@ -225,6 +235,17 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
     _hideWarnigs()
   }
 
+  /** Show a Warning Label when user created **/
+  private def warningCreatedUser(): Unit = {
+
+    createdUserWarningLabel.visible = true
+    val ft = new FadeTransition(Duration.millis(1000), createdUserWarningLabel)
+    ft.setFromValue(1.0)
+    ft.setToValue(0.0)
+    ft.setCycleCount(3)
+    ft.setAutoReverse(false)
+    ft.play()
+  }
   /** Check if the form is correct, display warning if needed **/
   protected def checkForm(): Boolean = {
 
@@ -289,11 +310,14 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
         val udsDbContext = UdsRepository.getUdsDbContext()
 
         /* Create user */
-       
+
         val pswd = if (pswdOpt.isDefined) pswdOpt.get else "proline" //TODO: define in config!
         if (isAdmin.isSelected) { userCreator = new CreateUser(udsDbContext, _login, pswd, true) }
         else { userCreator = new CreateUser(udsDbContext, _login, pswd, false) }
-        userCreator.run()
+        if (userCreator != null) {
+          userCreator.run()
+          warningCreatedUser()
+        }
       })
   }
 
