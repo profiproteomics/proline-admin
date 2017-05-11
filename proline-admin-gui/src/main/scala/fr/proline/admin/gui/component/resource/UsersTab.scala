@@ -113,15 +113,38 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
       }
     }
   }
+  /* user group */
+
+  val userGroupCol = new TableColumn[UserView, String]("User group") {
+    cellValueFactory = { _.value.userGroup }
+    cellFactory = { _ =>
+      new TableCell[UserView, String] {
+        style = "-fx-alignment: CENTER;"
+        item.onChange { (_, _, newValue) => text = newValue }
+      }
+    }
+  }
+  /*user isActive */
+  val isActiveCol = new TableColumn[UserView, String]("Active") {
+    cellValueFactory = { _.value.userIsActive }
+    cellFactory = { _ =>
+      new TableCell[UserView, String] {
+        style = "-fx-alignment: CENTER;"
+        item.onChange { (_, _, newValue) => text = newValue }
+      }
+    }
+  }
   /* Get JavaFx columns to fill table view */
-  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[UserView, _]] = List(idCol, loginCol, creationModeCol, pwdHashCol)
+  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[UserView, _]] = List(idCol, loginCol, pwdHashCol, creationModeCol, userGroupCol, isActiveCol)
 
   /* Set columns width */
   this.applyPercentWidth(List(
     (idCol, 10),
-    (loginCol, 20),
-    (creationModeCol, 20),
-    (pwdHashCol, 50)))
+    (loginCol, 15),
+    (pwdHashCol, 30),
+    (creationModeCol, 15),
+    (userGroupCol, 15),
+    (isActiveCol, 15)))
 
   /* Initialize table content */
   this.init()
