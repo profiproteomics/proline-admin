@@ -8,9 +8,11 @@ import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import fr.proline.repository.ProlineDatabaseType
 import fr.proline.admin.gui.process.UdsRepository
-import fr.proline.repository.ProlineDatabaseType;
-import fr.proline.repository.ConnectionMode;
-import fr.proline.repository.DriverType;
+import fr.proline.repository.ProlineDatabaseType
+import fr.proline.repository.ConnectionMode
+import fr.proline.repository.DriverType
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 
 package object implicits {
 
@@ -49,20 +51,45 @@ package object implicits {
    * ************************************************************** *
    */
   implicit class UserView(udsUserAccount: UserAccount) {
-
+    var userGroups = ""
+    var userIsActives = "Active"
     val login = new ObjectProperty(this, "owner", udsUserAccount.getLogin)
     val id = new ObjectProperty(this, "id", udsUserAccount.getId)
     val pwdHash = new ObjectProperty(this, "pwdHash", udsUserAccount.getPasswordHash)
-    val serializedProps = new ObjectProperty(this, "serializedProps", udsUserAccount.getSerializedProperties)
     val mode = new ObjectProperty(this, "mode", udsUserAccount.getCreationMode())
+    if ((udsUserAccount.getSerializedProperties != null) && (!udsUserAccount.getSerializedProperties.isEmpty)) {
+      if (!ConfigFactory.parseString(udsUserAccount.getSerializedProperties).isEmpty) {
+        try {
+          userGroups = ConfigFactory.parseString(udsUserAccount.getSerializedProperties).root().get("user_group").unwrapped().toString
+        } catch {
+          case e: Exception =>
+            userGroups = ""
+        }
+      }
+    }
+    if ((udsUserAccount.getSerializedProperties != null) && (!udsUserAccount.getSerializedProperties.isEmpty)) {
+      if (!ConfigFactory.parseString(udsUserAccount.getSerializedProperties).isEmpty) {
+        try {
+          if (ConfigFactory.parseString(udsUserAccount.getSerializedProperties).root().get("is_active").unwrapped().toString.toBoolean == false) {
+            userIsActives = "Disabled"
+          }
+        } catch {
+          case e: Exception =>
+            userIsActives = "Active"
+        }
+      }
+    }
+    val userGroup = new ObjectProperty(this, "userGroup", userGroups)
+    val userIsActive = new ObjectProperty(this, "userIsActive", userIsActives)
   }
+
   /**
    * ************************************************************** *
    * Simplified model for externalDb  to ScalaFx TableView *
    * ************************************************************** *
    */
   implicit class ExternalDbView(externaldb: ExternalDb) {
-    
+
     val dbId = new ObjectProperty(this, "dbId", externaldb.getId())
     val dbName = new ObjectProperty(this, "dbName", externaldb.getDbName())
     val dbPassword = new ObjectProperty(this, "dbPassword", externaldb.getDbPassword())
@@ -70,6 +97,6 @@ package object implicits {
     val dbVersion = new ObjectProperty(this, "dbVersion", externaldb.getDbVersion().toString)
     val dbPort = new ObjectProperty(this, "dbPort", externaldb.getPort().toString)
     val dbHost = new ObjectProperty(this, "dbHost", externaldb.getHost())
-    
+
   }
 }
