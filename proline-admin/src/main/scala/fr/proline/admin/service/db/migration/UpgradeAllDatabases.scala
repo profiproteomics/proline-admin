@@ -11,17 +11,18 @@ import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository._
+import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
+import fr.profi.util.security._
 
 /**
  *
  * Upgrades all Proline Databases (UDS, PDI, PS and all projects MSI and LCMS Dbs).
- * 
+ *
  * @param dsConnectorFactory
  *            Must be a valid initialized DataStoreConnectorFactory instance.
  */
 class UpgradeAllDatabases(
-  val dsConnectorFactory: IDataStoreConnectorFactory
-) extends ICommandWork with StrictLogging {
+  val dsConnectorFactory: IDataStoreConnectorFactory) extends ICommandWork with StrictLogging {
 
   def doWork(): Unit = {
 
@@ -32,14 +33,14 @@ class UpgradeAllDatabases(
     val udsDbConnector = dsConnectorFactory.getUdsDbConnector
     val udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
     val udsEM = udsDbCtx.getEntityManager
-    
+
     try {
-      
+
       val udsTx = udsEM.getTransaction()
       udsTx.begin()
-      
+
       /* Upgrade UDS Db */
-      _updradeDatabase(udsDbConnector, "UDSdb", closeConnector = false, upgradeCallback = { udsDbVersion =>      
+      _updradeDatabase(udsDbConnector, "UDSdb", closeConnector = false, upgradeCallback = { udsDbVersion =>
         /* Upgrade UDS Db definitions */
         new UpgradeUdsDbDefinitions(udsDbCtx).run()
       })
@@ -47,18 +48,18 @@ class UpgradeAllDatabases(
       /* Upgrade PDI Db */
       _updradeDatabase(dsConnectorFactory.getPdiDbConnector, "PDIdb", upgradeCallback = { pdiDbVersion =>
         /* Update PDI Db version */
-        _updateExternalDbVersion(pdiDbVersion, udsEM, ProlineDatabaseType.PDI )
+        _updateExternalDbVersion(pdiDbVersion, udsEM, ProlineDatabaseType.PDI)
       })
 
       /* Upgrade PS Db */
       _updradeDatabase(dsConnectorFactory.getPsDbConnector, "PSdb", upgradeCallback = { psDbVersion =>
         /* Update PS Db version */
-        _updateExternalDbVersion(psDbVersion, udsEM, ProlineDatabaseType.PS )
+        _updateExternalDbVersion(psDbVersion, udsEM, ProlineDatabaseType.PS)
       })
 
       /* Upgrade all Projects (MSI and LCMS) Dbs */
       val projectIds = ProjectRepository.findAllProjectIds(udsEM)
-      
+
       if ((projectIds != null) && projectIds.isEmpty() == false) {
 
         for (projectId <- projectIds) {
@@ -72,20 +73,19 @@ class UpgradeAllDatabases(
             upgradeCallback = { msiVersion =>
 
               /* Update MSI Db version */
-              _updateExternalDbVersion(msiVersion, udsEM, ProlineDatabaseType.MSI, Some(projectId) )
+              _updateExternalDbVersion(msiVersion, udsEM, ProlineDatabaseType.MSI, Some(projectId))
 
               /* Upgrade MSI Db definitions */
               val msiDbCtx = new DatabaseConnectionContext(msiDbConnector)
-              
+
               try {
                 // Executed inside a local transaction (see IUpgradeDb)
-                new UpgradeMsiDbDefinitions(msiDbCtx).run()  
+                new UpgradeMsiDbDefinitions(msiDbCtx).run()
               } finally {
                 msiDbCtx.close()
               }
-              
-            }
-          )
+
+            })
 
           /* Upgrade LCMS Db */
           val lcMsDbConnector = dsConnectorFactory.getLcMsDbConnector(projectId)
@@ -95,11 +95,32 @@ class UpgradeAllDatabases(
           })
 
         }
-        
+
       }
-      
+
       udsEM.flush()
       udsTx.commit()
+      //create default user admin  when it does not exist
+      try {
+        val query = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
+        val listUsers = query.getResultList()
+        if (listUsers.isEmpty) {
+          udsEM.getTransaction()
+          udsTx.begin()
+          logger.info("Creating default admin user")
+          val udsUser = new UdsUser()
+          udsUser.setLogin("admin")
+          udsUser.setPasswordHash(sha256Hex("proline"))
+          udsUser.setCreationMode("MANUAL")
+          var serializedPropertiesMap = new java.util.HashMap[String, Object]
+          serializedPropertiesMap.put("user_group", UdsUser.UserGroupType.ADMIN.name())
+          udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap)
+          udsEM.persist(udsUser)
+          udsTx.commit()
+        }
+      } catch {
+        case t: Throwable => logger.error("error while creating default admin user", t)
+      }
 
     } finally {
 
@@ -117,18 +138,17 @@ class UpgradeAllDatabases(
 
     ()
   }
-  
-  private def _updateExternalDbVersion(newVersion: String, udsEM: EntityManager, dbType: ProlineDatabaseType, projectId: Option[Long] = None ) {
+
+  private def _updateExternalDbVersion(newVersion: String, udsEM: EntityManager, dbType: ProlineDatabaseType, projectId: Option[Long] = None) {
 
     val extDb = projectId match {
       case None => ExternalDbRepository.findExternalByType(udsEM, dbType)
       case Some(id) => ExternalDbRepository.findExternalByTypeAndProject(
         udsEM,
         dbType,
-        udsEM.find(classOf[fr.proline.core.orm.uds.Project], id)
-      )
+        udsEM.find(classOf[fr.proline.core.orm.uds.Project], id))
     }
-    
+
     extDb.setDbVersion(newVersion)
   }
 
@@ -137,13 +157,12 @@ class UpgradeAllDatabases(
     dbShortName: String,
     closeConnector: Boolean = true,
     repairChecksum: Boolean = true, // TODO: add this param to GUI
-    upgradeCallback: String => Unit = null
-  ): IDatabaseConnector = {
+    upgradeCallback: String => Unit = null): IDatabaseConnector = {
 
     if (dbConnector == null) {
       logger.warn(s"DataStoreConnectorFactory has no valid connector to $dbShortName")
     } else {
-      
+
       try {
         val dbMigrationCount = DatabaseUpgrader.upgradeDatabase(dbConnector, repairChecksum)
 
@@ -152,12 +171,12 @@ class UpgradeAllDatabases(
         } else {
           logger.info(s"$dbShortName: $dbMigrationCount migration(s) done.")
         }
-        
+
         val driverType = dbConnector.getDriverType
 
         // TODO: find a way to migrate SQLite databases using flyway
-        val version = if( driverType == DriverType.SQLITE ) "no.version"
-        else { 
+        val version = if (driverType == DriverType.SQLITE) "no.version"
+        else {
           // Try to retrieve the version reached after the applied migration
           val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)
           ezDBC.selectHead("""SELECT "version" FROM "schema_version" ORDER BY "version_rank" DESC LIMIT 1""") { r =>
@@ -181,19 +200,19 @@ class UpgradeAllDatabases(
 }
 
 object UpgradeAllDatabases extends StrictLogging {
-  
+
   def apply(dsConnectorFactory: IDataStoreConnectorFactory) = {
-    
+
     try {
       new UpgradeAllDatabases(dsConnectorFactory).doWork()
-      
+
       logger.info("Databases successfully upgraded !")
     } catch {
       case t: Throwable => {
         logger.error("Databases upgrade failed !", t)
       }
     }
-    
+
   }
-  
+
 }
