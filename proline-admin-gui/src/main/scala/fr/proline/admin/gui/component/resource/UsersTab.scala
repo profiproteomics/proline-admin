@@ -125,7 +125,7 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
     }
   }
   /*user isActive */
-  val isActiveCol = new TableColumn[UserView, String]("Active") {
+  val isActiveCol = new TableColumn[UserView, String]("State") {
     cellValueFactory = { _.value.userIsActive }
     cellFactory = { _ =>
       new TableCell[UserView, String] {
@@ -340,6 +340,7 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
         if (userCreator != null) {
           userCreator.run()
           warningCreatedUser()
+          isAdmin.selected=false
         }
       })
   }
