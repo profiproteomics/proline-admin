@@ -71,7 +71,7 @@ class DataBasesTable() extends AbstractResourceTableView[ExternalDbView] {
   }
   /* ExternalDb name */
 
-  val dbNameCol = new TableColumn[ExternalDbView, String]("name") {
+  val dbNameCol = new TableColumn[ExternalDbView, String]("Name") {
     cellValueFactory = { _.value.dbName }
         cellFactory = { _ =>
       new TableCell[ExternalDbView, String] {
