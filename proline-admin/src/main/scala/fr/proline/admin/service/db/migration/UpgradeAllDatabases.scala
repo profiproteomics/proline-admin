@@ -46,13 +46,13 @@ class UpgradeAllDatabases(
       })
 
       /* Upgrade PDI Db */
-      _updradeDatabase(dsConnectorFactory.getPdiDbConnector, "PDIdb", upgradeCallback = { pdiDbVersion =>
+      _updradeDatabase(dsConnectorFactory.getPdiDbConnector, "PDIdb",closeConnector = false, upgradeCallback = { pdiDbVersion =>
         /* Update PDI Db version */
         _updateExternalDbVersion(pdiDbVersion, udsEM, ProlineDatabaseType.PDI)
       })
 
       /* Upgrade PS Db */
-      _updradeDatabase(dsConnectorFactory.getPsDbConnector, "PSdb", upgradeCallback = { psDbVersion =>
+      _updradeDatabase(dsConnectorFactory.getPsDbConnector, "PSdb",closeConnector = false, upgradeCallback = { psDbVersion =>
         /* Update PS Db version */
         _updateExternalDbVersion(psDbVersion, udsEM, ProlineDatabaseType.PS)
       })
@@ -84,7 +84,6 @@ class UpgradeAllDatabases(
               } finally {
                 msiDbCtx.close()
               }
-
             })
 
           /* Upgrade LCMS Db */
