@@ -100,7 +100,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
   }
   val resultFilesMpBox = new VBox { spacing = 10 }
   // Warning 
-  val warningAboutExitText = "WARNING: Are you sure  to save and exit ? "
+  val warningAboutExitText = "Are you sure you want to save and exit Proline Setup? "
   /*
    * ****** *
    * LAYOUT *
@@ -114,15 +114,14 @@ class ProlineMountFiles extends VBox with LazyLogging {
   private val V_SPACING = 10
   private val H_SPACING = 5
 
-  /* DB connection */
-  //Set text- and password textfields at the same place in UI
-
   /* Mount points */
   val mountPointsSettings = new TitledBorderPane(
     title = "Step 3: define your file locations",
     titleTooltip = "Mount points as defined in Proline server configuration",
     contentNode = new VBox {
       spacing = 2 * V_SPACING
+      prefWidth <== QuickStart.mainPanel.width - 150
+      prefHeight <== QuickStart.mainPanel.height - 150
       content = List(
         new HBox {
           spacing = H_SPACING
@@ -149,8 +148,10 @@ class ProlineMountFiles extends VBox with LazyLogging {
   }
 
   /* VBox layout and content */
-  alignment = Pos.Center
-  alignmentInParent = Pos.Center
+  alignment = Pos.TOP_LEFT
+  alignmentInParent = Pos.TOP_LEFT
+  prefWidth <== QuickStart.mainPanel.width - 150
+  prefHeight <== QuickStart.mainPanel.height - 150
   //  padding = Insets(25, 20, 15, 30)
   spacing = 4 * V_SPACING
   content = List(
@@ -376,17 +377,11 @@ class ProlineMountFiles extends VBox with LazyLogging {
           wParent = Option(QuickStart.stage))
 
       } else {
-
-        /* If DB can't be reached, allow to save configuration anyway */
-        val isConfirmed = GetConfirmation(
-          title = "Invalid configuration",
-          text = "The connection to the database can't be established with these settings.\n" +
-            "Do you want to save this configuration anyway?")
-
-        if (isConfirmed) {
-          QuickStart.stage.close()
-          // ProlineAdminConnection.loadProlineConf(verbose = true)
-        }
+        ShowConfirmWindow(
+          wTitle = "Invalid configuration",
+          wText = "The connection to the database can't be established.\n" +
+            "Do you want to save this configuration anyway?",
+          wParent = Option(QuickStart.stage))
       }
       QuickStart.stage.scene().setCursor(Cursor.DEFAULT)
     }
@@ -394,7 +389,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
 }
 
 /**
- * Build 1 mount point panel
+ * Build  mount point panel
  */
 class MountPointPanelWizard(
   parentStage: Stage,
@@ -437,6 +432,7 @@ class MountPointPanelWizard(
     maxWidth = 60
     onAction = handle { onDeleteAction(thisMountPoint) }
   }
+
   /* Layout */
   spacing = 10
   alignment = Pos.Center

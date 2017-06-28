@@ -32,6 +32,9 @@ import fr.proline.admin.gui.component.configuration.file._
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.lang.IllegalArgumentException
+import com.typesafe.config.ConfigException
+import java.lang.ExceptionInInitializerError
 
 /**
  * ********************************************************
@@ -54,7 +57,16 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
    * COMPONENTS *
    * ********** *
    */
-
+  try {
+    if (new File(adminConfigFile.getServerConfigPath()).exists) {
+      QuickStart.serverConfPath = adminConfigFile.getServerConfigPath()
+    }
+    if (new File(adminConfigFile.getSeqRepoConfigPath()).exists) {
+      QuickStart.seqRepoConfPath = adminConfigFile.getSeqRepoConfigPath()
+    }
+  } catch {
+    case e: ConfigException => logger.error("Error to read the file application.conf ")
+  }
   /* Proline Admin configuration file */
 
   val adminConfigLabel = new HBox {
@@ -128,25 +140,18 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       new Label(" to optimize yout database server ( optional ): "))
   }
   val dataDirectoryField = new TextField() {
-    //initialise data directory from 
-    if (getPgData("PG_DATA") != null) {
+
+    if ((getPgData("PG_DATA") != null) && (!getPgData("PG_DATA").isEmpty)) {
       QuickStart.postgresqlDataDir = getPgData("PG_DATA")
     }
     if (QuickStart.postgresqlDataDir != null) text = QuickStart.postgresqlDataDir
     text.onChange { (_, oldText, newText) =>
       QuickStart.postgresqlDataDir = ""
       updateDataDirectoryPath(newText)
-      // ButtonsPanelQStart.prolineConfigFilesPanel.setDataDirectoryPath(QuickStart.postgresqlDataDir)
     }
   }
   dataDirectoryField.setPromptText("Example : ..\\PostgreSQL\\9.x\\data")
   dataDirectoryField.setTooltip(new Tooltip("full path to postgreSQL data Directory .Example : ..\\PostgreSQL\\9.x\\data"));
-  val dataDirectoryBrowse = new Button("Browse...") {
-    onAction = handle {
-
-    }
-  }
-  dataDirectoryBrowse.setTooltip(new Tooltip("Browse postgreSQL data Directory. "));
 
   /*
    * ****** *
@@ -172,8 +177,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
 
     title = "Step 1: select proline configuration file",
     contentNode = new VBox {
-      minWidth = 360
-      prefWidth = 360
+
       spacing = 5
 
       content = Seq(
@@ -206,6 +210,10 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = 4 * V_SPACING
+  minWidth = 600
+  minHeight = 400
+  prefWidth = 800
+  prefHeight = 700
   content = List(
     ScalaFxUtils.newVSpacer(minH = 1),
     configurationsFiles)
@@ -337,11 +345,8 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   def saveForm() {}
   // valid parameters before to pass to next step
   def validStep() {
-    if ((QuickStart.adminConfPath != null) && (!QuickStart.adminConfPath.isEmpty) && (QuickStart.serverConfPath != null) && (!QuickStart.serverConfPath.isEmpty)) {
-      disableNoteLabel.visible = false
-    } else {
-      disableNoteLabel.visible = true
-    }
+    if ((QuickStart.adminConfPath != null) && (!QuickStart.adminConfPath.isEmpty) && (QuickStart.serverConfPath != null) && (!QuickStart.serverConfPath.isEmpty)) disableNoteLabel.visible = false
+    else disableNoteLabel.visible = true
   }
   // Getters/Setters for textFields 
 
@@ -350,6 +355,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   def getProlineServerConfFile(): String = serverConfigField.text()
   def setProlineServerConfFile(newPath: String) { serverConfigField.text = newPath }
   def setDataDirectoryPath(path: String) { dataDirectoryField.text = path }
+
   // Check the form
   def checkForm(allowEmptyPaths: Boolean = true): Boolean = Seq(
     (seqReposConfigField, seqReposConfigWarningLabel)).forall { case (f, w) => this.checkFileFromField(f, w, allowEmptyPaths) }

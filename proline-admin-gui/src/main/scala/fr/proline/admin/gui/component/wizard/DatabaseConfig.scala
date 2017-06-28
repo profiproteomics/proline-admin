@@ -74,17 +74,15 @@ class DatabaseConfig extends VBox with LazyLogging {
 	 * ********** *
 	 */
 
-  private val adminConfigFile = new AdminConfigFile(QuickStart.adminConfPath)
-  private val adminConfigOpt = adminConfigFile.read()
+  val adminConfigFile = new AdminConfigFile(QuickStart.adminConfPath)
+  val adminConfigOpt = adminConfigFile.read()
   require(adminConfigOpt.isDefined, "admin config is undefined")
-  private val adminConfig = adminConfigOpt.get
-  private val driver = DriverType.POSTGRESQL
+  val adminConfig = adminConfigOpt.get
+  val driver = DriverType.POSTGRESQL
 
   def isPrompt(str: String): Boolean = str matches """<.*>"""
 
-  //update QuickStart.postgresqlDataDir only when its valid path 
-
-  val dataDir = adminConfig.prolineDataDir
+  val dataDir = adminConfig.pgsqlDataDir
   if (new File(dataDir).exists()) {
     QuickStart.postgresqlDataDir = dataDir
   }
@@ -160,6 +158,7 @@ class DatabaseConfig extends VBox with LazyLogging {
   portField.setText("5432")
   portField.setTooltip(new Tooltip("enter the port of your database(default: 5432)."))
   val testConnectionButton = new Button("Test connection") {
+    alignmentInParent = Pos.BASELINE_LEFT
     onAction = handle {
 
       /*test connection database*/
@@ -171,11 +170,15 @@ class DatabaseConfig extends VBox with LazyLogging {
   /* optimize configuration of database server postgresql.conf */
 
   val optimizePostgresqlButton = new Button("Manage PostgreSQL") {
+    alignmentInParent = Pos.BASELINE_RIGHT
     onAction = handle {
       new ConfigurationTabbedWindowWizard().showAndWait()
     }
   }
-
+  val buttonsBox = new HBox {
+    spacing=500
+    content = List(optimizePostgresqlButton, testConnectionButton)
+  }
   /*
  * ****** *
  * LAYOUT *
@@ -188,13 +191,12 @@ class DatabaseConfig extends VBox with LazyLogging {
 
   Seq(
     passwordTextField).foreach { node =>
-      node.minWidth = 370
-      node.prefWidth <== 670
+
+      node.prefWidth <== QuickStart.mainPanel.width - 100
     }
   Seq(
-    userNameField, hostNameField, portField).foreach { node =>
-      node.minWidth = 370
-      node.prefWidth <== 760
+    userNameField, hostNameField, portField, buttonsBox).foreach { node =>
+      node.prefWidth <== QuickStart.mainPanel.width - 20
     }
 
   //VBox & HBox spacing
@@ -240,10 +242,7 @@ class DatabaseConfig extends VBox with LazyLogging {
           content = Seq(portField)
         },
         ScalaFxUtils.newVSpacer(minH = 10),
-        new HBox {
-          spacing = 110 * H_SPACING
-          content = List(optimizePostgresqlButton, testConnectionButton)
-        },
+        buttonsBox,
         ScalaFxUtils.newVSpacer(minH = 12))
     })
 

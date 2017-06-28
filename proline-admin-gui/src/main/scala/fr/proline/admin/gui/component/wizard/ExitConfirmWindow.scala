@@ -19,11 +19,12 @@ import scalafx.scene.layout.HBox
 import javafx.application.Platform
 
 /**
- * **************************************** *
- *  confirmWindow to save and exit start proline Admin  *
- * **************************************** *
+ * ********************************************************************** *
+ * panel to confirm exit Windows *
+ * ********************************************************************** *
  */
-class ConfirmWindowWizard(
+
+class ExitWindowWizard(
 
   wTitle: String,
   wText: String,
@@ -40,7 +41,6 @@ class ConfirmWindowWizard(
   scene = new Scene {
 
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
-
     root = new VBox {
       alignment = Pos.Center
       spacing = 35
@@ -63,23 +63,18 @@ class ConfirmWindowWizard(
               alignmentInParent = Pos.BASELINE_RIGHT
               onAction = handle {
                 QuickStart.stage.close()
-                Platform.runLater(new Runnable() {
-                  def run() {
-                    new Main().start(new Stage());
-                  }
-                })
               }
             })
         })
     }
   }
 }
-object ShowConfirmWindow {
+object ExitConfirmWindow {
   def apply(
     wText: String,
     wTitle: String = "",
     wParent: Option[Stage] = Option(QuickStart.stage),
     isResizable: Boolean = false) {
-    new ConfirmWindowWizard(wTitle, wText, wParent, isResizable).showAndWait()
+    new ExitWindowWizard(wTitle, wText, wParent, isResizable).showAndWait()
   }
 }
