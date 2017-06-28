@@ -75,10 +75,10 @@ object ButtonsPanelQStart extends LazyLogging {
     }
   }
   // Warning 
-  val warningAboutExitText = "WARNING: Are you sure you want to exit setup? "
+  val warningAboutExitText = "Are you sure you want to exit Proline Setup? "
   val warningAboutExitLabel = new Label {
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
-    text = warningAboutExitText
+    text = "Exit Proline Setup"
   }
 
   /**
@@ -175,8 +175,6 @@ object ButtonsPanelQStart extends LazyLogging {
     }
   }
 
-  // change button next to finish in the end 
-
   private def changeNextToFinish() {
     if (QuickStart.panelState.equals("mountfiles")) {
       nextButton.setText("Finish")
@@ -193,17 +191,14 @@ object ButtonsPanelQStart extends LazyLogging {
       mountFiles.saveForm()
     }
   }
-
   // confirm dialog 
-
   private def confirmDialog() {
 
-    ShowConfirmWindow(
+    ExitConfirmWindow(
       wTitle = "WARNING",
       wText = warningAboutExitText,
       wParent = Option(QuickStart.stage))
   }
-
   // skip this step 
   def skipStep() {
     if (QuickStart.panelState.equals("panelConfig")) {
