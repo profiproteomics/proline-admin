@@ -83,7 +83,7 @@ class DatabaseConfig extends VBox with LazyLogging {
   def isPrompt(str: String): Boolean = str matches """<.*>"""
   // warning label 
   val warningLabel = new Label {
-    text = "Error to read postgreSQL data directory path. Make sure that you have entered the correct path."
+    text = "Error while trying to read postgreSQL data directory path. Make sure that you have entered the correct path."
     visible = false
     style = TextStyle.RED_ITALIC
   }
@@ -180,7 +180,7 @@ class DatabaseConfig extends VBox with LazyLogging {
         new ConfigurationTabbedWindowWizard().showAndWait()
       } catch {
         case e: Exception =>
-          logger.error("Error")
+          logger.error(s"Error while trying to read postgreSQL data directory $e")
           warningLabel.visible = true
       }
     }
