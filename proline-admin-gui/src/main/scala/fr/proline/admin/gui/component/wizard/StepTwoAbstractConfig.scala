@@ -13,13 +13,12 @@ import scalafx.scene.layout.StackPane
 import scalafx.geometry.Pos
 import fr.proline.admin.gui.component.configuration.tab.IConfigTabContent
 
-
 /**
  * ************************************* *
  * List all types of Postges config tabs *
  * ************************************* *
- **/
-object PostgresTabType extends Enumeration{
+ */
+object PostgresTabType extends Enumeration {
   val AUTHORIZATIONS, OPTIMIZATION = Value
 }
 
@@ -38,7 +37,7 @@ trait StepTwoAbstractConfig extends IConfigTabContent {
   /* Stage properties */
   private var currentFilePath: String = _
   private val WORKING_FILE = "Working file: "
-  private val NO_WORKING_FILE = "No working file identified. Please select your PostgreSQL data directory."
+  private val NO_WORKING_FILE = "No working file identified. Please select your PostgreSQL data directory to setup PostgreSQL optimizaion and authorizations."
   private val INEXISTING_WORKING_FILE = "This file doesn't exist. Make sure the selected PostgreSQL data directory is correct." +
     s"\nYou would also make sure it doesn't affect the 'PostgreSQL ${if (_pgTabType == PostgresTabType.AUTHORIZATIONS) "optimization" else "authorizations"}' tab."
 
@@ -56,7 +55,6 @@ trait StepTwoAbstractConfig extends IConfigTabContent {
   val warningsAsVBox = new VBox {
     content = Seq(workingFileLabel, workingFileWarning)
   }
-
 
   /* IConfigTabContent methods (implement) */
 
@@ -95,7 +93,7 @@ trait StepTwoAbstractConfig extends IConfigTabContent {
     } else {
       currentFilePath = newDirPath + "/" + _workingFileName
       val fileExists = new File(currentFilePath).exists()
-      QuickStart.postgresqlDataDir=newDirPath
+      QuickStart.postgresqlDataDir = newDirPath
       workingFileLabel.text = WORKING_FILE + currentFilePath
       if (!fileExists) workingFileWarning.text = INEXISTING_WORKING_FILE
 
