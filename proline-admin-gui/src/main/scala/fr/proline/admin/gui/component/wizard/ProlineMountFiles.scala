@@ -75,8 +75,8 @@ class ProlineMountFiles extends VBox with LazyLogging {
   val disableMpNoteLabel = new Label() {
     text = "choose a validated Proline server configuration file to enable mount points setup.\n" +
       """See step 1."""
-    style = "-fx-font-style: italic;-fx-font-weigth: bold;"
     visible = false
+    style = TextStyle.RED_ITALIC
   }
 
   val rawFilesMountPoints = ArrayBuffer[MountPointPanelWizard]()

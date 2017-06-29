@@ -18,6 +18,7 @@ import fr.proline.admin.gui.util.ShowPopupWindow
 import fr.profi.util.scala.ScalaUtils._
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.BoldLabel
+import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle._
 import fr.proline.admin.gui.QuickStart
@@ -65,7 +66,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       QuickStart.seqRepoConfPath = adminConfigFile.getSeqRepoConfigPath()
     }
   } catch {
-    case e: ConfigException => logger.error("Error to read the file application.conf ")
+    case e: Exception => logger.error("Error while trying to read the file application.conf ")
   }
   /* Proline Admin configuration file */
 
@@ -167,9 +168,8 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
       f.hgrow = Priority.Always
     }
   val disableNoteLabel = new Label() {
-    text = "Proline server and Proline admin configuration files should not be empty.\n" +
-      """ """
-    style = "-fx-font-style: italic;-fx-font-weigth: bold;"
+    text = "Select configuration files ( application.conf ) to set up Proline.\n"
+    style = TextStyle.RED_ITALIC
     visible = false
   }
   /* Organize and render */
@@ -359,5 +359,4 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   // Check the form
   def checkForm(allowEmptyPaths: Boolean = true): Boolean = Seq(
     (seqReposConfigField, seqReposConfigWarningLabel)).forall { case (f, w) => this.checkFileFromField(f, w, allowEmptyPaths) }
-
 }

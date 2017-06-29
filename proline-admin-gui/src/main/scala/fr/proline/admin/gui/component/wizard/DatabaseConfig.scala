@@ -81,7 +81,12 @@ class DatabaseConfig extends VBox with LazyLogging {
   val driver = DriverType.POSTGRESQL
 
   def isPrompt(str: String): Boolean = str matches """<.*>"""
-
+  // warning label 
+  val warningLabel = new Label {
+    text = "Error to read postgreSQL data directory path. Make sure that you have entered the correct path."
+    visible = false
+    style = TextStyle.RED_ITALIC
+  }
   val dataDir = adminConfig.pgsqlDataDir
   if (new File(dataDir).exists()) {
     QuickStart.postgresqlDataDir = dataDir
@@ -90,8 +95,6 @@ class DatabaseConfig extends VBox with LazyLogging {
   val dbUserName = adminConfig.dbUserName
   if (isPrompt(dbUserName)) QuickStart.userName = dbUserName
   else QuickStart.userName = dbUserName
-
-  //   we cannot initialize password ?!
 
   val dbPassword = adminConfig.dbPassword
   if (isPrompt(dbPassword)) QuickStart.passwordUser = dbPassword
@@ -102,6 +105,7 @@ class DatabaseConfig extends VBox with LazyLogging {
   else QuickStart.hostNameUser = dbHost
 
   /* DB connection */
+
   /* user name  */
   val userNameLabel = new Label("User name: ")
   val userNameField = new TextField {
@@ -172,11 +176,17 @@ class DatabaseConfig extends VBox with LazyLogging {
   val optimizePostgresqlButton = new Button("Manage PostgreSQL") {
     alignmentInParent = Pos.BASELINE_RIGHT
     onAction = handle {
-      new ConfigurationTabbedWindowWizard().showAndWait()
+      try {
+        new ConfigurationTabbedWindowWizard().showAndWait()
+      } catch {
+        case e: Exception =>
+          logger.error("Error")
+          warningLabel.visible = true
+      }
     }
   }
   val buttonsBox = new HBox {
-    spacing=500
+    spacing = 500
     content = List(optimizePostgresqlButton, testConnectionButton)
   }
   /*
@@ -218,6 +228,7 @@ class DatabaseConfig extends VBox with LazyLogging {
       minHeight = 300
       spacing = 5
       content = Seq(
+        warningLabel,
         userNameLabel,
         new HBox {
           spacing = 5

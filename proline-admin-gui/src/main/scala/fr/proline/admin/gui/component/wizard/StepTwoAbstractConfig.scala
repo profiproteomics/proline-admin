@@ -37,7 +37,7 @@ trait StepTwoAbstractConfig extends IConfigTabContent {
   /* Stage properties */
   private var currentFilePath: String = _
   private val WORKING_FILE = "Working file: "
-  private val NO_WORKING_FILE = "No working file identified. Please select your PostgreSQL data directory to setup PostgreSQL optimizaion and authorizations."
+  private val NO_WORKING_FILE = "No working file identified. Please select your PostgreSQL data directory to set up PostgreSQL optimization and authorizations."
   private val INEXISTING_WORKING_FILE = "This file doesn't exist. Make sure the selected PostgreSQL data directory is correct." +
     s"\nYou would also make sure it doesn't affect the 'PostgreSQL ${if (_pgTabType == PostgresTabType.AUTHORIZATIONS) "optimization" else "authorizations"}' tab."
 
