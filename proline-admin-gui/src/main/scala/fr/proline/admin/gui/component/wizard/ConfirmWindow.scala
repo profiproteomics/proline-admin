@@ -53,7 +53,7 @@ class ConfirmWindowWizard(
 
         },
         new HBox {
-          spacing = 180
+          spacing = 250
           content = Seq(
             new Button("Cancel") {
               alignmentInParent = Pos.BASELINE_LEFT

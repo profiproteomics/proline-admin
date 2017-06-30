@@ -100,7 +100,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
   }
   val resultFilesMpBox = new VBox { spacing = 10 }
   // Warning 
-  val warningAboutExitText = "Are you sure you want to save and exit Proline Setup? "
+  val warningAboutExitText = "Are you sure you want to save and exit Proline Setup?\nProline Admin will be started to setup or update databases."
   /*
    * ****** *
    * LAYOUT *
@@ -380,7 +380,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
         ShowConfirmWindow(
           wTitle = "Invalid configuration",
           wText = "The connection to the database can't be established.\n" +
-            "Do you want to save this configuration anyway?",
+            "Do you want to save this configuration anyway?\nProline Admin will be started to setup or update databases.",
           wParent = Option(QuickStart.stage))
       }
       QuickStart.stage.scene().setCursor(Cursor.DEFAULT)
