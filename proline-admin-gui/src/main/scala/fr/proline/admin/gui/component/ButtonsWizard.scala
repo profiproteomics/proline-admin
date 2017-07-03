@@ -24,6 +24,7 @@ import fr.proline.admin.gui.component.wizard.MountFilesContent
 import scalafx.scene.control.Label
 import fr.proline.admin.gui.IconResource
 import java.io.File
+import fr.proline.repository.DriverType
 
 /**
  * Create  panel contains buttons : cancel ,previous and next .
@@ -35,7 +36,16 @@ object ButtonsPanelQStart extends LazyLogging {
   try {
     Databaseconfig = new DatabaseConfig()
   } catch {
-    case e: Exception => logger.info("the file application.conf is corrupted and can not be opened.")
+    case e: Exception =>
+      logger.info("the file application.conf is corrupted and can not be opened.")
+      new AdminConfigFile(QuickStart.adminConfPath).write(new AdminConfig(QuickStart.adminConfPath, Some(""), Some(""), Some(""), Some(""),
+        Some(DriverType.POSTGRESQL), Some("<path/to/proline/data>"), Some("<db_user>"), Some("<db_password>"), Some("<db_host>"), Some(5432)))
+      ErrorInConfig(
+        wTitle = "Error",
+        wText = "The file application.conf is corrupted and can not be opened.\nMake  sure that the paths in the file application.conf are correct.\nDefault settings values will be reset." +
+          "\ntry again ! ",
+        wParent = Option(QuickStart.stage))
+      System.exit(0)
   }
   // private val Databaseconfig = new DatabaseConfig()
   private var buttonValue: String = _

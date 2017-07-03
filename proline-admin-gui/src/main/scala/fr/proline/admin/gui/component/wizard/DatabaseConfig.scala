@@ -92,7 +92,7 @@ class DatabaseConfig extends VBox with LazyLogging {
       adminConfigFile.write(new AdminConfig(QuickStart.adminConfPath, Some(""), Some(""), Some(""), Some(""), Some(DriverType.POSTGRESQL), Some("<path/to/proline/data>"), Some("<db_user>"), Some("<db_password>"), Some("<db_host>"), Some(5432)))
       ErrorInConfig(
         wTitle = "Error",
-        wText = "The file application.conf is corrupted and can not be opened.\nMake  sure that the paths in the file application.conf are correct.\nDefault settings will be reset.",
+        wText = "The file application.conf is corrupted and can not be opened.\nMake  sure that the paths in the file application.conf are correct.\nDefault settings values will be reset.",
         wParent = Option(QuickStart.stage))
   }
   val driver = DriverType.POSTGRESQL
@@ -186,19 +186,19 @@ class DatabaseConfig extends VBox with LazyLogging {
     }
   }
   /* optimize configuration of database server postgresql.conf */
-
+  var configTab = new ConfigurationTabbedWindowWizard()
   val optimizePostgresqlButton = new Button("Manage PostgreSQL") {
     alignmentInParent = Pos.BASELINE_RIGHT
     onAction = handle {
       try {
-        new ConfigurationTabbedWindowWizard().showAndWait()
+        configTab.showAndWait()
       } catch {
         case e: Exception =>
+          //reset file
           logger.error(s"Error while trying to read postgreSQL data directory $e")
           warningLabel.visible = true
-        //          SetUpPathDialog(wTitle = "WARNING",
-        //            wText = "Error while trying to read postgreSQL data directory path.\nMake sure that you have the correct path in the application.conf.",
-        //            wParent = Option(QuickStart.stage))
+          //adminConfigFile.setPostgreSqlDataDir("")
+          configTab.showAndWait()
       }
     }
   }
