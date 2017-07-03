@@ -89,7 +89,7 @@ class DatabaseConfig extends VBox with LazyLogging {
     dbHost = adminConfig.dbHost
   } catch {
     case e: Exception =>
-      adminConfigFile.write(new AdminConfig(QuickStart.adminConfPath, Some(""), Some(""), Some(""), Some(""), Some(DriverType.POSTGRESQL), Some(""), Some(""), Some(""), Some("")))
+      adminConfigFile.write(new AdminConfig(QuickStart.adminConfPath, Some(""), Some(""), Some(""), Some(""), Some(DriverType.POSTGRESQL), Some(""), Some("<db_user>"), Some("<db_password>"), Some("<db_host>"), Some(5432)))
       ErrorInConfig(
         wTitle = "Error",
         wText = "The file application.conf is corrupted and can not be opened.\nMake  sure that the paths in the file application.conf are correct.\nDefault settings will be reset.",

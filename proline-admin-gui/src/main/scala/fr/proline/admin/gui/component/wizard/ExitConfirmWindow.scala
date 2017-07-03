@@ -108,7 +108,7 @@ class ErrorInConfig(
             new Button("  Ok  ") {
               alignmentInParent = Pos.BASELINE_CENTER
               onAction = handle {
-                System.exit(1)
+              popup.close()
               }
             })
         })
