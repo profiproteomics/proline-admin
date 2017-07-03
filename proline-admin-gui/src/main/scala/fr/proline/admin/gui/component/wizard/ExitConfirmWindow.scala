@@ -37,9 +37,7 @@ class ExitWindowWizard(
   initModality(Modality.WINDOW_MODAL)
   resizable = isResizable
   if (wParent.isDefined) initOwner(wParent.get)
-
   scene = new Scene {
-
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
     root = new VBox {
       alignment = Pos.Center
@@ -76,5 +74,53 @@ object ExitConfirmWindow {
     wParent: Option[Stage] = Option(QuickStart.stage),
     isResizable: Boolean = false) {
     new ExitWindowWizard(wTitle, wText, wParent, isResizable).showAndWait()
+  }
+}
+class ErrorInConfig(
+
+  wTitle: String,
+  wText: String,
+  wParent: Option[Stage] = Option(QuickStart.stage),
+  isResizable: Boolean = false) extends Stage {
+
+  val popup = this
+
+  title = wTitle
+  initModality(Modality.WINDOW_MODAL)
+  resizable = isResizable
+  if (wParent.isDefined) initOwner(wParent.get)
+
+  scene = new Scene {
+
+    onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
+    root = new VBox {
+      alignment = Pos.Center
+      spacing = 35
+      padding = Insets(10)
+      content = List(
+        new Label(wText) {
+          wrapText = true
+        },
+        new HBox {
+          spacing = 140
+          content = Seq(
+            new Label(" "),
+            new Button("  Ok  ") {
+              alignmentInParent = Pos.BASELINE_CENTER
+              onAction = handle {
+                System.exit(1)
+              }
+            })
+        })
+    }
+  }
+}
+object ErrorInConfig {
+  def apply(
+    wText: String,
+    wTitle: String = "",
+    wParent: Option[Stage] = Option(QuickStart.stage),
+    isResizable: Boolean = false) {
+    new ErrorInConfig(wTitle, wText, wParent, isResizable).showAndWait()
   }
 }

@@ -73,11 +73,29 @@ class DatabaseConfig extends VBox with LazyLogging {
 	 * COMPONENTS *
 	 * ********** *
 	 */
+  var dataDir = ""
+  var dbUserName = ""
+  var dbUserNam = ""
+  var dbHost = ""
+  var dbPassword = ""
+  var adminConfigFile = new AdminConfigFile(QuickStart.adminConfPath)
+  try {
+    val adminConfigOpt = adminConfigFile.read()
+    require(adminConfigOpt.isDefined, "admin config is undefined")
+    val adminConfig = adminConfigOpt.get
+    dataDir = adminConfig.pgsqlDataDir
+    dbPassword = adminConfig.dbPassword
+    dbUserName = adminConfig.dbUserName
+    dbHost = adminConfig.dbHost
+  } catch {
+    case e: Exception =>
+      adminConfigFile.write(new AdminConfig(QuickStart.adminConfPath, Some(""), Some(""), Some(""), Some(""), Some(DriverType.POSTGRESQL), Some(""), Some(""), Some(""), Some("")))
+      ErrorInConfig(
+        wTitle = "Error",
+        wText = "The file application.conf is corrupted and can not be opened.\nMake  sure that the paths in the file application.conf are correct.\nDefault settings will be reset.",
+        wParent = Option(QuickStart.stage))
 
-  val adminConfigFile = new AdminConfigFile(QuickStart.adminConfPath)
-  val adminConfigOpt = adminConfigFile.read()
-  require(adminConfigOpt.isDefined, "admin config is undefined")
-  val adminConfig = adminConfigOpt.get
+  }
   val driver = DriverType.POSTGRESQL
 
   def isPrompt(str: String): Boolean = str matches """<.*>"""
@@ -87,20 +105,17 @@ class DatabaseConfig extends VBox with LazyLogging {
     visible = false
     style = TextStyle.RED_ITALIC
   }
-  val dataDir = adminConfig.pgsqlDataDir
+
   if (new File(dataDir).exists()) {
     QuickStart.postgresqlDataDir = dataDir
   }
 
-  val dbUserName = adminConfig.dbUserName
   if (isPrompt(dbUserName)) QuickStart.userName = dbUserName
   else QuickStart.userName = dbUserName
 
-  val dbPassword = adminConfig.dbPassword
   if (isPrompt(dbPassword)) QuickStart.passwordUser = dbPassword
   else QuickStart.passwordUser = dbPassword
 
-  val dbHost = adminConfig.dbHost
   if (isPrompt(dbHost)) QuickStart.hostNameUser = dbHost
   else QuickStart.hostNameUser = dbHost
 
@@ -182,6 +197,9 @@ class DatabaseConfig extends VBox with LazyLogging {
         case e: Exception =>
           logger.error(s"Error while trying to read postgreSQL data directory $e")
           warningLabel.visible = true
+        //          SetUpPathDialog(wTitle = "WARNING",
+        //            wText = "Error while trying to read postgreSQL data directory path.\nMake sure that you have the correct path in the application.conf.",
+        //            wParent = Option(QuickStart.stage))
       }
     }
   }

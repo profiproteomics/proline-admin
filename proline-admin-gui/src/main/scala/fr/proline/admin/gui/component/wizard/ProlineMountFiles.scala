@@ -380,7 +380,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
         ShowConfirmWindow(
           wTitle = "Invalid configuration",
           wText = "The connection to the database can't be established.\n" +
-            "Do you want to save this configuration anyway?\nProline Admin will be started to setup or update databases.",
+            "Do you want to save this configuration anyway?\nProline Admin will be started.",
           wParent = Option(QuickStart.stage))
       }
       QuickStart.stage.scene().setCursor(Cursor.DEFAULT)
