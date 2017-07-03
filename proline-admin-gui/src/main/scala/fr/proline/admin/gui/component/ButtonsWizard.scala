@@ -29,10 +29,15 @@ import java.io.File
  * Create  panel contains buttons : cancel ,previous and next .
  */
 object ButtonsPanelQStart extends LazyLogging {
-
+  var Databaseconfig: DatabaseConfig = null
   //initialize panels 
   val prolineConfigFilesPanel = new ProlineConfigFilesPanelQStart()
-  private val Databaseconfig = new DatabaseConfig()
+  try {
+    Databaseconfig = new DatabaseConfig()
+  } catch {
+    case e: Exception => logger.info("the file application.conf is corrupted and can not be opened.")
+  }
+  // private val Databaseconfig = new DatabaseConfig()
   private var buttonValue: String = _
   var mountFiles: MountFilesContent = null
 

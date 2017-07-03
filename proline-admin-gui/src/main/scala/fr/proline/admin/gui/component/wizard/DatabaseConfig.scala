@@ -89,12 +89,11 @@ class DatabaseConfig extends VBox with LazyLogging {
     dbHost = adminConfig.dbHost
   } catch {
     case e: Exception =>
-      adminConfigFile.write(new AdminConfig(QuickStart.adminConfPath, Some(""), Some(""), Some(""), Some(""), Some(DriverType.POSTGRESQL), Some(""), Some("<db_user>"), Some("<db_password>"), Some("<db_host>"), Some(5432)))
+      adminConfigFile.write(new AdminConfig(QuickStart.adminConfPath, Some(""), Some(""), Some(""), Some(""), Some(DriverType.POSTGRESQL), Some("<path/to/proline/data>"), Some("<db_user>"), Some("<db_password>"), Some("<db_host>"), Some(5432)))
       ErrorInConfig(
         wTitle = "Error",
         wText = "The file application.conf is corrupted and can not be opened.\nMake  sure that the paths in the file application.conf are correct.\nDefault settings will be reset.",
         wParent = Option(QuickStart.stage))
-
   }
   val driver = DriverType.POSTGRESQL
 
@@ -130,7 +129,7 @@ class DatabaseConfig extends VBox with LazyLogging {
     }
   }
   userNameField.setTooltip(new Tooltip("enter the username of your database."))
-  userNameField.setPromptText("Example : postgres")
+  userNameField.setPromptText("<db_user>")
   /* password */
   val pwdLabel = new Label("Password: ")
   val showPwdBox = new CheckBox("Show password") {
@@ -152,7 +151,7 @@ class DatabaseConfig extends VBox with LazyLogging {
     }
   }
   passwordTextField.setTooltip(new Tooltip("enter the password of your database."))
-  passwordTextField.setPromptText("Password")
+  passwordTextField.setPromptText("<db_password>")
   /* host name */
   val hostNameLabel = new Label("Host name: ")
   val hostNameField = new TextField {
@@ -161,7 +160,7 @@ class DatabaseConfig extends VBox with LazyLogging {
       updateHost(newText)
     }
   }
-  hostNameField.setPromptText("Example: localhost")
+  hostNameField.setPromptText("<db_host>")
   hostNameField.setTooltip(new Tooltip("enter your hostname."));
   /* Port */
   val portLabel = new Label("Port : ")
@@ -173,7 +172,7 @@ class DatabaseConfig extends VBox with LazyLogging {
         }
     }
   }
-  portField.setPromptText("Example: 5432")
+  portField.setPromptText("5432")
   portField.setText("5432")
   portField.setTooltip(new Tooltip("enter the port of your database(default: 5432)."))
   val testConnectionButton = new Button("Test connection") {
