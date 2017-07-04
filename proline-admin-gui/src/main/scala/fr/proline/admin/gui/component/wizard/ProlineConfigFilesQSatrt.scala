@@ -272,7 +272,7 @@ class ProlineConfigFilesPanelQStart(onAdminConfigChange: AdminConfigFile => Unit
   // browse Sequence Repository configuration file: set global variable and update field 
 
   private def _browseSequenceRepositoryFile() {
-    ProlineConfigFileChooserWizard.setForProlineServerConf(seqReposConfigField.text())
+    ProlineConfigFileChooserWizard.setForProlineSeqReposConf(seqReposConfigField.text())
     val filePath = ProlineConfigFileChooserWizard.showIn(QuickStart.stage)
     if (filePath != null) seqReposConfigField.text = filePath
   }

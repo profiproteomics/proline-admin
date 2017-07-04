@@ -14,7 +14,6 @@ import fr.proline.admin.gui.QuickStart
  */
 object ProlineConfigFileChooserWizard extends LazyLogging {
 
-  
   private var initDir: String = QuickStart.targetPath + "/config"
   private var configName: String = "ProlineAdmin"
   private var loadConfigWhenChosen: Boolean = true
@@ -57,7 +56,7 @@ object ProlineConfigFileChooserWizard extends LazyLogging {
       confPath
 
     } catch {
-      
+
       case jfx: java.lang.NullPointerException => {
         logger.debug(s"No $configName configuration file selected.")
         null
@@ -74,10 +73,13 @@ object ProlineConfigFileChooserWizard extends LazyLogging {
    *  Update properties : adapt to desired config file ( ProlineAdmin / server )
    */
   def setForProlineAdminConf(initDir: String) {
-    _updateChooser(initDir, configName = "ProlineAdmin", loadConfigWhenChosen = true)
+    _updateChooser(initDir, configName = "Proline Admin", loadConfigWhenChosen = true)
   }
   def setForProlineServerConf(initDir: String) {
-    _updateChooser(initDir, configName = "Proline server", loadConfigWhenChosen = false)
+    _updateChooser(initDir, configName = "Proline Server", loadConfigWhenChosen = false)
+  }
+  def setForProlineSeqReposConf(initDir: String) {
+    _updateChooser(initDir, configName = "Proline Sequence Repository", loadConfigWhenChosen = false)
   }
   def setForPwxConf(initDir: String) {
     _updateChooser(initDir, configName = "Proline Web Extension (PWX)", loadConfigWhenChosen = false)
