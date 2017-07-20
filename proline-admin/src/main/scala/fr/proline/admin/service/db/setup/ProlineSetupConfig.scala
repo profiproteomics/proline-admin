@@ -118,3 +118,45 @@ case class MsiDBDefaults(
   scorings: java.util.List[Config],
   schemata: java.util.List[Config]
 )
+
+object GetDataStoreDbNaming {
+  def apply(driverType: DriverType): IDataStoreDbNaming = {
+    driverType match {
+      case DriverType.H2 => H2DataStoreDbNaming
+      case DriverType.POSTGRESQL => PgDataStoreDbNaming
+      case DriverType.SQLITE => SQLiteDataStoreDbNaming
+    }
+  }
+}
+
+sealed trait IDataStoreDbNaming {
+  def udsDbName: String
+  def pdiDbName: String
+  def psDbName: String
+  def msiDbName: String
+  def lcMsDbName: String
+}
+
+case object H2DataStoreDbNaming extends IDataStoreDbNaming {
+  val udsDbName = "uds-db"
+  val pdiDbName = "pdi-db"
+  val psDbName = "ps-db"
+  val msiDbName = "msi-db"
+  val lcMsDbName = "lcms-db"
+}
+
+case object PgDataStoreDbNaming extends IDataStoreDbNaming {
+  val udsDbName = "uds_db"
+  val pdiDbName = "pdi_db"
+  val psDbName = "ps_db"
+  val msiDbName = "msi_db"
+  val lcMsDbName = "lcms_db"
+}
+
+case object SQLiteDataStoreDbNaming extends IDataStoreDbNaming {
+  val udsDbName = "uds-db.sqlite"
+  val pdiDbName = "pdi-db.sqlite"
+  val psDbName = "ps-db.sqlite"
+  val msiDbName = "msi-db.sqlite"
+  val lcMsDbName = "lcms-db.sqlite"
+}
