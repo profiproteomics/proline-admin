@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.process.config.wizard
+package fr.proline.admin.gui.wizard.process.config
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
@@ -18,14 +18,13 @@ import java.io.IOException
  *
  */
 
-/** parse and write Sequence repository configuration file */
 
 class SeqConfigFile(val path: String) extends LazyLogging {
 
   require(path != null && path.isEmpty() == false, "Sequence Repository file must not be null nor empty")
   private val seqConfigFile = new File(path)
 
-  /** get config object from file */
+  /** get Config object from file */
 
   def getTypeSafeConfig(): Config = ConfigFactory.parseFile(seqConfigFile)
   def read: Option[SeqConfig] = {
@@ -105,7 +104,6 @@ postgresql-config {
           logger.error("Missing file exception", ex)
         }
       }
-
     }
   }
 }

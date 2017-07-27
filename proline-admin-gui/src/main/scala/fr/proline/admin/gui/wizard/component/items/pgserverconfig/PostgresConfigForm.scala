@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.component.wizard
+package fr.proline.admin.gui.wizard.component.items.pgserverconfig
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -43,15 +43,24 @@ import fr.profi.util.scalafx.IntegerTextField
 import fr.profi.util.scalafx.NumericTextField
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.seq2obsBuff
-import fr.proline.admin.gui.component.configuration.form._
 
+/**
+ * *********************************** *
+ * All components for one Config param *
+ * *********************************** *
+ */
+case class PgFormLine(
+  checkBox: CheckBox,
+  nameLabel: Label,
+  slider: ConfigParamSlider,
+  valueNode: Node)
 
 /**
  * ***************************************************************** *
  * Form to edit and update PostgreSQL configuration (postresql.conf) *
  * ***************************************************************** *
  */
-class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with IConfigFilesForm with LazyLogging {
+class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStage: Stage) extends VBox with IConfigFilesForm with LazyLogging {
 
   /* Read initial settings */
   val pgConfigFile = new PostgresConfigFile(postgresConfigFilePath)
@@ -64,7 +73,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
   val formatByParam = PostgresConfigV9_4.formatByParam
 
   /* Know graphical components for each param */
-  val compoByParam: HashMap[PostgresOptimizableParamEnum.Param, PgFormLinee] = HashMap()
+  val compoByParam: HashMap[PostgresOptimizableParamEnum.Param, PgFormLine] = HashMap()
 
   /*
    * ********** *
@@ -74,7 +83,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
 
   /* Warning */
   val warningAboutRestartText = "WARNING: Changes will be effective only after a restart of the PostgreSQL service."
-  val warningAboutRestartLabel = new Label{
+  val warningAboutRestartLabel = new Label {
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     text = warningAboutRestartText
   }
@@ -84,9 +93,9 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
     text = "Ticks marked with a star correspond to optimized values."
     style = "-fx-font-style:italic;"
   }
-  
-//  /* Physical memory viewer */
-//  val physicalMemoryLabel = new Label("Physical memory")
+
+  //  /* Physical memory viewer */
+  //  val physicalMemoryLabel = new Label("Physical memory")
   //TODO: Physical memory viewer
 
   /* Sliders & co */
@@ -104,14 +113,14 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
     val paramFormat = formatByParam(labeledParam)
     val unit = paramFormat.unitString
     val formatter = paramFormat.formatter
-//    val initValueOpt = pgConfigInitSettings.get( PostgresOptimizableParamEnum.getParamConfigKey(labeledParam) )
-    val initValue = pgConfigInitSettings( PostgresOptimizableParamEnum.getParamConfigKey(labeledParam) )
+    //    val initValueOpt = pgConfigInitSettings.get( PostgresOptimizableParamEnum.getParamConfigKey(labeledParam) )
+    val initValue = pgConfigInitSettings(PostgresOptimizableParamEnum.getParamConfigKey(labeledParam))
     val initiallyCommented = initValue.commented
 
     /* Check box: unselected if param is commented out */
-    val checkBox = new CheckBox() { 
-//      selected = initValueOpt.isDefined
-      selected = ! initiallyCommented
+    val checkBox = new CheckBox() {
+      //      selected = initValueOpt.isDefined
+      selected = !initiallyCommented
     }
 
     /* Name of the param */
@@ -127,7 +136,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
     /* Slider for param value selection */
     //for byte amounts, unit is B (?????????)
     val slider = new ConfigParamSlider(pgConfigDefaults(labeledParam)) {
-      
+      prefWidth <== parentStage.width
     }
 
     /* Numeric text field for param value viz. and selection */
@@ -196,15 +205,11 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
             minutesField,
             new Label("min") {
               minWidth = 15
-            }
-          )
+            })
         }
 
-      } 
-      
-      /* FOR BYTE AMOUNTS */
-      else if (paramType == BYTES) {
-        
+      } /* FOR BYTE AMOUNTS */ else if (paramType == BYTES) {
+
         /* Components */
         val numericField = new NumericTextField(0) {
           setMinValue(0)
@@ -221,22 +226,20 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
           val bytesAmount = slider.value.longValue()
           val asString = formatBytesAmount(
             bytesAmount = bytesAmount,
-            numberFormat = "%.2f%s"
-          )
+            numberFormat = "%.2f%s")
           val (asBigDecimal, unitValue) = parseBytesAmount(asString)
-          
+
           // TODO: use BigDecimal to handle the desire level of precision (number of digits after point)
-          val finalValue = if (asBigDecimal.doubleValue() == math.round(asBigDecimal.doubleValue) ) {
+          val finalValue = if (asBigDecimal.doubleValue() == math.round(asBigDecimal.doubleValue)) {
             asBigDecimal.setScale(0, BigDecimal.RoundingMode.HALF_UP)
             asBigDecimal.longValue().toString
           } else asBigDecimal.doubleValue.toString()
-          
+
           // If new value is greater than old one
-          if( bytesAmount > toLong(oldValue) ) {
+          if (bytesAmount > toLong(oldValue)) {
             numericField.setValue(finalValue)
             unitBox.selectionModel().select(unitValue)
-          } 
-          // Else
+          } // Else
           else {
             unitBox.selectionModel().select(unitValue)
             numericField.setValue(finalValue)
@@ -281,10 +284,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
           spacing = 8
           content = Seq(numericField, unitBox)
         }
-      } 
-      
-      /* FOR FLOATS AND INTEGERS */
-      else {
+      } /* FOR FLOATS AND INTEGERS */ else {
 
         /* Component */
         val numericField = new NumericTextField(0) {
@@ -299,7 +299,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
             def _updateFieldWithSliderValue() {
               this.setValue("%.1f".formatLocal(java.util.Locale.US, slider.value.doubleValue()))
             }
-            
+
             def _updateSliderWithFieldsValue() {
               slider.value = this.getBigDecimal().toDouble
             }
@@ -308,15 +308,12 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
               try { _updateFieldWithSliderValue() }
               catch { case t: Throwable => { slider.value = toDouble(oldValue) } }
             }
-            
-            this.text.onChange {  (_, oldValue, newValue) =>
+
+            this.text.onChange { (_, oldValue, newValue) =>
               try { _updateSliderWithFieldsValue() }
               catch { case t: Throwable => { this.text = oldValue } }
             }
-          }
-
-          /* For integer values */
-          else {
+          } /* For integer values */ else {
 
             setIntergersOnly(true)
             setMinValue(sliderMinAsLong)
@@ -358,8 +355,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
               numericField,
               new Label(unit) {
                 minWidth = 70
-              }
-            )
+              })
           }
         }
       }
@@ -370,13 +366,13 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
 
     /* First change slider default value (= min) to be sure some change event will be thrown */
     // Otherwise, if new value = min vlaue, related field +/- box won't be updated
-    slider.value =  slider.value() + slider.majorTickUnit()
+    slider.value = slider.value() + slider.majorTickUnit()
 
     /* Initialize values */
     slider.value = {
       paramFormat.parser(initValue.valueString).toDouble
-//      if (initValueOpt.isDefined) paramFormat.parser(initValueOpt.get.valueString).toDouble
-//      else pgConfigDefaults(labeledParam).suggestedValue.toDouble
+      //      if (initValueOpt.isDefined) paramFormat.parser(initValueOpt.get.valueString).toDouble
+      //      else pgConfigDefaults(labeledParam).suggestedValue.toDouble
     }
 
     /* Add to buffers and map */
@@ -384,7 +380,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
     nameLabels += nameLabel
     sliders += slider
     valueNodes += valueNode
-    compoByParam += labeledParam -> PgFormLinee(checkBox, nameLabel, slider, valueNode)
+    compoByParam += labeledParam -> PgFormLine(checkBox, nameLabel, slider, valueNode)
   }
 
   val paramsLen = labeledParams.length
@@ -393,8 +389,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
       nameLabels.length == paramsLen &&
       sliders.length == paramsLen &&
       valueNodes.length == paramsLen,
-    "Incorrect number of components in PostgresSettingsForm"
-  )
+    "Incorrect number of components in PostgresSettingsForm")
 
   /* Buttons */
   val setAllToOptimizedButton = new Button("Set all to optimized value") {
@@ -405,7 +400,6 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
     wrapText = true
     onAction = handle { _setAllToDefault() }
   }
-
 
   /*
    * ****** *
@@ -422,8 +416,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
       (checkBoxes(i), 0, i),
       (nameLabels(i), 1, i),
       (sliders(i), 2, i),
-      (valueNodes(i), 3, i)
-    )
+      (valueNodes(i), 3, i))
   }
 
   val paramsGridPane = new GridPane {
@@ -437,7 +430,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
   /* Buttons */
   val buttonList = Seq(setAllToOptimizedButton, setQllToDefaultsButton)
   buttonList.foreach { b =>
-   
+    b.prefWidth <== parentStage.width
     b.minHeight = 30
     b.prefHeight = 35
     b.style = "-fx-font-weight:bold;-fx-inner-border : black; "
@@ -460,7 +453,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
    * FEATURES *
    * ******** *
    */
-   def _setAllToOptimized() {
+  private def _setAllToOptimized() {
     compoByParam.foreach {
       case (labeledParam, formLine) =>
         formLine.checkBox.selected = true
@@ -481,9 +474,8 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
     valueAsString: String,
     configFileLines: Array[String],
     configFileLinesLen: Int,
-    newLinesBuffer: ArrayBuffer[String]
-  ): ConfigFileKVLine = {
-    
+    newLinesBuffer: ArrayBuffer[String]): ConfigFileKVLine = {
+
     val pattern = ("""^#\s*(""" + configLineKey + """)\s*=?\s*([\w\.]+)\s*(#.+)*""").r
 
     /* First, try to find it as a commented line in lines array */
@@ -498,29 +490,28 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
 
       /* Create and return updated KVLine */
       require(line.startsWith("#"), s"The KVLine to be created must begin by '#' ($line)")
-      
+
       //TODO: improve by doing it all at the same time
       val oldKVLine = ConfigFileKVLine(
         line = line,
         index = lineIndex,
         key = kvMatch.group(1),
         valueString = kvMatch.group(2),
-        valueStartIdx = kvMatch.start(2), 
+        valueStartIdx = kvMatch.start(2),
         valueEndIdx = kvMatch.end(2),
-        commented = true
-      )
-      
+        commented = true)
+
       return oldKVLine.toNewKVLine(valueAsString, commented = false)
-      
-//      return ConfigFileKVLine(
-//        line = line.drop(1),
-//        index = lineIndex,
-//        key = kvMatch.group(1),
-//        valueString = kvMatch.group(2),
-//        valueStartIdx = kvMatch.start(2) - 1, //-1 because initial '#' has been removed
-//        valueEndIdx = kvMatch.end(2) - 1,
-//        commented = false
-//      )
+
+      //      return ConfigFileKVLine(
+      //        line = line.drop(1),
+      //        index = lineIndex,
+      //        key = kvMatch.group(1),
+      //        valueString = kvMatch.group(2),
+      //        valueStartIdx = kvMatch.start(2) - 1, //-1 because initial '#' has been removed
+      //        valueEndIdx = kvMatch.end(2) - 1,
+      //        commented = false
+      //      )
     }
 
     /* If key wasn't found, append line to file */
@@ -549,25 +540,19 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
     compoByParam.foreach {
       case (labeledParam, formLine) =>
 
-        val valueAsString = formatByParam(labeledParam).formatter(formLine.slider.value.doubleValue())
+        var valueAsString = formatByParam(labeledParam).formatter(formLine.slider.value.doubleValue())
         val commentLine = !formLine.checkBox.selected()
-
         val configLineKey = PostgresOptimizableParamEnum.getParamConfigKey(labeledParam)
-        val oldConfigKVLineOpt = pgConfigFile.lineByKey.get(configLineKey)
-
-        val newConfigKVLineOpt: Option[ConfigFileKVLine] = {
+        var oldConfigKVLineOpt = pgConfigFile.lineByKey.get(configLineKey)
+        var newConfigKVLineOpt: Option[ConfigFileKVLine] = {
 
           /* If KVLine is already known, update it */
           if (oldConfigKVLineOpt.isDefined) {
-            val oldConfigKVLine = oldConfigKVLineOpt.get
-
-            if (commentLine) Some(oldConfigKVLine.comment())
-            else Some(oldConfigKVLine.toNewKVLine(valueAsString, commented = false)) //commentLine
-          }
-          
-          /* Otherwise line is commented or doesn't exist */
-          else {
-
+            var oldConfigKVLine = oldConfigKVLineOpt.get
+            if (commentLine) {
+              Some(oldConfigKVLine.comment())
+            } else { Some(oldConfigKVLine.toNewKVLine(valueAsString, commented = false)) } //commentLine
+          } /* Otherwise line is commented or doesn't exist */ else {
             /* Don't change or create commented parameters */
             if (commentLine) None
 
@@ -578,8 +563,7 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
                 valueAsString,
                 configFileLines,
                 configFileLinesLen,
-                newLinesBuffer
-              )
+                newLinesBuffer)
 
               Some(newLine)
             }
@@ -588,9 +572,11 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
 
         /* Change in map and lines array if needed */
         if (newConfigKVLineOpt.isDefined) {
-          val newConfigKVLine = newConfigKVLineOpt.get
+          var value="= "+valueAsString
+          var newConfigKVLine = newConfigKVLineOpt.get
           pgConfigFile.lineByKey(configLineKey) = newConfigKVLine
-          configFileLines(newConfigKVLine.index) = newConfigKVLine.line //newConfigKVLine.toString()
+          var tempConfigKVLine=newConfigKVLine.line.replaceAll("=(\\s)*(\\S+)",value)
+          configFileLines(newConfigKVLine.index) = tempConfigKVLine //newConfigKVLine.toString()
         }
     }
 
@@ -614,13 +600,13 @@ class PostgresConfigFormWizard(postgresConfigFilePath: String) extends VBox with
 
     /* Restart PostgreSQL if needed */
     //TODO : restart PostgreSQL when needed
+    ShowPopupWindow(
+      wTitle = "Warning",
+      wText = warningAboutRestartText,
+      wParent = Option(parentStage))
+
+    println("<br>INFO - postgresql.conf successfully updated !<br>")
+    logger.info("postgresql.conf successfully updated !")
   }
 
 }
-
-case class PgFormLinee(
-  checkBox: CheckBox,
-  nameLabel: Label,
-  slider: ConfigParamSlider,
-  valueNode: Node
-)

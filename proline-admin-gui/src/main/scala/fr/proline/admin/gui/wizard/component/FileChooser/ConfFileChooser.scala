@@ -1,21 +1,27 @@
-package fr.proline.admin.gui.component.wizard
+package fr.proline.admin.gui.wizard.component.FileChooser
 
 import com.typesafe.scalalogging.LazyLogging
+
 import java.io.File
+
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 import scalafx.stage.Stage
+
 import fr.profi.util.scala.ScalaUtils
-import fr.proline.admin.gui.QuickStart
+import fr.proline.admin.gui.Wizard
 
 /**
  * Create and show a file chooser customed for single configuration file's selection.
- * Used by  QuickStart.scala .
+ * Used by MenuPanel.scala and Main.scala .
  */
-object ProlineConfigFileChooserWizard extends LazyLogging {
+object ConfFileChooser extends LazyLogging {
+  //TODO move to configuration.file
 
-  
-  private var initDir: String = QuickStart.targetPath + "/config"
+  // NB: Defaults values are designed for ProlineAdmin config file (not server config file)
+
+  //private var configPath: String = Main.adminConfPath
+  private var initDir: String = Wizard.targetPath + "/config"
   private var configName: String = "ProlineAdmin"
   private var loadConfigWhenChosen: Boolean = true
 
@@ -39,7 +45,7 @@ object ProlineConfigFileChooserWizard extends LazyLogging {
       }
 
     } else {
-      fc.initialDirectory = new File(QuickStart.targetPath + "/config")
+      fc.initialDirectory = new File(Wizard.targetPath + "/config")
     }
   }
 
@@ -57,7 +63,7 @@ object ProlineConfigFileChooserWizard extends LazyLogging {
       confPath
 
     } catch {
-      
+
       case jfx: java.lang.NullPointerException => {
         logger.debug(s"No $configName configuration file selected.")
         null
@@ -79,6 +85,9 @@ object ProlineConfigFileChooserWizard extends LazyLogging {
   def setForProlineServerConf(initDir: String) {
     _updateChooser(initDir, configName = "Proline server", loadConfigWhenChosen = false)
   }
+  def setForSeqRepoConf(initDir: String) {
+    _updateChooser(initDir, configName = "Sequence Repository", loadConfigWhenChosen = true)
+  }
   def setForPwxConf(initDir: String) {
     _updateChooser(initDir, configName = "Proline Web Extension (PWX)", loadConfigWhenChosen = false)
   }
@@ -94,3 +103,20 @@ object ProlineConfigFileChooserWizard extends LazyLogging {
     this.loadConfigWhenChosen = loadConfigWhenChosen
   }
 }
+/*
+/**
+ * Easily browse ProlineAdmin or Proline server configuration file
+ */
+object BrowseProlineAdminConfigFile {
+  def apply(initDir: String, stage: Stage): String = {
+    ProlineConfigFileChooser.updateChooser(initDir: String, isForProlineAdminConfFile = true)
+    ProlineConfigFileChooser.showIn(stage)
+  }
+}
+
+object BrowseProlineServerConfigFile {
+  def apply(initDir: String, stage: Stage): String = {
+    ProlineConfigFileChooser.updateChooser(initDir: String, isForProlineAdminConfFile = false)
+    ProlineConfigFileChooser.showIn(stage)
+  }
+}*/

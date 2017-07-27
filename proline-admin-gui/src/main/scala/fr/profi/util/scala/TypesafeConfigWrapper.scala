@@ -46,5 +46,12 @@ object TypesafeConfigWrapper {
         case e: Throwable => logger.warn(s"Cannot find configuration Int for key '$key'", e); None;
       }
     }
+      def getBooleanOpt(key: String): Option[Boolean] = {
+      try {
+        Option(config.getBoolean(key))
+      } catch {
+        case e: Throwable => logger.warn(s"Cannot find configuration Boolean for key '$key'", e); None;
+      }
+    }
   }
 }

@@ -317,7 +317,10 @@ object ScalaFxUtils extends LazyLogging {
     
     val RED = "-fx-text-fill: red;"
     val GREY = "-fx-text-fill: grey;"
+    val ORANGE = "-fx-text-fill: orange;"
 
     val RED_ITALIC = RED ++ ITALIC
+    val ORANGE_ITALIC = ORANGE ++ ITALIC
     val GREY_ITALIC = GREY ++ ITALIC
+  
   }}

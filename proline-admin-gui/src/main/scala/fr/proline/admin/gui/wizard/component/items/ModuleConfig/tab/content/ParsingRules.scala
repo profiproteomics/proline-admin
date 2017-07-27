@@ -1,0 +1,442 @@
+package fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab.Content
+
+import com.typesafe.scalalogging.LazyLogging
+
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.ListBuffer
+import scalafx.Includes._
+import scalafx.collections.ObservableBuffer
+import scalafx.geometry.Insets
+import scalafx.geometry.Pos
+import scalafx.scene.Cursor
+import scalafx.scene.Cursor.sfxCursor2jfx
+import scalafx.scene.control.Button
+import scalafx.scene.control.Hyperlink
+import scalafx.scene.control.Label
+import scalafx.scene.control.TextField
+import scalafx.scene.layout.HBox
+import scalafx.scene.layout.Priority
+import scalafx.scene.layout.StackPane
+import scalafx.scene.layout.VBox
+import scalafx.stage.Screen
+import scalafx.stage.Stage
+
+import fr.proline.admin.gui.IconResource
+import fr.proline.admin.gui.Wizard
+import fr.proline.admin.gui.process.config._
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.util.GetConfirmation
+import fr.proline.repository.DriverType
+
+import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
+import fr.profi.util.scala.ScalaUtils.isEmpty
+import fr.profi.util.scala.ScalaUtils.stringOpt2string
+import fr.profi.util.scalafx.BoldLabel
+import fr.profi.util.scalafx.FileBrowsing
+import fr.profi.util.scalafx.NumericTextField
+import fr.profi.util.scalafx.ScalaFxUtils
+import fr.profi.util.scalafx.ScalaFxUtils._
+import fr.profi.util.scalafx.TitledBorderPane
+import fr.profi.util.scalafx.SimpleBorderPane
+import fr.proline.admin.gui.wizard.process.config._
+//import fr.proline.admin.gui.wizard.component.items.form.TabForm
+import fr.profi.util.scala.ScalaUtils
+/**
+ * Create a modal window to edit/add parsing rules file.
+ */
+class ParsingRules extends VBox with LazyLogging {
+
+  /* parsing rules file */
+
+  private val parsigRuleFile = new ParsingRulesFile(Wizard.parsingRulesPath)
+  private val parsingRuleOpt = parsigRuleFile.read()
+  require(parsingRuleOpt.isDefined, "parsing rules is undefined")
+  private val parsingRule = parsingRuleOpt.get
+
+  var defaultProteinAccession = parsingRule.defaultProteinAccession.get
+
+  /*
+   * ********** *
+   * COMPONENTS *
+   * ********** *
+   */
+
+  /* default accession protein */
+
+  val fastaDirBox = new VBox { spacing = 10 }
+  val RulesBox = new VBox { spacing = 10 }
+  val defaultProteinAccessionLabel = new BoldLabel("Default Protein Accession: ", upperCase = false)
+  val defaultProteinAccessionField = new TextField {
+    if (defaultProteinAccession != null) text = defaultProteinAccession
+    text.onChange { (_, oldText, newText) =>
+      defaultProteinAccession = newText
+    }
+    prefWidth <== fastaDirBox.width
+    promptText = "Default protein accession"
+  }
+  val resetAccessionButton = new Button("Reset") {
+    onAction = handle {
+      defaultProteinAccessionField.setText(">(\\S+)")
+    }
+  }
+
+  val accessionAndResetBox = new HBox {
+    spacing = 10
+    content = Seq(defaultProteinAccessionField, resetAccessionButton)
+  }
+  val defaultAccessionBox = new VBox {
+    spacing = V_SPACING
+    content = List(defaultProteinAccessionLabel, accessionAndResetBox)
+    prefWidth <== fastaDirBox.width
+  }
+
+  /* local Fasta directories */
+
+  val localFastaDirLablel = new BoldLabel("Local Fasta Directories: ", upperCase = false)
+  val localFastaDirs = new ArrayBuffer[FastaDirectory]()
+  val addLocalFastaDirectory = new Button("Add") {
+    onAction = handle {
+      _addFastaDirectory()
+    }
+  }
+
+  /* parsing rules List */
+
+  val parsingRulesLablel = new BoldLabel("Parsing Rules: ", upperCase = false)
+  val localRules = new ArrayBuffer[Rules]()
+  val addRuleButton = new Button("Add") {
+    onAction = handle {
+      _addRule()
+    }
+  }
+
+  private val EMPTY_FASTA_DIR = "Fasta directories are empty. You should have at least one local Fasta directory. Default value will be reset."
+  val emptyFastaWarningLabel = new Label() {
+    visible = false
+    text = EMPTY_FASTA_DIR
+    style = TextStyle.RED_ITALIC
+  }
+
+  private val EMPTY_PARSING_RULE = "Parsing rules are empty. You should have at least one parsing rule. Default values will be reset."
+  val emptyRulesWarningLabel = new Label() {
+    visible = false
+    text = EMPTY_PARSING_RULE
+    style = TextStyle.RED_ITALIC
+  }
+
+  /*
+   * ****** *
+   * LAYOUT *
+   * ****** *
+   */
+
+  Seq(localFastaDirLablel, defaultProteinAccessionLabel).foreach(_.minHeight = 25)
+  Seq(localFastaDirLablel, defaultProteinAccessionLabel, parsingRulesLablel).foreach(_.minWidth = 150)
+  Seq(resetAccessionButton).foreach(_.minWidth = 60)
+  //VBox & HBox spacing
+
+  private val V_SPACING = 10
+  private val H_SPACING = 5
+
+  /* parsing rules */
+
+  val parsingRules = new TitledBorderPane(
+    title = "Parsing Rules",
+    titleTooltip = "Extract accession numbers from Fasta files",
+    contentNode = new VBox {
+      spacing = V_SPACING
+      content = List(
+        new VBox {
+          spacing = 0.5
+          content = List(emptyFastaWarningLabel,
+            emptyRulesWarningLabel)
+        },
+        defaultAccessionBox,
+        new HBox {
+          spacing = H_SPACING * 3
+          content = List(localFastaDirLablel, addLocalFastaDirectory)
+        },
+        fastaDirBox,
+        new HBox {
+          spacing = H_SPACING * 3
+          content = List(parsingRulesLablel, addRuleButton)
+        },
+        RulesBox)
+    })
+
+  /*
+   * ************* *
+   * INIT. CONTENT *
+   * ************* *
+   */
+  def isPrompt(str: String): Boolean = str matches """<.*>"""
+
+  /* Common settings */
+  if (parsingRuleOpt.isEmpty) {
+
+    /* Disable parsing rule is undefined */
+
+  } else {
+
+    val parsingRule = parsingRuleOpt.get
+
+    /* local Fasta directories  */
+
+    val initFastaDirs = parsingRule.localFastaDirectories
+    if (initFastaDirs.isEmpty) {
+      _addFastaDirectory()
+      warningFastaDir
+    } else {
+      initFastaDirs.foreach { v => _addFastaDirectory(v) }
+      warningFastaDir
+    }
+
+    /* parsing rules */
+
+    val initParsingRules = parsingRule.parsingRules
+    if (initParsingRules.isEmpty) {
+      _addRule()
+      warningParsingRules
+    } else {
+      val namesBuilder = new StringBuilder()
+      initParsingRules.foreach(parsingRule => {
+        parsingRule.fastaNames.foreach(name => {
+          if (name.equals(parsingRule.fastaNames.last)) { namesBuilder.append(name) }
+          else {
+            namesBuilder.append(name).append(",")
+          }
+        })
+        _addRule(parsingRule.name, namesBuilder.toString, parsingRule.fastaVersion, parsingRule.proteinAccession)
+        namesBuilder.setLength(0)
+      })
+      warningParsingRules
+    }
+  }
+
+  /** Add stuff to define another local fasta directory **/
+
+  def _addFastaDirectory(value: String = "") {
+    def _onFastaDirDelete(mp: FastaDirectory): Unit = {
+      localFastaDirs -= mp
+      fastaDirBox.content = localFastaDirs
+      warningFastaDir
+    }
+    localFastaDirs += new FastaDirectory(parentStage = Wizard.stage,
+      onDeleteAction = _onFastaDirDelete, value = value)
+    fastaDirBox.content = localFastaDirs
+    warningFastaDir
+  }
+
+  /** Add stuff to define another Rule **/
+
+  def _addRule(name: String = "", fastaName: String = "", fastaVersion: String = "", proteinAccession: String = "") {
+    def _onRulesDelete(r: Rules): Unit = {
+      localRules -= r
+      RulesBox.content = localRules
+      warningParsingRules
+    }
+    localRules += new Rules(parentStage = Wizard.stage,
+      onDeleteAction = _onRulesDelete,
+      name = name, fastaName = fastaName,
+      fastaVersion = fastaVersion,
+      proteinAccession = proteinAccession)
+    RulesBox.content = localRules
+    warningParsingRules
+  }
+  val mountPointsWithDisableNote = new VBox {
+    spacing = 15
+    content = Seq(parsingRules)
+  }
+  alignment = Pos.Center
+  alignmentInParent = Pos.Center
+  spacing = 5
+  content = List(mountPointsWithDisableNote)
+
+  /** get GUI information to set default protein accession **/
+  private def _getDefaultProteinAccesion(): Option[String] = {
+    Some(defaultProteinAccession)
+  }
+
+  /** get GUI information to create list Fasta data directories **/
+  private def _getFastaDirectories(fastaDirArray: ArrayBuffer[FastaDirectory]): ListBuffer[String] = {
+    (fastaDirArray.view.map(_.getValue)).to[ListBuffer]
+  }
+
+  /** get GUI information  to create a parsing rule  **/
+  private def _getListPasrsingRules(ruleArray: ArrayBuffer[Rules]): ListBuffer[Rule] = {
+    val listRules: ListBuffer[Rule] = new ListBuffer()
+    ruleArray.foreach(rule => {
+      if ((!rule.getName.isEmpty) && (!rule.getFastaName.isEmpty) && (!rule.getFastaVersion.isEmpty) && (!rule.getproteinAccession.isEmpty)) {
+        val fastNamesList = rule.getFastaName.split(",").map(_.trim).to[ListBuffer]
+        listRules += Rule(rule.getName, fastNamesList, rule.getFastaVersion, rule.getproteinAccession)
+      } else {
+        logger.error("Parsing rule fields must not be empty")
+      }
+    })
+    listRules
+  }
+
+  private def _toParsingRule() =
+    ParsingRule(_getFastaDirectories(localFastaDirs),
+      _getListPasrsingRules(localRules),
+      _getDefaultProteinAccesion())
+
+  /** save all changed parameters **/
+  def saveForm() {
+    val newParsingRules = _toParsingRule()
+    parsigRuleFile.write(newParsingRules)
+  }
+
+  /* get properties */
+  def getProperties: String = {
+    s"Specific module: Sequence Repository\n Parsing Rules: ${localRules.size} rule(s)"
+  }
+  /* check Fields */
+
+  def warningFastaDir() {
+    if (localFastaDirs.isEmpty) emptyFastaWarningLabel.visible = true else emptyFastaWarningLabel.visible = false
+  }
+  def warningParsingRules() {
+    if (localRules.isEmpty) emptyRulesWarningLabel.visible = true else emptyRulesWarningLabel.visible = false
+  }
+}
+
+// a Fasta directory 
+
+class FastaDirectory(
+  parentStage: Stage,
+  onDeleteAction: (FastaDirectory) => Unit,
+  key: String = "",
+  value: String = "") extends HBox {
+
+  val thisFastaDir = this
+
+  /* component */
+
+  val valueField = new TextField {
+    prefWidth <== thisFastaDir.width
+    promptText = "Full path"
+    text = value
+  }
+  val browseButton = new Button("Browse") {
+    minWidth = 56
+    maxWidth = 56
+    onAction = handle {
+      val dir = FileBrowsing.browseDirectory(
+        dcTitle = "Select local fasta directory",
+        dcInitialDir = valueField.text(),
+        dcInitOwner = parentStage)
+      if (dir != null) valueField.text = dir.getAbsolutePath()
+    }
+  }
+  val removeButton = new Button("Remove") {
+    minWidth = 60
+    maxWidth = 60
+    onAction = handle { onDeleteAction(thisFastaDir) }
+  }
+  /* Layout */
+
+  spacing = 10
+  alignment = Pos.Center
+  content = List(valueField, browseButton, removeButton)
+
+  def getValue = valueField.text()
+
+}
+
+/* Rule */
+
+class Rules(
+  parentStage: Stage,
+  onDeleteAction: (Rules) => Unit,
+  name: String,
+  fastaName: String,
+  fastaVersion: String,
+  proteinAccession: String) extends HBox {
+  val thisrule = this
+
+  /* Component */
+  val warningDatalabel: Label = new Label {
+    text = "Fill the following properties of Fasta rule to be considered."
+    style = TextStyle.RED_ITALIC
+    visible = false
+  }
+  val nameLabel = new Label("Id")
+  val nameText = new TextField {
+    prefWidth <== thisrule.width
+    promptText = "Id"
+    text = name
+    text.onChange { (_, oldText, newText) =>
+      checkForm()
+    }
+  }
+
+  val fastaNameLabel = new Label("Fasta Pattern")
+  val fastaNameText = new TextField {
+    prefWidth <== thisrule.width
+    promptText = "All files matching this Java Regex will be concerned"
+    text = fastaName
+    text.onChange { (_, oldText, newText) =>
+      checkForm()
+    }
+  }
+
+  val fastaVersionLabel = new Label("Fasta File Version")
+  val fastaVersionText = new TextField {
+    prefWidth <== thisrule.width
+    promptText = "Java Regex with capturing group for fasta release version string (CASE_INSENSITIVE)"
+    text = fastaVersion
+    text.onChange { (_, oldText, newText) =>
+      checkForm()
+    }
+  }
+
+  val proteinAccessionLabel = new Label("Accession Parse Rule")
+  val proteinAccessionText = new TextField {
+    prefWidth <== thisrule.width
+    promptText = "Java Regex with capturing group for protein accession"
+    text = proteinAccession
+    text.onChange { (_, oldText, newText) =>
+      checkForm()
+    }
+  }
+
+  val removeButton = new Button("Remove") {
+    minWidth = 60
+    maxWidth = 60
+    onAction = handle { onDeleteAction(thisrule) }
+  }
+
+  Seq(nameLabel, fastaNameLabel, fastaVersionLabel, proteinAccessionLabel).foreach(_.minWidth = 150)
+  /* Layout */
+  val ruleBox = new SimpleBorderPane(
+    contentNode = new VBox {
+      spacing = 5
+      content = Seq(warningDatalabel, new HBox {
+        spacing = 5
+        content = List(nameLabel, nameText, fastaNameLabel, fastaNameText)
+      }, new HBox {
+        spacing = 5
+        content = List(fastaVersionLabel, fastaVersionText, proteinAccessionLabel, proteinAccessionText)
+      })
+    })
+
+  spacing = 10
+  alignment = Pos.CENTER
+  content = List(ruleBox, removeButton)
+  def checkForm() {
+    if (ScalaUtils.isEmpty(nameText.getText) || ScalaUtils.isEmpty(fastaNameText.getText)
+      || ScalaUtils.isEmpty(fastaVersionText.getText) || ScalaUtils.isEmpty(proteinAccessionText.getText)) {
+      warningDatalabel.visible = true
+    } else {
+      warningDatalabel.visible = false
+    }
+  }
+  def getName = nameText.text()
+  def getFastaName = fastaNameText.text()
+  def getFastaVersion = fastaVersionText.text()
+  def getproteinAccession = proteinAccessionText.text()
+
+}
+
+

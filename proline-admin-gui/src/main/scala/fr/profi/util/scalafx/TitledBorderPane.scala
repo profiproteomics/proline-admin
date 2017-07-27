@@ -26,8 +26,14 @@ class TitledBorderPane(
   protected val title: String,
   protected val contentNode: Node,
   override val titleTooltip: String = "",
-  override val colorStr: String = "slategrey"
-) extends ITitledBorderPane {
+  override val colorStr: String = "slategrey") extends ITitledBorderPane {
+  this.initContent()
+}
+
+class SimpleBorderPane(
+  protected val contentNode: Node,
+  override val titleTooltip: String = "",
+  override val colorStr: String = "slategrey") extends IBorderedPane {
   this.initContent()
 }
 
@@ -35,19 +41,58 @@ trait IContentAutoInit {
   protected def initContent()
   initContent()
 }
-  
-trait ITitledBorderPane extends VBox {
-  
-  protected def title: String
+
+trait IBorderedPane extends VBox {
+
+  // protected def title: String
   protected def contentNode: Node
   //protected def paddingValue: Any
-  
+
   protected val contentPadding: Insets = Insets(10)
   protected val titleTooltip: String = ""
   protected val colorStr: String = "slategrey"
-  
+
   vgrow = Priority.Always
-  
+
+  /* Border style */
+  style() += s"""
+    -fx-content-display: center;
+    -fx-border-color: ${colorStr};
+    -fx-border-width: 1;
+    -fx-border-radius: 2;
+    """
+
+  /* Wrap content to force padding */
+  private lazy val paddedContent = new VBox {
+    padding = contentPadding
+    content = contentNode
+  }
+
+  //content = Seq(titleLabel, paddedContent)
+  protected def initContent() {
+    content = Seq(paddedContent)
+  }
+
+  /** Update titled bordered panel content **/
+  def setContentNode(newContentNode: Node, contentPadding: Insets = Insets(10)) {
+    paddedContent.content = newContentNode
+    paddedContent.padding = contentPadding
+    content = Seq(paddedContent)
+  }
+}
+
+trait ITitledBorderPane extends VBox {
+
+  protected def title: String
+  protected def contentNode: Node
+  //protected def paddingValue: Any
+
+  protected val contentPadding: Insets = Insets(10)
+  protected val titleTooltip: String = ""
+  protected val colorStr: String = "slategrey"
+
+  vgrow = Priority.Always
+
   /* Border style */
   style() += s"""
     -fx-content-display: center;
@@ -69,15 +114,15 @@ trait ITitledBorderPane extends VBox {
         -fx-translate-y: -20;
         -fx-translate-x: 15;
       """
-     //translate-y: -20: title will appear above the border
+    //translate-y: -20: title will appear above the border
   }
-  
- /* Wrap content to force padding */
+
+  /* Wrap content to force padding */
   private lazy val paddedContent = new VBox {
     padding = contentPadding
     content = contentNode
   }
-  
+
   //content = Seq(titleLabel, paddedContent)
   protected def initContent() {
     content = Seq(titleLabel, paddedContent)

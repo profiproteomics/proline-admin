@@ -12,7 +12,7 @@ import scalafx.stage.Stage
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
 import fr.profi.util.scala.ScalaUtils
-import fr.proline.admin.gui.QuickStart
+
 
 /**
  * GRAPHICAL UTILITIES
@@ -40,26 +40,7 @@ object FxUtils extends LazyLogging {
     new Image(this.getClass().getResourceAsStream(path.toString()))
   }
   /* directory browsing in Wizard */
-  def browseDirectoryWizard(
-    dcTitle: String,
-    dcInitialDir: String = "",
-    dcInitOwner: Stage = QuickStart.stage
-  ): File = {
 
-    /** Define directory chooser */
-    val dc = new DirectoryChooser {
-      title = dcTitle
-      
-      if (ScalaUtils.isEmpty(dcInitialDir) == false) {
-        val _initFile = new File(dcInitialDir)
-        if (_initFile.isDirectory()) initialDirectory = _initFile
-        else initialDirectory = _initFile.getParentFile
-      }
-    }
-
-    /** Show directory chooser and return selected directory */
-    dc.showDialog(dcInitOwner)
-  }
   
   /** File browsing **/
   def browseFile(

@@ -11,7 +11,7 @@ import java.sql.Connection
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.util.ShowPopupWindow
 import fr.proline.repository.DriverType
-import fr.proline.admin.gui.QuickStart
+import fr.proline.admin.gui.Wizard
 /**
  * Custom exceptions
  **/
@@ -172,7 +172,7 @@ object DatabaseConnection extends LazyLogging {
         ShowPopupWindow(
           wTitle = "Test connection to database",
           wText = "The connection to the database has been successfully established !",
-          wParent =Option(QuickStart.stage)
+          wParent =Option(Wizard.stage)
         ) 
         // return isSuccess
         true
@@ -190,7 +190,7 @@ object DatabaseConnection extends LazyLogging {
             "Check that your Proline configuration (Database connection parameters) is correct.\n" +
             s"Note: you may also check that your $driverType server is running.\n\n" +
             "Got the following error:\n" + errorMsg,
-           wParent =Option(QuickStart.stage)
+           wParent =Option(Wizard.stage)
         )
         
         // return isSuccess
