@@ -22,6 +22,8 @@ import scala.collection.mutable.LinkedHashMap
 import fr.proline.admin.gui.wizard.component.ButtonsPanel
 import fr.proline.admin.gui.wizard.component.ItemsPanel
 import fr.proline.admin.gui.wizard.component.Item
+import fr.proline.admin.gui.util.FxUtils
+
 /**
  * Graphical interface for Proline-Admin wizard:quick edit for admin and server file (.conf).
  */
@@ -108,6 +110,7 @@ class Wizard extends Application {
       minHeight = 800
       title = "Proline Admin wizard"
     }
+    Wizard.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Wizard.stage.scene.value.getStylesheets.add("/css/Style.css")
     Wizard.stage.show()
   }

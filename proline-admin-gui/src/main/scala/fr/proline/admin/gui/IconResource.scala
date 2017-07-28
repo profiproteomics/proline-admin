@@ -15,4 +15,6 @@ object IconResource extends EnhancedEnum {
   val CANCEL = Value("/images/cross.png")
   val EXECUTE = Value("/images/execute.png")
   val BIGINFOS = Value("/images/BIG-INFO.png")
+  val TICK = Value("/images/tick.png")
+  val IDENTIFICATION = Value("/images/identification.png")
 }
