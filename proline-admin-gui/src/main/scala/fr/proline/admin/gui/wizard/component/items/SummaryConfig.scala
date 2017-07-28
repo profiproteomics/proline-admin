@@ -12,7 +12,6 @@ import javafx.scene.layout.Priority
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import scalafx.geometry.Pos
-import scalafx.scene.text.{ Font, FontWeight, Text }
 
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.util.FxUtils
@@ -31,7 +30,7 @@ class SummaryConfig(val name: String) extends Item with LazyLogging {
    * component
    */
   val panelTitle = new Label("Summary") {
-    font = Font.font("SanSerif", FontWeight.Bold, 14)
+    styleClass = List("item")
   }
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
@@ -52,10 +51,11 @@ class SummaryConfig(val name: String) extends Item with LazyLogging {
   content = List(ScalaFxUtils.newVSpacer(minH = 20), new HBox {
     fillWidth = true
     content = Seq(new HBox {
-      alignment = Pos.TOP_LEFT
-      content = Seq(panelTitle)
-    }, ScalaFxUtils.newHSpacer(minW = 60), new HBox {
-      alignment = Pos.TOP_RIGHT
+      spacing = 15
+      content = Seq(new HBox {
+        content = Seq(FxUtils.newImageView(IconResource.BIGINFOS))
+      }, panelTitle)
+    }, ScalaFxUtils.newHSpacer(minW = 45), new HBox {
       content = Seq(headerHelpIcon)
     })
   }, ScalaFxUtils.newVSpacer(minH = 30), new VBox {

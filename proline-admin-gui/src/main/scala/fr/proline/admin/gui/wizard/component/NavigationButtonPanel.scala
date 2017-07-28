@@ -16,7 +16,8 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle._
 import scalafx.scene.control.Label
 import scala.collection.Iterator
-
+import javafx.scene.control.ContentDisplay
+import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.component.items._
@@ -36,27 +37,31 @@ object NavigationButtonsPanel extends LazyLogging {
    */
   //var postgresConfig: PostgresConfig = _
   val cancelButton = new Button("Cancel") {
+    graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
       ShowPopupWindow("Exit Setup", "Are you sure you want to exit Proline Setup ?", Option(Wizard.stage), false)
     }
   }
 
   val nextButton = new Button("Next") {
+    graphic = FxUtils.newImageView(IconResource.ARRAOWLEFT)
+    contentDisplay = ContentDisplay.RIGHT
     onAction = handle {
-      //move to next page 
       onNext()
     }
-
   }
+
   val prevButton = new Button("Previous") {
+    graphic = FxUtils.newImageView(IconResource.ARROWRIGHT)
     onAction = handle {
-      //move to previous page 
       onPrev()
     }
   }
   val validateButton = new Button("Validate") {
+    graphic = FxUtils.newImageView(IconResource.SAVE)
     onAction = handle {
       // validate modifications 
+
       val confirmed = GetConfirmation("Are you sure you want to save the new Proline configurations ?")
       if (confirmed) {
         Wizard.items.toSeq.foreach {

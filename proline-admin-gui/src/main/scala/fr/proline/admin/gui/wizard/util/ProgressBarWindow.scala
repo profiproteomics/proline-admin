@@ -60,7 +60,7 @@ class ProgressBarWindow(
   })
   task.setOnFailed(new EventHandler[WorkerStateEvent] {
     override def handle(event: WorkerStateEvent) {
-      PopupHelpWindow("", "Setup/Update Proline databases failed ! ")
+      PopupHelpWindow("Setup/Update", "Setup/Update Proline databases failed !")
       popup.close()
     }
   })

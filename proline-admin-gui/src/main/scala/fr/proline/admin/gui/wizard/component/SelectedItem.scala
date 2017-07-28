@@ -59,15 +59,17 @@ object SelectedItem extends LazyLogging {
           contentNode = new VBox {
             spacing = 5
             content = Seq(
-              new Text {
+              new Label {
                 text = server.postgres.getInfos
-                style = "-fx-font-family: Arial Black"
+                styleClass = List("summaryLabel")
               },
-              new Text {
+              new Label {
                 text = server.mountsPoint.getInfos
+                styleClass = List("summaryLabel")
               },
-              new Text {
+              new Label {
                 text = server.jmsServer.getInfos
+                styleClass = List("summaryLabel")
               }, ScalaFxUtils.newVSpacer(25), setUpUpdateChBox, ScalaFxUtils.newVSpacer(25))
           })
       }
@@ -79,14 +81,17 @@ object SelectedItem extends LazyLogging {
           contentNode = new VBox {
             spacing = 5
             content = Seq(
-              new Text {
+              new Label {
                 text = module.PostGreSQLSeq.getInfos
+                styleClass = List("summaryLabel")
               },
-              new Text {
+              new Label {
                 text = module.parsingRules.getInfos
+                styleClass = List("summaryLabel")
               },
-              new Text {
+              new Label {
                 text = module.jmsServer.getInfos
+                styleClass = List("summaryLabel")
 
               }, ScalaFxUtils.newVSpacer(25))
           })
@@ -98,11 +103,13 @@ object SelectedItem extends LazyLogging {
           title = "PostgreSQL Server Configuration ",
           contentNode = new VBox {
             content = Seq(
-              new Text {
+              new Label {
                 text = s"""Access Right: OK """
+                styleClass = List("summaryLabel")
               },
-              new Text {
+              new Label {
                 text = s"""Optimization: OK """
+                styleClass = List("summaryLabel")
               }, ScalaFxUtils.newVSpacer(25))
           })
       }

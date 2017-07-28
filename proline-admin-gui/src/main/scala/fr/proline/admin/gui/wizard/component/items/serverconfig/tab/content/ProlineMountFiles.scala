@@ -334,21 +334,18 @@ class ProlineMountFiles extends VBox with LazyLogging {
 
     val newAdminConfig = _toAdminConfig()
     /* Test connection to database */
-    //    val connectionEstablished = _testDbConnection(newAdminConfig, false, false)
-    //    if (connectionEstablished) {
     if (serverConfigOpt.isDefined) {
       val newServerConfig = _toServerConfig()
       serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
     }
-    // }
     Wizard.stage.scene().setCursor(Cursor.DEFAULT)
   }
 
   def getInfos(): String = {
-    val montPointsBuilder = new StringBuilder("Mount Points:\n")
-    montPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n")
-      .append(mzdbFilesMountPoints.size).append("  Mzdb files\n")
-      .append(resultFilesMountPoints.size).append("  Result Files")
+    val montPointsBuilder = new StringBuilder("Mount Points:\n\t")
+    montPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n\t")
+      .append(mzdbFilesMountPoints.size).append("  Mzdb files\n\t")
+      .append(resultFilesMountPoints.size).append("  Result Files\t")
     return montPointsBuilder.toString
   }
 }

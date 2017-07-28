@@ -285,11 +285,11 @@ class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
   private def _testDbConnection(
     adminConfig: AdminConfig,
     showSuccessPopup: Boolean = true,
-    showFailurePopup: Boolean = true): Boolean = { //return connectionEstablished
+    showFailurePopup: Boolean = true): Boolean = {
     DatabaseConnection.testDbConnection(adminConfig, showSuccessPopup, showFailurePopup)
   }
   /** state of database connection */
   def getInfos: String = {
-    if (DatabaseConnection.testDbConnectionToWizard(driver, Wizard.userName, Wizard.passWord, Wizard.hostName, Wizard.port, false, false)) "PostgreSQL: OK" else "PostgreSQL: NOK"
+    if (DatabaseConnection.testDbConnectionToWizard(driver, Wizard.userName, Wizard.passWord, Wizard.hostName, Wizard.port, false, false)) s"""PostgreSQL: OK""" else s"""PostgreSQL: NOK"""
   }
 }

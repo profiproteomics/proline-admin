@@ -289,7 +289,7 @@ class ParsingRules extends VBox with LazyLogging {
 
   /* get properties */
   def getProperties: String = {
-    s"Specific module: Sequence Repository\n Parsing Rules: ${localRules.size} rule(s)"
+    s"Specific module:\n\tSequence Repository: Parsing Rules: ${localRules.size} rule(s)"
   }
   /* check Fields */
 

@@ -13,7 +13,6 @@ object FieldProperties {
   def setBorder(field: Node) {
     field.setStyle("-fx-text-box-border: red  ; -fx-focus-color: red ;")
   }
-
   def removeBorder(field: Node) {
     field.setStyle("")
   }

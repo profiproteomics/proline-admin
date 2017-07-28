@@ -35,11 +35,13 @@ object ButtonsPanel extends LazyLogging {
    */
   //var postgresConfig: PostgresConfig = _
   val cancelButton = new Button("Cancel") {
+    graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
       ShowPopupWindow("Exit Setup", "Are you sure you want to exit Proline Setup ?", Option(Wizard.stage), false)
     }
   }
   val goButton = new Button("Go") {
+    graphic = FxUtils.newImageView(IconResource.EXECUTE)
     onAction = handle {
 
       ItemsPanel.getSelectedItems

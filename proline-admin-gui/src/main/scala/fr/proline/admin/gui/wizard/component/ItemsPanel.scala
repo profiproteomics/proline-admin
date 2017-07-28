@@ -28,7 +28,6 @@ import java.io.FileNotFoundException
 import java.io.File
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.component.FileChooser._
 import fr.proline.admin.gui.wizard.util._
@@ -77,7 +76,6 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
       warningCorruptedFile.visible = true
       resetAdminConfig()
     }
-
   }
 
   // postgreSQL component 
@@ -106,6 +104,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     }
   }
   val postgresBrowseButton = new Button("Browse...") {
+    graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !postgreSQLChBox.selected
     onAction = handle {
       _browseDataDir()
@@ -148,6 +147,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     }
   }
   val prolineWebBrowseButton = new Button("Browse...") {
+    graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !prolineWebChBox.selected
     onAction = handle {
       _browseProlineWebConfigFile()
@@ -179,7 +179,8 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
       Wizard.seqRepoConfPath = newText
     }
   }
-  val seqReposBrowseButton = new Button("Browse...") {
+  val seqReposBrowseButton = new Button("Browse ...") {
+    graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !seqReposChBox.selected
     onAction = handle {
       _browseSeqReposConfigFile
@@ -213,6 +214,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     }
   }
   val prolineServerBrowseButton = new Button("Browse...") {
+    graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !prolineServerChBox.selected
     onAction = handle { _browseServerConfigFile() }
   }
@@ -272,10 +274,9 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   alignmentInParent = Pos.Center
   spacing = 1
   fillWidth = true
-  content = List(ScalaFxUtils.newVSpacer(minH = 20), new HBox {
-    alignment = Pos.TOP_RIGHT
-    content = Seq(headerHelpIcon)
-  }, configItemsPane)
+  content = Seq(ScalaFxUtils.newVSpacer(minH = 20),
+    new HBox { content = Seq(ScalaFxUtils.newHSpacer(990), headerHelpIcon) },
+    configItemsPane)
 
   /* functions */
 

@@ -102,12 +102,13 @@ class Wizard extends Application {
 
     Wizard.stage = new Stage(stage) {
       scene = new Scene(Wizard.root)
-      width = 1024
+      width = 1050
       height = 850
       minWidth = 650
       minHeight = 800
       title = "Proline Admin wizard"
     }
+    Wizard.stage.scene.value.getStylesheets.add("/css/Style.css")
     Wizard.stage.show()
   }
 }
