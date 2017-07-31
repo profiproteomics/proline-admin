@@ -104,10 +104,10 @@ class Wizard extends Application {
 
     Wizard.stage = new Stage(stage) {
       scene = new Scene(Wizard.root)
+      minWidth = 1050
       width = 1050
+      minHeight = 770
       height = 850
-      minWidth = 650
-      minHeight = 800
       title = "Proline Admin wizard"
     }
     Wizard.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)

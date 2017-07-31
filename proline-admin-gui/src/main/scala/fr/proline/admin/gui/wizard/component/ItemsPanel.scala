@@ -18,7 +18,6 @@ import fr.profi.util.scalafx.BoldLabel
 import scalafx.scene.control.Label
 import fr.profi.util.scalafx.TitledBorderPane
 import scalafx.scene.layout.StackPane
-import scalafx.scene.layout.Priority
 import com.typesafe.scalalogging.LazyLogging
 import javafx.scene.control.Tooltip
 import scala.collection.mutable.ListBuffer
@@ -85,10 +84,8 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     underline = true
     font = Font.font("SanSerif", FontWeight.Bold, 12)
     vgrow = Priority.Always
-    minWidth = 112
   }
   val postgreSQLLabel = new HBox {
-    minWidth = 150
     prefWidth = 250
     disable <== !postgreSQLChBox.selected
     content = List(new Label("Path to PostgreSQL Data Directory: "))
@@ -118,7 +115,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     underline = true
     vgrow = Priority.Always
     font = Font.font("SanSerif", FontWeight.Bold, 12)
-    minWidth = 112
+    //minWidth = 112
     onAction = handle { selectChildren }
   }
   //proline web componnent 
@@ -127,11 +124,9 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     selected = false
     underline = true
     vgrow = Priority.Always
-    minWidth = 112
     onAction = handle { selecteParent }
   }
   val prolineWebLabel = new HBox {
-    minWidth = 150
     prefWidth = 250
     disable <== !prolineWebChBox.selected
     content = List(new Label("Path to Web Root ( File application.conf ): "))
@@ -160,11 +155,9 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     selected = true
     underline = true
     vgrow = Priority.Always
-    minWidth = 112
     onAction = handle { selecteParent }
   }
   val seqReposLabel = new HBox {
-    minWidth = 150
     prefWidth = 250
     disable <== !seqReposChBox.selected
     content = List(new Label("Path to SeqRepo Root ( File application.conf ): "))
@@ -194,11 +187,11 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     underline = true
     vgrow = Priority.Always
     font = Font.font("SanSerif", FontWeight.Bold, 12)
-    minWidth = 112
+    //minWidth = 112
 
   }
   val prolineServerLabel = new HBox {
-    minWidth = 150
+    //minWidth = 150
     prefWidth = 250
     disable <== !prolineServerChBox.selected
     content = List(new Label("Path to Server Root ( File application.conf ): "))
@@ -219,12 +212,11 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     onAction = handle { _browseServerConfigFile() }
   }
   /* Style */
+  Seq(postgreSQLLabel, prolineWebLabel, seqReposLabel, prolineServerLabel).foreach(_.minWidth = 60)
   Seq(postgreSQLField, prolineWebField, seqReposField, prolineServerField).foreach {
     f => f.hgrow = Priority.Always
   }
   /* layout */
-
-  // used in HBox and VBox
 
   private val V_SPACING = 10
   private val H_SPACING = 5
@@ -235,7 +227,6 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   val configItemsPane = new TitledBorderPane(
     title = "Select Configuration Item",
     contentNode = new VBox {
-      minWidth = 350
       minHeight = 400
       spacing = 10
       content = List(
@@ -275,7 +266,11 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   spacing = 1
   fillWidth = true
   content = Seq(ScalaFxUtils.newVSpacer(minH = 20),
-    new HBox { content = Seq(ScalaFxUtils.newHSpacer(990), headerHelpIcon) },
+    new HBox {
+      vgrow = Priority.Always
+      hgrow = Priority.Always
+      content = Seq(ScalaFxUtils.newHSpacer(990), headerHelpIcon)
+    },
     configItemsPane)
 
   /* functions */

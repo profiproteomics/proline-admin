@@ -269,17 +269,7 @@ class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
   def saveForm() {
     /* save  new AdminConf properties */
     val newAdminConfig = _toAdminConfig()
-    val connectionEstablished = _testDbConnection(newAdminConfig, false, false)
-    if (connectionEstablished) {
-      adminConfigFile.write(newAdminConfig)
-    } else {
-      val isConfirmed = GetConfirmation(
-        title = "Invalid configuration",
-        text = "The connection to the database can't be established with these settings.\n Check your database server connection properties.")
-      if (isConfirmed) {
-        adminConfigFile.write(newAdminConfig)
-      }
-    }
+    adminConfigFile.write(newAdminConfig)
   }
 
   private def _testDbConnection(
@@ -288,7 +278,7 @@ class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
     showFailurePopup: Boolean = true): Boolean = {
     DatabaseConnection.testDbConnection(adminConfig, showSuccessPopup, showFailurePopup)
   }
-  /** state of database connection */
+  /**  database connection */
   def getInfos: String = {
     if (DatabaseConnection.testDbConnectionToWizard(driver, Wizard.userName, Wizard.passWord, Wizard.hostName, Wizard.port, false, false)) s"""PostgreSQL: OK""" else s"""PostgreSQL: NOK"""
   }

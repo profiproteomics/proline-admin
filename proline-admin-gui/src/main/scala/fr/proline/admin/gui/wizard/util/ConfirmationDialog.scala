@@ -14,6 +14,8 @@ import scalafx.stage.Stage
 
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Wizard
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.IconResource
 
 class ConfirmationDialog(
   dTitle: String,
@@ -54,7 +56,7 @@ class ConfirmationDialog(
         val text = new Label(dText)
 
         val yesButton = new Button(_yesButtonText) {
-          //styleClass += ("minorButtons")
+          graphic = FxUtils.newImageView(IconResource.TICK)
           onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.fireIfEnterPressed(this, ke) }
           onAction = handle {
             isActionConfirmed = true
@@ -63,7 +65,7 @@ class ConfirmationDialog(
         }
 
         val cancelButton = new Button(_cancelButtonText) { //No
-          //styleClass += ("minorButtons")
+          graphic = FxUtils.newImageView(IconResource.CANCEL)
           onAction = handle { confirmDialog.close() } //isActionConfirmed = false
         }
 

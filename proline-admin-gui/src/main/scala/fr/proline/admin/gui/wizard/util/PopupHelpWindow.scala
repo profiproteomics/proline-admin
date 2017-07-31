@@ -14,6 +14,9 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Wizard
 import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.IconResource
+import com.sun.javafx.css.StyleClass
 
 /**
  * a confirm popUp on cancel/exit button
@@ -45,10 +48,14 @@ class PopupWindow(
           content = Seq(
 
             new Button("Yes") {
+              graphic = FxUtils.newImageView(IconResource.TICK)
+              // styleClass = List("dialogbutton")
               onAction = handle {
                 Wizard.stage.close()
               }
             }, new Button("No") {
+              // styleClass = List("dialogbutton")
+              graphic = FxUtils.newImageView(IconResource.CANCEL)
               onAction = handle {
                 popup.close()
               }
