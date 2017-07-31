@@ -44,6 +44,7 @@ class PopupHelpWindow(
           spacing = 30
           content = Seq(
             new Button(" Ok ") {
+              minWidth = 20
               onAction = handle {
                 popup.close()
               }

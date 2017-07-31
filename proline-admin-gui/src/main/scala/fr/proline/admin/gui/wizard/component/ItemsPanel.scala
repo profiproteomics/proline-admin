@@ -111,12 +111,11 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   //proline modules component 
   val prolineModulesChBox = new CheckBox("Proline Modules") {
     id = "moduleConfigId"
-    selected = true
     underline = true
     vgrow = Priority.Always
     font = Font.font("SanSerif", FontWeight.Bold, 12)
     //minWidth = 112
-    onAction = handle { selectChildren }
+    onAction = handle { getSelectedChildren }
   }
   //proline web componnent 
   val prolineWebChBox = new CheckBox("Proline Web Configuration File") {
@@ -124,7 +123,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     selected = false
     underline = true
     vgrow = Priority.Always
-    onAction = handle { selecteParent }
+    onAction = handle { getSelectedParent }
   }
   val prolineWebLabel = new HBox {
     prefWidth = 250
@@ -155,7 +154,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     selected = true
     underline = true
     vgrow = Priority.Always
-    onAction = handle { selecteParent }
+    onAction = handle { getSelectedParent }
   }
   val seqReposLabel = new HBox {
     prefWidth = 250
@@ -187,11 +186,9 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     underline = true
     vgrow = Priority.Always
     font = Font.font("SanSerif", FontWeight.Bold, 12)
-    //minWidth = 112
-
   }
   val prolineServerLabel = new HBox {
-    //minWidth = 150
+   
     prefWidth = 250
     disable <== !prolineServerChBox.selected
     content = List(new Label("Path to Server Root ( File application.conf ): "))
@@ -276,8 +273,8 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   /* functions */
 
   //selected checkBox
-  def selectChildren {
-    if (prolineModulesChBox.isSelected == true) {
+  def getSelectedChildren {
+    if (prolineModulesChBox.isSelected) {
       prolineWebChBox.selected = true
       seqReposChBox.selected = true
     } else {
@@ -286,15 +283,13 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     }
   }
 
-  def selecteParent {
-    if (prolineWebChBox.isSelected == true || seqReposChBox.isSelected == true) {
+  def getSelectedParent {
+    if (prolineWebChBox.isSelected || seqReposChBox.isSelected) {
       prolineModulesChBox.selected = true
-    }
-    if (prolineWebChBox.isSelected == false && seqReposChBox.isSelected == false) {
+    } else {
       prolineModulesChBox.selected = false
     }
   }
-
   private val checkBoxList = List(prolineServerChBox, prolineWebChBox, seqReposChBox, postgreSQLChBox)
 
   // get the selected item(selected checkBox)
@@ -373,6 +368,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     var isValidPath = false
     if (prolineWebChBox.isSelected) {
       if (checkFile(Wizard.webRootPath)) {
+        FieldProperties.removeBorder(prolineWebField)
         errorNotValidWebFile.visible = false
         isValidPath = true
       } else {

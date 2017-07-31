@@ -234,8 +234,8 @@ class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
   content = List(
     ScalaFxUtils.newVSpacer(minH = 20),
     new VBox {
-      prefWidth <== Wizard.configItemsPanel.width - 30
-      prefHeight <== Wizard.configItemsPanel.height - 30
+      vgrow = Priority.Always
+      hgrow = Priority.Always
       content = List(dbConnectionSettingPane)
     })
 

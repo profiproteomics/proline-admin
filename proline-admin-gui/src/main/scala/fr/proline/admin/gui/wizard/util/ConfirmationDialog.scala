@@ -68,7 +68,7 @@ class ConfirmationDialog(
           graphic = FxUtils.newImageView(IconResource.CANCEL)
           onAction = handle { confirmDialog.close() } //isActionConfirmed = false
         }
-
+        Seq(yesButton, cancelButton).foreach(_.minWidth(30))
         /**
          * ****** *
          * LAYOUT *

@@ -257,17 +257,7 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
   /** save Sequence Repository form **/
   def saveForm() {
     val newSeqConfig = _toSeqConfig()
-    val connectionEstablished = _testDbConnection(false, false)
-    if (connectionEstablished) {
-      seqConfigFile.write(newSeqConfig)
-    } else {
-      val isConfirmed = GetConfirmation(
-        title = "Invalid configuration",
-        text = "The connection to the database can't be established with these settings.\n Check your Sequence Repository connection properties.")
-      if (isConfirmed) {
-        seqConfigFile.write(newSeqConfig)
-      }
-    }
+    seqConfigFile.write(newSeqConfig)
   }
   def getInfos: String = {
     if (DatabaseConnection.testDbConnectionToWizard(driver, userName, passWord, hostName, port, false, false))

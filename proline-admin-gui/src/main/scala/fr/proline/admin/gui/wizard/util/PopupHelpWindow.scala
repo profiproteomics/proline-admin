@@ -31,6 +31,19 @@ class PopupWindow(
   title = wTitle
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
+  val yesButton = new Button("Yes") {
+    graphic = FxUtils.newImageView(IconResource.TICK)
+    onAction = handle {
+      Wizard.stage.close()
+    }
+  }
+  val noButton = new Button("No") {
+    graphic = FxUtils.newImageView(IconResource.CANCEL)
+    onAction = handle {
+      popup.close()
+    }
+  }
+  Seq(yesButton, noButton).foreach(_.minWidth(20))
   scene = new Scene {
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
     root = new VBox {
@@ -45,21 +58,8 @@ class PopupWindow(
           alignment = Pos.Center
           padding = Insets(10)
           spacing = 30
-          content = Seq(
-
-            new Button("Yes") {
-              graphic = FxUtils.newImageView(IconResource.TICK)
-              // styleClass = List("dialogbutton")
-              onAction = handle {
-                Wizard.stage.close()
-              }
-            }, new Button("No") {
-              // styleClass = List("dialogbutton")
-              graphic = FxUtils.newImageView(IconResource.CANCEL)
-              onAction = handle {
-                popup.close()
-              }
-            })
+          content = Seq(yesButton,
+            noButton)
         })
     }
   }

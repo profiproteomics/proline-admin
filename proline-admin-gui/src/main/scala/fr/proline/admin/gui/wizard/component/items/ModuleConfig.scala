@@ -11,7 +11,7 @@ import scalafx.scene.control.Hyperlink
 import javafx.scene.layout.Priority
 
 import fr.profi.util.scalafx.ScalaFxUtils
-import fr.profi.util.scalafx.ScalaFxUtils._
+import fr.profi.util.scala.ScalaUtils
 import scalafx.geometry.Pos
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
@@ -61,7 +61,11 @@ class ModuleConfig(val name: String) extends Item with LazyLogging {
     disable = false
     closable = false
   }
-
+  
+  // Proline Web
+  if(!ScalaUtils.isEmpty(Wizard.webRootPath)){
+    
+  }
   tabPane.tabs.addAll(PostGresSeqTab, serverJMSTab, parsingRulesTab)
 
   alignment = Pos.Center

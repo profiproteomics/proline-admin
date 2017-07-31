@@ -222,15 +222,6 @@ class ProlineMountFiles extends VBox with LazyLogging {
     dbHost = Option(Wizard.hostName),
     dbPort = Option(Wizard.port) //FIXME
     )
-  /** get GUI information to create a new SeqRepos Object **/
-  private def _toSeqConfig() = SeqConfig(
-    driverType = adminConfig.driverType,
-    maxPoolConnection = Option(3),
-    dbUserName = Option(Wizard.userName),
-    dbPassword = Option(Wizard.passWord),
-    dbHost = Option(Wizard.hostName),
-    dbPort = Option(Wizard.port),
-    dbUdsDb = Option("uds_db"))
   /** Get GUI information to create new ServerConfig object **/
   private def _getMountPointsMap(mpArray: ArrayBuffer[MountPointPanelWizard]): Map[String, String] = {
     (
@@ -309,15 +300,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
     resultFilesMpBox.content = resultFilesMountPoints
   }
 
-  /** Check form **/
-  private def _checkForm(): String = {
 
-    //TODO: finish me
-
-    val errString = new StringBuilder()
-
-    errString.result()
-  }
 
   /** Action run when "Save" button is pressed **/
 
@@ -327,11 +310,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
   }
 
   def saveForm() {
-
-    //TODO
-
     Wizard.stage.scene().setCursor(Cursor.WAIT)
-
     val newAdminConfig = _toAdminConfig()
     /* Test connection to database */
     if (serverConfigOpt.isDefined) {
