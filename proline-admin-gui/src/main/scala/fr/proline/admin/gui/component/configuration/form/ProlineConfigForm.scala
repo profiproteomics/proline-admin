@@ -563,7 +563,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
         serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
 
         /* New PWX config */
-        if (isPwxConfigDefined) pwxConfigFileOpt.get.write(newServerConfig)
+        //if (isPwxConfigDefined) pwxConfigFileOpt.get.write(newServerConfig)
       }
 
       /* Test connection to database */

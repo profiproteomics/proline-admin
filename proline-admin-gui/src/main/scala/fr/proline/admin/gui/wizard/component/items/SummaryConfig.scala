@@ -21,7 +21,8 @@ import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
 import fr.proline.admin.gui.wizard.component.Item
 
 /**
- * panel to summarize configurations steps
+ * SummaryConfig contains summary configuration
+ * 
  */
 
 class SummaryConfig(val name: String) extends Item with LazyLogging {
@@ -40,11 +41,9 @@ class SummaryConfig(val name: String) extends Item with LazyLogging {
   }
 
   /* initialize summary panels */
-
   var prolineServerBox = new VBox {}
   var prolineModuleBox = new VBox {}
   var prolinePgServerBox = new VBox {}
-
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = 1

@@ -25,7 +25,8 @@ import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.util.FxUtils
 
 /**
- * Graphical interface for Proline-Admin wizard:quick edit for admin and server file (.conf).
+ * Graphical interface for Proline Admin Wizard:quick to update Proline configuration files (application.conf)
+ *
  */
 object Wizard extends LazyLogging {
 
@@ -50,12 +51,10 @@ object Wizard extends LazyLogging {
   var nodeIndex = 0
   var currentNode: Item = _
   var items: LinkedHashMap[String, Item] = LinkedHashMap.empty[String, Item]
-
   /*
-   * Panels:
+   *  main panel contains :
    * 	panel of buttons :go and cancel
-   * 	panel of views
-   *    
+   * 	panel of items
    */
 
   var configItemsPanel: VBox = _

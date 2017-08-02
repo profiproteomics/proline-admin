@@ -25,7 +25,8 @@ import fr.proline.admin.gui.wizard.util.ShowPopupWindow
 import fr.proline.admin.gui.wizard.util.FieldProperties
 
 /**
- * Create panel contains navigation buttons : previous next and cancel .
+ * Panel contains navigation buttons : previous next and cancel
+ *
  */
 
 object NavigationButtonsPanel extends LazyLogging {
@@ -35,6 +36,7 @@ object NavigationButtonsPanel extends LazyLogging {
    * BUTTONS *
    * ******* *
    */
+
   //var postgresConfig: PostgresConfig = _
   val cancelButton = new Button("Cancel") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
@@ -42,7 +44,6 @@ object NavigationButtonsPanel extends LazyLogging {
       ShowPopupWindow("Exit Setup", "Are you sure you want to exit Proline Setup ?", Option(Wizard.stage), false)
     }
   }
-
   val nextButton = new Button("Next") {
     graphic = FxUtils.newImageView(IconResource.ARRAOWLEFT)
     contentDisplay = ContentDisplay.RIGHT
@@ -50,7 +51,6 @@ object NavigationButtonsPanel extends LazyLogging {
       onNext()
     }
   }
-
   val prevButton = new Button("Previous") {
     graphic = FxUtils.newImageView(IconResource.ARROWRIGHT)
     onAction = handle {
@@ -65,17 +65,19 @@ object NavigationButtonsPanel extends LazyLogging {
       val confirmed = GetConfirmation("Are you sure you want to save the new Proline configurations ?")
       if (confirmed) {
         Wizard.items.toSeq.foreach {
-          case (_1, _2) => SelectedItem.saveForms(_2)
+          case (_1, _2) => SelectedItem.saveAll(_2)
         }
       }
     }
   }
   var summaryPanel = new SummaryConfig("summary")
+
   /**
    * ***** *
    * LAYOUT *
    * **** *
    */
+
   val prevBox = new HBox {
     content = Seq(prevButton)
   }
@@ -110,9 +112,7 @@ object NavigationButtonsPanel extends LazyLogging {
   }
 
   /* next and previous functions  */
-
   def onNext() {
-
     NavigationButtonsPanel.prevButton.visible = true
     /* change items */
     if (Wizard.nodeIndex < Wizard.items.toSeq.size - 1) {
@@ -125,7 +125,7 @@ object NavigationButtonsPanel extends LazyLogging {
         /* Summary panel */
         Wizard.nodeIndex = Wizard.nodeIndex + 1
         Wizard.items.toSeq.foreach {
-          case (_1, _2) => SelectedItem.getItem(_2)
+          case (_1, _2) => SelectedItem.get(_2)
         }
         Wizard.currentNode = summaryPanel
         Wizard.configItemsPanel.getChildren().clear()

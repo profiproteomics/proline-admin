@@ -46,7 +46,7 @@ import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.repository.DriverType
 
 /**
- * Tab of PostGreSQL contains database server properties.
+ * PostGreSQLTab build tab of PostGreSQL database server properties.
  */
 class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
   private val driver = DriverType.POSTGRESQL
@@ -115,7 +115,6 @@ class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
       checkForm
     }
   }
-
   //port
   val portLabel = new Label("Port: ")
   val portField = new NumericTextField {
@@ -128,7 +127,6 @@ class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
         }
     }
   }
-
   //user
   val userLabel = new Label("User: ")
   val userField = new TextField {
@@ -138,7 +136,6 @@ class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
       checkForm
     }
   }
-
   //password
   val passWordLabel = new Label("Password: ")
   val showPwdBox = new CheckBox("Show password") {

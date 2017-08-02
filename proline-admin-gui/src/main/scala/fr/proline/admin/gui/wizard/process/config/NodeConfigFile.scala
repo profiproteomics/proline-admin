@@ -13,7 +13,8 @@ import java.io.FileNotFoundException
 import java.io.IOException
 
 /**
- * jms-node configuration file
+ * Jms-node configuration file
+ * 
  */
 
 class NodeConfigFile(val path: String) extends LazyLogging {

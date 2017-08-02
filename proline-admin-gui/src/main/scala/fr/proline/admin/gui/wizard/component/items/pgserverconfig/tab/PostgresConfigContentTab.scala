@@ -11,7 +11,8 @@ import fr.proline.admin.gui.component.configuration.file._
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab.content.PanelScorllPane
 import fr.proline.admin.gui.wizard.component.items.pgserverconfig._
 /**
- * panel of postgreSQL configuration optimization(in scrollPane)
+ * PostgresConfigContentTab contains panel of postgreSQL optimization(PanelScorllPane)
+ * 
  */
 class PostgresConfigContentTab extends PanelScorllPane {
 
@@ -26,9 +27,7 @@ class PostgresConfigContentTab extends PanelScorllPane {
       prefWidth <== Wizard.configItemsPanel.width - 45
       prefHeight <== Wizard.configItemsPanel.height - 45
     })
-  //  def getInfos: String = {
-  //    postgresForm.getProperties
-  //  }
+ /* save new settings  */
   def saveForm() {
     postgresForm.saveForm()
   }

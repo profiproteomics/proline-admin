@@ -10,9 +10,12 @@ import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.component.configuration.file._
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab.content.PanelScorllPane
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab.content.ProlineMountFiles
-
+/**
+ * MountPointsContentTab contains Panel of mount points Proline server (in ScorllPane)
+ * 
+ */
 class MountPointsContentTab extends PanelScorllPane {
-
+  
   var mountfiles = new ProlineMountFiles()
   setContentNode(
     new VBox {
@@ -27,7 +30,7 @@ class MountPointsContentTab extends PanelScorllPane {
   def getInfos : String = {
     mountfiles.getInfos
   }
-
+  
   /* save all parameters on next button */
   def saveForm() {
      mountfiles.saveForm() 

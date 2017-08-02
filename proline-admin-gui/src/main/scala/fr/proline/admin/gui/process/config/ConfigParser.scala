@@ -420,13 +420,78 @@ authentication {
   }
 }
 
+/**case class of Jms server pws config file */
+case class PwxJmsServer(
+  val dbHost: Option[String] = None,
+  val dbPort: Option[Int] = None) {
+
+  def toTypeSafePwxJms: String = {
+    val pwxJmsStrBuilder = new StringBuilder()
+    pwxJmsStrBuilder ++= s""""jms_server"{""" + LINE_SEPARATOR
+    pwxJmsStrBuilder ++= s"""hostname=${dbHost.getOrElse("localhost")}""" + LINE_SEPARATOR
+    pwxJmsStrBuilder ++= s"""port=${dbPort.getOrElse("5445")}""" + LINE_SEPARATOR
+    pwxJmsStrBuilder ++= s"""}"""
+    pwxJmsStrBuilder.result()
+  }
+}
+
 /** Update configuration in PWX configuration file **/
 class PwxConfigFile(val path: String) extends LazyLogging {
 
   require(path != null && path.isEmpty() == false, "Configuration file path must not be null nor empty.")
   val pwxConfigFile = new File(path)
 
-  def write(serverConfig: ServerConfig) {
+  /** Read config file **/
+  def read(): Option[ServerConfig] = {
+
+    try {
+
+      /* Create config */
+      val config = ConfigFactory.parseFile(pwxConfigFile)
+
+      /* Retrieve mount points */
+      def getMountPoints(key: String): Map[String, String] = {
+        //config.getObject(s"mount_points.$key").map { case (k, v) => k -> v.render() }.toMap
+        config.getObject(s"mount_points.$key").map { case (k, v) => k -> v.unwrapped().toString() }.toMap
+      }
+
+      val rawFilesMp = getMountPoints("raw_files")
+      val mzdbFilesMp = getMountPoints("mzdb_files")
+      val resultFilesMp = getMountPoints("result_files")
+
+      /* Return AdminConfig */
+      Some(
+        ServerConfig(
+          //serverConfFilePath = path,
+          rawFilesMountPoints = rawFilesMp,
+          mzdbFilesMountPoints = mzdbFilesMp,
+          resultFilesMountPoints = resultFilesMp))
+
+    } catch {
+      case t: Throwable => {
+        logger.error("Error occured while reading server configuration file", t)
+        None
+      }
+    }
+  }
+
+  /** Read config file **/
+  def getPwxJms(): Option[PwxJmsServer] = {
+    try {
+      /* Create config */
+      val config = ConfigFactory.parseFile(pwxConfigFile)
+      Some(
+        PwxJmsServer(config.getStringOpt("jms_server.hostname"),
+          config.getIntOpt("jms_server.port")))
+    } catch {
+      case t: Throwable => {
+        logger.error("Error occured while reading Pwx configuration file", t)
+        None
+      }
+    }
+  }
+
+  def write(serverConfig: ServerConfig, pwxJmsServer: PwxJmsServer) {
     try {
 
       // Merge configs
@@ -442,9 +507,10 @@ class PwxConfigFile(val path: String) extends LazyLogging {
       ShowPopupWindow("superMap:\n" + scala.runtime.ScalaRunTime.stringOf(superMap))
 
       val newConfig = ConfigFactory.parseMap(superMap)*/
+      val newPwxJms = ConfigFactory.parseString(pwxJmsServer.toTypeSafePwxJms)
+      val mergedpwxJmsConfig = newPwxJms.withFallback(currentConfig)
       val newConfig = ConfigFactory.parseString(serverConfig.toTypeSafeConfigString())
-
-      val mergedConfig = newConfig.withFallback(currentConfig)
+      val mergedConfig = newConfig.withFallback(mergedpwxJmsConfig)
 
       //      logger.warn("mergedConfig")
       //      logger.warn(scala.runtime.ScalaRunTime.stringOf(mergedConfig))
@@ -463,7 +529,6 @@ class PwxConfigFile(val path: String) extends LazyLogging {
         fileWriter.close()
         logger.warn(" fileWriter.close()")
       }
-
     } catch {
       //case e: Exception => logger.warn("Can't save settings in PWX application.conf : ", e.getMessage())
       case e: Exception => ShowPopupWindow("Can't save settings in PWX application.conf\n\n " + e.getMessage())

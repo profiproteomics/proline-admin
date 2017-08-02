@@ -25,7 +25,8 @@ import fr.proline.admin.gui.wizard.process.config.NodeConfig
 import fr.proline.admin.gui.wizard.component.items.form.TabForm
 import fr.profi.util.scala.ScalaUtils
 /**
- * Tab for JMS server properties : jms host , port and proline queue name
+ * JmsServerTab build tab for JMS server properties : Jms host , port and Proline queue name
+ *
  */
 
 class JmsServerTab(path: String) extends VBox with TabForm with LazyLogging {
@@ -47,9 +48,8 @@ class JmsServerTab(path: String) extends VBox with TabForm with LazyLogging {
   private var jmsPort = nodeConfig.jmsServePort.getOrElse(0)
   private var prolineQueueName = nodeConfig.requestQueueName.getOrElse("")
 
-  val tog = new ToggleGroup()
   // chekcbox
-
+  val tog = new ToggleGroup()
   var embeddedJmsRdButton = new RadioButton {
     text = "  Use embedded JMS Server"
     selected = true
@@ -59,7 +59,6 @@ class JmsServerTab(path: String) extends VBox with TabForm with LazyLogging {
     text = "  Use Specific JMS Server"
     toggleGroup = tog
   }
-
   val hostLabel = new Label("Host: ")
   val hostField = new TextField {
     disable <== embeddedJmsRdButton.selected
@@ -130,7 +129,6 @@ class JmsServerTab(path: String) extends VBox with TabForm with LazyLogging {
     })
 
   // position in center
-
   val checkBoxPane = new VBox {
     spacing = 5
     content = List(
@@ -146,9 +144,7 @@ class JmsServerTab(path: String) extends VBox with TabForm with LazyLogging {
     checkBoxPane, ScalaFxUtils.newVSpacer(minH = 15),
     jmsServerPane)
 
-  /* get type of selected JMS Server */
-
-  /** check fields */
+  /* check fields */
   def checkForm: Boolean = {
     if (ScalaUtils.isEmpty(hostField.getText) || ScalaUtils.isEmpty(portField.getText) || ScalaUtils.isEmpty(queueNameField.getText)) {
       warningDatalabel.visible = true
@@ -159,7 +155,7 @@ class JmsServerTab(path: String) extends VBox with TabForm with LazyLogging {
     }
   }
 
-  /**get GUI inbformation to create new jmsConfih object  **/
+  /* get GUI inbformation to create new jmsConfih object */
   private def _toJMSConfig() = NodeConfig(Option(this.jmsHostName),
     Option(this.jmsPort),
     Option(this.prolineQueueName),
@@ -167,7 +163,7 @@ class JmsServerTab(path: String) extends VBox with TabForm with LazyLogging {
     Option(1),
     Option(true))
 
-  /** save proline Server nodeConfig properties */
+  /* save proline Server nodeConfig properties */
   def saveForm() {
     /* new jmsConfig */
     if (nodeConfigOpt.isDefined) {

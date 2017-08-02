@@ -9,7 +9,7 @@ import fr.profi.util.scala.ScalaUtils
 import fr.proline.admin.gui.wizard.util._
 import java.io.File
 /**
- * check and save settings form of items
+ * TabForm contains tab form of each item
  *
  */
 
@@ -21,17 +21,16 @@ trait TabForm {
     style = TextStyle.RED_ITALIC
     visible = false
   }
-  
+
   // check the form of the fields in each tab 
   def checkForm: Boolean
-  // save form 
-  // def saveForm()
+
   // get the state of form to show it in the summary panel 
   def getInfos: String
 }
 
 /**
- * check the form of the path's panel chooser
+ * ItemsPanelForm contains warning label to check path's form
  *
  */
 
@@ -67,13 +66,14 @@ trait ItemsPanelForm {
     style = TextStyle.RED_ITALIC
     visible = false
   }
-  /** set style on fields */
+  
+  /* set style on fields */
   def setStyleSelectedItems: Boolean
 
-  /** get the selected items  */
+  /* get the selected items  */
   def getSelectedItems: Unit
 
-  /** check valid data directory contains:postgresql.conf and pg_hba.conf */
+  /* check valid data directory contains:postgresql.conf and pg_hba.conf */
   def validDataDirectory(path: String): Boolean = {
     var validDir = false
     if (new File(path).exists) {

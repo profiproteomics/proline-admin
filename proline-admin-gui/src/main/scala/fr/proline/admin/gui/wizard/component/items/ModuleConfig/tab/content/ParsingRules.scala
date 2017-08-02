@@ -42,12 +42,11 @@ import fr.proline.admin.gui.wizard.process.config._
 //import fr.proline.admin.gui.wizard.component.items.form.TabForm
 import fr.profi.util.scala.ScalaUtils
 /**
- * Create a modal window to edit/add parsing rules file.
+ * ParsingRules create a modal window to edit/add parsing rules file.
  */
 class ParsingRules extends VBox with LazyLogging {
 
   /* parsing rules file */
-
   private val parsigRuleFile = new ParsingRulesFile(Wizard.parsingRulesPath)
   private val parsingRuleOpt = parsigRuleFile.read()
   require(parsingRuleOpt.isDefined, "parsing rules is undefined")
@@ -62,7 +61,6 @@ class ParsingRules extends VBox with LazyLogging {
    */
 
   /* default accession protein */
-
   val fastaDirBox = new VBox { spacing = 10 }
   val RulesBox = new VBox { spacing = 10 }
   val defaultProteinAccessionLabel = new BoldLabel("Default Protein Accession: ", upperCase = false)
@@ -79,7 +77,6 @@ class ParsingRules extends VBox with LazyLogging {
       defaultProteinAccessionField.setText(">(\\S+)")
     }
   }
-
   val accessionAndResetBox = new HBox {
     spacing = 10
     content = Seq(defaultProteinAccessionField, resetAccessionButton)
@@ -91,7 +88,6 @@ class ParsingRules extends VBox with LazyLogging {
   }
 
   /* local Fasta directories */
-
   val localFastaDirLablel = new BoldLabel("Local Fasta Directories: ", upperCase = false)
   val localFastaDirs = new ArrayBuffer[FastaDirectory]()
   val addLocalFastaDirectory = new Button("Add") {
@@ -101,7 +97,6 @@ class ParsingRules extends VBox with LazyLogging {
   }
 
   /* parsing rules List */
-
   val parsingRulesLablel = new BoldLabel("Parsing Rules: ", upperCase = false)
   val localRules = new ArrayBuffer[Rules]()
   val addRuleButton = new Button("Add") {
@@ -109,14 +104,12 @@ class ParsingRules extends VBox with LazyLogging {
       _addRule()
     }
   }
-
   private val EMPTY_FASTA_DIR = "Fasta directories are empty. You should have at least one local Fasta directory. Default value will be reset."
   val emptyFastaWarningLabel = new Label() {
     visible = false
     text = EMPTY_FASTA_DIR
     style = TextStyle.RED_ITALIC
   }
-
   private val EMPTY_PARSING_RULE = "Parsing rules are empty. You should have at least one parsing rule. Default values will be reset."
   val emptyRulesWarningLabel = new Label() {
     visible = false
@@ -138,8 +131,7 @@ class ParsingRules extends VBox with LazyLogging {
   private val V_SPACING = 10
   private val H_SPACING = 5
 
-  /* parsing rules */
-
+  /* parsing rules panel */
   val parsingRules = new TitledBorderPane(
     title = "Parsing Rules",
     titleTooltip = "Extract accession numbers from Fasta files",
@@ -177,11 +169,8 @@ class ParsingRules extends VBox with LazyLogging {
     /* Disable parsing rule is undefined */
 
   } else {
-
     val parsingRule = parsingRuleOpt.get
-
     /* local Fasta directories  */
-
     val initFastaDirs = parsingRule.localFastaDirectories
     if (initFastaDirs.isEmpty) {
       _addFastaDirectory()
@@ -192,7 +181,6 @@ class ParsingRules extends VBox with LazyLogging {
     }
 
     /* parsing rules */
-
     val initParsingRules = parsingRule.parsingRules
     if (initParsingRules.isEmpty) {
       _addRule()
@@ -214,7 +202,6 @@ class ParsingRules extends VBox with LazyLogging {
   }
 
   /** Add stuff to define another local fasta directory **/
-
   def _addFastaDirectory(value: String = "") {
     def _onFastaDirDelete(mp: FastaDirectory): Unit = {
       localFastaDirs -= mp

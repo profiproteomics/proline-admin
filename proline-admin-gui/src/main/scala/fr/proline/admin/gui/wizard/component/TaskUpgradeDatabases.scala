@@ -5,11 +5,13 @@ import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.gui.wizard.util.PopupHelpWindow
 import fr.proline.admin.gui.process._
+
 /**
- * Service to upgrade all databases
+ * TaskUpgradeDatabases upgrade all databases
  */
 class TaskUpgradeDatabases extends JService[Unit] {
   override protected def createTask() = new JTask[Unit]() {
+
     override protected def call() {
       val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
       try {
@@ -24,5 +26,4 @@ class TaskUpgradeDatabases extends JService[Unit] {
       }
     }
   }
-
 }

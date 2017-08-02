@@ -42,7 +42,8 @@ import fr.proline.admin.gui.wizard.component.items.form.TabForm
 import fr.proline.admin.gui.wizard.process.config._
 
 /**
- * Tab of properties in SqeRepos to connect to the database server
+ * PostGreSQLSeqTab contains tab of properties in SqeRepos to connect to the database server
+ * 
  */
 
 class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging {
@@ -55,7 +56,6 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
 	 */
 
   //get jms-node configuration file
-
   try {
     if (new File(path).exists()) {
       val jmsNodeConfDir = new File(path).getParent()
@@ -81,8 +81,6 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
   if (isPrompt(dbUserName)) userName = dbUserName
   else userName = dbUserName
 
-  //   we cannot initialize password ?!
-
   val dbPassword = seqConfig.dbPassword.get
   if (isPrompt(dbPassword)) passWord = dbPassword
   else passWord = dbPassword
@@ -95,7 +93,6 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
   port = dbPort
 
   //host 
-
   val hostLabel = new Label("Host: ")
   val hostField = new TextField {
     if (hostName != null) text = hostName
@@ -106,7 +103,6 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
   }
 
   //port
-
   val portLabel = new Label("Port: ")
   val portField = new NumericTextField {
     text = port.toString
@@ -120,7 +116,6 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
   }
 
   //user
-
   val userLabel = new Label("User: ")
   val userField = new TextField {
     if (userName != null) text = userName
@@ -131,7 +126,6 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
   }
 
   //password
-
   val passWordLabel = new Label("Password: ")
   val showPwdBox = new CheckBox("Show password") {
     selected = false
@@ -152,7 +146,6 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
       checkForm
     }
   }
-
   val dbPwdPane = new StackPane {
     alignmentInParent = Pos.BottomLeft
     content = List(passwordPWDField, passwordTextField)
@@ -220,7 +213,6 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
     })
 
   // position in center
-
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = V_SPACING
@@ -228,7 +220,7 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
     ScalaFxUtils.newVSpacer(minH = 20),
     dbConnectionSettingPane)
 
-  /** check seq repos form  **/
+  /* check Sequence Repository form  */
   def checkForm: Boolean = {
     if (ScalaUtils.isEmpty(hostField.getText) || ScalaUtils.isEmpty(userField.getText)
       || ScalaUtils.isEmpty(portField.getText) || ScalaUtils.isEmpty(passwordPWDField.getText)) {
@@ -239,12 +231,15 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
       true
     }
   }
+  
+  /* test connection to database server */
   private def _testDbConnection(
     showSuccessPopup: Boolean = false,
     showFailurePopup: Boolean = false): Boolean = { //return connectionEstablished
     DatabaseConnection.testDbConnection(DriverType.POSTGRESQL, userName, passWord, hostName, port, showSuccessPopup, showFailurePopup)
   }
-  /** get GUI information to create a new SeqRepos Object **/
+  
+  /* get GUI information to create a new SeqRepos Object */
   private def _toSeqConfig() = SeqConfig(
     driverType = Option(DriverType.POSTGRESQL),
     maxPoolConnection = Option(3),
@@ -254,7 +249,7 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
     dbPort = Option(port),
     dbUdsDb = Option("uds_db"))
 
-  /** save Sequence Repository form **/
+  /* save Sequence Repository form */
   def saveForm() {
     val newSeqConfig = _toSeqConfig()
     seqConfigFile.write(newSeqConfig)

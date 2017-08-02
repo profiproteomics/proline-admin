@@ -8,31 +8,31 @@ import scalafx.geometry.Insets
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.component.configuration.file._
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab.content.PanelScorllPane
-import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab.Content.ParsingRules
+import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab.Content.ProlinePwx
 /**
- * ParsingRulesContentTab contains parsing rules PanelScorllPane
+ * ParsingRulesContentTab contains Proline PWX  PanelScorllPane
  * 
  */
-class ParsingRulesContentTab extends PanelScorllPane {
-  
-  val rules = new ParsingRules()
+class ProlinePwxContentTab extends PanelScorllPane {
+
+  val prolinePwx = new ProlinePwx()
   setContentNode(
     new VBox {
       padding = Insets(5, 0, 0, 0)
       alignment = Pos.TOP_RIGHT
       alignmentInParent = Pos.TOP_RIGHT
-      content = List(rules)
+      content = List(prolinePwx)
       prefWidth <== Wizard.configItemsPanel.width - 45
       prefHeight <== Wizard.configItemsPanel.height - 45
     })
 
-  /* properties of ParsingRules  */
+  /* Some properties of ProlinePwx */
   def getInfos: String = {
-    rules.getProperties
+    prolinePwx.getProperties()
   }
-
-  /* save all parameters on next button */
+  
+  /* save all parameters */
   def saveForm() {
-    rules.saveForm() 
+    prolinePwx.saveForm()
   }
 }

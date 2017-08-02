@@ -13,7 +13,6 @@ import java.io.FileNotFoundException
 import java.io.IOException
 
 /**
- *
  * Sequence Repository configuration file
  *
  */

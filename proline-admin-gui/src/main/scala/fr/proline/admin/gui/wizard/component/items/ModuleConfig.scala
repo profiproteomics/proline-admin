@@ -15,22 +15,20 @@ import fr.profi.util.scala.ScalaUtils
 import scalafx.geometry.Pos
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.wizard.util._
 
-import fr.proline.admin.gui.wizard.component.items.serverconfig.tab.JmsServerTab
-import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab._
 import fr.proline.admin.gui.Wizard
+import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab._
+import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
 import fr.proline.admin.gui.wizard.component.Item
-
+import fr.proline.admin.gui.process.config._
+import fr.proline.admin.gui.wizard.util._
 /**
  * panel edit/update Proline Module Config
  */
 
 class ModuleConfig(val name: String) extends Item with LazyLogging {
-  /**
-   * component
-   */
 
+  /* Proline Module components */
   val panelTitle = new Label("Proline Module Configuration") {
     styleClass = List("item")
   }
@@ -42,32 +40,44 @@ class ModuleConfig(val name: String) extends Item with LazyLogging {
   }
 
   val tabPane = new TabPane()
+  /* Proline Sequence Repository database properties tab */
   val PostGreSQLSeq = new PostGreSQLSeqTab(Wizard.seqRepoConfPath)
   val PostGresSeqTab = new Tab {
     text = "PostGreSQL"
     content = PostGreSQLSeq
     closable = false
   }
+
+  /* Proline Jms server tab */
   val jmsServer = new JmsServerTab(Wizard.SeqJmsNodeConfPath)
   val serverJMSTab = new Tab {
     text = "JMS Server"
     content = jmsServer
     closable = false
   }
+
+  /* Sequence Repository Tab*/
   val parsingRules = new ParsingRulesContentTab()
   val parsingRulesTab = new Tab {
     text = "Sequence Repository Specific"
     content = parsingRules
-    disable = false
     closable = false
   }
-  
-  // Proline Web
-  if(!ScalaUtils.isEmpty(Wizard.webRootPath)){
-    
-  }
-  tabPane.tabs.addAll(PostGresSeqTab, serverJMSTab, parsingRulesTab)
 
+  /* Proline Web Tab */
+  val prolinePwx = Option(new ProlinePwxContentTab())
+  if (!ScalaUtils.isEmpty(Wizard.webRootPath)) {
+    val prolinePwxTab = new Tab {
+      text = "Proline Web"
+      content = prolinePwx.get
+      closable = false
+    }
+    tabPane.tabs.addAll(PostGresSeqTab, serverJMSTab, parsingRulesTab, prolinePwxTab)
+  } else {
+    tabPane.tabs.addAll(PostGresSeqTab, serverJMSTab, parsingRulesTab)
+  }
+
+  /* Layout */
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = 1
@@ -83,8 +93,7 @@ class ModuleConfig(val name: String) extends Item with LazyLogging {
     })
   }, ScalaFxUtils.newVSpacer(minH = 10), tabPane)
 
-  // help function
-
+  /* help text */
   val helpTextBuilder = new StringBuilder()
   helpTextBuilder.append("PostgreSQL: required properties to connect the database server\n\n")
     .append("\tHost: host name\n").append("\tPort: port number(default: 5432)\n")
@@ -98,6 +107,7 @@ class ModuleConfig(val name: String) extends Item with LazyLogging {
     .append("\tAccession Parse Rule: Java Regex with capturing group for protein accession\n\n")
     .append("Default Protein Accession: Default Java Regex with capturing group for protein accession if fasta file name doesn't match parsing_rules RegEx\n")
     .append("default value = >(\\S+) :  String after '>' and before first space\n\n")
+
   def _openHelpDialog() = PopupHelpWindow(
     wTitle = "Help",
     wText = helpTextBuilder.toString())

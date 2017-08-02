@@ -27,25 +27,43 @@ import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.gui.wizard.util.ProgressBarWindow
+
 /**
- *  abstract class for all item's Panel
+ *  Item Parent for all Panel
  */
 
-abstract class Item extends VBox {
+trait Item extends VBox {
   val panelTitle: Label
   val headerHelpIcon: Hyperlink
   def _openHelpDialog()
 }
+
 /**
- * *
- * class to build summary panel in the end
+ *
+ *  Object build summary panel
  */
 
 object SelectedItem extends LazyLogging {
   var setUpUpdateChBox, updateCheckBox: CheckBox = _
   val taskUpgrade: TaskUpgradeDatabases = new TaskUpgradeDatabases()
-  def getItem(item: Item) {
+  def get(item: Item) {
     try {
+      if (item.isInstanceOf[PgServerConfig]) {
+        val pgServer = item.asInstanceOf[PgServerConfig]
+        NavigationButtonsPanel.summaryPanel.prolinePgServerBox.content = new TitledBorderPane(
+          title = "PostgreSQL Server Configuration ",
+          contentNode = new VBox {
+            content = Seq(
+              new Label {
+                text = s"""Access Right: OK """
+                styleClass = List("summaryLabel")
+              },
+              new Label {
+                text = s"""Optimization: OK """
+                styleClass = List("summaryLabel")
+              }, ScalaFxUtils.newVSpacer(25))
+          })
+      }
       /* create Proline Server summary panel */
       if (item.isInstanceOf[ServerConfig]) {
 
@@ -97,29 +115,14 @@ object SelectedItem extends LazyLogging {
           })
       }
       /* create PostgreSQL summary panel */
-      if (item.isInstanceOf[PgServerConfig]) {
-        val pgServer = item.asInstanceOf[PgServerConfig]
-        NavigationButtonsPanel.summaryPanel.prolinePgServerBox.content = new TitledBorderPane(
-          title = "PostgreSQL Server Configuration ",
-          contentNode = new VBox {
-            content = Seq(
-              new Label {
-                text = s"""Access Right: OK """
-                styleClass = List("summaryLabel")
-              },
-              new Label {
-                text = s"""Optimization: OK """
-                styleClass = List("summaryLabel")
-              }, ScalaFxUtils.newVSpacer(25))
-          })
-      }
+
     } catch {
       case t: Throwable => logger.error("Error in selected item")
     }
   }
 
   /** save item's form on Button validate */
-  def saveForms(item: Item) {
+  def saveAll(item: Item) {
     try {
       /* save Proline server properties  */
       if (item.isInstanceOf[ServerConfig]) {
@@ -138,6 +141,7 @@ object SelectedItem extends LazyLogging {
           case t: Throwable => logger.error("Error while trying to save Proline Server properties.")
         }
       }
+
       /* save Proline module properties  */
       if (item.isInstanceOf[ModuleConfig]) {
         val module = item.asInstanceOf[ModuleConfig]
@@ -145,10 +149,14 @@ object SelectedItem extends LazyLogging {
           module.PostGreSQLSeq.saveForm()
           module.jmsServer.saveForm()
           module.parsingRules.saveForm()
+          if (module.prolinePwx.isDefined) {
+            module.prolinePwx.get.saveForm()
+          }
         } catch {
           case t: Throwable => logger.error("Error while trying to save Proline Module properties.")
         }
       }
+
       /* save PostgreSQL configurations  */
       if (item.isInstanceOf[PgServerConfig]) {
         val pgServerConfig = item.asInstanceOf[PgServerConfig]

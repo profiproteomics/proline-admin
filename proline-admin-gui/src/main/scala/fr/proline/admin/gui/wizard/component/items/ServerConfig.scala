@@ -22,7 +22,8 @@ import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.component.Item
 
 /**
- * panel to edit/update database server parameters:host name,user name ,password and port
+ * ServerConfig edit/update database server parameters :host name,user name ,password and port
+ * 
  */
 
 class ServerConfig(val name: String) extends Item with LazyLogging {
@@ -41,7 +42,6 @@ class ServerConfig(val name: String) extends Item with LazyLogging {
   }
 
   val tabPane = new TabPane()
-
   val postgres = new PostGreSQLTab(Wizard.adminConfPath)
   val pgAccessTab = new Tab {
     text = "PostGreSQL"

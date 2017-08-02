@@ -48,15 +48,14 @@ import fr.proline.repository.DriverType
 object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
 
   /** component of panel **/
-
-  // help icon
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
     onAction = handle {
       _openHelpDialog()
     }
   }
-  /** try to read proline admin configuration file */
+
+  /* try to read proline admin configuration file */
   var iniServerPath = ""
   var iniSeqReposPath = ""
   var iniPgDirPath = ""
@@ -71,7 +70,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   } catch {
     case pe: com.typesafe.config.ConfigException.Parse => {
       //try to reinitialize initial  values of configuration files 
-      logger.error("Error while trying to parse initial settings from Proline Admin configuration file.", pe)
+      logger.error("Error while trying to parse initial settings from Proline Admin configuration file. Default settings will be reset.")
       warningCorruptedFile.visible = true
       resetAdminConfig()
     }
@@ -112,12 +111,13 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   val prolineModulesChBox = new CheckBox("Proline Modules") {
     id = "moduleConfigId"
     underline = true
+    selected = true
     vgrow = Priority.Always
     font = Font.font("SanSerif", FontWeight.Bold, 12)
-    //minWidth = 112
     onAction = handle { getSelectedChildren }
   }
-  //proline web componnent 
+
+  //Proline web components 
   val prolineWebChBox = new CheckBox("Proline Web Configuration File") {
     id = "prolineWebChBoxId"
     selected = false
@@ -148,7 +148,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     }
   }
 
-  //seqRepos component 
+  //Sequence Repository components 
   val seqReposChBox = new CheckBox("Sequence Repository Configuration File") {
     id = "seqReposChBoxId"
     selected = true
@@ -179,7 +179,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     }
   }
 
-  // proline server component 
+  // Proline server components 
   val prolineServerChBox = new CheckBox("Proline Server Configuration File") {
     id = "prolineServerChBoxId"
     selected = true
@@ -188,7 +188,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     font = Font.font("SanSerif", FontWeight.Bold, 12)
   }
   val prolineServerLabel = new HBox {
-   
+
     prefWidth = 250
     disable <== !prolineServerChBox.selected
     content = List(new Label("Path to Server Root ( File application.conf ): "))
@@ -208,13 +208,14 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     disable <== !prolineServerChBox.selected
     onAction = handle { _browseServerConfigFile() }
   }
+
   /* Style */
   Seq(postgreSQLLabel, prolineWebLabel, seqReposLabel, prolineServerLabel).foreach(_.minWidth = 60)
   Seq(postgreSQLField, prolineWebField, seqReposField, prolineServerField).foreach {
     f => f.hgrow = Priority.Always
   }
-  /* layout */
 
+  /* layout */
   private val V_SPACING = 10
   private val H_SPACING = 5
   val warningBox = new VBox {
@@ -257,7 +258,6 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     })
 
   // final content 
-
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = 1
@@ -271,8 +271,6 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     configItemsPane)
 
   /* functions */
-
-  //selected checkBox
   def getSelectedChildren {
     if (prolineModulesChBox.isSelected) {
       prolineWebChBox.selected = true
@@ -284,30 +282,25 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   }
 
   def getSelectedParent {
-    if (prolineWebChBox.isSelected || seqReposChBox.isSelected) {
+    if (prolineWebChBox.isSelected || seqReposChBox.isSelected)
       prolineModulesChBox.selected = true
-    } else {
+    else
       prolineModulesChBox.selected = false
-    }
   }
-  private val checkBoxList = List(prolineServerChBox, prolineWebChBox, seqReposChBox, postgreSQLChBox)
+  private val checkBoxList = List(prolineServerChBox.getId, prolineWebChBox.getId, seqReposChBox.getId, postgreSQLChBox.getId)
 
-  // get the selected item(selected checkBox)
-  def getSelectedItems: Unit = {
-    if (!checkBoxList.isEmpty) {
-      checkBoxList.foreach(checkBox => {
-        checkBox.getId match {
-          case "prolineServerChBoxId" => selectServerItem
-          case "seqReposChBoxId" => selectSeqRepositoryItem
-          case "prolineWebChBoxId" => selectProlineWebItem
-          case "postgresChBoxId" => selectPostgreSQLItem
-          case _ => logger.error("Error: selected item not found.")
-        }
-      })
+  // get selected item
+  def getSelectedItems {
+    checkBoxList.map {
+      case "prolineServerChBoxId" => selectServerItem
+      case "seqReposChBoxId" => selectSeqRepositoryItem
+      case "prolineWebChBoxId" => selectProlineWebItem
+      case "postgresChBoxId" => selectPostgreSQLItem
+      case _ => logger.error("Error: selected item not found.")
     }
   }
 
-  // select the Proline Server item 
+  // select Proline-Server item 
   private def selectServerItem(): Boolean = {
     var isValidPath = false
     if (prolineServerChBox.isSelected) {
@@ -334,7 +327,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     isValidPath
   }
 
-  // select Sequence Repository  item
+  // select Sequence Repository item
   private def selectSeqRepositoryItem(): Boolean = {
     var isValidPath = false
     if (seqReposChBox.isSelected) {
@@ -380,7 +373,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     isValidPath
   }
 
-  // select PostgreSQL item :authorization and optimization tab
+  //select PostgreSQL item 
   private def selectPostgreSQLItem(): Boolean = {
     var isValidPath = false
     if (postgreSQLChBox.isSelected) {
@@ -406,7 +399,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     isValidPath
   }
 
-  // check selected fields when go button is pressed 
+  //check selected fields 
   def setStyleSelectedItems: Boolean = {
     var validPath, seqReposPath, serverPath, postGresPath, webPath = true
     if (postgreSQLChBox.isSelected) {
@@ -425,7 +418,6 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
         serverPath = false
       } else {
         serverPath = true
-
       }
     } else FieldProperties.removeBorder(prolineServerField)
     if (seqReposChBox.isSelected) {
@@ -456,10 +448,10 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     }
     validPath
   }
-  // check configuration file : application.conf
+  // check configuration file (application.conf)
   private def checkFile(filePath: String): Boolean = (new File(filePath).exists) && (new File(filePath).getName.equals("application.conf"))
 
-  // to browse configurations files
+  // browse configurations files dialog 
   private def _browseServerConfigFile() {
     ConfFileChooser.setForProlineServerConf(prolineServerField.text())
     try {
@@ -520,13 +512,14 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     new AdminConfigFile(Wizard.adminConfPath).write(defaultConfig)
   }
 
-  // help dialog
+  // help text
   val helpTextBuilder = new StringBuilder()
   helpTextBuilder.append("Path to PostgreSQL data: The PostgreSQL data directory is defined when PostgreSQL is installed on the machine.\n")
     .append("This is the folder in which you will find the \"postgresql.conf\" and \"pg_hba.conf\" files.\n\n")
     .append("Path to Web Root: the full path to proline web configuration file\n\n")
     .append("Path to SeqRepos Root: the full path to Sequence Repository configuarion file application.conf\n\n")
     .append("Path to Proline Server Root: the full path to Proline Server configuarion file application.conf\n")
+
   private def _openHelpDialog() = PopupHelpWindow(
     wTitle = "Help",
     wText = helpTextBuilder.toString())

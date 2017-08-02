@@ -13,6 +13,7 @@ import fr.proline.admin.gui.wizard.component.items.pgserverconfig._
 import fr.proline.admin.gui.component.configuration.form.PgHbaConfigForm
 /**
  * panel of postgreSQL right access (in scrollPane)
+ * 
  */
 class PgHbaConfigContentTab extends PanelScorllPane {
 
@@ -27,9 +28,8 @@ class PgHbaConfigContentTab extends PanelScorllPane {
       prefWidth <== Wizard.configItemsPanel.width - 45
       prefHeight <== Wizard.configItemsPanel.height - 45
     })
-  //  def getInfos: String = {
-  //    pgHbaConfigForm.getProperties
-  //  }
+    
+  /* save new settings  */
   def saveForm() {
     pgHbaConfigForm.saveForm()
   }

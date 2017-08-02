@@ -18,7 +18,10 @@ import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scala.TypesafeConfigWrapper._
 
-/** parse and edit Sequence Repository parsing rules file **/
+/** 
+ * ParsingRulesFile build a model to parse and edit Sequence Repository parsing-rules file
+ *  
+ */
 
 class ParsingRulesFile(val path: String) extends LazyLogging {
 
