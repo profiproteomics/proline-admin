@@ -17,15 +17,14 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.Region
 import scalafx.stage.Stage
 import scalafx.scene.control.TableColumn
-
+import scalafx.scene.Node
 
 object ScalaFxUtils extends LazyLogging {
 
   /** Vertical & horizontal spacers */
-   def newHSpacer(
+  def newHSpacer(
     minW: Double = Double.MinPositiveValue,
-    maxW: Double = Double.MaxValue
-  ) = new Region {
+    maxW: Double = Double.MaxValue) = new Region {
     hgrow = Priority.Always
     minWidth = minW
     maxWidth = maxW
@@ -38,8 +37,7 @@ object ScalaFxUtils extends LazyLogging {
 
   def newVSpacer(
     minH: Double = Double.MinPositiveValue,
-    maxH: Double = Double.MaxValue
-  ) = new Region {
+    maxH: Double = Double.MaxValue) = new Region {
     vgrow = Priority.Always
     minHeight = minH
     maxHeight = maxH
@@ -49,7 +47,6 @@ object ScalaFxUtils extends LazyLogging {
     minHeight = h
     maxHeight = h
   }
-
 
   /** Close a stage, fire a button **/
   def closeIfEscapePressed(stage: Stage, ke: KeyEvent) {
@@ -61,13 +58,15 @@ object ScalaFxUtils extends LazyLogging {
 
   /** Grid content formatting utilities **/
   def getFormattedGridContent3(seq: Seq[Tuple3[scalafx.scene.Node, Int, Int]]): Seq[scalafx.scene.Node] = {
-    seq.map { case (child, col, row) =>
+    seq.map {
+      case (child, col, row) =>
         GridPane.setConstraints(child, col, row)
         child
     }.distinct
   }
   def getFormattedGridContent5(seq: Seq[Tuple5[scalafx.scene.Node, Int, Int, Int, Int]]): Seq[scalafx.scene.Node] = {
-    seq.map { case (child, col, row, colSpan, rowSpan) =>
+    seq.map {
+      case (child, col, row, colSpan, rowSpan) =>
         GridPane.setConstraints(child, col, row, colSpan, rowSpan)
         child
     }.distinct
@@ -80,7 +79,7 @@ object ScalaFxUtils extends LazyLogging {
   def newImage(path: String): Image = {
     new Image(this.getClass().getResourceAsStream(path.toString()))
   }
- 
+
   /*
   /** ScrollBar utilities **/
   def getScrollBar(scrollPane: ScrollPane) = {
@@ -241,7 +240,7 @@ object ScalaFxUtils extends LazyLogging {
   /** Get text field content as string or integer option **/
   implicit def getComboBoxSelectedItem[T](cb: ComboBox[T]): T = cb.selectionModel().selectedItem()
   implicit def textField2String(txtField: TextField): String = txtField.text()
-    
+
   implicit def textField2StringOpt(txtField: TextField, allowEmpty: Boolean = false): Option[String] = {
     val str = txtField.text()
     if (allowEmpty) Some(str)
@@ -251,7 +250,7 @@ object ScalaFxUtils extends LazyLogging {
   }
 
   implicit def numTextField2Int(numTxtField: NumericTextField): Int = numTxtField.getInt()
-  
+
   implicit def numTextField2IntOpt(numTxtField: NumericTextField): Option[Int] = {
     try { Some(numTxtField.getInt()) }
     catch {
@@ -280,14 +279,13 @@ object ScalaFxUtils extends LazyLogging {
     it.toSeq
   }
 
-  
   /**
    * ******** *
    * WRAPPERS *
    * ******** *
-   **/
-  implicit class EnhancedComboBox[T] (cb: ComboBox[T]){
-    
+   */
+  implicit class EnhancedComboBox[T](cb: ComboBox[T]) {
+
     /** Same as select[T], but get rid of ambiguity when T is Int: select(index: Int) **/
     def selectItem(item: T) {
       cb.selectionModel().select(item)
@@ -298,23 +296,24 @@ object ScalaFxUtils extends LazyLogging {
 
     /** Apply width to columns as a percentage of table width **/
     def applyPercentWidth(columnsWithPercent: List[(TableColumn[T, _], Int)]) {
-      columnsWithPercent.foreach { case (col, percent) =>
-        if (percent < 0) col.prefWidth = 30 //default
-        else col.prefWidth <== tv.width * percent / 100
+      columnsWithPercent.foreach {
+        case (col, percent) =>
+          if (percent < 0) col.prefWidth = 30 //default
+          else col.prefWidth <== tv.width * percent / 100
       }
     }
   }
-  
+
   /**
    * ****** *
    * STYLES *
    * ****** *
-   **/ 
+   */
   object TextStyle {
     val ITALIC = "-fx-font-style: italic;"
-    
+
     val BLUE_HYPERLINK = "-fx-color:#66CCFF;"
-    
+
     val RED = "-fx-text-fill: red;"
     val GREY = "-fx-text-fill: grey;"
     val ORANGE = "-fx-text-fill: orange;"
@@ -322,5 +321,15 @@ object ScalaFxUtils extends LazyLogging {
     val RED_ITALIC = RED ++ ITALIC
     val ORANGE_ITALIC = ORANGE ++ ITALIC
     val GREY_ITALIC = GREY ++ ITALIC
-  
-  }}
+
+  }
+  object FieldBorder {
+
+    def set(field: Node) {
+      field.setStyle("-fx-text-box-border: red  ; -fx-focus-color: red ;")
+    }
+    def remove(field: Node) {
+      field.setStyle("")
+    }
+  }
+}
