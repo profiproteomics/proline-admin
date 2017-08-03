@@ -94,7 +94,7 @@ class ServerConfig(val name: String) extends Item with LazyLogging {
   helpTextBuilder.append("PostgreSQL: required properties to connect the database server.\n\n")
     .append("\tHost: host name\n").append("\tPort: port number(default: 5432)\n")
     .append("\tUser: user name\n").append("\tPassword \n\n")
-    .append("Mount Points: to select file locations\n\n")
+    .append("Mount Points: select file locations\n\n")
     .append("\tResut files : the locations of result files\n")
     .append("\tRaw files : the locations of Raw files\n")
     .append("\tmzDB files : the locations of mzDB files\n\n")

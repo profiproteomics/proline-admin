@@ -143,7 +143,7 @@ class ProlinePwx extends VBox with LazyLogging {
 
   /* Jms server settings */
   val pwxJmsSettings = new TitledBorderPane(
-    title = "Jms Server Setting",
+    title = "Jms Server",
     titleTooltip = "Jms Server Setting",
     contentNode = new VBox {
       spacing = 2 * V_SPACING

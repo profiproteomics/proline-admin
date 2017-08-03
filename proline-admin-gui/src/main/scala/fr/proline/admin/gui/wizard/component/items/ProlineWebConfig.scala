@@ -31,7 +31,7 @@ class ProlineWebConfig(val name: String) extends Item with LazyLogging {
 
   /* Proline Module components */
   val panelTitle = new Label("Proline Web Configuration") {
-    styleClass = List("item")
+    styleClass = Seq("item")
   }
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
@@ -45,7 +45,7 @@ class ProlineWebConfig(val name: String) extends Item with LazyLogging {
   /* Proline Web Tab */
   val prolinePwx = new ProlinePwxContentTab()
   val prolinePwxTab = new Tab {
-    text = "Proline Web"
+    text = " Proline Web "
     content = prolinePwx
     closable = false
   }
@@ -68,10 +68,13 @@ class ProlineWebConfig(val name: String) extends Item with LazyLogging {
 
   /* help text */
   val helpTextBuilder = new StringBuilder()
-  helpTextBuilder.append("Mount Points: to select file locations\n\n")
+  helpTextBuilder.append("Mount Points: select file locations\n\n")
     .append("\tResut files : the locations of result files\n")
     .append("\tRaw files : the locations of Raw files\n")
     .append("\tmzDB files : the locations of mzDB files\n\n")
+    .append("JMS properties: \n\n")
+    .append("\tHost: host name\n")
+    .append("\tPort: port number(default: 5445)\n")
   def _openHelpDialog() = PopupHelpWindow(
     wTitle = "Help",
     wText = helpTextBuilder.toString())
