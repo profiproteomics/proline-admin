@@ -14,13 +14,11 @@ object ScalaUtils {
 
   /** Compute if a string is null-or-empty **/
   def isEmpty(stringOpt: Option[String]): Boolean = (
-    stringOpt == null || stringOpt.isEmpty || (stringOpt.isDefined && stringOpt.get.isEmpty())
-  )
+    stringOpt == null || stringOpt.isEmpty || (stringOpt.isDefined && stringOpt.get.isEmpty()))
 
   /** Compute if a string is null-or-empty **/
   def isEmpty(string: String): Boolean = (
-    string == null || string.isEmpty
-  )
+    string == null || string.isEmpty)
 
   /** Double back slashes in file path **/
   def doubleBackSlashes(str: String): String = {
@@ -49,14 +47,14 @@ object ScalaUtils {
 
   /** Create backup file **/
   def createBackupFile(file: File): java.nio.file.Path = synchronized {
-    require (file.exists(), "File doesn't exist")
-    
+    require(file.exists(), "File doesn't exist")
+
     val fileName = file.getName()
     val dir = file.getParentFile()
 
     /* Get all files in dir that that are the given file or a backup */
     val regex = s"""^$fileName(\\.\\d+\\.bak)?$$""".r
-    val filteredFileNames = dir.listFiles().filter(f => regex.findFirstIn(f.getName).isDefined )
+    val filteredFileNames = dir.listFiles().filter(f => regex.findFirstIn(f.getName).isDefined)
     val filteredNamesLen = filteredFileNames.length
     require(filteredNamesLen > 0, "At least provided file should match regex: " + regex)
 
@@ -69,8 +67,7 @@ object ScalaUtils {
       backupFile.toPath(),
       StandardCopyOption.REPLACE_EXISTING,
       StandardCopyOption.COPY_ATTRIBUTES,
-      LinkOption.NOFOLLOW_LINKS
-    )
+      LinkOption.NOFOLLOW_LINKS)
   }
 
   /** Double-quoted string **/
@@ -80,6 +77,9 @@ object ScalaUtils {
     //hard to read but ultra-efficient
     string.charAt(0) == '"' && string.charAt(string.length - 1) == '"'
   }
+
+  /** check is valid configuration file **/
+  def isConfFile(filePath: String): Boolean = (new File(filePath).exists) && (new File(filePath).getName == "application.conf")
 
   /**
    * ********* *
