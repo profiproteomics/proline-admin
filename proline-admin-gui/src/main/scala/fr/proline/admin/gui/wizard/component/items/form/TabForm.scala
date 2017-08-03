@@ -60,7 +60,7 @@ trait ItemsPanelForm {
     style = TextStyle.RED_ITALIC
     visible = false
   }
-  private val NOTVALIDPGDATA = "Please select your PostgreSQL data directory to set up PostgreSQL optimization and authorizations. "
+  private val NOTVALIDPGDATA = "Please select a valid PostgreSQL data directory to set up PostgreSQL optimization and authorizations."
   val errorNotValidPgData: Label = new Label {
     text = NOTVALIDPGDATA
     style = TextStyle.RED_ITALIC

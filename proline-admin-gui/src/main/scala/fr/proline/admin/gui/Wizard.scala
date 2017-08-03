@@ -50,11 +50,13 @@ object Wizard extends LazyLogging {
   var jmsPort: Int = 5445
   var nodeIndex = 0
   var currentNode: Item = _
-  var items: LinkedHashMap[String, Item] = LinkedHashMap.empty[String, Item]
+  var items: LinkedHashMap[String, Option[Item]] = LinkedHashMap.empty[String, Option[Item]]
+  
   /*
    *  main panel contains :
    * 	panel of buttons :go and cancel
    * 	panel of items
+   * 
    */
 
   var configItemsPanel: VBox = _
@@ -83,7 +85,7 @@ class Wizard extends Application {
 
   def start(stage: javafx.stage.Stage): Unit = {
 
-    /* Locate 'config' folder */
+    /* Locate Proline Admin 'config' folder */
 
     val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
     Wizard.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
@@ -100,15 +102,15 @@ class Wizard extends Application {
 
     Wizard.configItemsPanel = ItemsPanel
     Wizard.buttonsPanel = ButtonsPanel()
-
     Wizard.stage = new Stage(stage) {
       scene = new Scene(Wizard.root)
       minWidth = 1050
       width = 1050
       minHeight = 770
       height = 850
-      title = "Proline Admin wizard"
+      title = "Proline Admin Wizard"
     }
+    
     Wizard.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Wizard.stage.scene.value.getStylesheets.add("/css/Style.css")
     Wizard.stage.show()

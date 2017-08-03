@@ -10,15 +10,15 @@ import scalafx.scene.layout.HBox
 import scalafx.scene.control.CheckBox
 import scalafx.geometry.Pos
 import scalafx.stage.Stage
-import fr.proline.admin.gui.wizard.component.items._
-import fr.profi.util.scalafx.TitledBorderPane
-import fr.profi.util.scalafx.ScalaFxUtils._
-import fr.proline.admin.gui.Wizard
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.text.Text
 import scalafx.scene.control.ProgressBar
 
+import fr.proline.admin.gui.wizard.component.items._
+import fr.profi.util.scalafx.TitledBorderPane
+import fr.profi.util.scalafx.ScalaFxUtils._
+import fr.proline.admin.gui.Wizard
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.util.PopupHelpWindow
@@ -29,7 +29,8 @@ import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.gui.wizard.util.ProgressBarWindow
 
 /**
- *  Item Parent for all Panel
+ *  Item  build  item's Panel
+ *
  */
 
 trait Item extends VBox {
@@ -39,8 +40,8 @@ trait Item extends VBox {
 }
 
 /**
- *
  *  Object build summary panel
+ *
  */
 
 object SelectedItem extends LazyLogging {
@@ -114,8 +115,6 @@ object SelectedItem extends LazyLogging {
               }, ScalaFxUtils.newVSpacer(25))
           })
       }
-      /* create PostgreSQL summary panel */
-
     } catch {
       case t: Throwable => logger.error("Error in selected item")
     }
@@ -142,21 +141,17 @@ object SelectedItem extends LazyLogging {
         }
       }
 
-      /* save Proline module properties  */
+      /* save Proline Module properties  */
       if (item.isInstanceOf[ModuleConfig]) {
         val module = item.asInstanceOf[ModuleConfig]
         try {
           module.PostGreSQLSeq.saveForm()
           module.jmsServer.saveForm()
           module.parsingRules.saveForm()
-          if (module.prolinePwx.isDefined) {
-            module.prolinePwx.get.saveForm()
-          }
         } catch {
           case t: Throwable => logger.error("Error while trying to save Proline Module properties.")
         }
       }
-
       /* save PostgreSQL configurations  */
       if (item.isInstanceOf[PgServerConfig]) {
         val pgServerConfig = item.asInstanceOf[PgServerConfig]

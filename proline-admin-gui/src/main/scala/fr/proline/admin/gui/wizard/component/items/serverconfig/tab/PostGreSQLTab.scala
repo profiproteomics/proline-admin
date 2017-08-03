@@ -35,7 +35,6 @@ import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.process.DatabaseConnection
 import fr.proline.admin.gui.Wizard
 import fr.proline.repository.DriverType
-import fr.proline.admin.gui.wizard.util.FieldProperties
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.wizard.component.items.ServerConfig
 import fr.proline.admin.gui.wizard.component.items.form.TabForm

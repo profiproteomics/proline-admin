@@ -63,19 +63,7 @@ class ModuleConfig(val name: String) extends Item with LazyLogging {
     content = parsingRules
     closable = false
   }
-
-  /* Proline Web Tab */
-  val prolinePwx = Option(new ProlinePwxContentTab())
-  if (!ScalaUtils.isEmpty(Wizard.webRootPath)) {
-    val prolinePwxTab = new Tab {
-      text = "Proline Web"
-      content = prolinePwx.get
-      closable = false
-    }
-    tabPane.tabs.addAll(PostGresSeqTab, serverJMSTab, parsingRulesTab, prolinePwxTab)
-  } else {
-    tabPane.tabs.addAll(PostGresSeqTab, serverJMSTab, parsingRulesTab)
-  }
+  tabPane.tabs.addAll(PostGresSeqTab, serverJMSTab, parsingRulesTab)
 
   /* Layout */
   alignment = Pos.Center

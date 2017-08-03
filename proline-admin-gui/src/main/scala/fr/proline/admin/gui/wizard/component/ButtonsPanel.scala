@@ -21,7 +21,7 @@ import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.component.items._
 import fr.proline.admin.gui.wizard.util.ShowPopupWindow
-import fr.proline.admin.gui.wizard.util.FieldProperties
+
 
 /**
  * Create panel contains buttons : cancel and go .
@@ -40,16 +40,15 @@ object ButtonsPanel extends LazyLogging {
       ShowPopupWindow("Exit Setup", "Are you sure you want to exit Proline Setup ?", Option(Wizard.stage), false)
     }
   }
-  val goButton = new Button("Go") {
+  val goButton = new Button(" Go ") {
     graphic = FxUtils.newImageView(IconResource.EXECUTE)
     onAction = handle {
-
       ItemsPanel.getSelectedItems
       if (Wizard.items.isEmpty || !ItemsPanel.setStyleSelectedItems) {
         // ItemsPanel.warningNotValidServerFile.visible = true
       } else {
         ItemsPanel.warningCorruptedFile.visible = false
-        Wizard.currentNode = Wizard.items.head._2
+        Wizard.currentNode = Wizard.items.head._2.get
         //hide the  previous button for the first panel 
         NavigationButtonsPanel.prevButton.visible = false
         //set the first panel

@@ -22,7 +22,6 @@ import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.component.items._
 import fr.proline.admin.gui.wizard.util.ShowPopupWindow
-import fr.proline.admin.gui.wizard.util.FieldProperties
 
 /**
  * Panel contains navigation buttons : previous next and cancel
@@ -65,7 +64,7 @@ object NavigationButtonsPanel extends LazyLogging {
       val confirmed = GetConfirmation("Are you sure you want to save the new Proline configurations ?")
       if (confirmed) {
         Wizard.items.toSeq.foreach {
-          case (_1, _2) => SelectedItem.saveAll(_2)
+          case (_1, _2) => SelectedItem.saveAll(_2.get)
         }
       }
     }
@@ -117,7 +116,7 @@ object NavigationButtonsPanel extends LazyLogging {
     /* change items */
     if (Wizard.nodeIndex < Wizard.items.toSeq.size - 1) {
       Wizard.nodeIndex = Wizard.nodeIndex + 1
-      Wizard.currentNode = Wizard.items.toSeq.apply(Wizard.nodeIndex)._2
+      Wizard.currentNode = Wizard.items.toSeq.apply(Wizard.nodeIndex)._2.get
       Wizard.configItemsPanel.getChildren().clear()
       Wizard.configItemsPanel.getChildren().add(Wizard.currentNode)
     } else {
@@ -125,7 +124,7 @@ object NavigationButtonsPanel extends LazyLogging {
         /* Summary panel */
         Wizard.nodeIndex = Wizard.nodeIndex + 1
         Wizard.items.toSeq.foreach {
-          case (_1, _2) => SelectedItem.get(_2)
+          case (_1, _2) => SelectedItem.get(_2.get)
         }
         Wizard.currentNode = summaryPanel
         Wizard.configItemsPanel.getChildren().clear()
@@ -142,10 +141,10 @@ object NavigationButtonsPanel extends LazyLogging {
       NavigationButtonsPanel.nextBox.getChildren().clear()
       NavigationButtonsPanel.nextBox.getChildren().add(nextButton)
       Wizard.nodeIndex = Wizard.nodeIndex - 1
-      Wizard.currentNode = Wizard.items.toSeq.apply(Wizard.nodeIndex)._2
+      Wizard.currentNode = Wizard.items.toSeq.apply(Wizard.nodeIndex)._2.get
       Wizard.configItemsPanel.getChildren().clear()
       Wizard.configItemsPanel.getChildren().add(Wizard.currentNode)
-      if (Wizard.items.head._2.equals(Wizard.currentNode)) {
+      if (Wizard.items.head._2.get.equals(Wizard.currentNode)) {
         NavigationButtonsPanel.prevButton.visible = false
       }
     }
