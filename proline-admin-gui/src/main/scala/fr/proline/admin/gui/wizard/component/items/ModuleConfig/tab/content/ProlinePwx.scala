@@ -109,6 +109,7 @@ class ProlinePwx extends VBox with LazyLogging {
   val rawFilesMountPoints = ArrayBuffer[MountPointPanelPwx]()
   val rawFilesMpLabel = new BoldLabel("Raw files path: ", upperCase = false)
   val addRawFilesMpButton = new Button("Add") {
+    graphic = FxUtils.newImageView(IconResource.PLUS)
     onAction = handle { _addRawFilesMountPoint() }
   }
   val rawFilesMpBox = new VBox { spacing = 10 }
@@ -116,6 +117,7 @@ class ProlinePwx extends VBox with LazyLogging {
   val mzdbFilesMountPoints = ArrayBuffer[MountPointPanelPwx]()
   val mzdbFilesMpLabel = new BoldLabel("mzDB files path: ", upperCase = false)
   val addMzdbFilesMpButton = new Button("Add") {
+     graphic = FxUtils.newImageView(IconResource.PLUS)
     onAction = handle { _addMzdbFilesMountPoint() }
   }
   val mzdbFilesMpBox = new VBox { spacing = 10 }
@@ -123,6 +125,7 @@ class ProlinePwx extends VBox with LazyLogging {
   val resultFilesMountPoints = ArrayBuffer[MountPointPanelPwx]()
   val resultFilesMpLabel = new BoldLabel("Result files path: ", upperCase = false)
   val addResultFilesMpButton = new Button("Add") {
+    graphic = FxUtils.newImageView(IconResource.PLUS)
     onAction = handle { _addResultFilesMountPoint() }
   }
   val resultFilesMpBox = new VBox { spacing = 10 }
@@ -374,8 +377,9 @@ class MountPointPanelPwx(
     text = value
   }
   val browseButton = new Button("Browse") {
-    minWidth = 56
-    maxWidth = 56
+    minWidth = 80
+    maxWidth = 80
+    graphic = FxUtils.newImageView(IconResource.LOAD)
     onAction = handle {
       val dir = FileBrowsing.browseDirectory(
         dcTitle = "Select mount point directory",
@@ -386,8 +390,9 @@ class MountPointPanelPwx(
     }
   }
   val removeButton = new Button("Remove") {
-    minWidth = 60
-    maxWidth = 60
+    minWidth = 80
+    maxWidth = 80
+    graphic = FxUtils.newImageView(IconResource.TRASH)
     onAction = handle { onDeleteAction(thisMountPoint) }
   }
   /* Layout */

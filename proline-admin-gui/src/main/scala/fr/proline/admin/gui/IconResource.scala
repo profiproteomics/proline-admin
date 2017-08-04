@@ -17,4 +17,9 @@ object IconResource extends EnhancedEnum {
   val BIGINFOS = Value("/images/BIG-INFO.png")
   val TICK = Value("/images/tick.png")
   val IDENTIFICATION = Value("/images/identification.png")
+  val CONNECTION = Value("/images/connection.png")
+  val PLUS = Value("/images/plus.png")
+  val TRASH = Value("/images/trash.png")
+  val RESET = Value("/images/arrow-circle.png")
+  
 }

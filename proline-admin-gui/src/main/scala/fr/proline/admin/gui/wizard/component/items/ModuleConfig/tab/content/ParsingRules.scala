@@ -73,6 +73,9 @@ class ParsingRules extends VBox with LazyLogging {
     promptText = "Default protein accession"
   }
   val resetAccessionButton = new Button("Reset") {
+     minWidth = 80
+     maxWidth = 80
+    graphic = FxUtils.newImageView(IconResource.RESET)
     onAction = handle {
       defaultProteinAccessionField.setText(">(\\S+)")
     }
@@ -91,6 +94,7 @@ class ParsingRules extends VBox with LazyLogging {
   val localFastaDirLablel = new BoldLabel("Local Fasta Directories: ", upperCase = false)
   val localFastaDirs = new ArrayBuffer[FastaDirectory]()
   val addLocalFastaDirectory = new Button("Add") {
+    graphic = FxUtils.newImageView(IconResource.PLUS)
     onAction = handle {
       _addFastaDirectory()
     }
@@ -100,6 +104,7 @@ class ParsingRules extends VBox with LazyLogging {
   val parsingRulesLablel = new BoldLabel("Parsing Rules: ", upperCase = false)
   val localRules = new ArrayBuffer[Rules]()
   val addRuleButton = new Button("Add") {
+    graphic = FxUtils.newImageView(IconResource.PLUS)
     onAction = handle {
       _addRule()
     }
@@ -306,8 +311,9 @@ class FastaDirectory(
     text = value
   }
   val browseButton = new Button("Browse") {
-    minWidth = 56
-    maxWidth = 56
+    minWidth = 80
+    maxWidth = 80
+    graphic = FxUtils.newImageView(IconResource.LOAD)
     onAction = handle {
       val dir = FileBrowsing.browseDirectory(
         dcTitle = "Select local fasta directory",
@@ -317,8 +323,9 @@ class FastaDirectory(
     }
   }
   val removeButton = new Button("Remove") {
-    minWidth = 60
-    maxWidth = 60
+    minWidth = 80
+    maxWidth = 80
+    graphic = FxUtils.newImageView(IconResource.TRASH)
     onAction = handle { onDeleteAction(thisFastaDir) }
   }
   /* Layout */
@@ -389,8 +396,9 @@ class Rules(
   }
 
   val removeButton = new Button("Remove") {
-    minWidth = 60
-    maxWidth = 60
+    minWidth = 80
+    maxWidth = 80
+    graphic = FxUtils.newImageView(IconResource.TRASH)
     onAction = handle { onDeleteAction(thisrule) }
   }
 
