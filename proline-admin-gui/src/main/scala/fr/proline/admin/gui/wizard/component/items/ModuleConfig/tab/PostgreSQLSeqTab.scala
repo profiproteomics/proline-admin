@@ -30,6 +30,8 @@ import scalafx.scene.layout.Priority
 
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
@@ -42,7 +44,7 @@ import fr.proline.admin.gui.wizard.process.config._
 
 /**
  * PostGreSQLSeqTab contains tab of properties in SqeRepos to connect to the database server
- * 
+ *
  */
 
 class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging {
@@ -151,6 +153,7 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
   }
 
   val testConnectionButton = new Button {
+    graphic = FxUtils.newImageView(IconResource.CONNECTION)
     text = "Test connection"
     onAction = handle {
       /*test connection database*/
@@ -230,14 +233,14 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
       true
     }
   }
-  
+
   /* test connection to database server */
   private def _testDbConnection(
     showSuccessPopup: Boolean = false,
     showFailurePopup: Boolean = false): Boolean = { //return connectionEstablished
     DatabaseConnection.testDbConnection(DriverType.POSTGRESQL, userName, passWord, hostName, port, showSuccessPopup, showFailurePopup)
   }
-  
+
   /* get GUI information to create a new SeqRepos Object */
   private def _toSeqConfig() = SeqConfig(
     driverType = Option(DriverType.POSTGRESQL),

@@ -30,6 +30,8 @@ import scalafx.scene.layout.Priority
 
 import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
 import fr.profi.util.scalafx.ScalaFxUtils
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.IconResource
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.process.DatabaseConnection
@@ -163,6 +165,7 @@ class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
   }
 
   val testConnectionButton = new Button {
+    graphic = FxUtils.newImageView(IconResource.CONNECTION)
     text = "Test connection"
     onAction = handle {
       /*test connection database*/
