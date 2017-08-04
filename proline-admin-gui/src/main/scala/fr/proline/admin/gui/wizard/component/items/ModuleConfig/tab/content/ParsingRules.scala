@@ -31,16 +31,16 @@ import fr.proline.repository.DriverType
 import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
 import fr.profi.util.scala.ScalaUtils.isEmpty
 import fr.profi.util.scala.ScalaUtils.stringOpt2string
-import fr.profi.util.scalafx.BoldLabel
 import fr.profi.util.scalafx.FileBrowsing
 import fr.profi.util.scalafx.NumericTextField
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.profi.util.scalafx.SimpleBorderPane
+import fr.profi.util.scalafx.BoldLabel
 import fr.proline.admin.gui.wizard.process.config._
-//import fr.proline.admin.gui.wizard.component.items.form.TabForm
 import fr.profi.util.scala.ScalaUtils
+
 /**
  * ParsingRules create a modal window to edit/add parsing rules file.
  */
@@ -63,18 +63,18 @@ class ParsingRules extends VBox with LazyLogging {
   /* default accession protein */
   val fastaDirBox = new VBox { spacing = 10 }
   val RulesBox = new VBox { spacing = 10 }
-  val defaultProteinAccessionLabel = new BoldLabel("Default Protein Accession: ", upperCase = false)
+  val defaultProteinAccessionLabel = new Label("Default Protein Accession: ")
   val defaultProteinAccessionField = new TextField {
     if (defaultProteinAccession != null) text = defaultProteinAccession
     text.onChange { (_, oldText, newText) =>
       defaultProteinAccession = newText
     }
-    prefWidth <== fastaDirBox.width
+    prefWidth <== Wizard.stage.width - 60
     promptText = "Default protein accession"
   }
   val resetAccessionButton = new Button("Reset") {
-     minWidth = 80
-     maxWidth = 80
+    minWidth = 80
+    maxWidth = 80
     graphic = FxUtils.newImageView(IconResource.RESET)
     onAction = handle {
       defaultProteinAccessionField.setText(">(\\S+)")
@@ -130,7 +130,7 @@ class ParsingRules extends VBox with LazyLogging {
 
   Seq(localFastaDirLablel, defaultProteinAccessionLabel).foreach(_.minHeight = 25)
   Seq(localFastaDirLablel, defaultProteinAccessionLabel, parsingRulesLablel).foreach(_.minWidth = 150)
-  Seq(resetAccessionButton).foreach(_.minWidth = 60)
+
   //VBox & HBox spacing
 
   private val V_SPACING = 10
