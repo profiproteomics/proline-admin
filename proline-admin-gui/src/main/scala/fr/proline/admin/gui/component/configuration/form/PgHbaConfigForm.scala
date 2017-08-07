@@ -48,6 +48,9 @@ import fr.profi.util.scalafx.ScalaFxUtils.newHSpacer
 import fr.profi.util.scalafx.TitledBorderPane
 
 import NewDatabaseNameDialog._
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+
 
 /**
  * ************************************************************ *
@@ -418,30 +421,36 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
 
   /** Save the form (write in config file) **/
   def saveForm() {
-    val configFile = new File(pgHbaConfigFile.filePath)
+    val newConfig = Future {
 
-    /* Save current file state in backup file */
-    // this method is already wrapped in a 'synchronized' block
-    ScalaUtils.createBackupFile(configFile)
+      val configFile = new File(pgHbaConfigFile.filePath)
+      /* Save current file state in backup file */
+      // this method is already wrapped in a 'synchronized' block
+      ScalaUtils.createBackupFile(configFile)
 
-    /* Update model */
-    pgHbaConfigFile.updateLines(
-      ipv4Lines.result().toArray,
-      ipv6Lines.result().toArray)
+      /* Update model */
+      pgHbaConfigFile.updateLines(
+        ipv4Lines.result().toArray,
+        ipv6Lines.result().toArray)
 
-    /* Update file */
-    synchronized {
-      val out = new FileWriter(configFile)
-      try {
-        val linesToBeWritten = pgHbaConfigFile.lines.mkString(LINE_SEPARATOR)
-        out.write(linesToBeWritten)
-      } finally {
-        out.close
+      /* Update file */
+      synchronized {
+        val out = new FileWriter(configFile)
+        try {
+          val linesToBeWritten = pgHbaConfigFile.lines.mkString(LINE_SEPARATOR)
+          out.write(linesToBeWritten)
+        } finally {
+          out.close
+        }
       }
     }
+    newConfig onFailure {
+      case (t) => logger.error(s"An error has occured: ${t.getMessage}")
+    }
+    newConfig onSuccess {
+      case (t) => logger.info("pg_hba.conf successfully updated !")
+    }
 
-    println("<br>INFO - pg_hba.conf successfully updated !<br>")
-    logger.info("pg_hba.conf successfully updated !")
   }
 }
 
@@ -631,11 +640,11 @@ case class PgHbaLine(
     if (addressField.text().isEmpty()) {
       errorString ++= "The IP address must be specified.\n"
     }
-   // val adressPattern = """\d+\.\d+\.\d+\.\d+"""
-    if(addressField.text() matches """(\d+\.\d+\.\d+\.\d+)"""){
-        if (maxIpCountBox.selectionModel().selectedItem() < 1) {
-          errorString ++= "The maximum of accepted IPs must be specified.\n"
-        }
+    // val adressPattern = """\d+\.\d+\.\d+\.\d+"""
+    if (addressField.text() matches """(\d+\.\d+\.\d+\.\d+)""") {
+      if (maxIpCountBox.selectionModel().selectedItem() < 1) {
+        errorString ++= "The maximum of accepted IPs must be specified.\n"
+      }
     }
     if (methodBox.selectionModel().selectedItem() == null) {
       errorString ++= "The method for password encryption must be specified.\n"
