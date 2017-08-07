@@ -133,6 +133,7 @@ object SelectedItem extends LazyLogging {
           if (setUpUpdateChBox.isSelected()) {
             val confirmed = GetConfirmation("Are you sure you want to update Proline databases ?\n(This process may take hours.)")
             if (confirmed) {
+             
               ProgressBarWindow("Setup/Update", new TaskUpgradeDatabases(), Option(Wizard.stage))
             }
           }

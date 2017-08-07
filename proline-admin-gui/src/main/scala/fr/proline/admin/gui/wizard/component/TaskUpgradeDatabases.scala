@@ -6,6 +6,9 @@ import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.gui.wizard.util.PopupHelpWindow
 import fr.proline.admin.gui.process._
 
+//import scala.concurrent._
+//import ExecutionContext.Implicits.global
+
 /**
  * TaskUpgradeDatabases upgrade all databases
  */

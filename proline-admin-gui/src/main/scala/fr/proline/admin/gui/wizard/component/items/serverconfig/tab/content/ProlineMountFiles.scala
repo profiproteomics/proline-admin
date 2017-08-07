@@ -41,8 +41,12 @@ import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.wizard.process.config._
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+
 /**
  * Create a modal window to edit Proline configuration's file.
+ *
  */
 class ProlineMountFiles extends VBox with LazyLogging {
 
@@ -310,14 +314,19 @@ class ProlineMountFiles extends VBox with LazyLogging {
   }
 
   def saveForm() {
-    Wizard.stage.scene().setCursor(Cursor.WAIT)
-    val newAdminConfig = _toAdminConfig()
-    /* Test connection to database */
-    if (serverConfigOpt.isDefined) {
-      val newServerConfig = _toServerConfig()
-      serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
+    // Wizard.stage.scene().setCursor(Cursor.WAIT)
+    val newConfig = Future {
+      val newAdminConfig = _toAdminConfig()
+      /* Test connection to database */
+      if (serverConfigOpt.isDefined) {
+        val newServerConfig = _toServerConfig()
+        serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
+      }
     }
-    Wizard.stage.scene().setCursor(Cursor.DEFAULT)
+    newConfig onFailure {
+      case (t) => logger.error(s"An error has occured: ${t.getMessage}")
+    }
+    // Wizard.stage.scene().setCursor(Cursor.DEFAULT)
   }
 
   def getInfos(): String = {

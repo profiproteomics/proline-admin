@@ -41,6 +41,9 @@ import fr.profi.util.scalafx.BoldLabel
 import fr.proline.admin.gui.wizard.process.config._
 import fr.profi.util.scala.ScalaUtils
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+
 /**
  * ParsingRules create a modal window to edit/add parsing rules file.
  */
@@ -172,6 +175,7 @@ class ParsingRules extends VBox with LazyLogging {
   if (parsingRuleOpt.isEmpty) {
 
     /* Disable parsing rule is undefined */
+    logger.error("Error while trying to read parsing rules files.")
 
   } else {
     val parsingRule = parsingRuleOpt.get
@@ -275,8 +279,13 @@ class ParsingRules extends VBox with LazyLogging {
 
   /** save all changed parameters **/
   def saveForm() {
-    val newParsingRules = _toParsingRule()
-    parsigRuleFile.write(newParsingRules)
+    val newConfig = Future {
+      val newParsingRules = _toParsingRule()
+      parsigRuleFile.write(newParsingRules)
+    }
+    newConfig onFailure {
+      case (t) => logger.error(s"An error has occured: ${t.getMessage}")
+    }
   }
 
   /* get properties */

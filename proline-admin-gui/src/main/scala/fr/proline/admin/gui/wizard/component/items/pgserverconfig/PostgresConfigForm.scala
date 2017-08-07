@@ -43,6 +43,8 @@ import fr.profi.util.scalafx.IntegerTextField
 import fr.profi.util.scalafx.NumericTextField
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.seq2obsBuff
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 
 /**
  * *********************************** *
@@ -532,81 +534,83 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
 
   /** Save the form (write in config file) **/
   def saveForm() {
-    val configFileLines = pgConfigFile.lines
-    val configFileLinesLen = configFileLines.length
-    val newLinesBuffer = new ArrayBuffer[String](PostgresOptimizableParamEnum.params().length)
+    val newConfig = Future {
+      val configFileLines = pgConfigFile.lines
+      val configFileLinesLen = configFileLines.length
+      val newLinesBuffer = new ArrayBuffer[String](PostgresOptimizableParamEnum.params().length)
 
-    /* Update valueString in ConfigKVLine, and lines in ConfigFileIndexing.lines */
-    compoByParam.foreach {
-      case (labeledParam, formLine) =>
+      /* Update valueString in ConfigKVLine, and lines in ConfigFileIndexing.lines */
+      compoByParam.foreach {
+        case (labeledParam, formLine) =>
 
-        var valueAsString = formatByParam(labeledParam).formatter(formLine.slider.value.doubleValue())
-        val commentLine = !formLine.checkBox.selected()
-        val configLineKey = PostgresOptimizableParamEnum.getParamConfigKey(labeledParam)
-        var oldConfigKVLineOpt = pgConfigFile.lineByKey.get(configLineKey)
-        var newConfigKVLineOpt: Option[ConfigFileKVLine] = {
+          var valueAsString = formatByParam(labeledParam).formatter(formLine.slider.value.doubleValue())
+          val commentLine = !formLine.checkBox.selected()
+          val configLineKey = PostgresOptimizableParamEnum.getParamConfigKey(labeledParam)
+          var oldConfigKVLineOpt = pgConfigFile.lineByKey.get(configLineKey)
+          var newConfigKVLineOpt: Option[ConfigFileKVLine] = {
 
-          /* If KVLine is already known, update it */
-          if (oldConfigKVLineOpt.isDefined) {
-            var oldConfigKVLine = oldConfigKVLineOpt.get
-            if (commentLine) {
-              Some(oldConfigKVLine.comment())
-            } else { Some(oldConfigKVLine.toNewKVLine(valueAsString, commented = false)) } //commentLine
-          } /* Otherwise line is commented or doesn't exist */ else {
-            /* Don't change or create commented parameters */
-            if (commentLine) None
+            /* If KVLine is already known, update it */
+            if (oldConfigKVLineOpt.isDefined) {
+              var oldConfigKVLine = oldConfigKVLineOpt.get
+              if (commentLine) {
+                Some(oldConfigKVLine.comment())
+              } else { Some(oldConfigKVLine.toNewKVLine(valueAsString, commented = false)) } //commentLine
+            } /* Otherwise line is commented or doesn't exist */ else {
+              /* Don't change or create commented parameters */
+              if (commentLine) None
 
-            /* Try to find line (commented) in lines array, or append it */
-            else {
-              val newLine = _createNewKVLine(
-                configLineKey,
-                valueAsString,
-                configFileLines,
-                configFileLinesLen,
-                newLinesBuffer)
+              /* Try to find line (commented) in lines array, or append it */
+              else {
+                val newLine = _createNewKVLine(
+                  configLineKey,
+                  valueAsString,
+                  configFileLines,
+                  configFileLinesLen,
+                  newLinesBuffer)
 
-              Some(newLine)
+                Some(newLine)
+              }
             }
           }
-        }
 
-        /* Change in map and lines array if needed */
-        if (newConfigKVLineOpt.isDefined) {
-          var value="= "+valueAsString
-          var newConfigKVLine = newConfigKVLineOpt.get
-          pgConfigFile.lineByKey(configLineKey) = newConfigKVLine
-          var tempConfigKVLine=newConfigKVLine.line.replaceAll("=(\\s)*(\\S+)",value)
-          configFileLines(newConfigKVLine.index) = tempConfigKVLine //newConfigKVLine.toString()
-        }
-    }
-
-    val configFile = new File(pgConfigFile.filePath)
-
-    /* Save current file state in backup file */
-    // this method is already wrapped in a 'synchronized' block
-    ScalaUtils.createBackupFile(configFile)
-
-    /* Write updated lines in config file */
-    synchronized {
-
-      val out = new FileWriter(configFile)
-      try {
-        val linesToBeWritten = (configFileLines ++ newLinesBuffer.result()).mkString(LINE_SEPARATOR)
-        out.write(linesToBeWritten)
-      } finally {
-        out.close
+          /* Change in map and lines array if needed */
+          if (newConfigKVLineOpt.isDefined) {
+            var value = "= " + valueAsString
+            var newConfigKVLine = newConfigKVLineOpt.get
+            pgConfigFile.lineByKey(configLineKey) = newConfigKVLine
+            var tempConfigKVLine = newConfigKVLine.line.replaceAll("=(\\s)*(\\S+)", value)
+            configFileLines(newConfigKVLine.index) = tempConfigKVLine //newConfigKVLine.toString()
+          }
       }
+
+      val configFile = new File(pgConfigFile.filePath)
+
+      /* Save current file state in backup file */
+      // this method is already wrapped in a 'synchronized' block
+      ScalaUtils.createBackupFile(configFile)
+
+      /* Write updated lines in config file */
+      synchronized {
+
+        val out = new FileWriter(configFile)
+        try {
+          val linesToBeWritten = (configFileLines ++ newLinesBuffer.result()).mkString(LINE_SEPARATOR)
+          out.write(linesToBeWritten)
+        } finally {
+          out.close
+        }
+      }
+
+      /* Restart PostgreSQL if needed */
+      //TODO : restart PostgreSQL when needed
+      ShowPopupWindow(
+        wTitle = "Warning",
+        wText = warningAboutRestartText,
+        wParent = Option(parentStage))
     }
-
-    /* Restart PostgreSQL if needed */
-    //TODO : restart PostgreSQL when needed
-    ShowPopupWindow(
-      wTitle = "Warning",
-      wText = warningAboutRestartText,
-      wParent = Option(parentStage))
-
-    println("<br>INFO - postgresql.conf successfully updated !<br>")
-    logger.info("postgresql.conf successfully updated !")
+    newConfig onSuccess {
+      case (t) => logger.info("postgresql.conf successfully updated !")
+    }
   }
 
 }

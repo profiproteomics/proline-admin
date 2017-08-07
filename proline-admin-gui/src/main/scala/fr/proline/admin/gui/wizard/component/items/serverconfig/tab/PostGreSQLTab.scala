@@ -46,8 +46,12 @@ import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.repository.DriverType
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+
 /**
  * PostGreSQLTab build tab of PostGreSQL database server properties.
+ *
  */
 class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
   private val driver = DriverType.POSTGRESQL
@@ -267,8 +271,13 @@ class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
   /** save Proline-Admin form  **/
   def saveForm() {
     /* save  new AdminConf properties */
-    val newAdminConfig = _toAdminConfig()
-    adminConfigFile.write(newAdminConfig)
+    val newConfig = Future {
+      val newAdminConfig = _toAdminConfig()
+      adminConfigFile.write(newAdminConfig)
+    }
+    newConfig onFailure {
+      case (t) => logger.error(s"An error has occured: ${t.getMessage}")
+    }
   }
 
   private def _testDbConnection(

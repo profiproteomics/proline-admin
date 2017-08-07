@@ -24,6 +24,9 @@ import fr.proline.admin.gui.wizard.process.config.NodeConfigFile
 import fr.proline.admin.gui.wizard.process.config.NodeConfig
 import fr.proline.admin.gui.wizard.component.items.form.TabForm
 import fr.profi.util.scala.ScalaUtils
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+
 /**
  * JmsServerTab build tab for JMS server properties : Jms host , port and Proline queue name
  *
@@ -167,8 +170,13 @@ class JmsServerTab(path: String) extends VBox with TabForm with LazyLogging {
   def saveForm() {
     /* new jmsConfig */
     if (nodeConfigOpt.isDefined) {
-      val newJmsNodeConfig = _toJMSConfig()
-      nodeConfigFile.write(newJmsNodeConfig)
+      val newConfig = Future {
+        val newJmsNodeConfig = _toJMSConfig()
+        nodeConfigFile.write(newJmsNodeConfig)
+      }
+      newConfig onFailure {
+        case (t) => logger.error(s"An error has occured: ${t.getMessage}")
+      }
     }
   }
 

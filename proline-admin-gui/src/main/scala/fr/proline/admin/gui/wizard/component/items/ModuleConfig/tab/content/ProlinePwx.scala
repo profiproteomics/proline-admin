@@ -40,9 +40,12 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.wizard.process.config._
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 
 /**
  * Create a modal window to edit Proline configuration's file.
+ * 
  */
 class ProlinePwx extends VBox with LazyLogging {
 
@@ -117,7 +120,7 @@ class ProlinePwx extends VBox with LazyLogging {
   val mzdbFilesMountPoints = ArrayBuffer[MountPointPanelPwx]()
   val mzdbFilesMpLabel = new BoldLabel("mzDB files path: ", upperCase = false)
   val addMzdbFilesMpButton = new Button("Add") {
-     graphic = FxUtils.newImageView(IconResource.PLUS)
+    graphic = FxUtils.newImageView(IconResource.PLUS)
     onAction = handle { _addMzdbFilesMountPoint() }
   }
   val mzdbFilesMpBox = new VBox { spacing = 10 }
@@ -330,13 +333,18 @@ class ProlinePwx extends VBox with LazyLogging {
 
   def saveForm() {
 
-    Wizard.stage.scene().setCursor(Cursor.WAIT)
+    //Wizard.stage.scene().setCursor(Cursor.WAIT)
     if (pwxMountPointConfigOpt.isDefined) {
-      val newPwxJmsConfiog = _toPwxJmsConfig()
-      val newPwxConfig = _toServerConfig()
-      new PwxConfigFile(Wizard.webRootPath).write(newPwxConfig, newPwxJmsConfiog)
+      val newConfig = Future {
+        val newPwxJmsConfiog = _toPwxJmsConfig()
+        val newPwxConfig = _toServerConfig()
+        new PwxConfigFile(Wizard.webRootPath).write(newPwxConfig, newPwxJmsConfiog)
+      }
+      newConfig onFailure {
+        case (t) => logger.error(s"An error has occured: ${t.getMessage}")
+      }
     }
-    Wizard.stage.scene().setCursor(Cursor.DEFAULT)
+    // Wizard.stage.scene().setCursor(Cursor.DEFAULT)
   }
 
   /* return number of mount points (files) */
