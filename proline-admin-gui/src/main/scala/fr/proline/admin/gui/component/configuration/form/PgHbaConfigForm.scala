@@ -51,7 +51,6 @@ import NewDatabaseNameDialog._
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
-
 /**
  * ************************************************************ *
  * Form to edit and update PostgreSQL connections (pg_hba.conf) *
@@ -253,7 +252,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
         require(split.length == 2, s"""Address should be of type: IP/CIDR (found: ${line.addressWithCIDR} within line '$line')""")
         (split.head, toInt(split.last))
       } else {
-        println(s"""Address is not of type: IP/CIDR (found: ${line.addressWithCIDR} within line '$line')""")
+        logger.warn(s"""Address is not of type: IP/CIDR (found: ${line.addressWithCIDR} within line '$line')""")
         // TODO: handle server names and keywords 
         if (line.addressWithCIDR.equals("samenet"))
           ("samenet", -1)
