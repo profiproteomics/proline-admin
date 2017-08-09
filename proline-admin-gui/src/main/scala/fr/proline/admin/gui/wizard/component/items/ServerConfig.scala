@@ -23,7 +23,7 @@ import fr.proline.admin.gui.wizard.component.Item
 
 /**
  * ServerConfig edit/update database server parameters :host name,user name ,password and port
- * 
+ *
  */
 
 class ServerConfig(val name: String) extends Item with LazyLogging {
@@ -71,7 +71,6 @@ class ServerConfig(val name: String) extends Item with LazyLogging {
    * ************** *
    */
 
-  // content = List(tabPane)
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = 1
@@ -81,8 +80,8 @@ class ServerConfig(val name: String) extends Item with LazyLogging {
       spacing = 15
       content = Seq(
         new HBox {
-        content = Seq(FxUtils.newImageView(IconResource.SETTING))
-      }, panelTitle)
+          content = Seq(FxUtils.newImageView(IconResource.SETTING))
+        }, panelTitle)
     }, ScalaFxUtils.newHSpacer(minW = 45), new HBox {
       content = Seq(headerHelpIcon)
     })

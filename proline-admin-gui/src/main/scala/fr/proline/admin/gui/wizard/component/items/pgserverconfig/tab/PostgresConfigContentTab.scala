@@ -12,7 +12,7 @@ import fr.proline.admin.gui.wizard.component.items.serverconfig.tab.content.Pane
 import fr.proline.admin.gui.wizard.component.items.pgserverconfig._
 /**
  * PostgresConfigContentTab contains panel of postgreSQL optimization(PanelScorllPane)
- * 
+ *
  */
 class PostgresConfigContentTab extends PanelScorllPane {
 
@@ -23,11 +23,12 @@ class PostgresConfigContentTab extends PanelScorllPane {
       padding = Insets(5, 0, 0, 0)
       alignment = Pos.TOP_RIGHT
       alignmentInParent = Pos.TOP_RIGHT
-      content = List(postgresForm)
       prefWidth <== Wizard.configItemsPanel.width - 45
       prefHeight <== Wizard.configItemsPanel.height - 45
+      content = List(postgresForm)
+
     })
- /* save new settings  */
+  /* save new settings  */
   def saveForm() {
     postgresForm.saveForm()
   }

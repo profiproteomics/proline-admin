@@ -75,7 +75,7 @@ class ParsingRules extends VBox with LazyLogging {
     prefWidth <== Wizard.stage.width - 60
     promptText = "Default protein accession"
   }
-  val resetAccessionButton = new Button("Reset") {
+  val resetAccessionButton = new Button("Default") {
     minWidth = 80
     maxWidth = 80
     graphic = FxUtils.newImageView(IconResource.RESET)

@@ -76,10 +76,9 @@ class ProlineMountFiles extends VBox with LazyLogging {
    */
 
   /* Mount points */
-
   val disableMpNoteLabel = new Label() {
     text = "choose a validated Proline server configuration file to enable mount points setup.\n"
-    style = "-fx-font-style: italic;-fx-font-weigth: bold;"
+    style = TextStyle.RED_ITALIC
     visible = false
   }
 
@@ -106,8 +105,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
     onAction = handle { _addResultFilesMountPoint() }
   }
   val resultFilesMpBox = new VBox { spacing = 10 }
-  // Warning 
-  val warningAboutExitText = "WARNING: Are you sure  to save and exit ? "
+  
   /*
    * ****** *
    * LAYOUT *
@@ -239,7 +237,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
       ).toMap
   }
 
-  private def _toServerConfig() = ServerConfig(
+   def _toServerConfig() = ServerConfig(
     rawFilesMountPoints = _getMountPointsMap(rawFilesMountPoints),
     mzdbFilesMountPoints = _getMountPointsMap(mzdbFilesMountPoints),
     resultFilesMountPoints = _getMountPointsMap(resultFilesMountPoints))

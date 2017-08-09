@@ -18,12 +18,13 @@ class ParsingRulesContentTab extends PanelScorllPane {
   val rules = new ParsingRules()
   setContentNode(
     new VBox {
+      prefWidth <== Wizard.configItemsPanel.width - 45
+      prefHeight <== Wizard.configItemsPanel.height - 45
       padding = Insets(5, 0, 0, 0)
       alignment = Pos.TOP_RIGHT
       alignmentInParent = Pos.TOP_RIGHT
       content = List(rules)
-      prefWidth <== Wizard.configItemsPanel.width - 45
-      prefHeight <== Wizard.configItemsPanel.height - 45
+  
     })
 
   /* properties of ParsingRules  */

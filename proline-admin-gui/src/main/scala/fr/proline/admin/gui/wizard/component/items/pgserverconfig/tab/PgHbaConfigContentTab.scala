@@ -21,12 +21,13 @@ class PgHbaConfigContentTab extends PanelScorllPane {
   val pgHbaConfigForm = new PgHbaConfigForm(workingFilePgHbaConf)
   setContentNode(
     new VBox {
+      prefWidth <== Wizard.configItemsPanel.width - 45
+      prefHeight <== Wizard.configItemsPanel.height - 45
       padding = Insets(5, 0, 0, 0)
       alignment = Pos.TOP_RIGHT
       alignmentInParent = Pos.TOP_RIGHT
       content = List(pgHbaConfigForm)
-      prefWidth <== Wizard.configItemsPanel.width - 45
-      prefHeight <== Wizard.configItemsPanel.height - 45
+     
     })
     
   /* save new settings  */
