@@ -295,26 +295,26 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
       if (ScalaUtils.isConfFile(Wizard.serverConfPath)) {
         val jmsNodeConfPath = new File(Wizard.serverConfPath).getParent() + File.separator + """jms-node.conf"""
         if (new File(jmsNodeConfPath).exists) {
-          ScalaFxUtils.FieldBorder.remove(prolineServerField)
-          errorNotValidServerFile.visible = false
+          ScalaFxUtils.NodeStyle.remove(prolineServerField)
+          ScalaFxUtils.NodeStyle.hide(errorNotValidServerFile)
           Wizard.jmsNodeConfPath = jmsNodeConfPath
           val server = new ServerConfig("server")
           Wizard.items += (server.name -> Some(server))
           isValidPath = true
         } else {
           Wizard.items -= ("server")
-          errorNotValidServerFile.visible = true
-          ScalaFxUtils.FieldBorder.set(prolineServerField)
+          ScalaFxUtils.NodeStyle.show(errorNotValidServerFile)
+          ScalaFxUtils.NodeStyle.set(prolineServerField)
         }
       } else {
         Wizard.items -= ("server")
-        errorNotValidServerFile.visible = true
-        ScalaFxUtils.FieldBorder.set(prolineServerField)
+        ScalaFxUtils.NodeStyle.show(errorNotValidServerFile)
+        ScalaFxUtils.NodeStyle.set(prolineServerField)
       }
     } else {
       Wizard.items -= ("server")
-      errorNotValidServerFile.visible = false
-      ScalaFxUtils.FieldBorder.remove(prolineServerField)
+      ScalaFxUtils.NodeStyle.hide(errorNotValidServerFile)
+      ScalaFxUtils.NodeStyle.remove(prolineServerField)
     }
     isValidPath
   }
@@ -324,28 +324,29 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     var isValidPath = false
     if (seqReposChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.seqRepoConfPath)) {
-        ScalaFxUtils.FieldBorder.remove(seqReposField)
+        ScalaFxUtils.NodeStyle.remove(seqReposField)
         val jmsNodeConfPath = new File(seqReposField.getText).getParent() + File.separator + """jms-node.conf"""
         val parsingRules = new File(seqReposField.getText).getParent() + File.separator + """parsing-rules.conf"""
         if (new File(jmsNodeConfPath).exists && new File(parsingRules).exists) {
-          errorNotValidSeqReposFile.visible = false
+          ScalaFxUtils.NodeStyle.hide(errorNotValidSeqReposFile)
           Wizard.SeqJmsNodeConfPath = jmsNodeConfPath
           Wizard.parsingRulesPath = parsingRules
           val moduleConfig = new ModuleConfig("modules")
           Wizard.items += (moduleConfig.name -> Some(moduleConfig))
           isValidPath = true
         } else {
-          errorNotValidSeqReposFile.visible = true
+          ScalaFxUtils.NodeStyle.show(errorNotValidSeqReposFile)
         }
       } else {
         Wizard.items -= ("modules")
-        errorNotValidSeqReposFile.visible = true
-        ScalaFxUtils.FieldBorder.set(seqReposField)
+        ScalaFxUtils.NodeStyle.show(errorNotValidSeqReposFile)
+        ScalaFxUtils.NodeStyle.set(seqReposField)
+
       }
     } else {
       Wizard.items -= ("modules")
-      errorNotValidSeqReposFile.visible = false
-      ScalaFxUtils.FieldBorder.remove(seqReposField)
+      ScalaFxUtils.NodeStyle.hide(errorNotValidSeqReposFile)
+      ScalaFxUtils.NodeStyle.remove(seqReposField)
     }
     isValidPath
   }
@@ -355,20 +356,20 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     var isValidPath = false
     if (prolineWebChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.webRootPath)) {
-        ScalaFxUtils.FieldBorder.remove(prolineWebField)
-        errorNotValidWebFile.visible = false
+        ScalaFxUtils.NodeStyle.remove(prolineWebField)
+        ScalaFxUtils.NodeStyle.hide(errorNotValidWebFile)
         val prolineWeb = new ProlineWebConfig("prolineWeb")
         Wizard.items += (prolineWeb.name -> Some(prolineWeb))
         isValidPath = true
       } else {
         Wizard.items -= ("prolineWeb")
-        errorNotValidWebFile.visible = true
-        ScalaFxUtils.FieldBorder.set(prolineWebField)
+        ScalaFxUtils.NodeStyle.show(errorNotValidWebFile)
+        ScalaFxUtils.NodeStyle.set(prolineWebField)
       }
     } else {
       Wizard.items -= ("prolineWeb")
-      errorNotValidWebFile.visible = false
-      ScalaFxUtils.FieldBorder.remove(prolineWebField)
+      ScalaFxUtils.NodeStyle.hide(errorNotValidWebFile)
+      ScalaFxUtils.NodeStyle.remove(prolineWebField)
     }
     isValidPath
   }
@@ -378,25 +379,26 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     var isValidPath = false
     if (postgreSQLChBox.isSelected) {
       if (!Wizard.pgDataDirPath.isEmpty) {
-        ScalaFxUtils.FieldBorder.remove(postgreSQLField)
-        if (validDataDirectory(Wizard.pgDataDirPath)) {
+        ScalaFxUtils.NodeStyle.remove(postgreSQLField)
+        if (ScalaUtils.isValidDataDir(Wizard.pgDataDirPath)) {
+          ScalaFxUtils.NodeStyle.hide(errorNotValidPgData)
           val pgServerConfig = new PgServerConfig("pgServer")
           Wizard.items += (pgServerConfig.name -> Some(pgServerConfig))
-          errorNotValidPgData.visible = false
           isValidPath = true
         } else {
           Wizard.items -= ("pgServer")
-          errorNotValidPgData.visible = true
+          ScalaFxUtils.NodeStyle.show(errorNotValidPgData)
+          ScalaFxUtils.NodeStyle.set(postgreSQLField)
         }
       } else {
         Wizard.items -= ("pgServer")
-        errorNotValidPgData.visible = true
-        ScalaFxUtils.FieldBorder.set(postgreSQLField)
+        ScalaFxUtils.NodeStyle.show(errorNotValidPgData)
+        ScalaFxUtils.NodeStyle.set(postgreSQLField)
       }
     } else {
       Wizard.items -= ("pgServer")
-      errorNotValidPgData.visible = false
-      ScalaFxUtils.FieldBorder.remove(postgreSQLField)
+      ScalaFxUtils.NodeStyle.hide(errorNotValidPgData)
+      ScalaFxUtils.NodeStyle.remove(postgreSQLField)
     }
     isValidPath
   }
@@ -406,42 +408,42 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     var validPath, seqReposPath, serverPath, postGresPath, webPath = true
     if (postgreSQLChBox.isSelected) {
       if (!selectPostgreSQLItem) {
-        ScalaFxUtils.FieldBorder.set(postgreSQLField)
+        ScalaFxUtils.NodeStyle.set(postgreSQLField)
         postGresPath = false
       } else {
         postGresPath = true
       }
     } else {
-      ScalaFxUtils.FieldBorder.remove(postgreSQLField)
+      ScalaFxUtils.NodeStyle.remove(postgreSQLField)
     }
     if (prolineServerChBox.isSelected) {
       if (!selectServerItem) {
-        ScalaFxUtils.FieldBorder.set(prolineServerField)
+        ScalaFxUtils.NodeStyle.set(prolineServerField)
         serverPath = false
       } else {
         serverPath = true
       }
-    } else ScalaFxUtils.FieldBorder.remove(prolineServerField)
+    } else ScalaFxUtils.NodeStyle.remove(prolineServerField)
     if (seqReposChBox.isSelected) {
       if (!selectSeqRepositoryItem) {
-        ScalaFxUtils.FieldBorder.set(seqReposField)
+        ScalaFxUtils.NodeStyle.set(seqReposField)
         seqReposPath = false
       } else {
-        ScalaFxUtils.FieldBorder.remove(seqReposField)
+        ScalaFxUtils.NodeStyle.remove(seqReposField)
         seqReposPath = true
       }
     } else {
-      ScalaFxUtils.FieldBorder.remove(seqReposField)
+      ScalaFxUtils.NodeStyle.remove(seqReposField)
     }
     if (prolineWebChBox.isSelected) {
       if (!selectProlineWebItem) {
-        ScalaFxUtils.FieldBorder.set(prolineWebField)
+        ScalaFxUtils.NodeStyle.set(prolineWebField)
         webPath = false
       } else {
         webPath = true
       }
     } else {
-      ScalaFxUtils.FieldBorder.remove(prolineWebField)
+      ScalaFxUtils.NodeStyle.remove(prolineWebField)
     }
     if (seqReposPath && serverPath && postGresPath && webPath) {
       validPath = true

@@ -78,9 +78,17 @@ object ScalaUtils {
     string.charAt(0) == '"' && string.charAt(string.length - 1) == '"'
   }
 
-  /** check is valid configuration file **/
+  /** check if configuration file is validated  **/
   def isConfFile(filePath: String): Boolean = (new File(filePath).exists) && (new File(filePath).getName == "application.conf")
 
+  /** check if  data directory is validated  */
+  def isValidDataDir(path: String): Boolean = {
+    var validDir = false
+    if (new File(path).exists) {
+      if (new File(path).listFiles().filter { file => (file.getName.equals("pg_hba.conf") || file.getName.equals("postgresql.conf")) }.size == 2) validDir = true
+    }
+    validDir
+  }
   /**
    * ********* *
    * IMPLICITS *

@@ -5,6 +5,7 @@ import scala.reflect.ClassTag
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.Button
+import scalafx.scene.control.Label
 import scalafx.scene.control.ComboBox
 import scalafx.scene.control.TableView
 import scalafx.scene.control.TextField
@@ -324,13 +325,20 @@ object ScalaFxUtils extends LazyLogging {
     val BLUE_ITALIC = BLUE ++ ITALIC
 
   }
-  object FieldBorder {
+  
+  object NodeStyle {
 
     def set(field: Node) {
       field.setStyle("-fx-text-box-border: red  ; -fx-focus-color: red ;")
     }
     def remove(field: Node) {
       field.setStyle("")
+    }
+    def hide(label: Label) {
+      label.visible = false
+    }
+    def show(label: Label) {
+      label.visible = true
     }
   }
 }

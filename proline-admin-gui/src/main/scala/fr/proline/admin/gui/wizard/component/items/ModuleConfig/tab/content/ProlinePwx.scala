@@ -103,11 +103,13 @@ class ProlinePwx extends VBox with LazyLogging {
   val infosMergeMPLabelText = "New mount points will be merged with the existing mount points in proline web configuration file. "
 
   val disableMpNoteLabel = new Label() {
+    graphic = FxUtils.newImageView(IconResource.INFORMATION)
     text = infosMergeMPLabelText
     style = TextStyle.BLUE_ITALIC
     visible = false
   }
   val warningLabel = new Label {
+	  graphic = FxUtils.newImageView(IconResource.INFORMATION)
     text = infosMergeMPLabelText
     style = TextStyle.BLUE_ITALIC
   }
@@ -248,7 +250,7 @@ class ProlinePwx extends VBox with LazyLogging {
       mountPointsSettings.disable = true
 
     } else {
-   
+
       /* Fill fields */
       val pwxMountPointConfig = pwxMountPointConfigOpt.get
 

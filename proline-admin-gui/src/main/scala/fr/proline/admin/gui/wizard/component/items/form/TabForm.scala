@@ -7,7 +7,10 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import fr.profi.util.scala.ScalaUtils
 import fr.proline.admin.gui.wizard.util._
+import fr.proline.admin.gui.IconResource
+import fr.proline.admin.gui.util.FxUtils
 import java.io.File
+
 /**
  * TabForm contains tab form of each item
  *
@@ -38,47 +41,44 @@ trait ItemsPanelForm {
 
   private val CORRUPTEDFILE = "The configuration file Proline Admin is corrupted. This may be due to improper existing settings. Default settings have been reset."
   val warningCorruptedFile: Label = new Label {
+    graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
     text = CORRUPTEDFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
   private val NOTVALIDPROLINESERVERFILE = "Please select a valid configuration file to set up Proline Server. "
   val errorNotValidServerFile: Label = new Label {
+    graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
     text = NOTVALIDPROLINESERVERFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
   private val NOTVALIDSEQREPOSFILE = "Please select a valid configuration file to set up Sequence Repository. "
   val errorNotValidSeqReposFile: Label = new Label {
+    graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
     text = NOTVALIDSEQREPOSFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
   private val NOTVALIDPROLINEWEBFILE = "Please select a valid configuration file to set up Proline Web. "
   val errorNotValidWebFile: Label = new Label {
+    graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
     text = NOTVALIDPROLINEWEBFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
   private val NOTVALIDPGDATA = "Please select a valid PostgreSQL data directory to set up PostgreSQL optimization and authorizations."
   val errorNotValidPgData: Label = new Label {
+    graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
     text = NOTVALIDPGDATA
     style = TextStyle.RED_ITALIC
     visible = false
   }
-  
+
   /* set style on fields */
   def setStyleSelectedItems: Boolean
 
   /* get the selected items  */
   def getSelectedItems: Unit
 
-  /* check valid data directory contains:postgresql.conf and pg_hba.conf */
-  def validDataDirectory(path: String): Boolean = {
-    var validDir = false
-    if (new File(path).exists) {
-      if (new File(path).listFiles().filter { file => (file.getName.equals("pg_hba.conf") || file.getName.equals("postgresql.conf")) }.size == 2) validDir = true
-    }
-    validDir
-  }
 }

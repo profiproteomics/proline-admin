@@ -21,5 +21,7 @@ object IconResource extends EnhancedEnum {
   val PLUS = Value("/images/plus.png")
   val TRASH = Value("/images/trash.png")
   val RESET = Value("/images/arrow-circle.png")
-  
+  val INFORMATION = Value("/images/information.png")
+  val EXCLAMATION = Value("/images/exclamation-red.png")
+
 }
