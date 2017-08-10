@@ -313,7 +313,7 @@ object ScalaFxUtils extends LazyLogging {
     val ITALIC = "-fx-font-style: italic;"
 
     val BLUE_HYPERLINK = "-fx-color:#66CCFF;"
-
+    val BLUE = "-fx-text-fill: mediumblue;"
     val RED = "-fx-text-fill: red;"
     val GREY = "-fx-text-fill: grey;"
     val ORANGE = "-fx-text-fill: orange;"
@@ -321,6 +321,7 @@ object ScalaFxUtils extends LazyLogging {
     val RED_ITALIC = RED ++ ITALIC
     val ORANGE_ITALIC = ORANGE ++ ITALIC
     val GREY_ITALIC = GREY ++ ITALIC
+    val BLUE_ITALIC = BLUE ++ ITALIC
 
   }
   object FieldBorder {

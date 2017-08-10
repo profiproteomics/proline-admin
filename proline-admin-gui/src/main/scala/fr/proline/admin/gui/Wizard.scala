@@ -23,9 +23,10 @@ import fr.proline.admin.gui.wizard.component.ButtonsPanel
 import fr.proline.admin.gui.wizard.component.ItemsPanel
 import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.wizard.util.version.Module
 
 /**
- * Graphical interface for Proline Admin Wizard:quick to update Proline configuration files (application.conf)
+ * Graphical interface to setup/update Proline configuration files (application.conf)
  *
  */
 object Wizard extends LazyLogging {
@@ -51,7 +52,7 @@ object Wizard extends LazyLogging {
   var nodeIndex = 0
   var currentNode: Item = _
   var items: LinkedHashMap[String, Option[Item]] = LinkedHashMap.empty[String, Option[Item]]
-  
+
   /*
    *  main panel contains :
    * 	panel of buttons :go and cancel
@@ -104,13 +105,13 @@ class Wizard extends Application {
     Wizard.buttonsPanel = ButtonsPanel()
     Wizard.stage = new Stage(stage) {
       scene = new Scene(Wizard.root)
-      minWidth = 1050
+      minWidth = 750
       width = 1050
-      minHeight = 770
+      minHeight = 600
       height = 850
-      title = "Proline Admin Wizard"
+      title = s"${Module.name} ${Module.version}"
     }
-    
+
     Wizard.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Wizard.stage.scene.value.getStylesheets.add("/css/Style.css")
     Wizard.stage.show()
