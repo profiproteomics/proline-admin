@@ -73,6 +73,7 @@ class ServerConfig(val name: String) extends Item with LazyLogging {
 
   alignment = Pos.Center
   alignmentInParent = Pos.Center
+  prefHeight <== Wizard.stage.height - 50
   spacing = 1
   content = List(ScalaFxUtils.newVSpacer(minH = 20), new HBox {
     fillWidth = true

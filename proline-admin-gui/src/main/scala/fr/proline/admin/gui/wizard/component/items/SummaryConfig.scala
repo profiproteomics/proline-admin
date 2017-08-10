@@ -22,7 +22,7 @@ import fr.proline.admin.gui.wizard.component.Item
 
 /**
  * SummaryConfig contains summary configuration
- * 
+ *
  */
 
 class SummaryConfig(val name: String) extends Item with LazyLogging {
@@ -46,6 +46,7 @@ class SummaryConfig(val name: String) extends Item with LazyLogging {
   var prolinePgServerBox = new VBox {}
   alignment = Pos.Center
   alignmentInParent = Pos.Center
+  prefHeight <== Wizard.stage.height - 50
   spacing = 1
   content = List(ScalaFxUtils.newVSpacer(minH = 20), new HBox {
     fillWidth = true

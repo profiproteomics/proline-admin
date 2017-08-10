@@ -45,7 +45,7 @@ trait Item extends VBox {
  */
 
 object SelectedItem extends LazyLogging {
-  var setUpUpdateChBox, updateCheckBox: CheckBox = _
+  var setUpUpdateChBox: CheckBox = _
   val taskUpgrade: TaskUpgradeDatabases = new TaskUpgradeDatabases()
   def get(item: Item) {
     if (item.isInstanceOf[PgServerConfig]) {

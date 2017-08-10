@@ -98,15 +98,18 @@ class ProlinePwx extends VBox with LazyLogging {
   }
 
   /* Mount points */
+  val disableMPLabelText = "Select a validated Proline server configuration file to enable mount points setup. "
+  val infosImportMPLabelText = "File locations will be imported from Proline server configuration mount points. "
+  val infosMergeMPLabelText = "New mount points will be merged with the existing mount points in proline web configuration file. "
 
   val disableMpNoteLabel = new Label() {
-    text = "File locations will be imported from Proline server configuration mount points"
-    style = TextStyle.ORANGE_ITALIC
+    text = infosMergeMPLabelText
+    style = TextStyle.BLUE_ITALIC
     visible = false
   }
   val warningLabel = new Label {
-    text = "New file locations will be merged with the existing mount points"
-    style = TextStyle.ORANGE_ITALIC
+    text = infosMergeMPLabelText
+    style = TextStyle.BLUE_ITALIC
   }
 
   val rawFilesMountPoints = ArrayBuffer[MountPointPanelPwx]()
@@ -176,7 +179,6 @@ class ProlinePwx extends VBox with LazyLogging {
     contentNode = new VBox {
       spacing = 2 * V_SPACING
       content = List(
-        warningLabel,
         new HBox {
           spacing = H_SPACING
           content = List(rawFilesMpLabel, addRawFilesMpButton)
@@ -195,10 +197,13 @@ class ProlinePwx extends VBox with LazyLogging {
         },
         resultFilesMpBox)
     })
-
+  val labelWarningPanel = new VBox {
+    spacing = 2
+    content = Seq(disableMpNoteLabel, warningLabel)
+  }
   val mountPointsWithDisableNote = new VBox {
     spacing = 20
-    content = Seq(disableMpNoteLabel, pwxJmsSettings, ScalaFxUtils.newVSpacer(5), mountPointsSettings)
+    content = Seq(pwxJmsSettings, ScalaFxUtils.newVSpacer(3), labelWarningPanel, ScalaFxUtils.newVSpacer(3), mountPointsSettings)
   }
 
   /* VBox layout and content */
@@ -221,27 +226,29 @@ class ProlinePwx extends VBox with LazyLogging {
   if (pwxMountPointConfigOpt.isEmpty) {
 
     /* hide mount points if server config is undefined */
+    disableMpNoteLabel.text_=(disableMPLabelText)
     disableMpNoteLabel.visible = true
     warningLabel.visible = false
     mountPointsSettings.disable = true
-
     //Don't screw up layout
     disableMpNoteLabel.minHeight = 34
     disableMpNoteLabel.maxHeight = 34
 
   } else {
-
     // hide this section ,mount points will be copied from server
-
+    disableMpNoteLabel.minHeight = 0
+    disableMpNoteLabel.maxHeight = 0
+    disableMpNoteLabel.visible = false
     if (Wizard.items.contains("server")) {
-
       disableMpNoteLabel.minHeight = 34
       disableMpNoteLabel.maxHeight = 34
+      disableMpNoteLabel.text_=(infosImportMPLabelText)
       disableMpNoteLabel.visible = true
       warningLabel.visible = false
       mountPointsSettings.disable = true
 
     } else {
+   
       /* Fill fields */
       val pwxMountPointConfig = pwxMountPointConfigOpt.get
 

@@ -67,6 +67,7 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
 
   alignment = Pos.Center
   alignmentInParent = Pos.Center
+  prefHeight <== Wizard.stage.height - 50
   spacing = 1
   content = List(ScalaFxUtils.newVSpacer(minH = 20), new HBox {
     fillWidth = true
@@ -85,8 +86,8 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
     .append("\n\tThe complete list of parameter names and allowed values can be found in the PostgreSQL documentation.\n\n")
     .append("PostgreSQL access right:\n\n\tThis tab controls: which hosts are allowed to connect, ")
     .append("how clients are authenticated,\n\t which PostgreSQL user names they can use, which databases they can access.\n")
-  
-    def _openHelpDialog() = PopupHelpWindow(
+
+  def _openHelpDialog() = PopupHelpWindow(
     wTitle = "Help",
     wText = helpTextBuilder.toString)
 
