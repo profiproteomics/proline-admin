@@ -39,7 +39,7 @@ import fr.proline.admin.gui.Wizard
 import fr.proline.repository.DriverType
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.wizard.component.items.ServerConfig
-import fr.proline.admin.gui.wizard.component.items.form.TabForm
+import fr.proline.admin.gui.wizard.component.items.form.ITabForm
 import fr.profi.util.scala.ScalaUtils
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.process.config.AdminConfig
@@ -53,7 +53,7 @@ import ExecutionContext.Implicits.global
  * PostGreSQLTab build tab of PostGreSQL database server properties.
  *
  */
-class PostGreSQLTab(path: String) extends VBox with TabForm with LazyLogging {
+class PostGreSQLTab(path: String) extends VBox with ITabForm with LazyLogging {
   private val driver = DriverType.POSTGRESQL
 
   /*

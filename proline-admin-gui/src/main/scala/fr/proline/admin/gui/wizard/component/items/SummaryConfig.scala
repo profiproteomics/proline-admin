@@ -41,8 +41,10 @@ class SummaryConfig(val name: String) extends Item with LazyLogging {
   }
 
   /* initialize summary panels */
+  
   var prolineServerBox = new VBox {}
   var prolineModuleBox = new VBox {}
+  var prolineWebBox = new VBox {}
   var prolinePgServerBox = new VBox {}
   alignment = Pos.Center
   alignmentInParent = Pos.Center
@@ -62,7 +64,7 @@ class SummaryConfig(val name: String) extends Item with LazyLogging {
     prefWidth <== Wizard.configItemsPanel.width - 30
     prefHeight <== Wizard.configItemsPanel.height - 30
     spacing = 50
-    content = List(prolineServerBox, prolineModuleBox, prolinePgServerBox)
+    content = List(prolineServerBox, prolineModuleBox, prolineWebBox, prolinePgServerBox)
   })
 
   /* help function */

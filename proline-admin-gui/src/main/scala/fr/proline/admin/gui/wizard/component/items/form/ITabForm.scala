@@ -16,7 +16,7 @@ import java.io.File
  *
  */
 
-trait TabForm {
+trait ITabForm {
 
   // warning label 
   val warningDatalabel: Label = new Label {

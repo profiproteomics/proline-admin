@@ -39,7 +39,7 @@ import fr.proline.admin.gui.process.DatabaseConnection
 import fr.proline.admin.gui.Wizard
 import fr.proline.repository.DriverType
 import fr.proline.admin.gui.wizard.process.config.SeqConfigFile
-import fr.proline.admin.gui.wizard.component.items.form.TabForm
+import fr.proline.admin.gui.wizard.component.items.form.ITabForm
 import fr.proline.admin.gui.wizard.process.config._
 
 /**
@@ -47,7 +47,7 @@ import fr.proline.admin.gui.wizard.process.config._
  *
  */
 
-class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging {
+class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging {
   private val driver = DriverType.POSTGRESQL
 
   /*

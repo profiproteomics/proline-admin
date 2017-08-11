@@ -23,7 +23,7 @@ import scalafx.geometry.Insets
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.process.config.NodeConfigFile
 import fr.proline.admin.gui.wizard.process.config.NodeConfig
-import fr.proline.admin.gui.wizard.component.items.form.TabForm
+import fr.proline.admin.gui.wizard.component.items.form.ITabForm
 import fr.profi.util.scala.ScalaUtils
 import scala.concurrent._
 import ExecutionContext.Implicits.global
@@ -33,7 +33,7 @@ import ExecutionContext.Implicits.global
  *
  */
 
-class JmsServerTab(path: String) extends VBox with TabForm with LazyLogging {
+class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
 
   /*
 	 * ********** *
