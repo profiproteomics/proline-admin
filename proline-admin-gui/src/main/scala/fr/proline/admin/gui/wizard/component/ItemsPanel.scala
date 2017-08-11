@@ -248,7 +248,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
         postgreSQLChBox, new HBox {
           spacing = 5
           content = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), postgreSQLLabel, postgreSQLField, postgresBrowseButton)
-        }, ScalaFxUtils.newVSpacer(150))
+        }, ScalaFxUtils.newVSpacer(100))
     })
 
   // final content 
@@ -256,7 +256,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   alignmentInParent = Pos.Center
   spacing = 1
   fillWidth = true
-  content = Seq(ScalaFxUtils.newVSpacer(minH = 20),
+  content = Seq(ScalaFxUtils.newVSpacer(minH = 100),
     configItemsPane)
 
   /* functions */

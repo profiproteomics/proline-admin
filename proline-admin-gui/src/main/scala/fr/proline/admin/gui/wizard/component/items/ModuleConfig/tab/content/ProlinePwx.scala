@@ -109,7 +109,7 @@ class ProlinePwx extends VBox with LazyLogging {
     visible = false
   }
   val warningLabel = new Label {
-	  graphic = FxUtils.newImageView(IconResource.INFORMATION)
+    graphic = FxUtils.newImageView(IconResource.INFORMATION)
     text = infosMergeMPLabelText
     style = TextStyle.BLUE_ITALIC
   }
@@ -377,11 +377,15 @@ class ProlinePwx extends VBox with LazyLogging {
 
   /* return number of mount points (files) */
   def getProperties(): String = {
-    val montPointsBuilder = new StringBuilder("Mount Points:\n\t")
-    montPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n\t")
-      .append(mzdbFilesMountPoints.size).append("  Mzdb files\n\t")
-      .append(resultFilesMountPoints.size).append("  Result Files\t")
-    return montPointsBuilder.toString
+    if (Wizard.items.contains("server")) {
+      s" Mount Points:\n\tSame mount points as Proline server"
+    } else {
+      val montPointsBuilder = new StringBuilder("Mount Points:\n\t")
+      montPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n\t")
+        .append(mzdbFilesMountPoints.size).append("  Mzdb files\n\t")
+        .append(resultFilesMountPoints.size).append("  Result Files\t")
+      return montPointsBuilder.toString
+    }
   }
 }
 
