@@ -20,7 +20,7 @@ class ProlinePwxContentTab extends PanelScorllPane {
   val prolinePwx = new ProlinePwx()
   setContentNode(
     new VBox {
-      prefWidth <== Wizard.configItemsPanel.width - 45
+      prefWidth <== Wizard.configItemsPanel.width - 50
       prefHeight <== Wizard.configItemsPanel.height - 45
       padding = Insets(5, 0, 0, 0)
       alignment = Pos.TOP_RIGHT

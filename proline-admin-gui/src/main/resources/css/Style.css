@@ -1,4 +1,4 @@
-
+/* style for some component  */
 .item {
 	-fx-font-size: 18.0px;
 	-fx-font-style: italic;
@@ -6,15 +6,49 @@
 	-fx-text-fill: slategrey;
 	-fx-effect: dropshadow(gaussian, rgba(255.0, 255.0, 255.0, 0.5), 0.0, 0.0, 0.0, 1.0);
 }
-
 .fieldBorder {
 	-fx-text-box-border: red  ;
     -fx-focus-color: red ;
 }
-
 .summaryLabel {
 	-fx-font-size: 12.0px;
 	-fx-font-style: normal   ;
 	-fx-font-fill: darkgray ;
 	-fx-font-weigh: lighter ;
 }
+/* style for tab-pane for all items */
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-opacity: 0.5;
+}
+.tab-pane
+{
+    -fx-tab-min-width: 90.0px;
+    -fx-border-color :#d3d3d3;
+}
+.tab{
+    -fx-background-insets: 0.0 1.0 0.0 1.0,0.0,0.0;
+}
+.tab-pane .tab
+{
+    -fx-background-color: #e6e6e6;
+    
+}
+.tab-pane .tab:selected
+{
+    -fx-background-color: #778890;
+}
+.tab .tab-label { 
+    -fx-alignment: CENTER;
+    -fx-text-fill: #828282;
+    -fx-font-size: 12.0px;
+    -fx-font-weight: bold;
+}
+.tab:selected .tab-label { 
+    -fx-alignment: CENTER;
+    -fx-text-fill:  #f5f5f5;
+}
+.tab-pane:top *.tab-header-area {
+    -fx-background-insets: 0.0, 0.0 0.0 1.0 0.0;
+    -fx-padding: 0.416667em 0.166667em 0.0em 0.0em;
+}
+

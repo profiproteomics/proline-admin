@@ -18,6 +18,7 @@ import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import scalafx.scene.control.ToggleGroup
 import scalafx.scene.layout.Priority
+import scalafx.geometry.Insets
 
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.process.config.NodeConfigFile
@@ -143,6 +144,7 @@ class JmsServerTab(path: String) extends VBox with TabForm with LazyLogging {
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = 5
+  margin = Insets(5, 5, 5, 5)
   content = List(ScalaFxUtils.newVSpacer(minH = 5),
     checkBoxPane, ScalaFxUtils.newVSpacer(minH = 15),
     jmsServerPane)

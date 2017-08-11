@@ -13,7 +13,7 @@ import fr.proline.admin.gui.wizard.component.items.pgserverconfig._
 import fr.proline.admin.gui.component.configuration.form.PgHbaConfigForm
 /**
  * panel of postgreSQL right access (in scrollPane)
- * 
+ *
  */
 class PgHbaConfigContentTab extends PanelScorllPane {
 
@@ -21,15 +21,15 @@ class PgHbaConfigContentTab extends PanelScorllPane {
   val pgHbaConfigForm = new PgHbaConfigForm(workingFilePgHbaConf)
   setContentNode(
     new VBox {
-      prefWidth <== Wizard.configItemsPanel.width - 45
+      prefWidth <== Wizard.configItemsPanel.width - 50
       prefHeight <== Wizard.configItemsPanel.height - 45
       padding = Insets(5, 0, 0, 0)
       alignment = Pos.TOP_RIGHT
       alignmentInParent = Pos.TOP_RIGHT
       content = List(pgHbaConfigForm)
-     
+
     })
-    
+
   /* save new settings  */
   def saveForm() {
     pgHbaConfigForm.saveForm()

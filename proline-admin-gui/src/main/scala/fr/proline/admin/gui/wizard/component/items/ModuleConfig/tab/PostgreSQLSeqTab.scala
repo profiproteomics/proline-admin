@@ -218,6 +218,7 @@ class PostGreSQLSeqTab(path: String) extends VBox with TabForm with LazyLogging 
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = V_SPACING
+  margin = Insets(5, 5, 5, 5)
   content = List(
     ScalaFxUtils.newVSpacer(minH = 20),
     dbConnectionSettingPane)

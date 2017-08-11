@@ -11,20 +11,20 @@ import fr.proline.admin.gui.wizard.component.items.serverconfig.tab.content.Pane
 import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab.Content.ParsingRules
 /**
  * ParsingRulesContentTab contains parsing rules PanelScorllPane
- * 
+ *
  */
 class ParsingRulesContentTab extends PanelScorllPane {
-  
+
   val rules = new ParsingRules()
   setContentNode(
     new VBox {
-      prefWidth <== Wizard.configItemsPanel.width - 45
+      prefWidth <== Wizard.configItemsPanel.width - 50
       prefHeight <== Wizard.configItemsPanel.height - 45
       padding = Insets(5, 0, 0, 0)
       alignment = Pos.TOP_RIGHT
       alignmentInParent = Pos.TOP_RIGHT
       content = List(rules)
-  
+
     })
 
   /* properties of ParsingRules  */
@@ -34,6 +34,6 @@ class ParsingRulesContentTab extends PanelScorllPane {
 
   /* save all parameters on next button */
   def saveForm() {
-    rules.saveForm() 
+    rules.saveForm()
   }
 }

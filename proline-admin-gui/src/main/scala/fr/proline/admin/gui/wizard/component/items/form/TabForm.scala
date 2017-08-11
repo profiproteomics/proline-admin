@@ -39,35 +39,39 @@ trait TabForm {
 
 trait ItemsPanelForm {
 
-  private val CORRUPTEDFILE = "The configuration file Proline Admin is corrupted. This may be due to improper existing settings. Default settings have been reset."
+  private val CORRUPTEDFILE = "The configuration file Proline Admin is corrupted. This may be due to improper existing settings. Default Proline Admin settings have been reset."
   val warningCorruptedFile: Label = new Label {
     graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
     text = CORRUPTEDFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
-  private val NOTVALIDPROLINESERVERFILE = "Please select a valid configuration file to set up Proline Server. "
+
+  private val NOTVALIDPROLINESERVERFILE = "Please select a validated configuration file to set up Proline Server. "
   val errorNotValidServerFile: Label = new Label {
     graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
     text = NOTVALIDPROLINESERVERFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
-  private val NOTVALIDSEQREPOSFILE = "Please select a valid configuration file to set up Sequence Repository. "
+
+  private val NOTVALIDSEQREPOSFILE = "Please select a validated configuration file to set up Sequence Repository. "
   val errorNotValidSeqReposFile: Label = new Label {
     graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
     text = NOTVALIDSEQREPOSFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
-  private val NOTVALIDPROLINEWEBFILE = "Please select a valid configuration file to set up Proline Web. "
+
+  private val NOTVALIDPROLINEWEBFILE = "Please select a validated configuration file to set up Proline Web. "
   val errorNotValidWebFile: Label = new Label {
     graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
     text = NOTVALIDPROLINEWEBFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
-  private val NOTVALIDPGDATA = "Please select a valid PostgreSQL data directory to set up PostgreSQL optimization and authorizations."
+
+  private val NOTVALIDPGDATA = "Please select a validated PostgreSQL data directory to set up PostgreSQL optimization and authorizations. Data directory should contain pg_hba.conf file and postgresql.conf file"
   val errorNotValidPgData: Label = new Label {
     graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
     text = NOTVALIDPGDATA

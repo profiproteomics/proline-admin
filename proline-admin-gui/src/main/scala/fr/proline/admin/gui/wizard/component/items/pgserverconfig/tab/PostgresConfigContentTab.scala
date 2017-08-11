@@ -20,11 +20,11 @@ class PostgresConfigContentTab extends PanelScorllPane {
   val postgresForm = new PostgresConfigForm(workingFilePostgresConf)(Wizard.stage)
   setContentNode(
     new VBox {
+      prefWidth <== Wizard.configItemsPanel.width - 50
+      prefHeight <== Wizard.configItemsPanel.height - 45
       padding = Insets(5, 0, 0, 0)
       alignment = Pos.TOP_RIGHT
       alignmentInParent = Pos.TOP_RIGHT
-      prefWidth <== Wizard.configItemsPanel.width - 45
-      prefHeight <== Wizard.configItemsPanel.height - 45
       content = List(postgresForm)
 
     })
