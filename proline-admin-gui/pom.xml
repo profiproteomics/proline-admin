@@ -6,7 +6,7 @@
   <parent>
     <artifactId>ProFI-Pom</artifactId>
     <groupId>fr.proline</groupId>
-    <version>0.3.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
+    <version>0.4.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
   </parent>
 
   <artifactId>Proline-Admin-GUI</artifactId>
