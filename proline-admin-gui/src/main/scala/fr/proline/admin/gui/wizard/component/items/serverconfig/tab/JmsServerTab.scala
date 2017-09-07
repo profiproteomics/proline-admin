@@ -165,7 +165,6 @@ class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
     Option(this.jmsPort),
     Option(this.prolineQueueName),
     Option(-1),
-    Option(1),
     Option(true))
 
   /* save proline Server nodeConfig properties */
