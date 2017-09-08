@@ -29,7 +29,7 @@ import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.gui.wizard.util.ProgressBarWindow
 
 /**
- *  Item  build  item's Panel
+ *  to build  item's Panel
  *
  */
 
@@ -44,11 +44,9 @@ trait Item extends VBox {
  *
  */
 
-object SelectedItem extends LazyLogging {
+object SummaryPanel extends LazyLogging {
 
   var setUpUpdateChBox: CheckBox = _
-  val taskUpgrade: TaskUpgradeDatabases = new TaskUpgradeDatabases()
-
   def get(item: Item) {
     if (item.isInstanceOf[PgServerConfig]) {
       val pgServer = item.asInstanceOf[PgServerConfig]
@@ -91,7 +89,7 @@ object SelectedItem extends LazyLogging {
         })
     }
 
-    /* Proline module summary area  */
+    /* Proline module summary */
     if (item.isInstanceOf[ModuleConfig]) {
       val module = item.asInstanceOf[ModuleConfig]
       val SeqReposArea = new VBox {
@@ -110,7 +108,7 @@ object SelectedItem extends LazyLogging {
       NavigationButtonsPanel.summaryPanel.prolineModuleBox.content = new TitledBorderPane(title = "Proline Sequence Repository ",
         contentNode = new VBox { content = Seq(SeqReposArea) })
     }
-    /* Proline web summary area */
+    /* Proline web summary */
     if (item.isInstanceOf[ProlineWebConfig]) {
       val prolineWeb = item.asInstanceOf[ProlineWebConfig]
       val prolineWebArea = new VBox {
@@ -126,7 +124,7 @@ object SelectedItem extends LazyLogging {
   }
 
   /** save item's form on Button validate */
-  def saveAll(item: Item) {
+  def save(item: Item) {
     if (item.isInstanceOf[ServerConfig]) {
       val server = item.asInstanceOf[ServerConfig]
       try {
@@ -136,7 +134,7 @@ object SelectedItem extends LazyLogging {
         if (setUpUpdateChBox.isSelected()) {
           val confirmed = GetConfirmation("Are you sure you want to update Proline databases ?\n(This process may take hours.)")
           if (confirmed) {
-            ProgressBarWindow("Setup/Update", new TaskUpgradeDatabases(), Option(Wizard.stage))
+            ProgressBarWindow("Setup/Update", new DbMaintenance(), Option(Wizard.stage))
           }
         }
       } catch {

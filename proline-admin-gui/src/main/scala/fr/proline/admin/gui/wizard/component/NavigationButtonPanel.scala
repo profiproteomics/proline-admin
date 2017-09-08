@@ -64,7 +64,7 @@ object NavigationButtonsPanel extends LazyLogging {
       val confirmed = GetConfirmation("Are you sure you want to save the new Proline configurations ?")
       if (confirmed) {
         Wizard.items.toSeq.foreach {
-          case (_1, _2) => SelectedItem.saveAll(_2.get)
+          case (_1, _2) => SummaryPanel.save(_2.get)
         }
       }
     }
@@ -124,7 +124,7 @@ object NavigationButtonsPanel extends LazyLogging {
         /* Summary panel */
         Wizard.nodeIndex = Wizard.nodeIndex + 1
         Wizard.items.toSeq.foreach {
-          case (_1, _2) => SelectedItem.get(_2.get)
+          case (_1, _2) => SummaryPanel.get(_2.get)
         }
         Wizard.currentNode = summaryPanel
         Wizard.configItemsPanel.getChildren().clear()

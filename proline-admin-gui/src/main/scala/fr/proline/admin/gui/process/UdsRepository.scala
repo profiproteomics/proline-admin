@@ -138,17 +138,14 @@ object UdsRepository extends LazyLogging {
       /** Additionnal check for file-based databases (SQLite) */
       udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
       udsDbCtx.getEntityManager().find(classOf[ExternalDb], 1L)
-
       logger.debug("Proline is already set up !")
-
       true
 
     } catch {
       case t: Throwable => {
 
         System.err.println("WARN - Proline is not set up !")
-        if (verbose) System.err.println(t.getMessage())
-
+        //if (verbose) System.err.println(t.getMessage())
         logger.trace("Proline is not set up : ", t)
 
         false
@@ -157,9 +154,7 @@ object UdsRepository extends LazyLogging {
       if (udsDbCtx != null) udsDbCtx.close()
       //if (udsDbConnector != null && udsDbConnector.isClosed() == false) udsDbConnector.close()
     }
-
   }
-
   /**
    *  Get the exhaustive list of UserAccount instances in database as a map of type "login ->  id"
    */

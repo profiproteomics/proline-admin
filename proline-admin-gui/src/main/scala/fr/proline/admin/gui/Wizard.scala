@@ -19,7 +19,7 @@ import scala.util.matching.Regex
 import scala.collection.mutable.Set
 import scalafx.scene.Node
 import scala.collection.mutable.LinkedHashMap
-import fr.proline.admin.gui.wizard.component.ButtonsPanel
+import fr.proline.admin.gui.wizard.component.HomeButtonsPanel
 import fr.proline.admin.gui.wizard.component.ItemsPanel
 import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.util.FxUtils
@@ -102,7 +102,7 @@ class Wizard extends Application {
     require(Wizard.stage == null, "stage is already instantiated")
 
     Wizard.configItemsPanel = ItemsPanel
-    Wizard.buttonsPanel = ButtonsPanel()
+    Wizard.buttonsPanel = HomeButtonsPanel()
     Wizard.stage = new Stage(stage) {
       scene = new Scene(Wizard.root)
       minWidth = 750

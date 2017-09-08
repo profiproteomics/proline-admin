@@ -26,7 +26,7 @@ import fr.proline.admin.gui.wizard.util.ShowPopupWindow
 /**
  * Create panel contains buttons : cancel and go .
  */
-object ButtonsPanel extends LazyLogging {
+object HomeButtonsPanel extends LazyLogging {
 
   /**
    * ******* *

@@ -15,7 +15,7 @@ import fr.proline.admin.gui.Wizard
 import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
 import scalafx.scene.control.ProgressIndicator
-import fr.proline.admin.gui.wizard.component.TaskUpgradeDatabases
+import fr.proline.admin.gui.wizard.component.DbMaintenance
 import javafx.concurrent.WorkerStateEvent
 import javafx.event.EventHandler
 import fr.profi.util.scalafx.ScalaFxUtils.newVSpacer
@@ -26,7 +26,7 @@ import fr.proline.admin.gui.wizard.util._
 
 class ProgressBarWindow(
   wTitle: String,
-  task: TaskUpgradeDatabases,
+  task: DbMaintenance,
   wParent: Option[Stage] = Option(Wizard.stage),
   isResizable: Boolean = false) extends Stage {
   val popup = this
@@ -65,11 +65,10 @@ class ProgressBarWindow(
     }
   })
 }
-
 object ProgressBarWindow {
   def apply(
     wTitle: String,
-    task: TaskUpgradeDatabases,
+    task: DbMaintenance,
     wParent: Option[Stage] = Option(Wizard.stage),
     isResizable: Boolean = false) { new ProgressBarWindow(wTitle, task, wParent, isResizable).showAndWait() }
 }
