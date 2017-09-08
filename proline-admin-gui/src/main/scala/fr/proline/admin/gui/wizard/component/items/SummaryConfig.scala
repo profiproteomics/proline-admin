@@ -50,21 +50,21 @@ class SummaryConfig(val name: String) extends Item with LazyLogging {
   alignmentInParent = Pos.Center
   prefHeight <== Wizard.stage.height - 50
   spacing = 1
-  content = List(ScalaFxUtils.newVSpacer(minH = 20), new HBox {
+  children = List(ScalaFxUtils.newVSpacer(minH = 20), new HBox {
     fillWidth = true
-    content = Seq(new HBox {
+    children = Seq(new HBox {
       spacing = 15
-      content = Seq(new HBox {
-        content = Seq(FxUtils.newImageView(IconResource.BIGINFOS))
+      children = Seq(new HBox {
+        children = Seq(FxUtils.newImageView(IconResource.BIGINFOS))
       }, panelTitle)
     }, ScalaFxUtils.newHSpacer(minW = 45), new HBox {
-      content = Seq(headerHelpIcon)
+      children = Seq(headerHelpIcon)
     })
   }, ScalaFxUtils.newVSpacer(minH = 30), new VBox {
     prefWidth <== Wizard.configItemsPanel.width - 30
     prefHeight <== Wizard.configItemsPanel.height - 30
     spacing = 50
-    content = List(prolineServerBox, prolineModuleBox, prolineWebBox, prolinePgServerBox)
+    children = List(prolineServerBox, prolineModuleBox, prolineWebBox, prolinePgServerBox)
   })
 
   /* help function */

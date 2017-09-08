@@ -34,7 +34,7 @@ class PopupHelpWindow(
       alignment = Pos.Center
       spacing = 15
       padding = Insets(10)
-      content = List(
+      children = List(
         new Label(wText) {
           wrapText = true
         },
@@ -42,7 +42,7 @@ class PopupHelpWindow(
           alignment = Pos.Center
           padding = Insets(10)
           spacing = 30
-          content = Seq(
+          children = Seq(
             new Button("  Ok  ") {
               minWidth = 20
               onAction = handle {

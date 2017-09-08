@@ -40,12 +40,12 @@ class ProgressBarWindow(
       alignment = Pos.Center
       spacing = 15
       padding = Insets(10)
-      content = List(
+      children = List(
         new VBox {
           alignment = Pos.Center
           padding = Insets(10)
           spacing = 30
-          content = Seq(
+          children = Seq(
             new Label("Setup/Update Proline databases\n  \t\t in progress ..."),
             new ProgressIndicator {
               progress <== task.progress

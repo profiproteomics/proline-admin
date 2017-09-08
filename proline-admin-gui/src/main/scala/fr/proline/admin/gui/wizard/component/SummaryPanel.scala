@@ -50,11 +50,11 @@ object SummaryPanel extends LazyLogging {
   def get(item: Item) {
     if (item.isInstanceOf[PgServerConfig]) {
       val pgServer = item.asInstanceOf[PgServerConfig]
-      NavigationButtonsPanel.summaryPanel.prolinePgServerBox.content = new TitledBorderPane(
+      NavigationButtonsPanel.summaryPanel.prolinePgServerBox.children = new TitledBorderPane(
         title = "PostgreSQL Server Configuration ",
         contentNode = new VBox {
           spacing = 1
-          content = Seq(
+          children = Seq(
             new Label {
               text = s"""Access Right: OK """
             },
@@ -72,11 +72,11 @@ object SummaryPanel extends LazyLogging {
         text = "Set up or update Proline databases"
         selected = false
       }
-      NavigationButtonsPanel.summaryPanel.prolineServerBox.content = new TitledBorderPane(
+      NavigationButtonsPanel.summaryPanel.prolineServerBox.children = new TitledBorderPane(
         title = "Proline Server Configuration",
         contentNode = new VBox {
           spacing = 1
-          content = Seq(
+          children = Seq(
             new Label {
               text = server.postgres.getInfos
             },
@@ -94,7 +94,7 @@ object SummaryPanel extends LazyLogging {
       val module = item.asInstanceOf[ModuleConfig]
       val SeqReposArea = new VBox {
         spacing = 1
-        content = Seq(
+        children = Seq(
           new Label {
             text = module.PostGreSQLSeq.getInfos
           },
@@ -105,21 +105,21 @@ object SummaryPanel extends LazyLogging {
             text = module.jmsServer.getInfos
           }, ScalaFxUtils.newVSpacer(1))
       }
-      NavigationButtonsPanel.summaryPanel.prolineModuleBox.content = new TitledBorderPane(title = "Proline Sequence Repository ",
-        contentNode = new VBox { content = Seq(SeqReposArea) })
+      NavigationButtonsPanel.summaryPanel.prolineModuleBox.children = new TitledBorderPane(title = "Proline Sequence Repository ",
+        contentNode = new VBox { children = Seq(SeqReposArea) })
     }
     /* Proline web summary */
     if (item.isInstanceOf[ProlineWebConfig]) {
       val prolineWeb = item.asInstanceOf[ProlineWebConfig]
       val prolineWebArea = new VBox {
         spacing = 1
-        content = Seq(
+        children = Seq(
           new Label {
             text = prolineWeb.prolinePwx.getInfos
           }, ScalaFxUtils.newVSpacer(1))
       }
-      NavigationButtonsPanel.summaryPanel.prolineWebBox.content = new TitledBorderPane(title = "Proline Web",
-        contentNode = new VBox { content = Seq(prolineWebArea) })
+      NavigationButtonsPanel.summaryPanel.prolineWebBox.children = new TitledBorderPane(title = "Proline Web",
+        contentNode = new VBox { children = Seq(prolineWebArea) })
     }
   }
 

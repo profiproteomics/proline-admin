@@ -75,7 +75,7 @@ class ConfigFilesSelectionTabContent()(implicit parentStage: Stage) extends Abst
     new VBox {
       alignmentInParent = Pos.TopCenter
       spacing = 40
-      content = Seq(
+      children = Seq(
         prolineConfigFiles,
         pgsqlDataDir,
         //TODO: enable me: seqRepoConfigFile,

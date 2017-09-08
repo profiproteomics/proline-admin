@@ -65,19 +65,19 @@ trait IBorderedPane extends VBox {
   /* Wrap content to force padding */
   private lazy val paddedContent = new VBox {
     padding = contentPadding
-    content = contentNode
+    children = contentNode
   }
 
   //content = Seq(titleLabel, paddedContent)
   protected def initContent() {
-    content = Seq(paddedContent)
+    children = Seq(paddedContent)
   }
 
   /** Update titled bordered panel content **/
   def setContentNode(newContentNode: Node, contentPadding: Insets = Insets(10)) {
-    paddedContent.content = newContentNode
+    paddedContent.children = newContentNode
     paddedContent.padding = contentPadding
-    content = Seq(paddedContent)
+    children = Seq(paddedContent)
   }
 }
 
@@ -120,18 +120,18 @@ trait ITitledBorderPane extends VBox {
   /* Wrap content to force padding */
   private lazy val paddedContent = new VBox {
     padding = contentPadding
-    content = contentNode
+    children = contentNode
   }
 
   //content = Seq(titleLabel, paddedContent)
   protected def initContent() {
-    content = Seq(titleLabel, paddedContent)
+    children = Seq(titleLabel, paddedContent)
   }
 
   /** Update titled bordered panel content **/
   def setContentNode(newContentNode: Node, contentPadding: Insets = Insets(10)) {
-    paddedContent.content = newContentNode
+    paddedContent.children = newContentNode
     paddedContent.padding = contentPadding
-    content = Seq(titleLabel, paddedContent)
+    children = Seq(titleLabel, paddedContent)
   }
 }

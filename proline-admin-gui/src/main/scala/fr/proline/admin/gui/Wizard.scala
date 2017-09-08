@@ -66,11 +66,11 @@ object Wizard extends LazyLogging {
   /*Primary stage's root */
   lazy val root = new VBox {
     id = "root"
-    content = new VBox {
+    children = new VBox {
       vgrow = Priority.Always
       padding = Insets(10)
       spacing = 40
-      content = Seq(configItemsPanel, buttonsPanel)
+      children = Seq(configItemsPanel, buttonsPanel)
     }
   }
 

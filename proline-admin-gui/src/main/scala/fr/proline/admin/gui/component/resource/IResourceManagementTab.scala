@@ -63,13 +63,13 @@ trait INewEntryPanel extends ITitledBorderPane {
    */
 
   private val buttons = new HBox {
-    content = Seq(applyButton, cancelButton)
+    children = Seq(applyButton, cancelButton)
     alignment = Pos.BottomRight
     spacing = 5
   }
 
   protected lazy val contentNode = new VBox {
-    content = Seq(form, buttons)
+    children = Seq(form, buttons)
     spacing = 5
   }
 

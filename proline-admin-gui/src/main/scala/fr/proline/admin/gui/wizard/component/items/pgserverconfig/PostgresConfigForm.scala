@@ -198,7 +198,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
           maxWidth = VALUE_NODE_WIDTH
           padding = Insets(0, 0, 0, 20)
           spacing = 8
-          content = Seq(
+          children = Seq(
             hoursField,
             new Label("hours") {
               minWidth = 10
@@ -284,7 +284,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
           maxWidth = VALUE_NODE_WIDTH
           padding = Insets(0, 0, 0, 20)
           spacing = 8
-          content = Seq(numericField, unitBox)
+          children = Seq(numericField, unitBox)
         }
       } /* FOR FLOATS AND INTEGERS */ else {
 
@@ -345,7 +345,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
             minWidth = VALUE_NODE_WIDTH
             maxWidth = VALUE_NODE_WIDTH
             padding = Insets(0, 0, 0, 20)
-            content = numericField
+            children = numericField
           }
         } else {
           new HBox {
@@ -353,7 +353,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
             maxWidth = VALUE_NODE_WIDTH
             padding = Insets(0, 0, 0, 20)
             spacing = 5
-            content = Seq(
+            children = Seq(
               numericField,
               new Label(unit) {
                 minWidth = 70
@@ -426,7 +426,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
     gridLinesVisible = true
     alignment = Pos.BottomCenter
     vgap = 40
-    content = ScalaFxUtils.getFormattedGridContent3(nodeBuffer.result())
+    children = ScalaFxUtils.getFormattedGridContent3(nodeBuffer.result())
   }
 
   /* Buttons */
@@ -441,14 +441,14 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
   val topButtons = new HBox {
     alignmentInParent = Pos.Center
     spacing = 20
-    content = Seq(setAllToOptimizedButton, setQllToDefaultsButton)
+    children = Seq(setAllToOptimizedButton, setQllToDefaultsButton)
   }
 
   /* VBox content */
   alignment = Pos.Center
   padding = Insets(30, 40, 30, 5)
   spacing = 30
-  content = Seq(topButtons, warningAboutRestartLabel, noteLabel, paramsGridPane, wrappedApplyButton)
+  children = Seq(topButtons, warningAboutRestartLabel, noteLabel, paramsGridPane, wrappedApplyButton)
 
   /*
    * ******** *

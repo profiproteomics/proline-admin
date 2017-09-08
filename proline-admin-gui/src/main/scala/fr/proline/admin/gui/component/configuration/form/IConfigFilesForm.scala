@@ -26,7 +26,7 @@ trait IConfigFilesForm extends Node {
   }
 
   val wrappedApplyButton = new StackPane {
-    content = applyButton
+    children = applyButton
     alignment = Pos.BottomRight
   }
 

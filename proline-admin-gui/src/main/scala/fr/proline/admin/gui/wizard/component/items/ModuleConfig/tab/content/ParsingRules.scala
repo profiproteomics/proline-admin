@@ -85,11 +85,11 @@ class ParsingRules extends VBox with LazyLogging {
   }
   val accessionAndResetBox = new HBox {
     spacing = 10
-    content = Seq(defaultProteinAccessionField, resetAccessionButton)
+    children = Seq(defaultProteinAccessionField, resetAccessionButton)
   }
   val defaultAccessionBox = new VBox {
     spacing = V_SPACING
-    content = List(defaultProteinAccessionLabel, accessionAndResetBox)
+    children = List(defaultProteinAccessionLabel, accessionAndResetBox)
     prefWidth <== fastaDirBox.width
   }
 
@@ -145,21 +145,21 @@ class ParsingRules extends VBox with LazyLogging {
     titleTooltip = "Extract accession numbers from Fasta files",
     contentNode = new VBox {
       spacing = V_SPACING
-      content = List(
+      children = List(
         new VBox {
           spacing = 0.5
-          content = List(emptyFastaWarningLabel,
+          children = List(emptyFastaWarningLabel,
             emptyRulesWarningLabel)
         },
         defaultAccessionBox,
         new HBox {
           spacing = H_SPACING * 3
-          content = List(localFastaDirLablel, addLocalFastaDirectory)
+          children = List(localFastaDirLablel, addLocalFastaDirectory)
         },
         fastaDirBox,
         new HBox {
           spacing = H_SPACING * 3
-          content = List(parsingRulesLablel, addRuleButton)
+          children = List(parsingRulesLablel, addRuleButton)
         },
         RulesBox)
     })
@@ -214,12 +214,12 @@ class ParsingRules extends VBox with LazyLogging {
   def _addFastaDirectory(value: String = "") {
     def _onFastaDirDelete(mp: FastaDirectory): Unit = {
       localFastaDirs -= mp
-      fastaDirBox.content = localFastaDirs
+      fastaDirBox.children = localFastaDirs
       warningFastaDir
     }
     localFastaDirs += new FastaDirectory(parentStage = Wizard.stage,
       onDeleteAction = _onFastaDirDelete, value = value)
-    fastaDirBox.content = localFastaDirs
+    fastaDirBox.children = localFastaDirs
     warningFastaDir
   }
 
@@ -228,7 +228,7 @@ class ParsingRules extends VBox with LazyLogging {
   def _addRule(name: String = "", fastaName: String = "", fastaVersion: String = "", proteinAccession: String = "") {
     def _onRulesDelete(r: Rules): Unit = {
       localRules -= r
-      RulesBox.content = localRules
+      RulesBox.children = localRules
       warningParsingRules
     }
     localRules += new Rules(parentStage = Wizard.stage,
@@ -236,17 +236,17 @@ class ParsingRules extends VBox with LazyLogging {
       name = name, fastaName = fastaName,
       fastaVersion = fastaVersion,
       proteinAccession = proteinAccession)
-    RulesBox.content = localRules
+    RulesBox.children = localRules
     warningParsingRules
   }
   val mountPointsWithDisableNote = new VBox {
     spacing = 15
-    content = Seq(parsingRules)
+    children = Seq(parsingRules)
   }
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = 5
-  content = List(mountPointsWithDisableNote)
+  children = List(mountPointsWithDisableNote)
 
   /** get GUI information to set default protein accession **/
   private def _getDefaultProteinAccesion(): Option[String] = {
@@ -341,7 +341,7 @@ class FastaDirectory(
 
   spacing = 10
   alignment = Pos.Center
-  content = List(valueField, browseButton, removeButton)
+  children = List(valueField, browseButton, removeButton)
 
   def getValue = valueField.text()
 
@@ -416,18 +416,18 @@ class Rules(
   val ruleBox = new SimpleBorderPane(
     contentNode = new VBox {
       spacing = 5
-      content = Seq(warningDatalabel, new HBox {
+      children = Seq(warningDatalabel, new HBox {
         spacing = 5
-        content = List(nameLabel, nameText, fastaNameLabel, fastaNameText)
+        children = List(nameLabel, nameText, fastaNameLabel, fastaNameText)
       }, new HBox {
         spacing = 5
-        content = List(fastaVersionLabel, fastaVersionText, proteinAccessionLabel, proteinAccessionText)
+        children = List(fastaVersionLabel, fastaVersionText, proteinAccessionLabel, proteinAccessionText)
       })
     })
 
   spacing = 10
   alignment = Pos.CENTER
-  content = List(ruleBox, removeButton)
+  children = List(ruleBox, removeButton)
   def checkForm() {
     if (ScalaUtils.isEmpty(nameText.getText) || ScalaUtils.isEmpty(fastaNameText.getText)
       || ScalaUtils.isEmpty(fastaVersionText.getText) || ScalaUtils.isEmpty(proteinAccessionText.getText)) {

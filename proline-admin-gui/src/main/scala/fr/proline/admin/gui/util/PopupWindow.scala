@@ -53,7 +53,7 @@ class PopupWindow(
       spacing = 15
       padding = Insets(10)
       //content = new TextArea {
-      content = List(
+      children = List(
 
         new Label(wText) {
           wrapText = true

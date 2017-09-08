@@ -69,15 +69,15 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
   alignmentInParent = Pos.Center
   prefHeight <== Wizard.stage.height - 50
   spacing = 1
-  content = List(ScalaFxUtils.newVSpacer(minH = 20), new HBox {
+  children = List(ScalaFxUtils.newVSpacer(minH = 20), new HBox {
     fillWidth = true
-    content = Seq(new HBox {
+    children = Seq(new HBox {
       spacing = 15
-      content = Seq(new HBox {
-        content = Seq(FxUtils.newImageView(IconResource.SETTING))
+      children = Seq(new HBox {
+        children = Seq(FxUtils.newImageView(IconResource.SETTING))
       }, panelTitle)
     }, ScalaFxUtils.newHSpacer(minW = 45), new HBox {
-      content = Seq(headerHelpIcon)
+      children = Seq(headerHelpIcon)
     })
   }, ScalaFxUtils.newVSpacer(minH = 10), tabPane)
 

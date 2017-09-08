@@ -128,36 +128,36 @@ class ProlineMountFiles extends VBox with LazyLogging {
     titleTooltip = "Mount points as defined in Proline server configuration",
     contentNode = new VBox {
       spacing = 2 * V_SPACING
-      content = List(
+      children = List(
         new HBox {
           spacing = H_SPACING
-          content = List(rawFilesMpLabel, addRawFilesMpButton)
+          children = List(rawFilesMpLabel, addRawFilesMpButton)
         },
         rawFilesMpBox,
 
         new HBox {
           spacing = H_SPACING
-          content = List(mzdbFilesMpLabel, addMzdbFilesMpButton)
+          children = List(mzdbFilesMpLabel, addMzdbFilesMpButton)
         },
         mzdbFilesMpBox,
 
         new HBox {
           spacing = H_SPACING
-          content = List(resultFilesMpLabel, addResultFilesMpButton)
+          children = List(resultFilesMpLabel, addResultFilesMpButton)
         },
         resultFilesMpBox)
     })
 
   val mountPointsWithDisableNote = new VBox {
     spacing = 15
-    content = Seq(disableMpNoteLabel, mountPointsSettings)
+    children = Seq(disableMpNoteLabel, mountPointsSettings)
   }
 
   /* VBox layout and content */
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = 5
-  content = List(
+  children = List(
     mountPointsWithDisableNote)
 
   /*
@@ -257,7 +257,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
 
     def _onRawFileMpDelete(mp: MountPointPanelWizard): Unit = {
       rawFilesMountPoints -= mp
-      rawFilesMpBox.content = rawFilesMountPoints
+      rawFilesMpBox.children = rawFilesMountPoints
     }
 
     rawFilesMountPoints += new MountPointPanelWizard(
@@ -265,7 +265,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
       value = value,
       onDeleteAction = _onRawFileMpDelete,
       parentStage = Wizard.stage)
-    rawFilesMpBox.content = rawFilesMountPoints
+    rawFilesMpBox.children = rawFilesMountPoints
   }
 
   /** Add stuff to define another mzdb_files mount point **/
@@ -275,7 +275,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
 
     def _onMzdbFileMpDelete(mp: MountPointPanelWizard): Unit = {
       mzdbFilesMountPoints -= mp
-      mzdbFilesMpBox.content = mzdbFilesMountPoints
+      mzdbFilesMpBox.children = mzdbFilesMountPoints
     }
 
     mzdbFilesMountPoints += new MountPointPanelWizard(
@@ -283,7 +283,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
       value = value,
       onDeleteAction = _onMzdbFileMpDelete,
       parentStage = Wizard.stage)
-    mzdbFilesMpBox.content = mzdbFilesMountPoints
+    mzdbFilesMpBox.children = mzdbFilesMountPoints
   }
 
   /** Add stuff to define another result_files mount point **/
@@ -293,7 +293,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
 
     def _onResultFileMpDelete(mp: MountPointPanelWizard): Unit = {
       resultFilesMountPoints -= mp
-      resultFilesMpBox.content = resultFilesMountPoints
+      resultFilesMpBox.children = resultFilesMountPoints
     }
 
     resultFilesMountPoints += new MountPointPanelWizard(
@@ -301,7 +301,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
       value = value,
       onDeleteAction = _onResultFileMpDelete,
       parentStage = Wizard.stage)
-    resultFilesMpBox.content = resultFilesMountPoints
+    resultFilesMpBox.children = resultFilesMountPoints
   }
 
   /** Action run when "Save" button is pressed **/
@@ -385,7 +385,7 @@ class MountPointPanelWizard(
   /* Layout */
   spacing = 10
   alignment = Pos.Center
-  content = List(keyField, equalLabel, valueField, browseButton, removeButton)
+  children = List(keyField, equalLabel, valueField, browseButton, removeButton)
 
   /* Features */
   def getKey = keyField.text()

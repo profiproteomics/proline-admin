@@ -98,7 +98,7 @@ trait IConfigTabContent extends AbstractConfigTabContent {
     alignment = Pos.BottomCenter
     alignmentInParent = Pos.BottomCenter
     spacing = 5
-    content = Seq(applyWorkingFileButton, cancelWorkingFileButton)
+    children = Seq(applyWorkingFileButton, cancelWorkingFileButton)
   }
 
   setContentNode(getNodeForScrollPane())
@@ -124,7 +124,7 @@ trait IConfigTabContent extends AbstractConfigTabContent {
   /** Compute content to display within the scrollpane **/
   protected def getNodeForScrollPane(additionalNode: Node = null) = new VBox {
     spacing = 30
-    content = if (form == null) Seq(_getWorkingFilesPanel(additionalNode)) else Seq(_getWorkingFilesPanel(additionalNode), form)
+    children = if (form == null) Seq(_getWorkingFilesPanel(additionalNode)) else Seq(_getWorkingFilesPanel(additionalNode), form)
   }
 
   private def _getWorkingFilesPanel(additionalNode: Node = null) = {
@@ -134,7 +134,7 @@ trait IConfigTabContent extends AbstractConfigTabContent {
         minHeight = 90
         spacing = 5
 
-        content = if (additionalNode == null) {
+        children = if (additionalNode == null) {
           Seq(configFilesPanel, buttons)
         } else Seq(configFilesPanel, additionalNode, buttons)
 

@@ -195,7 +195,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
   /* IPv4 */
   val ipv4Panel = new VBox {
     vgrow = Priority.Always
-    content = List(
+    children = List(
       //      new HBox {
       //        spacing = H_SPACING
       //        content = List(ipv4Label, addIPv4LineButton)
@@ -205,7 +205,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
       newVSpacer(15, 25),
 
       new HBox {
-        content = _columnNames(AddressType.IPv4)
+        children = _columnNames(AddressType.IPv4)
       },
 
       newVSpacer(10, 20),
@@ -220,9 +220,9 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
   /* IPv6 */
   val ipv6Panel = new VBox {
     vgrow = Priority.Always
-    content = List(
+    children = List(
       addIPv6LineButton,
-      new HBox { content = _columnNames(AddressType.IPv6) },
+      new HBox { children = _columnNames(AddressType.IPv6) },
       newVSpacer(15, 25),
       ipv6LinesBox)
   }
@@ -231,9 +231,9 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
     "IPv6",
     ipv6Panel)
 
-  /* VBox content */
+  /* VBox children */
   spacing = 20
-  content = Seq(warningLabel, ipV4BorderPane, ipV6BorderPane, wrappedApplyButton)
+  children = Seq(warningLabel, ipV4BorderPane, ipV6BorderPane, wrappedApplyButton)
 
   /*
    * ************* *
@@ -321,8 +321,8 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
         line.index.set(i) //property linked to UI
       }
 
-      // Update VBox content
-      linesBox.content = linesBuffer
+      // Update VBox children
+      linesBox.children = linesBuffer
     }
 
     /* Add new line */
@@ -338,7 +338,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
       method,
       commented)
 
-    linesBox.content = linesBuffer
+    linesBox.children = linesBuffer
   }
 
   /** Add components to define another IPv4 connection **/
@@ -565,7 +565,7 @@ case class PgHbaLine(
   val SPACING = 15
   alignment = Pos.Center
 
-  content = List(
+  children = List(
     indexLabel,
     newHSpacer(SPACING),
     //    commentedBox,
@@ -757,7 +757,7 @@ class DatabaseNameDialog(
   val buttons = new HBox {
     alignmentInParent = Pos.Center
     spacing = 20
-    content = buttonList
+    children = buttonList
   }
 
   /* Scene */
@@ -920,7 +920,7 @@ class AdressDialog(
   val buttons = new HBox {
     alignmentInParent = Pos.Center
     spacing = 20
-    content = buttonList
+    children = buttonList
   }
 
   /* Scene */

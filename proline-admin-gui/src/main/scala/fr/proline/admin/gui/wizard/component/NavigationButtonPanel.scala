@@ -78,13 +78,13 @@ object NavigationButtonsPanel extends LazyLogging {
    */
 
   val prevBox = new HBox {
-    content = Seq(prevButton)
+    children = Seq(prevButton)
   }
   val nextBox = new HBox {
-    content = Seq(nextButton)
+    children = Seq(nextButton)
   }
   val cancelBox = new HBox {
-    content = Seq(cancelButton)
+    children = Seq(cancelButton)
   }
   Seq(
     cancelButton, nextButton, prevButton, validateButton).foreach { b =>
@@ -105,7 +105,7 @@ object NavigationButtonsPanel extends LazyLogging {
       alignment = Pos.BaselineRight
       padding = Insets(10)
       spacing = 10
-      content = Seq(
+      children = Seq(
         prevBox, nextBox, cancelBox)
     }
   }

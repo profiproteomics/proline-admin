@@ -45,7 +45,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
 
   /* Proline Admin configuration file */
   val adminConfigLabel = new HBox {
-    content = List(
+    children = List(
       new Label("Full path to "),
       new BoldLabel("ProlineAdmin", upperCase = false),
       new Label(" configuration file :"))
@@ -67,7 +67,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
 
   /* Proline Server configuration file */
   val serverConfigLabel = new HBox {
-    content = List(
+    children = List(
       new Label("Full path to "),
       new BoldLabel("Proline server", upperCase = false),
       new Label(" configuration file :"))
@@ -103,7 +103,7 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
 
   /* PWX configuration file */
   val pwxConfigLabel = new HBox {
-    content = List(
+    children = List(
       new Label("Full path to "),
       new BoldLabel("Proline Web Extension (PWX)", upperCase = false),
       new Label(" configuration file :"))
@@ -145,27 +145,27 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
     }
 
   /* Organize and render */
-  content = new VBox {
+  children = new VBox {
     minWidth = 464
     prefWidth = 592
     spacing = 5
 
-    content = Seq(
+    children = Seq(
 
       adminConfigLabel,
       new HBox {
         spacing = 5
-        content = Seq(adminConfigField, adminConfigBrowse)
+        children = Seq(adminConfigField, adminConfigBrowse)
       },
       ScalaFxUtils.newVSpacer(minH = 10),
 
       serverConfigLabel,
       new HBox {
         spacing = 5
-        content = Seq(serverConfigField, serverConfigBrowse)
+        children = Seq(serverConfigField, serverConfigBrowse)
       },
       new StackPane {
-        content = List(serverConfigNbLabel, serverConfigWarningLabel)
+        children = List(serverConfigNbLabel, serverConfigWarningLabel)
         alignmentInParent = Pos.BaselineLeft
       },
       ScalaFxUtils.newVSpacer(minH = 10),
@@ -173,10 +173,10 @@ class ProlineConfigFilesPanel(onAdminConfigChange: AdminConfigFile => Unit = nul
       pwxConfigLabel,
       new HBox {
         spacing = 5
-        content = Seq(pwxConfigField, pwxConfigBrowse)
+        children = Seq(pwxConfigField, pwxConfigBrowse)
       },
       new StackPane {
-        content = List(pwxConfigNbLabel, pwxConfigWarningLabel)
+        children = List(pwxConfigNbLabel, pwxConfigWarningLabel)
         alignmentInParent = Pos.BaselineLeft
       })
   }

@@ -235,7 +235,7 @@ object ButtonsPanel extends LazyLogging {
       padding = Insets(10)
       spacing = 10
 
-      content = Seq(
+      children = Seq(
         //TODO: enable me replayWizardButton,
         //ScalaFxUtils.newVSpacer(),
         configurationButton,

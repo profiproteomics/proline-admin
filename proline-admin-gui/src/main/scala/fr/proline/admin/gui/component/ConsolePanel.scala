@@ -31,7 +31,7 @@ object ConsolePanel {
 
   /** Provide the webview a grey border */
   val consoleArea = new StackPane {
-    content = consoleDisp
+    children = consoleDisp
     margin = Insets(10)
     style = "-fx-border-color: #C0C0C0; -fx-border-width: 1; -fx-border-radius:2;"
     hgrow = Priority.Always

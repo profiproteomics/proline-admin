@@ -228,7 +228,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
   //Set text- and password textfields at the same place in UI
   val dbPwdPane = new StackPane {
     alignmentInParent = Pos.BottomLeft
-    content = List(passwordPWDField, passwordTextField)
+    children = List(passwordPWDField, passwordTextField)
   }
 
   val dbConnectionSettings = new TitledBorderPane(
@@ -237,27 +237,27 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
       padding = Insets(5)
       spacing = V_SPACING
       alignment = Pos.BaselineRight
-      content = List(
+      children = List(
         new HBox {
           spacing = H_SPACING
-          content = List(userNameLabel, userNameField)
+          children = List(userNameLabel, userNameField)
         },
         new HBox {
           spacing = H_SPACING
-          content = List(pwdLabel, dbPwdPane, showPwdBox)
+          children = List(pwdLabel, dbPwdPane, showPwdBox)
         },
         new HBox {
           spacing = H_SPACING
-          content = List(
+          children = List(
             hostNameLabel,
             new VBox {
-              content = List(hostNameField, hostNameWarning)
+              children = List(hostNameField, hostNameWarning)
             }
           )
         },
         new HBox {
           spacing = H_SPACING
-          content = List(portLabel, portField)
+          children = List(portLabel, portField)
         },
         testConnectionHyperlink
       )
@@ -270,22 +270,22 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
     titleTooltip = "Mount points as defined in Proline server configuration",
     contentNode = new VBox {
       spacing = 2 * V_SPACING
-      content = List(
+      children = List(
         new HBox {
           spacing = H_SPACING
-          content = List(rawFilesMpLabel, addRawFilesMpButton)
+          children = List(rawFilesMpLabel, addRawFilesMpButton)
         },
         rawFilesMpBox,
 
         new HBox {
           spacing = H_SPACING
-          content = List(mzdbFilesMpLabel, addMzdbFilesMpButton)
+          children = List(mzdbFilesMpLabel, addMzdbFilesMpButton)
         },
         mzdbFilesMpBox,
 
         new HBox {
           spacing = H_SPACING
-          content = List(resultFilesMpLabel, addResultFilesMpButton)
+          children = List(resultFilesMpLabel, addResultFilesMpButton)
         },
         resultFilesMpBox
       )
@@ -294,7 +294,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
 
   val mountPointsWithDisableNote = new VBox {
     spacing = 20
-    content = List(disableMpNoteLabel, mountPointsSettings)
+    children = List(disableMpNoteLabel, mountPointsSettings)
   }
 
   /* VBox layout and content */
@@ -302,7 +302,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
   alignmentInParent = Pos.Center
 //  padding = Insets(25, 20, 15, 30)
   spacing = 4 * V_SPACING
-  content = List(
+  children = List(
     //prolineSettings,
     dbConnectionSettings,
     mountPointsWithDisableNote,
@@ -440,7 +440,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
 
     def _onRawFileMpDelete(mp: MountPointPanel): Unit = {
       rawFilesMountPoints -= mp
-      rawFilesMpBox.content = rawFilesMountPoints
+      rawFilesMpBox.children = rawFilesMountPoints
     }
 
     rawFilesMountPoints += new MountPointPanel(
@@ -449,7 +449,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
       onDeleteAction = _onRawFileMpDelete,
       parentStage = parentStage
     )
-    rawFilesMpBox.content = rawFilesMountPoints
+    rawFilesMpBox.children = rawFilesMountPoints
   }
 
   /** Add stuff to define another mzdb_files mount point **/
@@ -460,7 +460,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
 
     def _onMzdbFileMpDelete(mp: MountPointPanel): Unit = {
       mzdbFilesMountPoints -= mp
-      mzdbFilesMpBox.content = mzdbFilesMountPoints
+      mzdbFilesMpBox.children = mzdbFilesMountPoints
     }
 
     mzdbFilesMountPoints += new MountPointPanel(
@@ -469,7 +469,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
       onDeleteAction = _onMzdbFileMpDelete,
       parentStage = parentStage
     )
-    mzdbFilesMpBox.content = mzdbFilesMountPoints
+    mzdbFilesMpBox.children = mzdbFilesMountPoints
   }
 
   /** Add stuff to define another result_files mount point **/
@@ -480,7 +480,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
 
     def _onResultFileMpDelete(mp: MountPointPanel): Unit = {
       resultFilesMountPoints -= mp
-      resultFilesMpBox.content = resultFilesMountPoints
+      resultFilesMpBox.children = resultFilesMountPoints
     }
 
     resultFilesMountPoints += new MountPointPanel(
@@ -489,7 +489,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
       onDeleteAction = _onResultFileMpDelete,
       parentStage = parentStage
     )
-    resultFilesMpBox.content = resultFilesMountPoints
+    resultFilesMpBox.children = resultFilesMountPoints
   }
   
   /** Check form **/
@@ -659,7 +659,7 @@ class MountPointPanel(
   /* Layout */
   spacing = 10
   alignment = Pos.Center
-  content = List(keyField, equalLabel, valueField, browseButton, removeButton)
+  children = List(keyField, equalLabel, valueField, browseButton, removeButton)
 
   /* Features */
   def getKey = keyField.text()

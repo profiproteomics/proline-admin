@@ -26,7 +26,7 @@ class CustomScrollPane(
   content = contentPane
 
   def setContentNode(newContentNode: Node) {
-    contentPane.content = newContentNode
+    contentPane.children = newContentNode
     this.content = contentPane
   }
 

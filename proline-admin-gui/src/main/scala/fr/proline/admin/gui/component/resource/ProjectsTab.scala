@@ -61,7 +61,7 @@ class ProjectsTab() extends IResourceManagementTab {
     prefHeight = CONTENT_PREF_HEIGHT
     spacing = 5
     padding = Insets(20)
-    content = Seq(newEntryPanel, table)
+    children = Seq(newEntryPanel, table)
   }
 
   content = tabContent
@@ -279,7 +279,7 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
       new ColumnConstraints { percentWidth = 20 },
       new ColumnConstraints { percentWidth = 80 })
 
-    content = ScalaFxUtils.getFormattedGridContent5(Seq(
+    children = ScalaFxUtils.getFormattedGridContent5(Seq(
       (ownerLabel, 0, 0, 1, 1),
       (ownerComboBox, 1, 0, 1, 1),
       (ownerWarningLabel, 1, 1, 1, 1),

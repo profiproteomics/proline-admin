@@ -113,21 +113,21 @@ class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
       prefWidth <== Wizard.configItemsPanel.width - 30
       prefHeight <== Wizard.configItemsPanel.height - 30
       spacing = 3
-      content = Seq(
+      children = Seq(
         warningDatalabel,
         hostLabel, new HBox {
           spacing = 5
-          content = Seq(hostField)
+          children = Seq(hostField)
         },
         ScalaFxUtils.newVSpacer(minH = 5), portLabel,
         new HBox {
           spacing = 5
-          content = Seq(portField)
+          children = Seq(portField)
         },
         ScalaFxUtils.newVSpacer(minH = 5), queueNameLabel,
         new HBox {
           spacing = 5
-          content = Seq(queueNameField)
+          children = Seq(queueNameField)
         },
         ScalaFxUtils.newVSpacer(minH = 5))
     })
@@ -135,17 +135,17 @@ class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
   // position in center
   val checkBoxPane = new VBox {
     spacing = 5
-    content = List(
+    children = List(
       new HBox {
         spacing = 5
-        content = Seq(embeddedJmsRdButton, specificJmsRdButton)
+        children = Seq(embeddedJmsRdButton, specificJmsRdButton)
       })
   }
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = 5
   margin = Insets(5, 5, 5, 5)
-  content = List(ScalaFxUtils.newVSpacer(minH = 5),
+  children = List(ScalaFxUtils.newVSpacer(minH = 5),
     checkBoxPane, ScalaFxUtils.newVSpacer(minH = 15),
     jmsServerPane)
 

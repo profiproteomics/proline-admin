@@ -157,19 +157,19 @@ class ProlinePwx extends VBox with LazyLogging {
     titleTooltip = "Jms Server Setting",
     contentNode = new VBox {
       spacing = 2 * V_SPACING
-      content = Seq(
+      children = Seq(
         new VBox {
           spacing = V_SPACING
-          content = List(hostLabel,
+          children = List(hostLabel,
             new HBox {
               spacing = H_SPACING
-              content = Seq(hostField)
+              children = Seq(hostField)
             },
             ScalaFxUtils.newVSpacer(minH = 10),
             portLabel,
             new HBox {
               spacing = H_SPACING
-              content = Seq(portField)
+              children = Seq(portField)
             })
         })
     })
@@ -180,39 +180,39 @@ class ProlinePwx extends VBox with LazyLogging {
     titleTooltip = "Mount points as defined in Proline web configuration",
     contentNode = new VBox {
       spacing = 2 * V_SPACING
-      content = List(
+      children = List(
         new HBox {
           spacing = H_SPACING
-          content = List(rawFilesMpLabel, addRawFilesMpButton)
+          children = List(rawFilesMpLabel, addRawFilesMpButton)
         },
         rawFilesMpBox,
 
         new HBox {
           spacing = H_SPACING
-          content = List(mzdbFilesMpLabel, addMzdbFilesMpButton)
+          children = List(mzdbFilesMpLabel, addMzdbFilesMpButton)
         },
         mzdbFilesMpBox,
 
         new HBox {
           spacing = H_SPACING
-          content = List(resultFilesMpLabel, addResultFilesMpButton)
+          children = List(resultFilesMpLabel, addResultFilesMpButton)
         },
         resultFilesMpBox)
     })
   val labelWarningPanel = new VBox {
     spacing = 2
-    content = Seq(disableMpNoteLabel, warningLabel)
+    children = Seq(disableMpNoteLabel, warningLabel)
   }
   val mountPointsWithDisableNote = new VBox {
     spacing = 20
-    content = Seq(pwxJmsSettings, ScalaFxUtils.newVSpacer(3), labelWarningPanel, ScalaFxUtils.newVSpacer(3), mountPointsSettings)
+    children = Seq(pwxJmsSettings, ScalaFxUtils.newVSpacer(3), labelWarningPanel, ScalaFxUtils.newVSpacer(3), mountPointsSettings)
   }
 
   /* VBox layout and content */
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = 5
-  content = List(
+  children = List(
     mountPointsWithDisableNote)
 
   /*
@@ -300,7 +300,7 @@ class ProlinePwx extends VBox with LazyLogging {
 
     def _onRawFileMpDelete(mp: MountPointPanelPwx): Unit = {
       rawFilesMountPoints -= mp
-      rawFilesMpBox.content = rawFilesMountPoints
+      rawFilesMpBox.children = rawFilesMountPoints
     }
 
     rawFilesMountPoints += new MountPointPanelPwx(
@@ -308,7 +308,7 @@ class ProlinePwx extends VBox with LazyLogging {
       value = value,
       onDeleteAction = _onRawFileMpDelete,
       parentStage = Wizard.stage)
-    rawFilesMpBox.content = rawFilesMountPoints
+    rawFilesMpBox.children = rawFilesMountPoints
   }
 
   /** Add stuff to define another mzdb_files mount point **/
@@ -318,7 +318,7 @@ class ProlinePwx extends VBox with LazyLogging {
 
     def _onMzdbFileMpDelete(mp: MountPointPanelPwx): Unit = {
       mzdbFilesMountPoints -= mp
-      mzdbFilesMpBox.content = mzdbFilesMountPoints
+      mzdbFilesMpBox.children = mzdbFilesMountPoints
     }
 
     mzdbFilesMountPoints += new MountPointPanelPwx(
@@ -326,7 +326,7 @@ class ProlinePwx extends VBox with LazyLogging {
       value = value,
       onDeleteAction = _onMzdbFileMpDelete,
       parentStage = Wizard.stage)
-    mzdbFilesMpBox.content = mzdbFilesMountPoints
+    mzdbFilesMpBox.children = mzdbFilesMountPoints
   }
 
   /** Add stuff to define another result_files mount point **/
@@ -336,7 +336,7 @@ class ProlinePwx extends VBox with LazyLogging {
 
     def _onResultFileMpDelete(mp: MountPointPanelPwx): Unit = {
       resultFilesMountPoints -= mp
-      resultFilesMpBox.content = resultFilesMountPoints
+      resultFilesMpBox.children = resultFilesMountPoints
     }
 
     resultFilesMountPoints += new MountPointPanelPwx(
@@ -344,7 +344,7 @@ class ProlinePwx extends VBox with LazyLogging {
       value = value,
       onDeleteAction = _onResultFileMpDelete,
       parentStage = Wizard.stage)
-    resultFilesMpBox.content = resultFilesMountPoints
+    resultFilesMpBox.children = resultFilesMountPoints
   }
 
   /* save Proline PWX configuration  file */
@@ -438,7 +438,7 @@ class MountPointPanelPwx(
   /* Layout */
   spacing = 10
   alignment = Pos.Center
-  content = List(keyField, equalLabel, valueField, browseButton, removeButton)
+  children = List(keyField, equalLabel, valueField, browseButton, removeButton)
 
   /* Features */
   def getKey = keyField.text()

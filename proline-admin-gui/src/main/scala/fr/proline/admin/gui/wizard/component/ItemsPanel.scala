@@ -81,7 +81,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   val postgreSQLLabel = new HBox {
     prefWidth = 250
     disable <== !postgreSQLChBox.selected
-    content = List(new Label("Path to PostgreSQL Data Directory: "))
+    children = List(new Label("Path to PostgreSQL Data Directory: "))
   }
   val postgreSQLField = new TextField() {
     disable <== !postgreSQLChBox.selected
@@ -122,7 +122,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   val prolineWebLabel = new HBox {
     prefWidth = 250
     disable <== !prolineWebChBox.selected
-    content = List(new Label("Path to Web Root ( File application.conf ): "))
+    children = List(new Label("Path to Web Root ( File application.conf ): "))
   }
   val prolineWebField = new TextField() {
     disable <== !prolineWebChBox.selected
@@ -153,7 +153,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   val seqReposLabel = new HBox {
     prefWidth = 250
     disable <== !seqReposChBox.selected
-    content = List(new Label("Path to SeqRepo Root ( File application.conf ): "))
+    children = List(new Label("Path to SeqRepo Root ( File application.conf ): "))
   }
   val seqReposField = new TextField() {
     disable <== !seqReposChBox.selected
@@ -185,7 +185,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
 
     prefWidth = 250
     disable <== !prolineServerChBox.selected
-    content = List(new Label("Path to Server Root ( File application.conf ): "))
+    children = List(new Label("Path to Server Root ( File application.conf ): "))
   }
   val prolineServerField = new TextField() {
     disable <== !prolineServerChBox.selected
@@ -214,40 +214,40 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   private val H_SPACING = 5
   val warningBox = new VBox {
     spacing = 0.5
-    content = Seq(warningCorruptedFile, errorNotValidServerFile, errorNotValidSeqReposFile, errorNotValidWebFile, errorNotValidPgData)
+    children = Seq(warningCorruptedFile, errorNotValidServerFile, errorNotValidSeqReposFile, errorNotValidWebFile, errorNotValidPgData)
   }
   val configItemsPane = new TitledBorderPane(
     title = "Select Configuration Item",
     contentNode = new VBox {
       minHeight = 400
       spacing = 10
-      content = List(
+      children = List(
         warningBox,
         ScalaFxUtils.newVSpacer(minH = 1, maxH = 1),
         prolineServerChBox,
         new HBox {
           spacing = 5
-          content = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), prolineServerLabel, prolineServerField, prolineServerBrowseButton)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), prolineServerLabel, prolineServerField, prolineServerBrowseButton)
         },
         ScalaFxUtils.newVSpacer(minH = 1, maxH = 1),
         prolineModulesChBox,
         new HBox {
           spacing = 5
-          content = Seq(ScalaFxUtils.newHSpacer(minW = 30, maxW = 30), seqReposChBox)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 30, maxW = 30), seqReposChBox)
         }, new HBox {
           spacing = 5
-          content = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), seqReposLabel, seqReposField, seqReposBrowseButton)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), seqReposLabel, seqReposField, seqReposBrowseButton)
         }, new HBox {
           spacing = 5
-          content = Seq(ScalaFxUtils.newHSpacer(minW = 30, maxW = 30), prolineWebChBox)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 30, maxW = 30), prolineWebChBox)
         }, new HBox {
           spacing = 5
-          content = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), prolineWebLabel, prolineWebField, prolineWebBrowseButton)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), prolineWebLabel, prolineWebField, prolineWebBrowseButton)
         },
         ScalaFxUtils.newVSpacer(minH = 1, maxH = 1),
         postgreSQLChBox, new HBox {
           spacing = 5
-          content = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), postgreSQLLabel, postgreSQLField, postgresBrowseButton)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), postgreSQLLabel, postgreSQLField, postgresBrowseButton)
         }, ScalaFxUtils.newVSpacer(100))
     })
 
@@ -256,7 +256,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   alignmentInParent = Pos.Center
   spacing = 1
   fillWidth = true
-  content = Seq(ScalaFxUtils.newVSpacer(minH = 100),
+  children = Seq(ScalaFxUtils.newVSpacer(minH = 100),
     configItemsPane)
 
   /* functions */

@@ -64,10 +64,10 @@ class PostgresDataDirPanel(onSelectionChange: String => Boolean = null)(implicit
    * LAYOUT *
    * ****** *
    */
-  content = Seq(
+  children = Seq(
     new HBox {
       spacing = 5
-      content = List(headerHelpIcon, headerLabel, dataDirField, browseButton)
+      children = List(headerHelpIcon, headerLabel, dataDirField, browseButton)
     },
     warningLabel
   )

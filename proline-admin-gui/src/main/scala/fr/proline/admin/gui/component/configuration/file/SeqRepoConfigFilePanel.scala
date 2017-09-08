@@ -50,7 +50,7 @@ class SeqRepoConfigFilePanel() extends HBox with IConfigFilesPanel with LazyLogg
 
   /** Organize and render **/
   spacing = 5
-  content = List(headerLabel, configField, browseButton)
+  children = List(headerLabel, configField, browseButton)
 
   /*
    * ******** *

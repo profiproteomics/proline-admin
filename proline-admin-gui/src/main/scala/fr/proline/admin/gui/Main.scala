@@ -62,11 +62,11 @@ object Main extends LazyLogging {
   /* Primary stage's root */
   lazy val root = new VBox {
     id = "root"
-    content = new HBox {
+    children = new HBox {
       vgrow = Priority.Always
       padding = Insets(10)
       spacing = 20
-      content = List(buttonsPanel, consolePanel)
+      children = List(buttonsPanel, consolePanel)
     }
   }
 

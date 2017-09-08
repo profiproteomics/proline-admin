@@ -47,7 +47,7 @@ class DataBasesTab() extends IResourceManagementTab {
     prefHeight = CONTENT_PREF_HEIGHT
     spacing = 5
     padding = Insets(20)
-    content = table
+    children = table
   }
   content = tabContent
 }
@@ -62,7 +62,7 @@ class DataBasesTable() extends AbstractResourceTableView[ExternalDbView] {
 
   val idCol = new TableColumn[ExternalDbView, Long]("ID") {
     cellValueFactory = { _.value.dbId }
-        cellFactory = { _ =>
+    cellFactory = { _ =>
       new TableCell[ExternalDbView, Long] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue.toString }
@@ -73,7 +73,7 @@ class DataBasesTable() extends AbstractResourceTableView[ExternalDbView] {
 
   val dbNameCol = new TableColumn[ExternalDbView, String]("Name") {
     cellValueFactory = { _.value.dbName }
-        cellFactory = { _ =>
+    cellFactory = { _ =>
       new TableCell[ExternalDbView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
@@ -84,7 +84,7 @@ class DataBasesTable() extends AbstractResourceTableView[ExternalDbView] {
 
   val dbPasswordCol = new TableColumn[ExternalDbView, String]("Password") {
     cellValueFactory = { _.value.dbPassword }
-        cellFactory = { _ =>
+    cellFactory = { _ =>
       new TableCell[ExternalDbView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
@@ -95,7 +95,7 @@ class DataBasesTable() extends AbstractResourceTableView[ExternalDbView] {
 
   val dbUserCol = new TableColumn[ExternalDbView, String]("User") {
     cellValueFactory = { _.value.dbUser }
-        cellFactory = { _ =>
+    cellFactory = { _ =>
       new TableCell[ExternalDbView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
@@ -106,7 +106,7 @@ class DataBasesTable() extends AbstractResourceTableView[ExternalDbView] {
 
   val dbVersionCol = new TableColumn[ExternalDbView, String]("Version") {
     cellValueFactory = { _.value.dbVersion }
-        cellFactory = { _ =>
+    cellFactory = { _ =>
       new TableCell[ExternalDbView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
@@ -117,7 +117,7 @@ class DataBasesTable() extends AbstractResourceTableView[ExternalDbView] {
 
   val dbPortCol = new TableColumn[ExternalDbView, String]("Port") {
     cellValueFactory = { _.value.dbPort }
-        cellFactory = { _ =>
+    cellFactory = { _ =>
       new TableCell[ExternalDbView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
@@ -128,7 +128,7 @@ class DataBasesTable() extends AbstractResourceTableView[ExternalDbView] {
 
   val dbHostCol = new TableColumn[ExternalDbView, String]("Host") {
     cellValueFactory = { _.value.dbHost }
-        cellFactory = { _ =>
+    cellFactory = { _ =>
       new TableCell[ExternalDbView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }

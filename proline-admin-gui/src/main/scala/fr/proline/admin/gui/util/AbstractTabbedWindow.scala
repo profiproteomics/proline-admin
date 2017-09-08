@@ -62,13 +62,13 @@ abstract class AbstractTabbedWindow extends Stage with LazyLogging {
     root = new VBox {
       hgrow = Priority.ALWAYS
       vgrow = Priority.ALWAYS
-      content = Seq(
+      children = Seq(
         tabPanel,
         new HBox {
           padding = Insets(5)
           alignment = Pos.BottomRight
           spacing = 15
-          content = Seq(okButton, cancelButton)
+          children = Seq(okButton, cancelButton)
         })
     }
   }

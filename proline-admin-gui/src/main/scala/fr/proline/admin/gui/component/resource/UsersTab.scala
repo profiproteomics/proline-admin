@@ -54,7 +54,7 @@ class UsersTab() extends IResourceManagementTab {
     prefHeight = CONTENT_PREF_HEIGHT
     spacing = 5
     padding = Insets(20)
-    content = Seq(newEntryPanel, table)
+    children = Seq(newEntryPanel, table)
   }
 }
 
@@ -217,7 +217,7 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
       new ColumnConstraints { percentWidth = 25 },
       new ColumnConstraints { percentWidth = 75 })
 
-    content = ScalaFxUtils.getFormattedGridContent5(Seq(
+    children = ScalaFxUtils.getFormattedGridContent5(Seq(
       //col, row, colSpan, rowSpan
       (loginLabel, 0, 0, 1, 1),
       (loginField, 1, 0, 1, 1),

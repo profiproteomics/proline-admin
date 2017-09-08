@@ -50,7 +50,7 @@ class PopupWindow(
       alignment = Pos.Center
       spacing = 15
       padding = Insets(10)
-      content = List(
+      children = List(
         new Label(wText) {
           wrapText = true
         },
@@ -58,7 +58,7 @@ class PopupWindow(
           alignment = Pos.Center
           padding = Insets(10)
           spacing = 30
-          content = Seq(yesButton,
+          children = Seq(yesButton,
             noButton)
         })
     }

@@ -25,7 +25,7 @@ class ProlinePwxContentTab extends PanelScorllPane {
       padding = Insets(5, 0, 0, 0)
       alignment = Pos.TOP_RIGHT
       alignmentInParent = Pos.TOP_RIGHT
-      content = List(prolinePwx)
+      children = List(prolinePwx)
     })
 
   /* properties of ProlinePwx */

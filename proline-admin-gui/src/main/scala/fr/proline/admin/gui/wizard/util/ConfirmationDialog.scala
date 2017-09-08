@@ -81,12 +81,12 @@ class ConfirmationDialog(
           alignment = Pos.BaselineCenter
           padding = Insets(10)
           spacing = 20
-          content = List(yesButton, cancelButton)
+          children = List(yesButton, cancelButton)
         }
         root = new VBox {
           padding = Insets(20, 20, 10, 20)
           spacing = 10
-          content = List(text, buttons)
+          children = List(text, buttons)
         }
       }
     }

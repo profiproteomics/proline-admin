@@ -53,7 +53,7 @@ trait IPostgresConfigTabContent extends IConfigTabContent {
 
   /* Layout */
   val warningsAsVBox = new VBox {
-    content = Seq(workingFileLabel, workingFileWarning)
+    children = Seq(workingFileLabel, workingFileWarning)
   }
 
 

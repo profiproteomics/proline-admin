@@ -149,7 +149,7 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
   }
   val dbPwdPane = new StackPane {
     alignmentInParent = Pos.BottomLeft
-    content = List(passwordPWDField, passwordTextField)
+    children = List(passwordPWDField, passwordTextField)
   }
 
   val testConnectionButton = new Button {
@@ -184,33 +184,33 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
       prefWidth <== Wizard.configItemsPanel.width - 30
       prefHeight <== Wizard.configItemsPanel.height - 30
       spacing = 2 * V_SPACING
-      content = Seq(
+      children = Seq(
         warningDatalabel,
         hostLabel,
         new HBox {
           spacing = H_SPACING
-          content = Seq(hostField)
+          children = Seq(hostField)
         },
         ScalaFxUtils.newVSpacer(minH = 10),
         portLabel,
         new HBox {
           spacing = H_SPACING
-          content = Seq(portField)
+          children = Seq(portField)
         },
         ScalaFxUtils.newVSpacer(minH = 10),
         userLabel,
         new HBox {
           spacing = H_SPACING
-          content = Seq(userField)
+          children = Seq(userField)
         },
         ScalaFxUtils.newVSpacer(minH = 10),
         passWordLabel,
         new HBox {
           spacing = H_SPACING
-          content = List(dbPwdPane, showPwdBox)
+          children = List(dbPwdPane, showPwdBox)
         }, ScalaFxUtils.newVSpacer(minH = 10),
         new HBox {
-          content = List(ScalaFxUtils.newHSpacer(minW = 100), testConnectionButton)
+          children = List(ScalaFxUtils.newHSpacer(minW = 100), testConnectionButton)
         }, ScalaFxUtils.newVSpacer(minH = 12))
     })
 
@@ -219,7 +219,7 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
   alignmentInParent = Pos.Center
   spacing = V_SPACING
   margin = Insets(5, 5, 5, 5)
-  content = List(
+  children = List(
     ScalaFxUtils.newVSpacer(minH = 20),
     dbConnectionSettingPane)
 
