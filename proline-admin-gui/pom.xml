@@ -38,7 +38,7 @@
     <dependency>
       <groupId>org.scalafx</groupId>
       <artifactId>scalafx_${scala.version}</artifactId>
-      <version>8.0.20-R6</version><!-- for JavaFX 8 -->
+      <version>8.0.102-R11</version><!-- for JavaFX 8 -->
     </dependency>
 
     <!-- Logback -->
