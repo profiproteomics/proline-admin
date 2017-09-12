@@ -2,8 +2,7 @@ package fr.proline.admin.gui
 
 import com.typesafe.scalalogging.LazyLogging
 
-import java.io.File
-import java.io.FilenameFilter
+
 
 import javafx.application.Application
 import javafx.geometry.Rectangle2D
@@ -14,13 +13,15 @@ import scalafx.scene.layout.HBox
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
-import scalafx.stage.Stage
-import fr.profi.util.StringUtils
-import scala.util.matching.Regex
-import scala.collection.mutable.Set
 import scalafx.scene.Node
 import scalafx.geometry.Pos
+import scalafx.stage.Stage
+
+import java.io.File
 import scala.collection.mutable.LinkedHashMap
+
+import fr.profi.util.StringUtils
+import scala.util.matching.Regex
 import fr.proline.admin.gui.wizard.component.HomeButtonsPanel
 import fr.proline.admin.gui.wizard.component.ItemsPanel
 import fr.proline.admin.gui.wizard.component.Item
@@ -112,9 +113,9 @@ class Wizard extends Application {
       height = 780
       title = s"${Module.name} ${Module.version}"
     }
-    val primaryScreenBounds: Rectangle2D = Screen.getPrimary().getVisualBounds();
-    Wizard.stage.setWidth(primaryScreenBounds.getWidth() / 2);
-    Wizard.stage.setHeight(primaryScreenBounds.getHeight() - 50);
+    val primaryScreenBounds: Rectangle2D = Screen.getPrimary().getVisualBounds()
+    Wizard.stage.setWidth(primaryScreenBounds.getWidth() / 2)
+    Wizard.stage.setHeight(primaryScreenBounds.getHeight() - 50)
     Wizard.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Wizard.stage.scene.value.getStylesheets.add("/css/Style.css")
     Wizard.stage.show()

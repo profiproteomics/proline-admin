@@ -772,11 +772,11 @@ class DatabaseNameDialog(
       alignment = Pos.BaselineLeft
       padding = Insets(20)
       spacing = 20
-      content = defaultNames ++ List(
+      children = defaultNames ++ List(
 
         new HBox {
           spacing = 10
-          content = List(namesBox, namesField)
+          children = List(namesBox, namesField)
         },
 
         newHSpacer(30, 50),
@@ -936,7 +936,7 @@ class AdressDialog(
       padding = Insets(20)
       spacing = 20
       minWidth = 300
-      content = defaultNames ++ List(
+      children = defaultNames ++ List(
         newHSpacer(30, 50),
         buttons)
     }

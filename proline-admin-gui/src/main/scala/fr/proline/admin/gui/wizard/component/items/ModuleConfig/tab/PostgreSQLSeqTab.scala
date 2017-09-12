@@ -90,7 +90,12 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
       checkForm
     }
   }
-
+  //warning 
+  val warningAboutRestartText = "WARNING: Using localhost or 127.0.0.1 is not advised, as it will make Proline available from this computer only."
+  val warningAboutHostLabel = new Label {
+    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+    text = warningAboutRestartText
+  }
   //port
   val portLabel = new Label("Port: ")
   val portField = new NumericTextField {
@@ -175,7 +180,11 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
         hostLabel,
         new HBox {
           spacing = H_SPACING
-          children = Seq(hostField)
+           children = Seq(new VBox {
+            prefWidth <== Wizard.configItemsPanel.width - 30
+            spacing = 2
+            children = Seq(hostField, warningAboutHostLabel)
+          })
         },
         ScalaFxUtils.newVSpacer(minH = 10),
         portLabel,
@@ -242,7 +251,7 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
     val newSeqConfig = _toSeqConfig()
     seqConfigFile.write(newSeqConfig)
   }
-  
+
   /** get database connection */
   def getInfos: String = {
     if (DatabaseConnection.testDbConnectionToWizard(driver, _userName, _passWord, _hostName, _port, false, false))
