@@ -114,7 +114,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   //Proline web components 
   val prolineWebChBox = new CheckBox("Proline Web Configuration File") {
     id = "prolineWebChBoxId"
-    selected = false
+    selected = true
     underline = true
     vgrow = Priority.Always
     onAction = handle { getSelectedParent }
@@ -219,7 +219,6 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   val configItemsPane = new TitledBorderPane(
     title = "Select Configuration Item",
     contentNode = new VBox {
-      minHeight = 400
       spacing = 10
       children = List(
         warningBox,
@@ -248,7 +247,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
         postgreSQLChBox, new HBox {
           spacing = 5
           children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), postgreSQLLabel, postgreSQLField, postgresBrowseButton)
-        }, ScalaFxUtils.newVSpacer(100))
+        }, ScalaFxUtils.newVSpacer(10))
     })
 
   // final content 
@@ -256,7 +255,7 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   alignmentInParent = Pos.Center
   spacing = 1
   fillWidth = true
-  children = Seq(ScalaFxUtils.newVSpacer(minH = 100),
+  children = Seq(ScalaFxUtils.newVSpacer(minH = 20),
     configItemsPane)
 
   /* functions */

@@ -6,7 +6,6 @@ import fr.profi.util.scalafx.CustomScrollPane
 import fr.proline.admin.gui.Wizard
 
 abstract class PanelScorllPane extends CustomScrollPane(hBarPolicy = ScrollBarPolicy.AS_NEEDED) {
-  /* Initialize form to null */
   prefWidth <== Wizard.configItemsPanel.width - 30
   prefHeight <== Wizard.configItemsPanel.height - 30
 }

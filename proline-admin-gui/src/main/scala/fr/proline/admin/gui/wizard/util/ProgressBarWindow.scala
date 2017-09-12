@@ -46,7 +46,7 @@ class ProgressBarWindow(
           padding = Insets(10)
           spacing = 30
           children = Seq(
-            new Label("Setup/Update Proline databases\n  \t\t in progress ..."),
+            new Label("Setup / Update Proline databases\n  \t\t in progress . . ."),
             new ProgressIndicator {
               progress <== task.progress
             }, newVSpacer(5))

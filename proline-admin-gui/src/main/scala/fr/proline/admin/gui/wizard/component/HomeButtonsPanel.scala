@@ -84,7 +84,7 @@ object HomeButtonsPanel extends LazyLogging {
 
   def apply(): VBox = {
     new VBox {
-      children = List(ScalaFxUtils.newVSpacer(minH = 150, maxH = 150), new HBox {
+      children = List(ScalaFxUtils.newVSpacer(20), new HBox {
         alignment = Pos.BaselineRight
         padding = Insets(10)
         spacing = 10

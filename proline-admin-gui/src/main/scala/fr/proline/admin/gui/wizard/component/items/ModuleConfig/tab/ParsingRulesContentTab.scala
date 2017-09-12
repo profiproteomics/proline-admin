@@ -21,10 +21,7 @@ class ParsingRulesContentTab extends PanelScorllPane {
       prefWidth <== Wizard.configItemsPanel.width - 50
       prefHeight <== Wizard.configItemsPanel.height - 45
       padding = Insets(5, 0, 0, 0)
-      alignment = Pos.TOP_RIGHT
-      alignmentInParent = Pos.TOP_RIGHT
       children = Seq(rules)
-
     })
 
   /* properties of ParsingRules  */

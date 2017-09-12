@@ -17,22 +17,20 @@ import fr.proline.admin.gui.wizard.component.items.serverconfig.tab.content.Prol
 class MountPointsContentTab extends PanelScorllPane {
 
   var mountfiles = new ProlineMountFiles()
+
   setContentNode(
     new VBox {
       prefWidth <== Wizard.configItemsPanel.width - 50
       prefHeight <== Wizard.configItemsPanel.height - 45
       padding = Insets(5, 0, 0, 0)
-      alignment = Pos.TOP_RIGHT
-      alignmentInParent = Pos.TOP_RIGHT
       children = List(mountfiles)
-
     })
-
+  /**show list of files in summary panel */
   def getInfos: String = {
     mountfiles.getInfos
   }
 
-  /* save all parameters on next button */
+  /** save parameters on validate button */
   def saveForm() {
     mountfiles.saveForm()
   }

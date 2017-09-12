@@ -48,9 +48,9 @@ class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
   require(nodeConfigOpt.isDefined, "jms-node config is undefined")
   val nodeConfig = nodeConfigOpt.get
 
-  private var jmsHostName = nodeConfig.jmsServerHost.getOrElse("")
-  private var jmsPort = nodeConfig.jmsServePort.getOrElse(0)
-  private var prolineQueueName = nodeConfig.requestQueueName.getOrElse("")
+  private var _jmsHostName = nodeConfig.jmsServerHost.getOrElse("")
+  private var _jmsPort = nodeConfig.jmsServePort.getOrElse(0)
+  private var _prolineQueueName = nodeConfig.requestQueueName.getOrElse("")
 
   // chekcbox
   val tog = new ToggleGroup()
@@ -66,9 +66,9 @@ class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
   val hostLabel = new Label("Host: ")
   val hostField = new TextField {
     disable <== embeddedJmsRdButton.selected
-    if (jmsHostName != null) text = jmsHostName
+    if (_jmsHostName != null) text = _jmsHostName
     text.onChange { (_, oldText, newText) =>
-      jmsHostName = newText
+      _jmsHostName = newText
       checkForm
     }
   }
@@ -76,11 +76,11 @@ class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
   val portLabel = new Label("Port: ")
   val portField = new NumericTextField {
     disable <== embeddedJmsRdButton.selected
-    text = jmsPort.toString
+    text = _jmsPort.toString
     text.onChange {
       (_, oldText, newText) =>
         if ((newText != null) && !newText.equals("")) {
-          jmsPort = newText.toInt
+          _jmsPort = newText.toInt
           checkForm
         }
     }
@@ -90,9 +90,9 @@ class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
   val queueNameLabel = new Label("Proline Queue Name: ")
   val queueNameField = new TextField {
     disable <== embeddedJmsRdButton.selected
-    if (prolineQueueName != null) text = prolineQueueName
+    if (_prolineQueueName != null) text = _prolineQueueName
     text.onChange { (_, oldText, newText) =>
-      prolineQueueName = newText
+      _prolineQueueName = newText
       checkForm
     }
   }
@@ -102,6 +102,7 @@ class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
  * LAYOUT *
  * ****** *
  */
+
   Seq(queueNameLabel, portLabel, hostLabel).foreach(_.minWidth = 60)
   Seq(hostField, portField, queueNameField).foreach {
     f => f.hgrow = Priority.Always
@@ -149,7 +150,7 @@ class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
     checkBoxPane, ScalaFxUtils.newVSpacer(minH = 15),
     jmsServerPane)
 
-  /* check fields */
+  /** check fields */
   def checkForm: Boolean = {
     if (ScalaUtils.isEmpty(hostField.getText) || ScalaUtils.isEmpty(portField.getText) || ScalaUtils.isEmpty(queueNameField.getText)) {
       warningDatalabel.visible = true
@@ -160,14 +161,14 @@ class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
     }
   }
 
-  /* get GUI inbformation to create new jmsConfih object */
-  private def _toJMSConfig() = NodeConfig(Option(this.jmsHostName),
-    Option(this.jmsPort),
-    Option(this.prolineQueueName),
+  /** get GUI inbformation to create new jmsConfih object */
+  private def _toJMSConfig() = NodeConfig(Option(this._jmsHostName),
+    Option(this._jmsPort),
+    Option(this._prolineQueueName),
     Option(-1),
     Option(true))
 
-  /* save proline Server nodeConfig properties */
+  /** save proline's Server nodeConfig properties */
   def saveForm() {
     /* new jmsConfig */
     if (nodeConfigOpt.isDefined) {
@@ -181,6 +182,7 @@ class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
     }
   }
 
+  /** get type of JmsServer */
   def getInfos: String = {
     if (embeddedJmsRdButton.isSelected) s"""JMS Server: Embedded""" else
       s"""JMS Server: Specific"""

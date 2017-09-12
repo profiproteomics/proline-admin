@@ -6,7 +6,8 @@ import java.io.File
 import java.io.FilenameFilter
 
 import javafx.application.Application
-
+import javafx.geometry.Rectangle2D
+import javafx.stage.Screen
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
 import scalafx.scene.layout.HBox
@@ -18,6 +19,7 @@ import fr.profi.util.StringUtils
 import scala.util.matching.Regex
 import scala.collection.mutable.Set
 import scalafx.scene.Node
+import scalafx.geometry.Pos
 import scala.collection.mutable.LinkedHashMap
 import fr.proline.admin.gui.wizard.component.HomeButtonsPanel
 import fr.proline.admin.gui.wizard.component.ItemsPanel
@@ -67,9 +69,10 @@ object Wizard extends LazyLogging {
   lazy val root = new VBox {
     id = "root"
     children = new VBox {
+      alignment = Pos.CENTER
       vgrow = Priority.Always
       padding = Insets(10)
-      spacing = 40
+      spacing = 10
       children = Seq(configItemsPanel, buttonsPanel)
     }
   }
@@ -105,13 +108,13 @@ class Wizard extends Application {
     Wizard.buttonsPanel = HomeButtonsPanel()
     Wizard.stage = new Stage(stage) {
       scene = new Scene(Wizard.root)
-      minWidth = 750
-      width = 1050
-      minHeight = 600
-      height = 850
+      width = 1024
+      height = 780
       title = s"${Module.name} ${Module.version}"
     }
-
+    val primaryScreenBounds: Rectangle2D = Screen.getPrimary().getVisualBounds();
+    Wizard.stage.setWidth(primaryScreenBounds.getWidth() / 2);
+    Wizard.stage.setHeight(primaryScreenBounds.getHeight() - 50);
     Wizard.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Wizard.stage.scene.value.getStylesheets.add("/css/Style.css")
     Wizard.stage.show()

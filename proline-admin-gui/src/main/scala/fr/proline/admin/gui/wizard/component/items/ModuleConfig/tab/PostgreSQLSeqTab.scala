@@ -56,21 +56,9 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
 	 * ********** *
 	 */
 
-  //get jms-node configuration file
-  try {
-    if (new File(path).exists()) {
-      val jmsNodeConfDir = new File(path).getParent()
-      if (new File(jmsNodeConfDir + File.separator + """jms-node.conf""").exists()) {
-        Wizard.SeqJmsNodeConfPath = jmsNodeConfDir + File.separator + """jms-node.conf"""
-      }
-    }
-  } catch {
-    case e: IOException => logger.error("can not find the file jms-node.conf")
-  }
-
   //initialize some properties 
-  private var userName, passWord, hostName = ""
-  private var port = 5432
+  private var _userName, _passWord, _hostName = ""
+  private var _port = 5432
   private val seqConfigFile = new SeqConfigFile(path)
   private val seqConfigOpt = seqConfigFile.read
   require(seqConfigOpt.isDefined, "sequence repository config is undefined")
@@ -79,26 +67,26 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
   def isPrompt(str: String): Boolean = str matches """<.*>"""
 
   val dbUserName = seqConfig.dbUserName.get
-  if (isPrompt(dbUserName)) userName = dbUserName
-  else userName = dbUserName
+  if (isPrompt(dbUserName)) _userName = dbUserName
+  else _userName = dbUserName
 
   val dbPassword = seqConfig.dbPassword.get
-  if (isPrompt(dbPassword)) passWord = dbPassword
-  else passWord = dbPassword
+  if (isPrompt(dbPassword)) _passWord = dbPassword
+  else _passWord = dbPassword
 
   val dbHost = seqConfig.dbHost.get
-  if (isPrompt(dbHost)) hostName = dbHost
-  else hostName = dbHost
+  if (isPrompt(dbHost)) _hostName = dbHost
+  else _hostName = dbHost
 
   val dbPort = seqConfig.dbPort.get
-  port = dbPort
+  _port = dbPort
 
   //host 
   val hostLabel = new Label("Host: ")
   val hostField = new TextField {
-    if (hostName != null) text = hostName
+    if (_hostName != null) text = _hostName
     text.onChange { (_, oldText, newText) =>
-      hostName = newText
+      _hostName = newText
       checkForm
     }
   }
@@ -106,11 +94,11 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
   //port
   val portLabel = new Label("Port: ")
   val portField = new NumericTextField {
-    text = port.toString
+    text = _port.toString
     text.onChange {
       (_, oldText, newText) =>
         if ((newText != null) && !newText.equals("")) {
-          port = newText.toInt
+          _port = newText.toInt
           checkForm
         }
     }
@@ -119,9 +107,9 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
   //user
   val userLabel = new Label("User: ")
   val userField = new TextField {
-    if (userName != null) text = userName
+    if (_userName != null) text = _userName
     text.onChange { (_, oldText, newText) =>
-      userName = newText
+      _userName = newText
       checkForm
     }
   }
@@ -141,9 +129,9 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
     text <==> passwordPWDField.text
     promptText <==> passwordPWDField.promptText
     visible <== !passwordPWDField.visible
-    if (passWord != null) text = passWord
+    if (_passWord != null) text = _passWord
     text.onChange { (_, oldText, newText) =>
-      passWord = newText
+      _passWord = newText
       checkForm
     }
   }
@@ -151,14 +139,12 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
     alignmentInParent = Pos.BottomLeft
     children = List(passwordPWDField, passwordTextField)
   }
-
+  /** test database connection */
   val testConnectionButton = new Button {
     graphic = FxUtils.newImageView(IconResource.CONNECTION)
     text = "Test connection"
     onAction = handle {
-      /*test connection database*/
-      if (!ScalaUtils.isEmpty(userName) && !ScalaUtils.isEmpty(passWord) && !ScalaUtils.isEmpty(hostName) && (port > 0))
-        DatabaseConnection.testDbConnectionToWizard(driver, userName, passWord, hostName, port, true, true)
+      _testDbConnection(true, true)
     }
   }
 
@@ -214,7 +200,6 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
         }, ScalaFxUtils.newVSpacer(minH = 12))
     })
 
-  // position in center
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = V_SPACING
@@ -223,7 +208,7 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
     ScalaFxUtils.newVSpacer(minH = 20),
     dbConnectionSettingPane)
 
-  /* check Sequence Repository form  */
+  /** check Sequence Repository fields form  */
   def checkForm: Boolean = {
     if (ScalaUtils.isEmpty(hostField.getText) || ScalaUtils.isEmpty(userField.getText)
       || ScalaUtils.isEmpty(portField.getText) || ScalaUtils.isEmpty(passwordPWDField.getText)) {
@@ -235,30 +220,32 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
     }
   }
 
-  /* test connection to database server */
+  /** test connection to database server */
   private def _testDbConnection(
     showSuccessPopup: Boolean = false,
     showFailurePopup: Boolean = false): Boolean = { //return connectionEstablished
-    DatabaseConnection.testDbConnection(DriverType.POSTGRESQL, userName, passWord, hostName, port, showSuccessPopup, showFailurePopup)
+    DatabaseConnection.testDbConnectionToWizard(DriverType.POSTGRESQL, _userName, _passWord, _hostName, _port, showSuccessPopup, showFailurePopup)
   }
 
-  /* get GUI information to create a new SeqRepos Object */
+  /** get GUI information to create a new SeqRepos Object */
   private def _toSeqConfig() = SeqConfig(
     driverType = Option(DriverType.POSTGRESQL),
     maxPoolConnection = Option(3),
-    dbUserName = Option(userName),
-    dbPassword = Option(passWord),
-    dbHost = Option(hostName),
-    dbPort = Option(port),
+    dbUserName = Option(_userName),
+    dbPassword = Option(_passWord),
+    dbHost = Option(_hostName),
+    dbPort = Option(_port),
     dbUdsDb = Option("uds_db"))
 
-  /* save Sequence Repository form */
+  /** save new Sequence Repository properties */
   def saveForm() {
     val newSeqConfig = _toSeqConfig()
     seqConfigFile.write(newSeqConfig)
   }
+  
+  /** get database connection */
   def getInfos: String = {
-    if (DatabaseConnection.testDbConnectionToWizard(driver, userName, passWord, hostName, port, false, false))
+    if (DatabaseConnection.testDbConnectionToWizard(driver, _userName, _passWord, _hostName, _port, false, false))
       s"""PostgreSQL: OK""" else s"""PostgreSQL: NOK"""
   }
 }
