@@ -18,6 +18,7 @@ class PostgresConfigContentTab extends PanelScorllPane {
 
   val workingFilePostgresConf = Wizard.pgDataDirPath + File.separator + "postgresql.conf"
   val postgresForm = new PostgresConfigForm(workingFilePostgresConf)(Wizard.stage)
+  postgresForm.applyButton.visible = false
   setContentNode(
     new VBox {
       prefWidth <== Wizard.configItemsPanel.width - 50

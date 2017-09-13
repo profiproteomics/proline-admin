@@ -19,6 +19,7 @@ class PgHbaConfigContentTab extends PanelScorllPane {
 
   val workingFilePgHbaConf = Wizard.pgDataDirPath + File.separator + "pg_hba.conf"
   val pgHbaConfigForm = new PgHbaConfigForm(workingFilePgHbaConf)
+  pgHbaConfigForm.applyButton.visible = false
   setContentNode(
     new VBox {
       prefWidth <== Wizard.configItemsPanel.width - 50
