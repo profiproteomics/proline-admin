@@ -29,7 +29,7 @@ import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.wizard.util.version.Module
 
 /**
- * Graphical interface to setup/update Proline configuration files (application.conf)
+ * builds home panel of Proline install
  *
  */
 object Wizard extends LazyLogging {

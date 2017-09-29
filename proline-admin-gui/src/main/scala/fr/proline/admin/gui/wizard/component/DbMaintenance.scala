@@ -4,7 +4,6 @@ import javafx.concurrent.{ Service => JService, Task => JTask }
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.service.db.SetupProline
-import fr.proline.admin.gui.wizard.util.PopupHelpWindow
 import fr.proline.admin.gui.process._
 
 /**

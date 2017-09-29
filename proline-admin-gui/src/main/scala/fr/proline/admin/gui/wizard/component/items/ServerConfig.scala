@@ -103,7 +103,7 @@ class ServerConfig(val name: String) extends Item with LazyLogging {
     .append("\tPort: port number(default: 5445)\n")
     .append("\tProline Queue Name: queue name\n\n")
 
-  def _openHelpDialog() = PopupHelpWindow(
+  def _openHelpDialog() = HelpPopup(
     wTitle = "Help",
     wText = helpTextBuilder.toString)
 }

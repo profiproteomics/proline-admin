@@ -139,10 +139,10 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
 
     newHSpacer(50),
 
-    new BoldLabel("IPs count", upperCase = false) {
+    new BoldLabel("IP count", upperCase = false) {
       tooltip = new Tooltip() {
-        text = "IPs count:\n\n" +
-          "Defines the number of IPs that are given permission, starting from the IP\n" +
+        text = "IP count:\n\n" +
+          "Defines the number of IP that are given permission, starting from the IP\n" +
           "written in 'IP address' field. It will automatically compute the CIDR for the IP.\n\n" +
           "Ex: if you want to authorize all IPs between\n" +
           "127.0.0.0 and 127.0.0.4 (5 IPs),\n" +

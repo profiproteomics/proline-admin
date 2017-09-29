@@ -87,7 +87,7 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
     .append("PostgreSQL access right:\n\n\tThis tab controls: which hosts are allowed to connect, ")
     .append("how clients are authenticated,\n\t which PostgreSQL user names they can use, which databases they can access.\n")
 
-  def _openHelpDialog() = PopupHelpWindow(
+  def _openHelpDialog() = HelpPopup(
     wTitle = "Help",
     wText = helpTextBuilder.toString)
 

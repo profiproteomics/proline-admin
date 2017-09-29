@@ -21,7 +21,7 @@ import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.component.items._
-import fr.proline.admin.gui.wizard.util.ShowPopupWindow
+import fr.proline.admin.gui.wizard.util.ExitPopup
 
 /**
  * Panel contains navigation buttons : previous next and cancel
@@ -40,7 +40,7 @@ object NavigationButtonsPanel extends LazyLogging {
   val cancelButton = new Button("Cancel") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
-      ShowPopupWindow("Exit Setup", "Are you sure you want to exit Proline Setup ?", Option(Wizard.stage), false)
+      ExitPopup("Exit Setup", "Are you sure you want to exit Proline Setup ?", Option(Wizard.stage), false)
     }
   }
   val nextButton = new Button("Next") {

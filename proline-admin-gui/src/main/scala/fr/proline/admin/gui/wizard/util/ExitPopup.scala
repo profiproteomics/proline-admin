@@ -19,10 +19,11 @@ import fr.proline.admin.gui.IconResource
 import com.sun.javafx.css.StyleClass
 
 /**
- * a confirm popUp on cancel/exit button
+ * builds Exit popup window
+ * 
  */
 
-class PopupWindow(
+class ExitPopup(
   wTitle: String,
   wText: String,
   wParent: Option[Stage] = Option(Wizard.stage),
@@ -64,10 +65,10 @@ class PopupWindow(
     }
   }
 }
-object ShowPopupWindow {
+object ExitPopup {
   def apply(
     wTitle: String,
     wText: String,
     wParent: Option[Stage] = Option(Wizard.stage),
-    isResizable: Boolean = false) { new PopupWindow(wTitle, wText, wParent, isResizable).showAndWait() }
+    isResizable: Boolean = false) { new ExitPopup(wTitle, wText, wParent, isResizable).showAndWait() }
 }

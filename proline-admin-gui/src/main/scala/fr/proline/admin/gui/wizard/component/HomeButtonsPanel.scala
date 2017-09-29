@@ -20,11 +20,12 @@ import scalafx.scene.control.Label
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.component.items._
-import fr.proline.admin.gui.wizard.util.ShowPopupWindow
+import fr.proline.admin.gui.wizard.util.ExitPopup
 
 
 /**
- * Create panel contains buttons : cancel and go .
+ * builds bottom home panel: cancel and go buttons 
+ * 
  */
 object HomeButtonsPanel extends LazyLogging {
 
@@ -33,11 +34,11 @@ object HomeButtonsPanel extends LazyLogging {
    * BUTTONS *
    * ******* *
    */
-  //var postgresConfig: PostgresConfig = _
+
   val cancelButton = new Button("Cancel") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
-      ShowPopupWindow("Exit Setup", "Are you sure you want to exit Proline Setup ?", Option(Wizard.stage), false)
+      ExitPopup("Exit Setup", "Are you sure you want to exit Proline Setup ?", Option(Wizard.stage), false)
     }
   }
   val goButton = new Button(" Go ") {
@@ -80,7 +81,6 @@ object HomeButtonsPanel extends LazyLogging {
    * APPLY() *
    * ***** *
    */
-  /** Display buttons in a HBox **/
 
   def apply(): VBox = {
     new VBox {
@@ -94,5 +94,4 @@ object HomeButtonsPanel extends LazyLogging {
       })
     }
   }
-
 }

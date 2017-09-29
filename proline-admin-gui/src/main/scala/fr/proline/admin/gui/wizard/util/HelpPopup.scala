@@ -16,10 +16,11 @@ import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
 
 /**
- * a confirm popUp on cancel/exit button
+ * builds Help popup window
+ * 
  */
 
-class PopupHelpWindow(
+class HelpPopup(
   wTitle: String,
   wText: String,
   wParent: Option[Stage] = Option(Wizard.stage),
@@ -53,10 +54,10 @@ class PopupHelpWindow(
     }
   }
 }
-object PopupHelpWindow {
+object HelpPopup {
   def apply(
     wTitle: String,
     wText: String,
     wParent: Option[Stage] = Option(Wizard.stage),
-    isResizable: Boolean = false) { new PopupHelpWindow(wTitle, wText, wParent, isResizable).showAndWait() }
+    isResizable: Boolean = false) { new HelpPopup(wTitle, wText, wParent, isResizable).showAndWait() }
 }

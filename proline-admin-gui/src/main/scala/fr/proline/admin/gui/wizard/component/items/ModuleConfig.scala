@@ -97,7 +97,7 @@ class ModuleConfig(val name: String) extends Item with LazyLogging {
     .append("Default Protein Accession: Default Java Regex with capturing group for protein accession if fasta file name doesn't match parsing_rules RegEx\n")
     .append("default value = >(\\S+) :  String after '>' and before first space\n\n")
 
-  def _openHelpDialog() = PopupHelpWindow(
+  def _openHelpDialog() = HelpPopup(
     wTitle = "Help",
     wText = helpTextBuilder.toString())
 }

@@ -68,7 +68,7 @@ class SummaryConfig(val name: String) extends Item with LazyLogging {
   })
 
   /* help function */
-  def _openHelpDialog() = PopupHelpWindow(
+  def _openHelpDialog() = HelpPopup(
     wTitle = "Help",
     wText = "The summary of the configuration items")
 

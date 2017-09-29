@@ -21,7 +21,7 @@ import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.proline.admin.gui.Wizard
 import fr.profi.util.scalafx.{ ScalaFxUtils, BoldLabel }
 import fr.proline.admin.gui.Wizard
-import fr.proline.admin.gui.wizard.util.PopupHelpWindow
+import fr.proline.admin.gui.wizard.util.HelpPopup
 import fr.proline.admin.gui.process._
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.gui.wizard.util.GetConfirmation

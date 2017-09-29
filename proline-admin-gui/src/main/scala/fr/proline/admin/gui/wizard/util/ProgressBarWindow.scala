@@ -21,7 +21,8 @@ import javafx.event.EventHandler
 import fr.profi.util.scalafx.ScalaFxUtils.newVSpacer
 import fr.proline.admin.gui.wizard.util._
 /**
- * progress bar window on upgrade Proline databases
+ * builds progress bar window 
+ * 
  */
 
 class ProgressBarWindow(
@@ -60,7 +61,7 @@ class ProgressBarWindow(
   })
   task.setOnFailed(new EventHandler[WorkerStateEvent] {
     override def handle(event: WorkerStateEvent) {
-      PopupHelpWindow("Setup/Update", "Setup/Update Proline databases failed !")
+      HelpPopup("Setup/Update", "Setup/Update Proline databases failed !")
       popup.close()
     }
   })

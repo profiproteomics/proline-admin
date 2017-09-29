@@ -77,7 +77,7 @@ class ProlineWebConfig(val name: String) extends Item with LazyLogging {
     .append("JMS properties: \n\n")
     .append("\tHost: host name\n")
     .append("\tPort: port number(default: 5445)\n")
-  def _openHelpDialog() = PopupHelpWindow(
+  def _openHelpDialog() = HelpPopup(
     wTitle = "Help",
     wText = helpTextBuilder.toString())
 }
