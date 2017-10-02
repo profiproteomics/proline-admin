@@ -9,19 +9,18 @@ import scalafx.stage.FileChooser.ExtensionFilter
 import scalafx.stage.Stage
 
 import fr.profi.util.scala.ScalaUtils
-import fr.proline.admin.gui.Wizard
 
 /**
- * Create and show a file chooser customed for single configuration file's selection.
+ * Create and show a file chooser for single configuration file's selection.
  * Used by MenuPanel.scala and Main.scala .
  */
-object ConfFileChooser extends LazyLogging {
+class ConfFileChooser(targetPath: String) extends LazyLogging {
   //TODO move to configuration.file
 
   // NB: Defaults values are designed for ProlineAdmin config file (not server config file)
 
   //private var configPath: String = Main.adminConfPath
-  private var initDir: String = Wizard.targetPath + "/config"
+  private var initDir: String = targetPath + "/config"
   private var configName: String = "ProlineAdmin"
   private var loadConfigWhenChosen: Boolean = true
 
@@ -45,7 +44,7 @@ object ConfFileChooser extends LazyLogging {
       }
 
     } else {
-      fc.initialDirectory = new File(Wizard.targetPath + "/config")
+      fc.initialDirectory = new File(targetPath + "/config")
     }
   }
 
@@ -76,9 +75,8 @@ object ConfFileChooser extends LazyLogging {
     }
   }
 
-  /**
-   *  Update properties : adapt to desired config file ( ProlineAdmin / server )
-   */
+  /*  to choose configuration file */
+
   def setForProlineAdminConf(initDir: String) {
     _updateChooser(initDir, configName = "ProlineAdmin", loadConfigWhenChosen = true)
   }
@@ -103,20 +101,3 @@ object ConfFileChooser extends LazyLogging {
     this.loadConfigWhenChosen = loadConfigWhenChosen
   }
 }
-/*
-/**
- * Easily browse ProlineAdmin or Proline server configuration file
- */
-object BrowseProlineAdminConfigFile {
-  def apply(initDir: String, stage: Stage): String = {
-    ProlineConfigFileChooser.updateChooser(initDir: String, isForProlineAdminConfFile = true)
-    ProlineConfigFileChooser.showIn(stage)
-  }
-}
-
-object BrowseProlineServerConfigFile {
-  def apply(initDir: String, stage: Stage): String = {
-    ProlineConfigFileChooser.updateChooser(initDir: String, isForProlineAdminConfFile = false)
-    ProlineConfigFileChooser.showIn(stage)
-  }
-}*/

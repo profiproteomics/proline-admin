@@ -26,7 +26,7 @@ import com.sun.javafx.css.StyleClass
 class ExitPopup(
   wTitle: String,
   wText: String,
-  wParent: Option[Stage] = Option(Wizard.stage),
+  wParent: Option[Stage] ,
   isResizable: Boolean = false) extends Stage {
   val popup = this
   title = wTitle
@@ -35,7 +35,7 @@ class ExitPopup(
   val yesButton = new Button("Yes") {
     graphic = FxUtils.newImageView(IconResource.TICK)
     onAction = handle {
-      Wizard.stage.close()
+      wParent.get.close()
     }
   }
   val noButton = new Button("No") {
@@ -69,6 +69,6 @@ object ExitPopup {
   def apply(
     wTitle: String,
     wText: String,
-    wParent: Option[Stage] = Option(Wizard.stage),
+    wParent: Option[Stage] ,
     isResizable: Boolean = false) { new ExitPopup(wTitle, wText, wParent, isResizable).showAndWait() }
 }

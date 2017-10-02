@@ -3,7 +3,7 @@ package fr.proline.admin.gui.wizard.component
 import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
-import scalafx.scene.control.CheckBox
+
 import scalafx.scene.control.Button
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
@@ -14,14 +14,13 @@ import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
 import scalafx.scene.control.TextField
 import scalafx.scene.control.Hyperlink
-import fr.profi.util.scalafx.BoldLabel
-import scalafx.scene.control.Label
+import scalafx.stage.Stage
 import fr.profi.util.scalafx.TitledBorderPane
 import scalafx.scene.layout.StackPane
 import com.typesafe.scalalogging.LazyLogging
 import javafx.scene.control.Tooltip
 import scala.collection.mutable.ListBuffer
-import scalafx.scene.text.{ Font, FontWeight, Text }
+
 import java.io.IOException
 import java.io.FileNotFoundException
 import java.io.File
@@ -33,7 +32,7 @@ import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.wizard.component.items._
 import fr.profi.util.StringUtils
 import java.io.File
-import fr.proline.admin.gui.wizard.component.items.form.ItemsPanelForm
+import fr.proline.admin.gui.wizard.component.items.form.HomePanel
 import fr.profi.util.scalafx
 import fr.profi.util.scala.ScalaUtils
 import fr.proline.admin.gui.process.config.AdminConfigFile
@@ -45,7 +44,7 @@ import fr.proline.repository.DriverType
  *
  */
 
-object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
+object InstallPanel extends VBox with HomePanel with LazyLogging {
 
   /** component of panel **/
 
@@ -66,23 +65,11 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
       //try to reinitialize initial  values of configuration files 
       logger.error("Error while trying to parse initial settings from Proline Admin configuration file. Default settings will be reset.")
       warningCorruptedFile.visible = true
-      resetAdminConfig()
+      resetAdminConfig(Wizard.adminConfPath)
     }
   }
 
-  // postgreSQL component 
-  val postgreSQLChBox = new CheckBox("PostgreSQL Server Data Directory") {
-    id = "postgresChBoxId"
-    selected = true
-    underline = true
-    font = Font.font("SanSerif", FontWeight.Bold, 12)
-    vgrow = Priority.Always
-  }
-  val postgreSQLLabel = new HBox {
-    prefWidth = 250
-    disable <== !postgreSQLChBox.selected
-    children = List(new Label("Path to PostgreSQL Data Directory: "))
-  }
+  val confChooser = new ConfFileChooser(Wizard.targetPath)
   val postgreSQLField = new TextField() {
     disable <== !postgreSQLChBox.selected
     if (iniPgDirPath != null) {
@@ -97,33 +84,11 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !postgreSQLChBox.selected
     onAction = handle {
-      _browseDataDir()
+      _browseDataDir(Wizard.stage)
     }
   }
 
-  //Proline modules component 
-  val prolineModulesChBox = new CheckBox("Proline Modules") {
-    id = "moduleConfigId"
-    underline = true
-    selected = true
-    vgrow = Priority.Always
-    font = Font.font("SanSerif", FontWeight.Bold, 12)
-    onAction = handle { getSelectedChildren }
-  }
 
-  //Proline web components 
-  val prolineWebChBox = new CheckBox("Proline Web Configuration File") {
-    id = "prolineWebChBoxId"
-    selected = true
-    underline = true
-    vgrow = Priority.Always
-    onAction = handle { getSelectedParent }
-  }
-  val prolineWebLabel = new HBox {
-    prefWidth = 250
-    disable <== !prolineWebChBox.selected
-    children = List(new Label("Path to Web Root ( File application.conf ): "))
-  }
   val prolineWebField = new TextField() {
     disable <== !prolineWebChBox.selected
     if (iniPwxPath != null) {
@@ -138,23 +103,11 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !prolineWebChBox.selected
     onAction = handle {
-      _browseProlineWebConfigFile()
+      _browseProlineWebConfigFile(Wizard.stage)
     }
   }
 
-  //Sequence Repository components 
-  val seqReposChBox = new CheckBox("Sequence Repository Configuration File") {
-    id = "seqReposChBoxId"
-    selected = true
-    underline = true
-    vgrow = Priority.Always
-    onAction = handle { getSelectedParent }
-  }
-  val seqReposLabel = new HBox {
-    prefWidth = 250
-    disable <== !seqReposChBox.selected
-    children = List(new Label("Path to SeqRepo Root ( File application.conf ): "))
-  }
+
   val seqReposField = new TextField() {
     disable <== !seqReposChBox.selected
     if (iniSeqReposPath != null) {
@@ -169,24 +122,11 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
     graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !seqReposChBox.selected
     onAction = handle {
-      _browseSeqReposConfigFile
+      _browseSeqReposConfigFile(Wizard.stage)
     }
   }
 
-  // Proline server components 
-  val prolineServerChBox = new CheckBox("Proline Server Configuration File") {
-    id = "prolineServerChBoxId"
-    selected = true
-    underline = true
-    vgrow = Priority.Always
-    font = Font.font("SanSerif", FontWeight.Bold, 12)
-  }
-  val prolineServerLabel = new HBox {
 
-    prefWidth = 250
-    disable <== !prolineServerChBox.selected
-    children = List(new Label("Path to Server Root ( File application.conf ): "))
-  }
   val prolineServerField = new TextField() {
     disable <== !prolineServerChBox.selected
     if (iniServerPath != null) {
@@ -200,7 +140,9 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   val prolineServerBrowseButton = new Button("Browse...") {
     graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !prolineServerChBox.selected
-    onAction = handle { _browseServerConfigFile() }
+    onAction = handle {
+      _browseServerConfigFile(Wizard.stage)
+    }
   }
 
   /* Style */
@@ -258,23 +200,6 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   children = Seq(ScalaFxUtils.newVSpacer(minH = 20),
     configItemsPane)
 
-  /* functions */
-  private def getSelectedChildren {
-    if (prolineModulesChBox.isSelected) {
-      prolineWebChBox.selected = true
-      seqReposChBox.selected = true
-    } else {
-      prolineWebChBox.selected = false
-      seqReposChBox.selected = false
-    }
-  }
-
-  private def getSelectedParent {
-    if (prolineWebChBox.isSelected || seqReposChBox.isSelected)
-      prolineModulesChBox.selected = true
-    else
-      prolineModulesChBox.selected = false
-  }
   private val checkBoxList = List(prolineServerChBox.getId, prolineWebChBox.getId, seqReposChBox.getId, postgreSQLChBox.getId)
 
   // get selected item
@@ -453,64 +378,48 @@ object ItemsPanel extends VBox with ItemsPanelForm with LazyLogging {
   }
 
   // browse configurations files dialog 
-  private def _browseServerConfigFile() {
-    ConfFileChooser.setForProlineServerConf(prolineServerField.text())
+  def _browseServerConfigFile(stage: Stage) {
+    confChooser.setForProlineServerConf(prolineServerField.text())
     try {
-      val filePath = ConfFileChooser.showIn(Wizard.stage)
+      val filePath = confChooser.showIn(stage)
       if (filePath != null) prolineServerField.text = filePath
     } catch {
-      case e: Exception => logger.error("error in file's path ")
+      case t: Throwable => logger.error("error in file's path ")
     }
   }
-  private def _browseSeqReposConfigFile() {
-    ConfFileChooser.setForSeqRepoConf(seqReposField.text())
+  def _browseSeqReposConfigFile(stage: Stage) {
+    confChooser.setForSeqRepoConf(seqReposField.text())
     try {
-      val filePath = ConfFileChooser.showIn(Wizard.stage)
+      val filePath = confChooser.showIn(stage)
       if (filePath != null) {
         seqReposField.text = filePath
       }
     } catch {
-      case e: Exception => logger.error("error in file's path ")
+      case t: Throwable => logger.error("error in file's path ")
     }
   }
-  private def _browseProlineWebConfigFile() {
-    ConfFileChooser.setForPwxConf(prolineWebField.text())
+  def _browseProlineWebConfigFile(stage: Stage) {
+    confChooser.setForPwxConf(prolineWebField.text())
     try {
-      val filePath = ConfFileChooser.showIn(Wizard.stage)
+      val filePath = confChooser.showIn(stage)
       if (filePath != null) prolineWebField.text = filePath
     } catch {
-      case e: Exception => logger.error("error in file's path ")
+      case t: Throwable => logger.error("error in file's path ")
     }
   }
-  private def _browseDataDir() {
+  def _browseDataDir(stage: Stage) {
     val file = FxUtils.browseDirectory(
       dcTitle = "Select PostgreSQL data directory",
       dcInitialDir = postgreSQLField.text(),
-      dcInitOwner = Wizard.stage)
+      dcInitOwner = stage)
     try {
       val newPath = file.getPath()
       if (file != null) {
         postgreSQLField.text = newPath
       }
     } catch {
-      case e: Exception => logger.error("error in file's path ")
+      case t: Throwable => logger.error("error in file's path ")
     }
-  }
-
-  //reset default setting when the configuration file is corrupted
-  def resetAdminConfig() = {
-    val defaultConfig = AdminConfig(Wizard.adminConfPath,
-      Some(""),
-      Some(""),
-      Some(""),
-      Some(""),
-      Some(DriverType.POSTGRESQL),
-      Some("<path/to/proline/data>"),
-      Some("<db_user>"),
-      Some("<db_password>"),
-      Some("<db_host>"),
-      Some(5432))
-    new AdminConfigFile(Wizard.adminConfPath).write(defaultConfig)
   }
 
 }
