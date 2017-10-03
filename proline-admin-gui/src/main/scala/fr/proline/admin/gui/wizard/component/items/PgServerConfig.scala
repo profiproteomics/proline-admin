@@ -24,14 +24,12 @@ import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PostgresCo
 import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PgHbaConfigContentTab
 
 /**
- *  PgServerConfig edit/update postgreSQL access rights
+ * builds a panel with the postgreSQL properties: access rights and optimization
  *
  */
 
 class PgServerConfig(val name: String) extends Item with LazyLogging {
-  /**
-   * component
-   */
+  /* postgreSQL panel components */
   val panelTitle = new Label("PostgreSQL Server Configuration") {
     styleClass = List("item")
   }
@@ -47,7 +45,7 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
     prefHeight <== Wizard.stage.height - 30
   }
 
-  //tab of right access to PostgreSQL 
+  /* access right tab */
   val pgHbaForm = new PgHbaConfigContentTab()
   val pgAccessRightTab = new Tab {
     text = "PG Access Right"
@@ -55,7 +53,7 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
     closable = false
   }
 
-  //tab of optimization of PostgreSQL  
+  /* optimization tab */
   val postgresForm = new PostgresConfigContentTab()
   val pgOptimazationTab = new Tab {
     text = "PG Optimization"
@@ -64,7 +62,7 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
   }
 
   tabPane.tabs.addAll(pgOptimazationTab, pgAccessRightTab)
-
+  /* Layout */
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   prefHeight <== Wizard.stage.height - 50
@@ -81,7 +79,7 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
     })
   }, ScalaFxUtils.newVSpacer(minH = 10), tabPane)
 
-  // help 
+  /* help text */
   val helpTextBuilder = new StringBuilder("PostgreSQL optimization:\n\n\tThis tab contains: PostgreSQL server parameters.")
     .append("\n\tThe complete list of parameter names and allowed values can be found in the PostgreSQL documentation.\n\n")
     .append("PostgreSQL access right:\n\n\tThis tab controls: which hosts are allowed to connect, ")

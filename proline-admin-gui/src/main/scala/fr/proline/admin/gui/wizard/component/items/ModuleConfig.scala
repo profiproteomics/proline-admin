@@ -22,13 +22,15 @@ import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
 import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.wizard.util._
+
 /**
- * panel edit/update Proline Module Config
+ * builds a panel with the Sequence Repository module properties: database server properties, JMS properties and parsing rules
+ *
  */
 
 class ModuleConfig(val name: String) extends Item with LazyLogging {
 
-  /* Proline Module components */
+  /* Sequence repository panel components */
   val panelTitle = new Label("Proline Module Configuration") {
     styleClass = List("item")
   }
@@ -40,24 +42,24 @@ class ModuleConfig(val name: String) extends Item with LazyLogging {
   }
 
   val tabPane = new TabPane()
-  /* Proline Sequence Repository database properties tab */
-  val PostGreSQLSeq = new PostGreSQLSeqTab(Wizard.seqRepoConfPath)
+
+  /* database server properties tab */
+  val PostGreSQLSeq = new PostGreSQLSeq(Wizard.seqRepoConfPath, Wizard.stage)
   val PostGresSeqTab = new Tab {
     text = "PostGreSQL"
     content = PostGreSQLSeq
     closable = false
   }
-
-  /* Proline Jms server tab */
-  val jmsServer = new JmsServerTab(Wizard.SeqJmsNodeConfPath)
+  /* JMS server tab */
+  val jmsServer = new JmsServer(Wizard.SeqJmsNodeConfPath)
   val serverJMSTab = new Tab {
     text = "JMS Server"
     content = jmsServer
     closable = false
   }
 
-  /* Sequence Repository Tab*/
-  val parsingRules = new ParsingRulesContentTab()
+  /* parsing rules tab */
+  val parsingRules = new ParsingRulesContent(Wizard.parsingRulesPath, Wizard.stage)
   val parsingRulesTab = new Tab {
     text = "Sequence Repository Specific"
     content = parsingRules
@@ -82,7 +84,7 @@ class ModuleConfig(val name: String) extends Item with LazyLogging {
     })
   }, ScalaFxUtils.newVSpacer(minH = 10), tabPane)
 
-  /* help text */
+  /* Help text */
   val helpTextBuilder = new StringBuilder()
   helpTextBuilder.append("PostgreSQL: required properties to connect the database server\n\n")
     .append("\tHost: host name\n").append("\tPort: port number(default: 5432)\n")

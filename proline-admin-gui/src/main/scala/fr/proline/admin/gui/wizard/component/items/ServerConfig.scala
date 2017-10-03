@@ -12,25 +12,25 @@ import javafx.scene.layout.Priority
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import scalafx.geometry.Pos
-import fr.profi.util.scalafx.TitledBorderPane
+
 import java.io.File
+
+import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
-import fr.proline.admin.gui.Wizard
+import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.wizard.component.Item
 
 /**
- * ServerConfig edit/update database server parameters :host name,user name ,password and port
+ * builds a panel with the server properties : database server properties, JMS properties and mount Points
  *
  */
 
 class ServerConfig(val name: String) extends Item with LazyLogging {
 
-  /**
-   * component
-   */
+  /* Proline server components  */
   val panelTitle = new Label("Proline Server Configuration") {
     styleClass = List("item")
   }
@@ -40,23 +40,23 @@ class ServerConfig(val name: String) extends Item with LazyLogging {
       _openHelpDialog()
     }
   }
-
   val tabPane = new TabPane()
-  val postgres = new PostGreSQLTab(Wizard.adminConfPath)
+  /*  database server properties tab */
+  val postgres = new PostGreSQL(Wizard.adminConfPath)
   val pgAccessTab = new Tab {
     text = "PostGreSQL"
     content = postgres
     closable = false
   }
-
-  val jmsServer = new JmsServerTab(Wizard.jmsNodeConfPath)
+  /* JMS server tab */
+  val jmsServer = new JmsServer(Wizard.jmsNodeConfPath)
   val jmsServerTab = new Tab {
     text = "JMS Server"
     content = jmsServer
     closable = false
   }
-
-  val mountsPoint = new MountPointsContentTab()
+  /* mount points tab*/
+  val mountsPoint = new MountPointsContent(Wizard.stage)
   val mountPointsTab = new Tab {
     text = "Mount Points"
     content = mountsPoint
@@ -88,7 +88,7 @@ class ServerConfig(val name: String) extends Item with LazyLogging {
     })
   }, ScalaFxUtils.newVSpacer(minH = 10), tabPane)
 
-  // Help 
+  /* Help text */
   val helpTextBuilder = new StringBuilder()
 
   helpTextBuilder.append("PostgreSQL: required properties to connect the database server.\n\n")

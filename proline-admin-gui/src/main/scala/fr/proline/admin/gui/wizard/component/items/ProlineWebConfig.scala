@@ -22,14 +22,15 @@ import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
 import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.wizard.util._
+
 /**
- * ProlineWebConfig build Panel to edit/update Proline Web Config
+ *  builds a Panel with some PWX properties :mount points 
  *
  */
 
 class ProlineWebConfig(val name: String) extends Item with LazyLogging {
 
-  /* Proline Module components */
+  /* Proline Web components */
   val panelTitle = new Label("Proline Web Configuration") {
     styleClass = Seq("item")
   }
@@ -39,16 +40,16 @@ class ProlineWebConfig(val name: String) extends Item with LazyLogging {
       _openHelpDialog()
     }
   }
-
   val tabPane = new TabPane()
 
   /* Proline Web Tab */
-  val prolinePwx = new ProlinePwxContentTab()
+  val prolinePwx = new ProlinePwxContent(Wizard.stage)
   val prolinePwxTab = new Tab {
     text = " Proline Web "
     content = prolinePwx
     closable = false
   }
+  
   tabPane.tabs.addAll(prolinePwxTab)
   /* Layout */
   alignment = Pos.Center

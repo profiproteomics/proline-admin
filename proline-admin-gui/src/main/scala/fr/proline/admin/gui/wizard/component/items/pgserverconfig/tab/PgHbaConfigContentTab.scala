@@ -8,11 +8,12 @@ import java.io.File
 import java.io.File.separator
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.component.configuration.file._
-import fr.proline.admin.gui.wizard.component.items.serverconfig.tab.content.PanelScorllPane
 import fr.proline.admin.gui.wizard.component.items.pgserverconfig._
 import fr.proline.admin.gui.component.configuration.form.PgHbaConfigForm
+import fr.proline.admin.gui.wizard.util.PanelScorllPane
+
 /**
- * panel of postgreSQL right access (in scrollPane)
+ * builds a tab of postgreSQL right access
  *
  */
 class PgHbaConfigContentTab extends PanelScorllPane {
