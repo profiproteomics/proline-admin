@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab
+package fr.proline.admin.gui.wizard.component.items.serverconfig.tab
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -28,26 +28,32 @@ import java.io.File.separator
 import java.io.IOException
 import scalafx.scene.layout.Priority
 
+import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
 import fr.profi.util.scalafx.ScalaFxUtils
-import fr.profi.util.scala.ScalaUtils
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.process.DatabaseConnection
 import fr.proline.admin.gui.Wizard
 import fr.proline.repository.DriverType
-import fr.proline.admin.gui.wizard.process.config.SeqConfigFile
+import fr.proline.admin.gui.process.config.AdminConfigFile
+import fr.proline.admin.gui.wizard.component.items.ServerConfig
 import fr.proline.admin.gui.wizard.component.items.form.ITabForm
-import fr.proline.admin.gui.wizard.process.config._
+import fr.profi.util.scala.ScalaUtils
+import fr.proline.admin.gui.process.config.AdminConfigFile
+import fr.proline.admin.gui.process.config.AdminConfig
+import fr.proline.admin.gui.wizard.util.GetConfirmation
+import fr.proline.repository.DriverType
+
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 
 /**
- * PostGreSQLSeqTab contains tab of properties in SqeRepos to connect to the database server
+ * PostGreSQL build tab of PostGreSQL database server properties.
  *
  */
-
-class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging {
+class PostGreSQL(path: String) extends VBox with ITabForm with LazyLogging {
   private val driver = DriverType.POSTGRESQL
 
   /*
@@ -56,40 +62,59 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
 	 * ********** *
 	 */
 
-  //initialize some properties 
-  private var _userName, _passWord, _hostName = ""
-  private var _port = 5432
-  private val seqConfigFile = new SeqConfigFile(path)
-  private val seqConfigOpt = seqConfigFile.read
-  require(seqConfigOpt.isDefined, "sequence repository config is undefined")
-  private val seqConfig = seqConfigOpt.get
+  try {
+    if (new File(path).exists()) {
+      val jmsNodeConfDir = new File(path).getParent()
+      if (new File(jmsNodeConfDir + File.separator + """jms-node.conf""").exists()) {
+        Wizard.jmsNodeConfPath = jmsNodeConfDir + File.separator + """jms-node.conf"""
+      }
+    }
+  } catch {
+    case e: IOException => logger.error(s"File jms-node.conf not found : $e")
+  }
+
+  private val adminConfigFile = new AdminConfigFile(path)
+  private val adminConfigOpt = adminConfigFile.read()
+  require(adminConfigOpt.isDefined, "admin config is undefined to get database server properties. ")
+  private val adminConfig = adminConfigOpt.get
 
   def isPrompt(str: String): Boolean = str matches """<.*>"""
 
-  val dbUserName = seqConfig.dbUserName.get
-  if (isPrompt(dbUserName)) _userName = dbUserName
-  else _userName = dbUserName
+  val dbUserName = adminConfig.dbUserName.get
+  if (isPrompt(dbUserName)) {
+    Wizard.userName = dbUserName
+  } else {
+    Wizard.userName = dbUserName
+  }
 
-  val dbPassword = seqConfig.dbPassword.get
-  if (isPrompt(dbPassword)) _passWord = dbPassword
-  else _passWord = dbPassword
+  val dbPassword = adminConfig.dbPassword.get
+  if (isPrompt(dbPassword)) {
+    Wizard.passWord = dbPassword
+  } else {
+    Wizard.passWord = dbPassword
+  }
 
-  val dbHost = seqConfig.dbHost.get
-  if (isPrompt(dbHost)) _hostName = dbHost
-  else _hostName = dbHost
+  val dbHost = adminConfig.dbHost.get
+  if (isPrompt(dbHost)) {
+    Wizard.hostName = dbHost
+  } else {
+    Wizard.hostName = dbHost
+  }
 
-  val dbPort = seqConfig.dbPort.get
-  _port = dbPort
+  val dbPort = adminConfig.dbPort.get
+  Wizard.port = dbPort
+
 
   //host 
   val hostLabel = new Label("Host: ")
   val hostField = new TextField {
-    if (_hostName != null) text = _hostName
+    if (Wizard.hostName != null) text = Wizard.hostName
     text.onChange { (_, oldText, newText) =>
-      _hostName = newText
+      Wizard.hostName = newText
       checkForm
     }
   }
+
   //warning 
   val warningAboutRestartText = "WARNING: Using localhost or 127.0.0.1 is not advised, as it will make Proline available from this computer only."
   val warningAboutHostLabel = new Label {
@@ -99,26 +124,24 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
   //port
   val portLabel = new Label("Port: ")
   val portField = new NumericTextField {
-    text = _port.toString
+    text = Wizard.port.toString
     text.onChange {
       (_, oldText, newText) =>
         if ((newText != null) && !newText.equals("")) {
-          _port = newText.toInt
+          Wizard.port = newText.toInt
           checkForm
         }
     }
   }
-
   //user
   val userLabel = new Label("User: ")
   val userField = new TextField {
-    if (_userName != null) text = _userName
+    if (Wizard.userName != null) text = Wizard.userName
     text.onChange { (_, oldText, newText) =>
-      _userName = newText
+      Wizard.userName = newText
       checkForm
     }
   }
-
   //password
   val passWordLabel = new Label("Password: ")
   val showPwdBox = new CheckBox("Show password") {
@@ -134,22 +157,26 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
     text <==> passwordPWDField.text
     promptText <==> passwordPWDField.promptText
     visible <== !passwordPWDField.visible
-    if (_passWord != null) text = _passWord
+    if (Wizard.passWord != null) text = Wizard.passWord
     text.onChange { (_, oldText, newText) =>
-      _passWord = newText
+      Wizard.passWord = newText
       checkForm
     }
   }
+
   val dbPwdPane = new StackPane {
     alignmentInParent = Pos.BottomLeft
     children = List(passwordPWDField, passwordTextField)
   }
-  /** test database connection */
+
   val testConnectionButton = new Button {
     graphic = FxUtils.newImageView(IconResource.CONNECTION)
     text = "Test connection"
     onAction = handle {
-      _testDbConnection(true, true)
+      /*test connection database*/
+      if (!ScalaUtils.isEmpty(Wizard.userName) && !ScalaUtils.isEmpty(Wizard.passWord) && !ScalaUtils.isEmpty(Wizard.hostName) && (Wizard.port > 0)) {
+        DatabaseConnection.testDbConnectionToWizard(driver, Wizard.userName, Wizard.passWord, Wizard.hostName, Wizard.port, true, true)
+      }
     }
   }
 
@@ -160,7 +187,6 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
  */
   Seq(userLabel, hostLabel, portLabel, passWordLabel).foreach(_.minWidth = 60)
   Seq(passwordTextField).foreach(_.prefWidth = 1500)
-
   Seq(userField, portField, hostField).foreach {
     f => f.hgrow = Priority.Always
   }
@@ -175,12 +201,11 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
       prefWidth <== Wizard.configItemsPanel.width - 30
       prefHeight <== Wizard.configItemsPanel.height - 30
       spacing = 2 * V_SPACING
-      children = Seq(
-        warningDatalabel,
+      children = Seq(warningDatalabel,
         hostLabel,
         new HBox {
           spacing = H_SPACING
-           children = Seq(new VBox {
+          children = Seq(new VBox {
             prefWidth <== Wizard.configItemsPanel.width - 30
             spacing = 2
             children = Seq(hostField, warningAboutHostLabel)
@@ -209,15 +234,21 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
         }, ScalaFxUtils.newVSpacer(minH = 12))
     })
 
+  // position in center
+
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = V_SPACING
   margin = Insets(5, 5, 5, 5)
   children = List(
     ScalaFxUtils.newVSpacer(minH = 20),
-    dbConnectionSettingPane)
+    new VBox {
+      vgrow = Priority.Always
+      hgrow = Priority.Always
+      children = List(dbConnectionSettingPane)
+    })
 
-  /** check Sequence Repository fields form  */
+  /** check Proline Admin Form */
   def checkForm: Boolean = {
     if (ScalaUtils.isEmpty(hostField.getText) || ScalaUtils.isEmpty(userField.getText)
       || ScalaUtils.isEmpty(portField.getText) || ScalaUtils.isEmpty(passwordPWDField.getText)) {
@@ -228,34 +259,41 @@ class PostGreSQLSeqTab(path: String) extends VBox with ITabForm with LazyLogging
       true
     }
   }
-
-  /** test connection to database server */
-  private def _testDbConnection(
-    showSuccessPopup: Boolean = false,
-    showFailurePopup: Boolean = false): Boolean = { //return connectionEstablished
-    DatabaseConnection.testDbConnectionToWizard(DriverType.POSTGRESQL, _userName, _passWord, _hostName, _port, showSuccessPopup, showFailurePopup)
-  }
-
-  /** get GUI information to create a new SeqRepos Object */
-  private def _toSeqConfig() = SeqConfig(
+  /** get GUI information to create a new Proline Admin Config Object **/
+  private def _toAdminConfig() = AdminConfig(
+    filePath = Wizard.adminConfPath,
+    serverConfigFilePath = Option(Wizard.serverConfPath).map(doubleBackSlashes), //FIXME: windows-specific
+    pwxConfigFilePath = Option(Wizard.webRootPath).map(doubleBackSlashes), //FIXME: windows-specific
+    pgsqlDataDir = Option(Wizard.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
+    seqRepoConfigFilePath = Option(Wizard.seqRepoConfPath).map(doubleBackSlashes),
     driverType = Option(DriverType.POSTGRESQL),
-    maxPoolConnection = Option(3),
-    dbUserName = Option(_userName),
-    dbPassword = Option(_passWord),
-    dbHost = Option(_hostName),
-    dbPort = Option(_port),
-    dbUdsDb = Option("uds_db"))
+    prolineDataDir = Option(Wizard.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
+    dbUserName = Option(Wizard.userName),
+    dbPassword = Option(Wizard.passWord),
+    dbHost = Option(Wizard.hostName),
+    dbPort = Option(Wizard.port) //FIXME
+    )
 
-  /** save new Sequence Repository properties */
+  /** save Proline-Admin form  **/
   def saveForm() {
-    val newSeqConfig = _toSeqConfig()
-    seqConfigFile.write(newSeqConfig)
+    /* save  new AdminConf properties */
+    val newConfig = Future {
+      val newAdminConfig = _toAdminConfig()
+      adminConfigFile.write(newAdminConfig)
+    }
+    newConfig onFailure {
+      case (t) => logger.error(s"An error has occured: ${t.getMessage}")
+    }
   }
 
-  /** get database connection */
+  private def _testDbConnection(
+    adminConfig: AdminConfig,
+    showSuccessPopup: Boolean = true,
+    showFailurePopup: Boolean = true): Boolean = {
+    DatabaseConnection.testDbConnection(adminConfig, showSuccessPopup, showFailurePopup)
+  }
+  /**  database connection */
   def getInfos: String = {
-    if (DatabaseConnection.testDbConnectionToWizard(driver, _userName, _passWord, _hostName, _port, false, false))
-      s"""PostgreSQL: OK""" else s"""PostgreSQL: NOK"""
+    if (DatabaseConnection.testDbConnectionToWizard(driver, Wizard.userName, Wizard.passWord, Wizard.hostName, Wizard.port, false, false)) s"""PostgreSQL: OK""" else s"""PostgreSQL: NOK"""
   }
 }
-

@@ -33,7 +33,7 @@ import ExecutionContext.Implicits.global
  *
  */
 
-class JmsServerTab(path: String) extends VBox with ITabForm with LazyLogging {
+class JmsServer(path: String) extends VBox with ITabForm with LazyLogging {
 
   /*
 	 * ********** *

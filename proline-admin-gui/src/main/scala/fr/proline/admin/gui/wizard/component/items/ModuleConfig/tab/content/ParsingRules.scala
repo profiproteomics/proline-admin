@@ -47,10 +47,10 @@ import ExecutionContext.Implicits.global
 /**
  * ParsingRules create a modal window to edit/add parsing rules file.
  */
-class ParsingRules extends VBox with LazyLogging {
+class ParsingRules(path:String,stage:Stage) extends VBox with LazyLogging {
 
   /* parsing rules file */
-  private val parsigRuleFile = new ParsingRulesFile(Wizard.parsingRulesPath)
+  private val parsigRuleFile = new ParsingRulesFile(path)
   private val parsingRuleOpt = parsigRuleFile.read()
   require(parsingRuleOpt.isDefined, "parsing rules is undefined")
   private val parsingRule = parsingRuleOpt.get
@@ -72,7 +72,7 @@ class ParsingRules extends VBox with LazyLogging {
     text.onChange { (_, oldText, newText) =>
       defaultProteinAccession = newText
     }
-    prefWidth <== Wizard.stage.width - 60
+    prefWidth <== stage.width - 60
     promptText = "Default protein accession"
   }
   val resetAccessionButton = new Button("Default") {
@@ -217,7 +217,7 @@ class ParsingRules extends VBox with LazyLogging {
       fastaDirBox.children = localFastaDirs
       warningFastaDir
     }
-    localFastaDirs += new FastaDirectory(parentStage = Wizard.stage,
+    localFastaDirs += new FastaDirectory(parentStage = stage,
       onDeleteAction = _onFastaDirDelete, value = value)
     fastaDirBox.children = localFastaDirs
     warningFastaDir
@@ -231,7 +231,7 @@ class ParsingRules extends VBox with LazyLogging {
       RulesBox.children = localRules
       warningParsingRules
     }
-    localRules += new Rules(parentStage = Wizard.stage,
+    localRules += new Rules(parentStage = stage,
       onDeleteAction = _onRulesDelete,
       name = name, fastaName = fastaName,
       fastaVersion = fastaVersion,
@@ -278,7 +278,7 @@ class ParsingRules extends VBox with LazyLogging {
       _getDefaultProteinAccesion())
 
   /** save all changed parameters **/
-  def saveForm() {
+  def save() {
     val newConfig = Future {
       val newParsingRules = _toParsingRule()
       parsigRuleFile.write(newParsingRules)

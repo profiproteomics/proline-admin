@@ -1,11 +1,12 @@
-package fr.proline.admin.gui.wizard.component.items.serverconfig.tab.content
+package fr.proline.admin.gui.wizard.util
 
 import scalafx.Includes._
 import scalafx.scene.control.ScrollPane.ScrollBarPolicy
 import fr.profi.util.scalafx.CustomScrollPane
-import fr.proline.admin.gui.Wizard
 
+/**
+ * builds a custom scroll panel
+ *
+ */
 abstract class PanelScorllPane extends CustomScrollPane(hBarPolicy = ScrollBarPolicy.AS_NEEDED) {
-  prefWidth <== Wizard.configItemsPanel.width - 30
-  prefHeight <== Wizard.configItemsPanel.height - 30
 }

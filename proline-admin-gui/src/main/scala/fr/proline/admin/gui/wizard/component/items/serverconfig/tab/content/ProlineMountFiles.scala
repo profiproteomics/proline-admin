@@ -311,7 +311,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
     true
   }
 
-  def saveForm() {
+  def save() {
     // Wizard.stage.scene().setCursor(Cursor.WAIT)
     val newConfig = Future {
       val newAdminConfig = _toAdminConfig()
@@ -327,7 +327,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
     // Wizard.stage.scene().setCursor(Cursor.DEFAULT)
   }
 
-  def getInfos(): String = {
+  def getProperties(): String = {
     val montPointsBuilder = new StringBuilder("Mount Points:\n\t")
     montPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n\t")
       .append(mzdbFilesMountPoints.size).append("  Mzdb files\n\t")

@@ -48,7 +48,7 @@ import fr.proline.admin.gui.wizard.component.items.ServerConfig
  * Create a modal window to edit Proline configuration's file.
  *
  */
-class ProlinePwx extends VBox with LazyLogging {
+class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
 
   //maxHeight = Screen.primary.visualBounds.height - 20 // 
 
@@ -307,7 +307,7 @@ class ProlinePwx extends VBox with LazyLogging {
       key = key,
       value = value,
       onDeleteAction = _onRawFileMpDelete,
-      parentStage = Wizard.stage)
+      parentStage = stage)
     rawFilesMpBox.children = rawFilesMountPoints
   }
 
@@ -325,7 +325,7 @@ class ProlinePwx extends VBox with LazyLogging {
       key = key,
       value = value,
       onDeleteAction = _onMzdbFileMpDelete,
-      parentStage = Wizard.stage)
+      parentStage = stage)
     mzdbFilesMpBox.children = mzdbFilesMountPoints
   }
 
@@ -343,7 +343,7 @@ class ProlinePwx extends VBox with LazyLogging {
       key = key,
       value = value,
       onDeleteAction = _onResultFileMpDelete,
-      parentStage = Wizard.stage)
+      parentStage = stage)
     resultFilesMpBox.children = resultFilesMountPoints
   }
 
