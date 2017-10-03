@@ -13,6 +13,10 @@ import javafx.scene.layout.Priority
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import scalafx.geometry.Pos
+
+import java.io.File
+import java.io.File.separator
+
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.util._
@@ -20,8 +24,8 @@ import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
 import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.wizard.component.items.pgserverconfig._
-import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PostgresConfigContentTab
-import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PgHbaConfigContentTab
+import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PostgresConfigContent
+import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PgHbaConfigContent
 
 /**
  * builds a panel with the postgreSQL properties: access rights and optimization
@@ -46,7 +50,8 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
   }
 
   /* access right tab */
-  val pgHbaForm = new PgHbaConfigContentTab()
+  val workingFilePgHbaConf = Wizard.pgDataDirPath + File.separator + "pg_hba.conf"
+  val pgHbaForm = new PgHbaConfigContent(workingFilePgHbaConf, Wizard.stage)
   val pgAccessRightTab = new Tab {
     text = "PG Access Right"
     content = pgHbaForm
@@ -54,7 +59,8 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
   }
 
   /* optimization tab */
-  val postgresForm = new PostgresConfigContentTab()
+  val workingFilePostgresConf = Wizard.pgDataDirPath + File.separator + "postgresql.conf"
+  val postgresForm = new PostgresConfigContent(workingFilePostgresConf, Wizard.stage)
   val pgOptimazationTab = new Tab {
     text = "PG Optimization"
     content = postgresForm
