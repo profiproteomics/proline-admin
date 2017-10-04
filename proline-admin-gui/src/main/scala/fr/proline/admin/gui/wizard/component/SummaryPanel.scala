@@ -50,7 +50,7 @@ object SummaryPanel extends LazyLogging {
   def get(item: Item) {
     if (item.isInstanceOf[PgServerConfig]) {
       val pgServer = item.asInstanceOf[PgServerConfig]
-      NavigationButtonsPanel.summaryPanel.prolinePgServerBox.children = new TitledBorderPane(
+      NavigationButtons.summaryPanel.prolinePgServerBox.children = new TitledBorderPane(
         title = "PostgreSQL Server Configuration ",
         contentNode = new VBox {
           spacing = 1
@@ -72,7 +72,7 @@ object SummaryPanel extends LazyLogging {
         text = "Set up or update Proline databases"
         selected = false
       }
-      NavigationButtonsPanel.summaryPanel.prolineServerBox.children = new TitledBorderPane(
+      NavigationButtons.summaryPanel.prolineServerBox.children = new TitledBorderPane(
         title = "Proline Server Configuration",
         contentNode = new VBox {
           spacing = 1
@@ -105,7 +105,7 @@ object SummaryPanel extends LazyLogging {
             text = module.jmsServer.getInfos
           }, ScalaFxUtils.newVSpacer(1))
       }
-      NavigationButtonsPanel.summaryPanel.prolineModuleBox.children = new TitledBorderPane(title = "Proline Sequence Repository ",
+      NavigationButtons.summaryPanel.prolineModuleBox.children = new TitledBorderPane(title = "Proline Sequence Repository ",
         contentNode = new VBox { children = Seq(SeqReposArea) })
     }
     /* Proline web summary */
@@ -118,7 +118,7 @@ object SummaryPanel extends LazyLogging {
             text = prolineWeb.prolinePwx.getInfos
           }, ScalaFxUtils.newVSpacer(1))
       }
-      NavigationButtonsPanel.summaryPanel.prolineWebBox.children = new TitledBorderPane(title = "Proline Web",
+      NavigationButtons.summaryPanel.prolineWebBox.children = new TitledBorderPane(title = "Proline Web",
         contentNode = new VBox { children = Seq(prolineWebArea) })
     }
   }

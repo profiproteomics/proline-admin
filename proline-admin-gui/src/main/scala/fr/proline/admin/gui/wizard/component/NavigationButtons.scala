@@ -28,7 +28,7 @@ import fr.proline.admin.gui.wizard.util.ExitPopup
  *
  */
 
-object NavigationButtonsPanel extends LazyLogging {
+object NavigationButtons extends LazyLogging {
 
   /**
    * ******* *
@@ -60,7 +60,6 @@ object NavigationButtonsPanel extends LazyLogging {
     graphic = FxUtils.newImageView(IconResource.SAVE)
     onAction = handle {
       // validate modifications 
-
       val confirmed = GetConfirmation("Are you sure you want to save the new Proline configurations ?")
       if (confirmed) {
         Wizard.items.toSeq.foreach {
@@ -112,7 +111,7 @@ object NavigationButtonsPanel extends LazyLogging {
 
   /* next and previous functions  */
   def onNext() {
-    NavigationButtonsPanel.prevButton.visible = true
+    NavigationButtons.prevButton.visible = true
     /* change items */
     if (Wizard.nodeIndex < Wizard.items.toSeq.size - 1) {
       Wizard.nodeIndex = Wizard.nodeIndex + 1
@@ -130,22 +129,22 @@ object NavigationButtonsPanel extends LazyLogging {
         Wizard.configItemsPanel.getChildren().clear()
         Wizard.configItemsPanel.getChildren().add(Wizard.currentNode)
         /* set button Validate to save modifications */
-        NavigationButtonsPanel.nextBox.getChildren().clear()
-        NavigationButtonsPanel.nextBox.getChildren().add(validateButton)
+        NavigationButtons.nextBox.getChildren().clear()
+        NavigationButtons.nextBox.getChildren().add(validateButton)
       }
     }
   }
 
   def onPrev() {
     if (Wizard.nodeIndex > 0) {
-      NavigationButtonsPanel.nextBox.getChildren().clear()
-      NavigationButtonsPanel.nextBox.getChildren().add(nextButton)
+      NavigationButtons.nextBox.getChildren().clear()
+      NavigationButtons.nextBox.getChildren().add(nextButton)
       Wizard.nodeIndex = Wizard.nodeIndex - 1
       Wizard.currentNode = Wizard.items.toSeq.apply(Wizard.nodeIndex)._2.get
       Wizard.configItemsPanel.getChildren().clear()
       Wizard.configItemsPanel.getChildren().add(Wizard.currentNode)
       if (Wizard.items.head._2.get.equals(Wizard.currentNode)) {
-        NavigationButtonsPanel.prevButton.visible = false
+        NavigationButtons.prevButton.visible = false
       }
     }
   }

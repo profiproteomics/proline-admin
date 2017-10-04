@@ -12,12 +12,11 @@ import fr.proline.admin.gui.component.configuration.file._
 import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab.Content.ProlinePwx
 import fr.proline.admin.gui.wizard.util.PanelScorllPane
 
-
 /**
- * ParsingRulesContentTab contains Proline PWX  PanelScorllPane
+ * builds a panel with the mount points of  Proline Web
  *
  */
-class ProlinePwxContent(stage:Stage) extends PanelScorllPane {
+class ProlinePwxContent(stage: Stage) extends PanelScorllPane {
 
   val prolinePwx = new ProlinePwx(stage)
   setContentNode(

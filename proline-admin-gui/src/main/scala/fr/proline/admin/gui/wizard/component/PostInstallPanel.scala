@@ -38,15 +38,12 @@ import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.repository.DriverType
 
 /**
- * first panel to choose Config Items
+ * builds home panel to choose post install Items
  *
  */
 
 object PostInstallPanel extends VBox with HomePanel with LazyLogging {
 
-  /** component of panel **/
-
-  /* try to read proline admin configuration file */
   var iniServerPath = ""
   var iniSeqReposPath = ""
   var iniPgDirPath = ""
@@ -59,12 +56,12 @@ object PostInstallPanel extends VBox with HomePanel with LazyLogging {
     warningCorruptedFile.visible = false
   } catch {
     case pe: com.typesafe.config.ConfigException.Parse => {
-      //try to reinitialize initial  values of configuration files 
       logger.error("Error while trying to parse initial settings from Proline Admin configuration file. Default settings will be reset.")
       warningCorruptedFile.visible = true
       resetAdminConfig(PostInstall.adminConfPath)
     }
   }
+  /* component of post install home panel */
   val confChooser = new ConfFileChooser(PostInstall.targetPath)
   val postgreSQLField = new TextField() {
     disable <== !postgreSQLChBox.selected
@@ -124,7 +121,6 @@ object PostInstallPanel extends VBox with HomePanel with LazyLogging {
   Seq(postgreSQLField, seqReposField, prolineServerField).foreach {
     f => f.hgrow = Priority.Always
   }
-
   /* layout */
   private val V_SPACING = 10
   private val H_SPACING = 5
@@ -248,11 +244,11 @@ object PostInstallPanel extends VBox with HomePanel with LazyLogging {
     if (postgreSQLChBox.isSelected) {
       if (ScalaUtils.isValidDataDir(PostInstall.pgDataDirPath)) {
         ScalaFxUtils.NodeStyle.hide(errorNotValidPgData)
-//        val pgServerConfig = new PgServerConfig("pgServer")
-//        PostInstall.items += (pgServerConfig.name -> Some(pgServerConfig))
+        //        val pgServerConfig = new PgServerConfig("pgServer")
+        //        PostInstall.items += (pgServerConfig.name -> Some(pgServerConfig))
         isValidPath = true
       } else {
-       // PostInstall.items -= ("pgServer")
+        // PostInstall.items -= ("pgServer")
         ScalaFxUtils.NodeStyle.show(errorNotValidPgData)
         ScalaFxUtils.NodeStyle.set(postgreSQLField)
       }

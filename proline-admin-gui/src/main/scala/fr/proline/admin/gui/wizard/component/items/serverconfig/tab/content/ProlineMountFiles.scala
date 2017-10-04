@@ -64,11 +64,6 @@ class ProlineMountFiles extends VBox with LazyLogging {
     else Option(new ServerConfigFile(Wizard.serverConfPath))
   private val serverConfigOpt = serverConfigFileOpt.map(_.read()).flatten
 
-  private val nodeConfigFile = new NodeConfigFile(Wizard.jmsNodeConfPath)
-  private val nodeConfigOpt = nodeConfigFile.read
-  require(nodeConfigOpt.isDefined, "JMS node config is undefined.")
-  private val nodeConfig = nodeConfigOpt.get
-
   /*
    * ********** *
    * COMPONENTS *
@@ -312,7 +307,6 @@ class ProlineMountFiles extends VBox with LazyLogging {
   }
 
   def save() {
-    // Wizard.stage.scene().setCursor(Cursor.WAIT)
     val newConfig = Future {
       val newAdminConfig = _toAdminConfig()
       /* Test connection to database */
@@ -324,7 +318,6 @@ class ProlineMountFiles extends VBox with LazyLogging {
     newConfig onFailure {
       case (t) => logger.error(s"An error has occured: ${t.getMessage}")
     }
-    // Wizard.stage.scene().setCursor(Cursor.DEFAULT)
   }
 
   def getProperties(): String = {

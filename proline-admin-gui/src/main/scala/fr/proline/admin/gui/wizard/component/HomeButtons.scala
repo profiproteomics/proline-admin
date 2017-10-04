@@ -63,13 +63,13 @@ class HomeButtons(pane: String) extends VBox {
       InstallPanel.warningCorruptedFile.visible = false
       Wizard.currentNode = Wizard.items.head._2.get
       //hide the  previous button for the first panel 
-      NavigationButtonsPanel.prevButton.visible = false
+      NavigationButtons.prevButton.visible = false
       //set the first panel
       Wizard.configItemsPanel.getChildren().clear()
       Wizard.configItemsPanel.getChildren().add(Wizard.currentNode)
       //set buttons panel
       Wizard.buttonsPanel.getChildren().clear()
-      Wizard.buttonsPanel.getChildren().add(NavigationButtonsPanel())
+      Wizard.buttonsPanel.getChildren().add(NavigationButtons())
     }
   }
 
