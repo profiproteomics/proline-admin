@@ -131,7 +131,7 @@ trait HomePanel {
 
   // Proline server  
   val prolineServerChBox = new CheckBox("Proline Server Configuration File") {
-    id = "prolineServerChBoxId"
+    id = "serverChBoxId"
     selected = true
     underline = true
     vgrow = Priority.Always

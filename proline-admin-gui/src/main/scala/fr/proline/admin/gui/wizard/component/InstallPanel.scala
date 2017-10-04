@@ -3,10 +3,7 @@ package fr.proline.admin.gui.wizard.component
 import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
-
 import scalafx.scene.control.Button
-import fr.profi.util.scalafx.ScalaFxUtils
-import fr.profi.util.scalafx.ScalaFxUtils._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.layout.Priority
@@ -14,30 +11,33 @@ import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
 import scalafx.scene.control.TextField
 import scalafx.scene.control.Hyperlink
-import scalafx.stage.Stage
-import fr.profi.util.scalafx.TitledBorderPane
 import scalafx.scene.layout.StackPane
-import com.typesafe.scalalogging.LazyLogging
-import javafx.scene.control.Tooltip
-import scala.collection.mutable.ListBuffer
+import scalafx.scene.Node
+import scalafx.stage.Stage
 
+import scala.collection.mutable.ListBuffer
 import java.io.IOException
 import java.io.FileNotFoundException
 import java.io.File
+
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.component.FileChooser._
+import fr.proline.admin.gui.wizard.component.items.form.HomePanel
 import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.wizard.component.items._
-import fr.profi.util.StringUtils
-import java.io.File
-import fr.proline.admin.gui.wizard.component.items.form.HomePanel
-import fr.profi.util.scalafx
-import fr.profi.util.scala.ScalaUtils
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.repository.DriverType
+
+import fr.profi.util.StringUtils
+import fr.profi.util.scalafx
+import fr.profi.util.scala.ScalaUtils
+import fr.profi.util.scalafx.ScalaFxUtils
+import fr.profi.util.scalafx.ScalaFxUtils._
+import fr.profi.util.scalafx.TitledBorderPane
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * first panel to choose Config Items
@@ -88,7 +88,6 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
     }
   }
 
-
   val prolineWebField = new TextField() {
     disable <== !prolineWebChBox.selected
     if (iniPwxPath != null) {
@@ -107,7 +106,6 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
     }
   }
 
-
   val seqReposField = new TextField() {
     disable <== !seqReposChBox.selected
     if (iniSeqReposPath != null) {
@@ -125,7 +123,6 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
       _browseSeqReposConfigFile(Wizard.stage)
     }
   }
-
 
   val prolineServerField = new TextField() {
     disable <== !prolineServerChBox.selected
@@ -192,7 +189,7 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
         }, ScalaFxUtils.newVSpacer(10))
     })
 
-  // final content 
+  /* Install home panel content */
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   spacing = 1
@@ -202,132 +199,125 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
 
   private val checkBoxList = List(prolineServerChBox.getId, prolineWebChBox.getId, seqReposChBox.getId, postgreSQLChBox.getId)
 
-  // get selected item
+  /* get selected items */
   def getSelectedItems {
     checkBoxList.map {
-      case "prolineServerChBoxId" => selectServerItem
+      case "serverChBoxId" => selectServerItem
       case "seqReposChBoxId" => selectSeqRepositoryItem
       case "prolineWebChBoxId" => selectProlineWebItem
       case "postgresChBoxId" => selectPostgreSQLItem
-      case _ => None
+      case _ => logger.error(s"Error while trying to select configuration file")
     }
   }
-  // select Proline-Server item 
-  private def selectServerItem(): Boolean = {
+
+  /* select Proline server item */
+  private def selectServerItem: Boolean = {
     var isValidPath = false
     if (prolineServerChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.serverConfPath)) {
         val jmsNodeConfPath = new File(Wizard.serverConfPath).getParent() + File.separator + """jms-node.conf"""
         if (new File(jmsNodeConfPath).exists) {
-          ScalaFxUtils.NodeStyle.remove(prolineServerField)
-          ScalaFxUtils.NodeStyle.hide(errorNotValidServerFile)
+          hideItem(errorNotValidServerFile, prolineServerField)
           Wizard.jmsNodeConfPath = jmsNodeConfPath
           val server = new ServerConfig("server")
           Wizard.items += (server.name -> Some(server))
           isValidPath = true
         } else {
-          Wizard.items -= ("server")
-          ScalaFxUtils.NodeStyle.show(errorNotValidServerFile)
-          ScalaFxUtils.NodeStyle.set(prolineServerField)
+          removeItem(errorNotValidServerFile, prolineServerField, "server")
         }
       } else {
-        Wizard.items -= ("server")
-        ScalaFxUtils.NodeStyle.show(errorNotValidServerFile)
-        ScalaFxUtils.NodeStyle.set(prolineServerField)
+        removeItem(errorNotValidServerFile, prolineServerField, "server")
       }
     } else {
       Wizard.items -= ("server")
-      ScalaFxUtils.NodeStyle.hide(errorNotValidServerFile)
-      ScalaFxUtils.NodeStyle.remove(prolineServerField)
+      hideItem(errorNotValidServerFile, prolineServerField)
     }
     isValidPath
   }
 
-  // select Sequence Repository item
-  private def selectSeqRepositoryItem(): Boolean = {
+  /* select Sequence Repository item */
+  private def selectSeqRepositoryItem: Boolean = {
     var isValidPath = false
     if (seqReposChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.seqRepoConfPath)) {
-        ScalaFxUtils.NodeStyle.remove(seqReposField)
         val jmsNodeConfPath = new File(seqReposField.getText).getParent() + File.separator + """jms-node.conf"""
         val parsingRules = new File(seqReposField.getText).getParent() + File.separator + """parsing-rules.conf"""
         if (new File(jmsNodeConfPath).exists && new File(parsingRules).exists) {
-          ScalaFxUtils.NodeStyle.hide(errorNotValidSeqReposFile)
+          hideItem(errorNotValidSeqReposFile, seqReposField)
           Wizard.SeqJmsNodeConfPath = jmsNodeConfPath
           Wizard.parsingRulesPath = parsingRules
           val moduleConfig = new ModuleConfig("modules")
           Wizard.items += (moduleConfig.name -> Some(moduleConfig))
           isValidPath = true
         } else {
-          ScalaFxUtils.NodeStyle.show(errorNotValidSeqReposFile)
+          removeItem(errorNotValidSeqReposFile, seqReposField, "modules")
         }
       } else {
-        Wizard.items -= ("modules")
-        ScalaFxUtils.NodeStyle.show(errorNotValidSeqReposFile)
-        ScalaFxUtils.NodeStyle.set(seqReposField)
-
+        removeItem(errorNotValidSeqReposFile, seqReposField, "modules")
       }
     } else {
       Wizard.items -= ("modules")
-      ScalaFxUtils.NodeStyle.hide(errorNotValidSeqReposFile)
-      ScalaFxUtils.NodeStyle.remove(seqReposField)
+      hideItem(errorNotValidSeqReposFile, seqReposField)
     }
     isValidPath
   }
 
-  //select the Proline Pwx item 
-  private def selectProlineWebItem(): Boolean = {
+  /* select  PWX item */
+  private def selectProlineWebItem: Boolean = {
     var isValidPath = false
     if (prolineWebChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.webRootPath)) {
-        ScalaFxUtils.NodeStyle.remove(prolineWebField)
-        ScalaFxUtils.NodeStyle.hide(errorNotValidWebFile)
+        hideItem(errorNotValidWebFile, prolineWebField)
         val prolineWeb = new ProlineWebConfig("prolineWeb")
         Wizard.items += (prolineWeb.name -> Some(prolineWeb))
         isValidPath = true
       } else {
-        Wizard.items -= ("prolineWeb")
-        ScalaFxUtils.NodeStyle.show(errorNotValidWebFile)
-        ScalaFxUtils.NodeStyle.set(prolineWebField)
+        removeItem(errorNotValidWebFile, prolineWebField, "prolineWeb")
       }
     } else {
       Wizard.items -= ("prolineWeb")
-      ScalaFxUtils.NodeStyle.hide(errorNotValidWebFile)
-      ScalaFxUtils.NodeStyle.remove(prolineWebField)
+      hideItem(errorNotValidWebFile, prolineWebField)
     }
     isValidPath
   }
 
-  //select PostgreSQL item 
-  private def selectPostgreSQLItem(): Boolean = {
+  /* select PostgreSQL item */
+  private def selectPostgreSQLItem: Boolean = {
     var isValidPath = false
     if (postgreSQLChBox.isSelected) {
       if (!Wizard.pgDataDirPath.isEmpty) {
-        ScalaFxUtils.NodeStyle.remove(postgreSQLField)
         if (ScalaUtils.isValidDataDir(Wizard.pgDataDirPath)) {
-          ScalaFxUtils.NodeStyle.hide(errorNotValidPgData)
+          hideItem(errorNotValidPgData, postgreSQLField)
           val pgServerConfig = new PgServerConfig("pgServer")
           Wizard.items += (pgServerConfig.name -> Some(pgServerConfig))
           isValidPath = true
         } else {
-          Wizard.items -= ("pgServer")
-          ScalaFxUtils.NodeStyle.show(errorNotValidPgData)
-          ScalaFxUtils.NodeStyle.set(postgreSQLField)
+          removeItem(errorNotValidPgData, postgreSQLField, "pgServer")
         }
       } else {
-        Wizard.items -= ("pgServer")
-        ScalaFxUtils.NodeStyle.show(errorNotValidPgData)
-        ScalaFxUtils.NodeStyle.set(postgreSQLField)
+        removeItem(errorNotValidPgData, postgreSQLField, "pgServer")
       }
     } else {
       Wizard.items -= ("pgServer")
-      ScalaFxUtils.NodeStyle.hide(errorNotValidPgData)
-      ScalaFxUtils.NodeStyle.remove(postgreSQLField)
+      hideItem(errorNotValidPgData, postgreSQLField)
     }
     isValidPath
   }
 
-  //check selected fields 
+  /* remove item from items map */
+  def removeItem(label: Node, field: Node, item: String) {
+    Wizard.items -= (item)
+    ScalaFxUtils.NodeStyle.show(label)
+    ScalaFxUtils.NodeStyle.set(field)
+  }
+
+  /* hide warning label and remove red border */
+  def hideItem(label: Node, field: Node) {
+    ScalaFxUtils.NodeStyle.hide(label)
+    ScalaFxUtils.NodeStyle.remove(field)
+  }
+
+  /* check selected fields */
   def setStyleSelectedItems: Boolean = {
     var validPath, seqReposPath, serverPath, postGresPath, webPath = true
     if (postgreSQLChBox.isSelected) {
@@ -377,7 +367,7 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
     validPath
   }
 
-  // browse configurations files dialog 
+  /* browse configuration files dialog */
   def _browseServerConfigFile(stage: Stage) {
     confChooser.setForProlineServerConf(prolineServerField.text())
     try {

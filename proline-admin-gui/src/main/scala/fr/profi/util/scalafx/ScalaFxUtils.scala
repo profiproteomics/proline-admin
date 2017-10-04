@@ -334,10 +334,10 @@ object ScalaFxUtils extends LazyLogging {
     def remove(field: Node) {
       field.setStyle("")
     }
-    def hide(label: Label) {
+    def hide(label: Node) {
       label.visible = false
     }
-    def show(label: Label) {
+    def show(label: Node) {
       label.visible = true
     }
   }

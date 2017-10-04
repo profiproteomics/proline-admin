@@ -36,11 +36,10 @@ object NavigationButtons extends LazyLogging {
    * ******* *
    */
 
-  //var postgresConfig: PostgresConfig = _
   val cancelButton = new Button("Cancel") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
-      ExitPopup("Exit Setup", "Are you sure you want to exit Proline Setup ?", Option(Wizard.stage), false)
+      ExitPopup("Exit Setup", "Are you sure you want to exit Proline Install? ", Option(Wizard.stage), false)
     }
   }
   val nextButton = new Button("Next") {
@@ -60,7 +59,7 @@ object NavigationButtons extends LazyLogging {
     graphic = FxUtils.newImageView(IconResource.SAVE)
     onAction = handle {
       // validate modifications 
-      val confirmed = GetConfirmation("Are you sure you want to save the new Proline configurations ?")
+      val confirmed = GetConfirmation("Are you sure you want to save the new Proline configurations? ")
       if (confirmed) {
         Wizard.items.toSeq.foreach {
           case (_1, _2) => SummaryPanel.save(_2.get)
