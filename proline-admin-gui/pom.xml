@@ -228,8 +228,6 @@
 									<filtering>true</filtering>
 									<excludes>
 										<exclude>META-INF/**</exclude>
-									</excludes>
-									<excludes>
 										<exclude>**/documentation/*.pdf</exclude>
 									</excludes>
 								</resource>
