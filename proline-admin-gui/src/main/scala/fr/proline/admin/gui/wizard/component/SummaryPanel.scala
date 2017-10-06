@@ -21,26 +21,31 @@ import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.proline.admin.gui.Wizard
 import fr.profi.util.scalafx.{ ScalaFxUtils, BoldLabel }
 import fr.proline.admin.gui.Wizard
-import fr.proline.admin.gui.wizard.util.HelpPopup
 import fr.proline.admin.gui.process._
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.gui.wizard.util.ProgressBarWindow
+import fr.proline.admin.gui.wizard.util.Browser
+
+import java.io.File
+import java.io.File.separator
 
 /**
  *  to build  item's Panel
  *
  */
 
-trait Item extends VBox {
+trait Item extends VBox with LazyLogging {
   val panelTitle: Label
   val headerHelpIcon: Hyperlink
-  def _openHelpDialog()
+  def _openUserGuide() {
+    Browser.openUrl(Wizard.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "user_guide.pdf")
+  }
 }
 
 /**
- *  Object build summary panel
+ *  builds summary panel to summarize the configurations
  *
  */
 

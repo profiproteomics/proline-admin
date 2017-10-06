@@ -268,14 +268,14 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
     if (prolineWebChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.webRootPath)) {
         hideItem(errorNotValidWebFile, prolineWebField)
-        val prolineWeb = new ProlineWebConfig("prolineWeb")
+        val prolineWeb = new ProlineWebConfig("pwx")
         Wizard.items += (prolineWeb.name -> Some(prolineWeb))
         isValidPath = true
       } else {
-        removeItem(errorNotValidWebFile, prolineWebField, "prolineWeb")
+        removeItem(errorNotValidWebFile, prolineWebField, "pwx")
       }
     } else {
-      Wizard.items -= ("prolineWeb")
+      Wizard.items -= ("pwx")
       hideItem(errorNotValidWebFile, prolineWebField)
     }
     isValidPath
@@ -288,17 +288,17 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
       if (!Wizard.pgDataDirPath.isEmpty) {
         if (ScalaUtils.isValidDataDir(Wizard.pgDataDirPath)) {
           hideItem(errorNotValidPgData, postgreSQLField)
-          val pgServerConfig = new PgServerConfig("pgServer")
+          val pgServerConfig = new PgServerConfig("postgres")
           Wizard.items += (pgServerConfig.name -> Some(pgServerConfig))
           isValidPath = true
         } else {
-          removeItem(errorNotValidPgData, postgreSQLField, "pgServer")
+          removeItem(errorNotValidPgData, postgreSQLField, "postgres")
         }
       } else {
-        removeItem(errorNotValidPgData, postgreSQLField, "pgServer")
+        removeItem(errorNotValidPgData, postgreSQLField, "postgres")
       }
     } else {
-      Wizard.items -= ("pgServer")
+      Wizard.items -= ("postgres")
       hideItem(errorNotValidPgData, postgreSQLField)
     }
     isValidPath

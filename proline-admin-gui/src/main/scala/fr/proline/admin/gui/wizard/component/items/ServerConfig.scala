@@ -13,8 +13,6 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import scalafx.geometry.Pos
 
-import java.io.File
-
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
@@ -37,7 +35,7 @@ class ServerConfig(val name: String) extends Item with LazyLogging {
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
     onAction = handle {
-      _openHelpDialog()
+       _openUserGuide()
     }
   }
   val tabPane = new TabPane()
@@ -87,23 +85,4 @@ class ServerConfig(val name: String) extends Item with LazyLogging {
       children = Seq(headerHelpIcon)
     })
   }, ScalaFxUtils.newVSpacer(minH = 10), tabPane)
-
-  /* Help text */
-  val helpTextBuilder = new StringBuilder()
-
-  helpTextBuilder.append("PostgreSQL: required properties to connect the database server.\n\n")
-    .append("\tHost: host name\n").append("\tPort: port number(default: 5432)\n")
-    .append("\tUser: user name\n").append("\tPassword \n\n")
-    .append("Mount Points: select file locations\n\n")
-    .append("\tResut files : the locations of result files\n")
-    .append("\tRaw files : the locations of Raw files\n")
-    .append("\tmzDB files : the locations of mzDB files\n\n")
-    .append("JMS Server: JMS Server properties.\n\n")
-    .append("\tHost: host name\n")
-    .append("\tPort: port number(default: 5445)\n")
-    .append("\tProline Queue Name: queue name\n\n")
-
-  def _openHelpDialog() = HelpPopup(
-    wTitle = "Help",
-    wText = helpTextBuilder.toString)
 }

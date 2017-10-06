@@ -36,12 +36,12 @@ class SummaryConfig(val name: String) extends Item with LazyLogging {
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
     onAction = handle {
-      _openHelpDialog()
+      _openUserGuide()
     }
   }
 
   /* initialize summary panels */
-  
+
   var prolineServerBox = new VBox {}
   var prolineModuleBox = new VBox {}
   var prolineWebBox = new VBox {}
@@ -66,10 +66,5 @@ class SummaryConfig(val name: String) extends Item with LazyLogging {
     spacing = 50
     children = List(prolineServerBox, prolineModuleBox, prolineWebBox, prolinePgServerBox)
   })
-
-  /* help function */
-  def _openHelpDialog() = HelpPopup(
-    wTitle = "Help",
-    wText = "The summary of the configuration items")
 
 }

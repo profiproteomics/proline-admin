@@ -40,7 +40,7 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
     onAction = handle {
-      _openHelpDialog()
+       _openUserGuide()
     }
   }
 
@@ -84,15 +84,4 @@ class PgServerConfig(val name: String) extends Item with LazyLogging {
       children = Seq(headerHelpIcon)
     })
   }, ScalaFxUtils.newVSpacer(minH = 10), tabPane)
-
-  /* help text */
-  val helpTextBuilder = new StringBuilder("PostgreSQL optimization:\n\n\tThis tab contains: PostgreSQL server parameters.")
-    .append("\n\tThe complete list of parameter names and allowed values can be found in the PostgreSQL documentation.\n\n")
-    .append("PostgreSQL access right:\n\n\tThis tab controls: which hosts are allowed to connect, ")
-    .append("how clients are authenticated,\n\t which PostgreSQL user names they can use, which databases they can access.\n")
-
-  def _openHelpDialog() = HelpPopup(
-    wTitle = "Help",
-    wText = helpTextBuilder.toString)
-
 }

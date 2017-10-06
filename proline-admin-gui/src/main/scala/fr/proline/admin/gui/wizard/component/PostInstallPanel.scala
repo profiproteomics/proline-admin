@@ -236,14 +236,14 @@ object PostInstallPanel extends VBox with HomePanel with LazyLogging {
     if (postgreSQLChBox.isSelected) {
       if (ScalaUtils.isValidDataDir(PostInstall.pgDataDirPath)) {
         hideItem(errorNotValidPgData, postgreSQLField)
-        val pgServerConfig = new PgServerConfig("pgServer")
+        val pgServerConfig = new PgServerConfig("postgres")
         PostInstall.items += (pgServerConfig.name -> Some(pgServerConfig))
         isValidPath = true
       } else {
-        removeItem(errorNotValidPgData, postgreSQLField, "pgServer")
+        removeItem(errorNotValidPgData, postgreSQLField, "postgres")
       }
     } else {
-      PostInstall.items -= ("pgServer")
+      PostInstall.items -= ("postgres")
       hideItem(errorNotValidPgData, postgreSQLField)
     }
     isValidPath

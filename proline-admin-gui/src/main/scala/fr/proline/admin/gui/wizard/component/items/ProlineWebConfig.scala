@@ -24,7 +24,7 @@ import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.wizard.util._
 
 /**
- *  builds a Panel with some PWX properties :mount points 
+ *  builds a Panel with some PWX properties :mount points
  *
  */
 
@@ -37,7 +37,7 @@ class ProlineWebConfig(val name: String) extends Item with LazyLogging {
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
     onAction = handle {
-      _openHelpDialog()
+       _openUserGuide()
     }
   }
   val tabPane = new TabPane()
@@ -49,7 +49,7 @@ class ProlineWebConfig(val name: String) extends Item with LazyLogging {
     content = prolinePwx
     closable = false
   }
-  
+
   tabPane.tabs.addAll(prolinePwxTab)
   /* Layout */
   alignment = Pos.Center
@@ -68,17 +68,4 @@ class ProlineWebConfig(val name: String) extends Item with LazyLogging {
       children = Seq(headerHelpIcon)
     })
   }, ScalaFxUtils.newVSpacer(minH = 10), tabPane)
-
-  /* help text */
-  val helpTextBuilder = new StringBuilder()
-  helpTextBuilder.append("Mount Points: select file locations\n\n")
-    .append("\tResut files : the locations of result files\n")
-    .append("\tRaw files : the locations of Raw files\n")
-    .append("\tmzDB files : the locations of mzDB files\n\n")
-    .append("JMS properties: \n\n")
-    .append("\tHost: host name\n")
-    .append("\tPort: port number(default: 5445)\n")
-  def _openHelpDialog() = HelpPopup(
-    wTitle = "Help",
-    wText = helpTextBuilder.toString())
 }
