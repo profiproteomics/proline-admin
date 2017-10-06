@@ -43,14 +43,14 @@ object NavigationButtons extends LazyLogging {
     }
   }
   val nextButton = new Button("Next") {
-    graphic = FxUtils.newImageView(IconResource.ARRAOWLEFT)
+    graphic = FxUtils.newImageView(IconResource.ARROWRIGHT)
     contentDisplay = ContentDisplay.RIGHT
     onAction = handle {
       onNext()
     }
   }
   val prevButton = new Button("Previous") {
-    graphic = FxUtils.newImageView(IconResource.ARROWRIGHT)
+    graphic = FxUtils.newImageView(IconResource.ARROWLEFT)
     onAction = handle {
       onPrev()
     }
