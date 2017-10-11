@@ -26,7 +26,7 @@ import fr.proline.admin.gui.wizard.util.ExitPopup
  * builds bottom home panel: cancel and go buttons
  *
  */
-class HomeButtons(pane: String) extends VBox {
+class HomeButtonsPanel extends VBox {
 
   /**
    * ******* *
@@ -37,21 +37,13 @@ class HomeButtons(pane: String) extends VBox {
   val cancelButton = new Button("Cancel") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
-      pane match {
-        case "install" => ExitPopup("Exit Setup", "Are you sure you want to exit Proline Install ?", Option(Wizard.stage), false)
-        case "post_install" => ExitPopup("Exit Setup", "Are you sure you want to exit Proline Post Install ?", Option(PostInstall.stage), false)
-        case _ => println("Error while trying to close home panel! ")
-      }
+      ExitPopup("Exit Setup", "Are you sure you want to exit Proline Install ?", Option(Wizard.stage), false)
     }
   }
   val goButton = new Button(" Go ") {
     graphic = FxUtils.newImageView(IconResource.EXECUTE)
     onAction = handle {
-      pane match {
-        case "install" => setInstallItems()
-        case "post_install" => setPostInstallItems()
-        case _ => println("Error while trying to select items!")
-      }
+      setInstallItems()
     }
   }
 
@@ -70,15 +62,6 @@ class HomeButtons(pane: String) extends VBox {
       //set buttons panel
       Wizard.buttonsPanel.getChildren().clear()
       Wizard.buttonsPanel.getChildren().add(NavButtonsPanel())
-    }
-  }
-
-  private def setPostInstallItems() {
-    PostInstallPanel.getSelectedItems
-    if (PostInstall.items.isEmpty || !PostInstallPanel.setStyleSelectedItems) {
-      // ItemsPanel.warningNotValidServerFile.visible = true
-    } else {
-      println("test")
     }
   }
 

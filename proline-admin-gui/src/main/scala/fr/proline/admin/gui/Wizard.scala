@@ -18,8 +18,8 @@ import scalafx.stage.Stage
 import scala.collection.mutable.LinkedHashMap
 import java.io.File
 
-import fr.proline.admin.gui.wizard.component.HomeButtons
 import fr.proline.admin.gui.wizard.component.InstallPanel
+import fr.proline.admin.gui.wizard.component.HomeButtonsPanel
 import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.wizard.util.ItemName._
@@ -103,7 +103,7 @@ class Wizard extends Application {
     // locate application .CONF file of proline server 
 
     require(Wizard.stage == null, "stage is already instantiated")
-    val btnPanel = new HomeButtons("install")
+    val btnPanel = new HomeButtonsPanel()
     Wizard.configItemsPanel = InstallPanel
     Wizard.buttonsPanel = btnPanel
     Wizard.stage = new Stage(stage) {

@@ -19,7 +19,7 @@ import java.io.File
 import scala.collection.mutable.LinkedHashMap
 
 import scala.util.matching.Regex
-import fr.proline.admin.gui.wizard.component.HomeButtons
+import fr.proline.admin.gui.wizard.component.HomeButtonsPanel
 import fr.proline.admin.gui.wizard.component.PostInstallPanel
 import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.wizard.util.version.Module
@@ -102,7 +102,7 @@ class PostInstall extends Application {
     // locate application .CONF file of proline server 
 
     require(PostInstall.stage == null, "stage is already instantiated")
-    val btnPanel = new HomeButtons("post_install")
+    val btnPanel = new HomeButtonsPanel()
     PostInstall.configItemsPanel = PostInstallPanel
     PostInstall.buttonsPanel = btnPanel
     PostInstall.stage = new Stage(stage) {
