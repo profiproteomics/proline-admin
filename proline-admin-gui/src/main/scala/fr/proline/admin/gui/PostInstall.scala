@@ -18,13 +18,14 @@ import scalafx.stage.Stage
 import java.io.File
 import scala.collection.mutable.LinkedHashMap
 
-import fr.profi.util.StringUtils
 import scala.util.matching.Regex
 import fr.proline.admin.gui.wizard.component.HomeButtons
 import fr.proline.admin.gui.wizard.component.PostInstallPanel
 import fr.proline.admin.gui.wizard.component.Item
-import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.wizard.util.version.Module
+import fr.proline.admin.gui.wizard.util.ItemName._
+import fr.proline.admin.gui.util.FxUtils
+import fr.profi.util.StringUtils
 
 /**
  * builds home panel of Proline post install
@@ -51,7 +52,7 @@ object PostInstall extends LazyLogging {
   var jmsPort: Int = 5445
   var nodeIndex = 0
   var currentNode: Item = _
-  var items: LinkedHashMap[String, Option[Item]] = LinkedHashMap.empty[String, Option[Item]]
+  var items: LinkedHashMap[ItemName, Option[Item]] = LinkedHashMap.empty[ItemName, Option[Item]]
 
   /*
    *  main panel contains :

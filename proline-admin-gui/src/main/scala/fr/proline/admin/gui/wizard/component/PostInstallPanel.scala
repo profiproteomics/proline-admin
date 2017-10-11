@@ -16,7 +16,6 @@ import scalafx.scene.Node
 import scalafx.stage.Stage
 
 import scala.collection.mutable.ListBuffer
-import java.io.IOException
 import java.io.FileNotFoundException
 import java.io.File
 
@@ -25,10 +24,11 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.PostInstall
 import fr.proline.admin.gui.wizard.component.FileChooser._
 import fr.proline.admin.gui.wizard.component.items.form.HomePanel
-import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.wizard.component.items._
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.process.config.AdminConfig
+import fr.proline.admin.gui.wizard.util.ItemName._
+import fr.proline.admin.gui.wizard.util._
 import fr.proline.repository.DriverType
 
 import fr.profi.util.StringUtils
@@ -186,17 +186,17 @@ object PostInstallPanel extends VBox with HomePanel with LazyLogging {
         if (new File(jmsNodeConfPath).exists) {
           ScalaFxUtils.NodeStyle.remove(prolineServerField)
           ScalaFxUtils.NodeStyle.hide(errorNotValidServerFile)
-          val server = new ServerConfig("server")
+          val server = new ServerConfig(SERVER)
           PostInstall.items += (server.name -> Some(server))
           isValidPath = true
         } else {
-          removeItem(errorNotValidServerFile, prolineServerField, "server")
+          removeItem(errorNotValidServerFile, prolineServerField, SERVER)
         }
       } else {
-        removeItem(errorNotValidServerFile, prolineServerField, "server")
+        removeItem(errorNotValidServerFile, prolineServerField, SERVER)
       }
     } else {
-      PostInstall.items -= ("server")
+      PostInstall.items -= (SERVER)
       hideItem(errorNotValidServerFile, prolineServerField)
     }
     isValidPath
@@ -214,17 +214,17 @@ object PostInstallPanel extends VBox with HomePanel with LazyLogging {
           hideItem(errorNotValidSeqReposFile, seqReposField)
           PostInstall.SeqJmsNodeConfPath = jmsNodeConfPath
           PostInstall.parsingRulesPath = parsingRules
-          val moduleConfig = new ModuleConfig("modules")
+          val moduleConfig = new ModuleConfig(SEQREPOS)
           PostInstall.items += (moduleConfig.name -> Some(moduleConfig))
           isValidPath = true
         } else {
-          removeItem(errorNotValidSeqReposFile, seqReposField, "modules")
+          removeItem(errorNotValidSeqReposFile, seqReposField, SEQREPOS)
         }
       } else {
-        removeItem(errorNotValidSeqReposFile, seqReposField, "modules")
+        removeItem(errorNotValidSeqReposFile, seqReposField, SEQREPOS)
       }
     } else {
-      PostInstall.items -= ("modules")
+      PostInstall.items -= (SEQREPOS)
       hideItem(errorNotValidSeqReposFile, seqReposField)
     }
     isValidPath
@@ -236,14 +236,14 @@ object PostInstallPanel extends VBox with HomePanel with LazyLogging {
     if (postgreSQLChBox.isSelected) {
       if (ScalaUtils.isValidDataDir(PostInstall.pgDataDirPath)) {
         hideItem(errorNotValidPgData, postgreSQLField)
-        val pgServerConfig = new PgServerConfig("postgres")
+        val pgServerConfig = new PgServerConfig(PGSERVER)
         PostInstall.items += (pgServerConfig.name -> Some(pgServerConfig))
         isValidPath = true
       } else {
-        removeItem(errorNotValidPgData, postgreSQLField, "postgres")
+        removeItem(errorNotValidPgData, postgreSQLField, PGSERVER)
       }
     } else {
-      PostInstall.items -= ("postgres")
+      PostInstall.items -= (PGSERVER)
       hideItem(errorNotValidPgData, postgreSQLField)
     }
     isValidPath
@@ -251,12 +251,12 @@ object PostInstallPanel extends VBox with HomePanel with LazyLogging {
 
   /* check selected fields */
   def setStyleSelectedItems: Boolean = {
-    System.out.println("test")
+
     true
   }
 
   /* remove item from items map */
-  def removeItem(label: Node, field: Node, item: String) {
+  def removeItem(label: Node, field: Node, item: ItemName) {
     PostInstall.items -= (item)
     ScalaFxUtils.NodeStyle.show(label)
     ScalaFxUtils.NodeStyle.set(field)
@@ -277,7 +277,7 @@ object PostInstallPanel extends VBox with HomePanel with LazyLogging {
       case t: Throwable => logger.error("error in file's path ")
     }
   }
-  
+
   def _browseSeqReposConfigFile(stage: Stage) {
     confChooser.setForSeqRepoConf(seqReposField.text())
     try {

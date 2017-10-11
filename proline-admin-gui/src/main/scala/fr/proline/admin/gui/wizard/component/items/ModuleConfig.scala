@@ -20,15 +20,17 @@ import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab._
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
 import fr.proline.admin.gui.wizard.component.Item
+import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.wizard.util._
+
 
 /**
  * builds a panel with the Sequence Repository module properties: database server properties, JMS properties and parsing rules properties
  *
  */
 
-class ModuleConfig(val name: String) extends Item with LazyLogging {
+class ModuleConfig(val name: ItemName) extends Item with LazyLogging {
 
   /* Sequence repository panel components */
   val panelTitle = new Label("Proline Module Configuration") {
@@ -48,14 +50,14 @@ class ModuleConfig(val name: String) extends Item with LazyLogging {
   val PostGresSeqTab = new Tab {
     text = "PostGreSQL"
     content = PostGreSQLSeq
-    closable = true
+    closable = false
   }
   /* JMS server tab */
   val jmsServer = new JmsServer(Wizard.SeqJmsNodeConfPath)
   val serverJMSTab = new Tab {
     text = "JMS Server"
     content = jmsServer
-    closable = true
+    closable = false
   }
 
   /* parsing rules tab */

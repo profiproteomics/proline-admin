@@ -28,7 +28,7 @@ import fr.proline.admin.gui.wizard.util.ExitPopup
  *
  */
 
-object NavigationButtons extends LazyLogging {
+object NavButtonsPanel extends LazyLogging {
 
   /**
    * ******* *
@@ -110,7 +110,7 @@ object NavigationButtons extends LazyLogging {
 
   /* next and previous functions  */
   def onNext() {
-    NavigationButtons.prevButton.visible = true
+    NavButtonsPanel.prevButton.visible = true
     /* change items */
     if (Wizard.nodeIndex < Wizard.items.toSeq.size - 1) {
       Wizard.nodeIndex = Wizard.nodeIndex + 1
@@ -128,22 +128,22 @@ object NavigationButtons extends LazyLogging {
         Wizard.configItemsPanel.getChildren().clear()
         Wizard.configItemsPanel.getChildren().add(Wizard.currentNode)
         /* set button Validate to save modifications */
-        NavigationButtons.nextBox.getChildren().clear()
-        NavigationButtons.nextBox.getChildren().add(validateButton)
+        NavButtonsPanel.nextBox.getChildren().clear()
+        NavButtonsPanel.nextBox.getChildren().add(validateButton)
       }
     }
   }
 
   def onPrev() {
     if (Wizard.nodeIndex > 0) {
-      NavigationButtons.nextBox.getChildren().clear()
-      NavigationButtons.nextBox.getChildren().add(nextButton)
+      NavButtonsPanel.nextBox.getChildren().clear()
+      NavButtonsPanel.nextBox.getChildren().add(nextButton)
       Wizard.nodeIndex = Wizard.nodeIndex - 1
       Wizard.currentNode = Wizard.items.toSeq.apply(Wizard.nodeIndex)._2.get
       Wizard.configItemsPanel.getChildren().clear()
       Wizard.configItemsPanel.getChildren().add(Wizard.currentNode)
       if (Wizard.items.head._2.get.equals(Wizard.currentNode)) {
-        NavigationButtons.prevButton.visible = false
+        NavButtonsPanel.prevButton.visible = false
       }
     }
   }

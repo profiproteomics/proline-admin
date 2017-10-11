@@ -23,7 +23,7 @@ import fr.proline.admin.gui.wizard.component.items._
 import fr.proline.admin.gui.wizard.util.ExitPopup
 
 /**
- * builds bottom home panel: cancel and go buttons
+ * builds bottom home panel cancel and go buttons
  *
  */
 class HomeButtons(pane: String) extends VBox {
@@ -63,13 +63,13 @@ class HomeButtons(pane: String) extends VBox {
       InstallPanel.warningCorruptedFile.visible = false
       Wizard.currentNode = Wizard.items.head._2.get
       //hide the  previous button for the first panel 
-      NavigationButtons.prevButton.visible = false
+      NavButtonsPanel.prevButton.visible = false
       //set the first panel
       Wizard.configItemsPanel.getChildren().clear()
       Wizard.configItemsPanel.getChildren().add(Wizard.currentNode)
       //set buttons panel
       Wizard.buttonsPanel.getChildren().clear()
-      Wizard.buttonsPanel.getChildren().add(NavigationButtons())
+      Wizard.buttonsPanel.getChildren().add(NavButtonsPanel())
     }
   }
 

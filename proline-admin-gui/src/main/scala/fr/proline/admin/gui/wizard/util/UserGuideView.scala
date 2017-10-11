@@ -3,10 +3,12 @@ package fr.proline.admin.gui.wizard.util
 import java.awt.Desktop
 import java.io.File
 import com.typesafe.scalalogging.LazyLogging
+
 /**
- * Helper to open your files .
+ * load user_guide file.
+ *
  */
-object Browser extends LazyLogging {
+object UserGuideView extends LazyLogging {
 
   def openUrl(path: String): Unit =
     if (java.awt.Desktop.isDesktopSupported()) {

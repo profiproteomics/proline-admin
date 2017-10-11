@@ -8,20 +8,22 @@ import scalafx.scene.control.Tab
 import scalafx.scene.control.TabPane
 import scalafx.scene.control.Label
 import scalafx.scene.control.Hyperlink
-import javafx.scene.layout.Priority
-import fr.profi.util.scalafx.ScalaFxUtils
-import fr.profi.util.scalafx.ScalaFxUtils._
+import scalafx.scene.layout.Priority
 import scalafx.geometry.Pos
 
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
 import fr.proline.admin.gui.wizard.component.Item
+import fr.proline.admin.gui.wizard.util.ItemName._
+import fr.proline.admin.gui.wizard.util._
+
+import fr.profi.util.scalafx.ScalaFxUtils
+import fr.profi.util.scalafx.ScalaFxUtils._
 
 /**
- * SummaryConfig contains summary configuration
+ * builds a panel to summarize the configurations
  *
  */
 

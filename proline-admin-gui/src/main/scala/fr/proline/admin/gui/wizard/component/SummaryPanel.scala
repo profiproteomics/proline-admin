@@ -26,23 +26,10 @@ import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.gui.wizard.util.ProgressBarWindow
-import fr.proline.admin.gui.wizard.util.Browser
+import fr.proline.admin.gui.wizard.util.UserGuideView
 
 import java.io.File
 import java.io.File.separator
-
-/**
- *  to build  item's Panel
- *
- */
-
-trait Item extends VBox with LazyLogging {
-  val panelTitle: Label
-  val headerHelpIcon: Hyperlink
-  def _openUserGuide() {
-    Browser.openUrl(Wizard.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "user_guide.pdf")
-  }
-}
 
 /**
  *  builds summary panel to summarize the configurations
@@ -55,7 +42,7 @@ object SummaryPanel extends LazyLogging {
   def get(item: Item) {
     if (item.isInstanceOf[PgServerConfig]) {
       val pgServer = item.asInstanceOf[PgServerConfig]
-      NavigationButtons.summaryPanel.prolinePgServerBox.children = new TitledBorderPane(
+      NavButtonsPanel.summaryPanel.prolinePgServerBox.children = new TitledBorderPane(
         title = "PostgreSQL Server Configuration ",
         contentNode = new VBox {
           spacing = 1
@@ -77,7 +64,7 @@ object SummaryPanel extends LazyLogging {
         text = "Set up or update Proline databases"
         selected = false
       }
-      NavigationButtons.summaryPanel.prolineServerBox.children = new TitledBorderPane(
+      NavButtonsPanel.summaryPanel.prolineServerBox.children = new TitledBorderPane(
         title = "Proline Server Configuration",
         contentNode = new VBox {
           spacing = 1
@@ -110,7 +97,7 @@ object SummaryPanel extends LazyLogging {
             text = module.jmsServer.getInfos
           }, ScalaFxUtils.newVSpacer(1))
       }
-      NavigationButtons.summaryPanel.prolineModuleBox.children = new TitledBorderPane(title = "Proline Sequence Repository ",
+      NavButtonsPanel.summaryPanel.prolineModuleBox.children = new TitledBorderPane(title = "Proline Sequence Repository ",
         contentNode = new VBox { children = Seq(SeqReposArea) })
     }
     /* Proline web summary */
@@ -123,7 +110,7 @@ object SummaryPanel extends LazyLogging {
             text = prolineWeb.prolinePwx.getInfos
           }, ScalaFxUtils.newVSpacer(1))
       }
-      NavigationButtons.summaryPanel.prolineWebBox.children = new TitledBorderPane(title = "Proline Web",
+      NavButtonsPanel.summaryPanel.prolineWebBox.children = new TitledBorderPane(title = "Proline Web",
         contentNode = new VBox { children = Seq(prolineWebArea) })
     }
   }
@@ -175,5 +162,19 @@ object SummaryPanel extends LazyLogging {
     }
   }
 }
+
+/**
+ *  trait of an item
+ *
+ */
+
+trait Item extends VBox with LazyLogging {
+  val panelTitle: Label
+  val headerHelpIcon: Hyperlink
+  def _openUserGuide() {
+    UserGuideView.openUrl(Wizard.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "user_guide.pdf")
+  }
+}
+
 
 

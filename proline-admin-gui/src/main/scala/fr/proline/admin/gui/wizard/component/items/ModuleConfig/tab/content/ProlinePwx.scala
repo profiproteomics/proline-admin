@@ -25,7 +25,9 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.process.DatabaseConnection
 import fr.proline.admin.gui.process.ProlineAdminConnection
+import fr.proline.admin.gui.wizard.component.items.ServerConfig
 import fr.proline.admin.gui.process.config._
+import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.repository.DriverType
@@ -42,7 +44,7 @@ import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.wizard.process.config._
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import fr.proline.admin.gui.wizard.component.items.ServerConfig
+
 
 /**
  * Create a modal window to edit Proline configuration's file.
@@ -241,7 +243,7 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
     disableMpNoteLabel.minHeight = 0
     disableMpNoteLabel.maxHeight = 0
     disableMpNoteLabel.visible = false
-    if (Wizard.items.contains("server")) {
+    if (Wizard.items.contains(SERVER)) {
       disableMpNoteLabel.minHeight = 34
       disableMpNoteLabel.maxHeight = 34
       disableMpNoteLabel.text_=(infosImportMPLabelText)
@@ -354,10 +356,10 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
     if (pwxMountPointConfigOpt.isDefined) {
 
       val newConfig = Future {
-        if (Wizard.items.contains("server")) {
+        if (Wizard.items.contains(SERVER)) {
 
           //import mount points from proline server configuration 
-          val serverConfigOpt = Wizard.items.get("server").get
+          val serverConfigOpt = Wizard.items.get(SERVER).get
           val serverItem = serverConfigOpt.get.asInstanceOf[ServerConfig]
           val mountPointsServerConfig = serverItem.mountsPoint.mountfiles._toServerConfig()
           val newPwxJmsConfiog = _toPwxJmsConfig()
@@ -377,7 +379,7 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
 
   /* return number of mount points (files) */
   def getProperties(): String = {
-    if (Wizard.items.contains("server")) {
+    if (Wizard.items.contains(SERVER)) {
       s" Mount Points:\n\tSame mount points as Proline server"
     } else {
       val montPointsBuilder = new StringBuilder("Mount Points:\n\t")

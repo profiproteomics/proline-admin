@@ -8,25 +8,27 @@ import scalafx.scene.control.Tab
 import scalafx.scene.control.TabPane
 import scalafx.scene.control.Label
 import scalafx.scene.control.Hyperlink
-import javafx.scene.layout.Priority
-import fr.profi.util.scalafx.ScalaFxUtils
-import fr.profi.util.scalafx.ScalaFxUtils._
+import scalafx.scene.layout.Priority
 import scalafx.geometry.Pos
 
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
-import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.wizard.component.Item
+import fr.proline.admin.gui.wizard.util.ItemName._
+import fr.proline.admin.gui.wizard.util._
+
+import fr.profi.util.scalafx.TitledBorderPane
+import fr.profi.util.scalafx.ScalaFxUtils
+import fr.profi.util.scalafx.ScalaFxUtils._
 
 /**
  * builds a panel with the server properties : database server properties, JMS properties and mount Points
  *
  */
 
-class ServerConfig(val name: String) extends Item with LazyLogging {
+class ServerConfig(val name: ItemName) extends Item with LazyLogging {
 
   /* Proline server components  */
   val panelTitle = new Label("Proline Server Configuration") {
@@ -35,7 +37,7 @@ class ServerConfig(val name: String) extends Item with LazyLogging {
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
     onAction = handle {
-       _openUserGuide()
+      _openUserGuide()
     }
   }
   val tabPane = new TabPane()
