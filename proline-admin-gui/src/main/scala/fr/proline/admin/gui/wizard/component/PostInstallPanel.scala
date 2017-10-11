@@ -214,7 +214,7 @@ object PostInstallPanel extends VBox with HomePanel with LazyLogging {
           hideItem(errorNotValidSeqReposFile, seqReposField)
           PostInstall.SeqJmsNodeConfPath = jmsNodeConfPath
           PostInstall.parsingRulesPath = parsingRules
-          val moduleConfig = new ModuleConfig(SEQREPOS)
+          val moduleConfig = new SeqReposConfig(SEQREPOS)
           PostInstall.items += (moduleConfig.name -> Some(moduleConfig))
           isValidPath = true
         } else {

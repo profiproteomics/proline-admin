@@ -46,13 +46,13 @@ object NavButtonsPanel extends LazyLogging {
     graphic = FxUtils.newImageView(IconResource.ARROWRIGHT)
     contentDisplay = ContentDisplay.RIGHT
     onAction = handle {
-      onNext()
+      getNextItem()
     }
   }
   val prevButton = new Button("Previous") {
     graphic = FxUtils.newImageView(IconResource.ARROWLEFT)
     onAction = handle {
-      onPrev()
+      getPrevItem()
     }
   }
   val validateButton = new Button("Validate") {
@@ -108,8 +108,8 @@ object NavButtonsPanel extends LazyLogging {
     }
   }
 
-  /* next and previous functions  */
-  def onNext() {
+  /* get next item  */
+  def getNextItem() {
     NavButtonsPanel.prevButton.visible = true
     /* change items */
     if (Wizard.nodeIndex < Wizard.items.toSeq.size - 1) {
@@ -133,8 +133,8 @@ object NavButtonsPanel extends LazyLogging {
       }
     }
   }
-
-  def onPrev() {
+  /* get previous item  */
+  def getPrevItem() {
     if (Wizard.nodeIndex > 0) {
       NavButtonsPanel.nextBox.getChildren().clear()
       NavButtonsPanel.nextBox.getChildren().add(nextButton)

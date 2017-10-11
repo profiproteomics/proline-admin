@@ -1,13 +1,12 @@
 package fr.proline.admin.gui.wizard.component
-import scalafx.concurrent.Service
+
 import javafx.concurrent.{ Service => JService, Task => JTask }
-import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.gui.process._
 
 /**
- * setup/upgrade Proline databases
+ * service to setup/upgrade Proline databases
  *
  */
 class DbMaintenance extends JService[Unit] {
@@ -26,22 +25,20 @@ class DbMaintenance extends JService[Unit] {
           _prolineConfIsOk = false
         }
       }
-
       if (_prolineConfIsOk == true) {
         val _prolineIsSetUp = UdsRepository.isUdsDbReachable(true)
-        //setup Proline  
+        /* setup Proline */
         if (_prolineIsSetUp == true) {
           println("INFO - Proline is already setup.")
           val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
           new UpgradeAllDatabases(dsConnectorFactory).doWork()
           updateProgress(100, 100)
         } else {
-          //upgrade Proline 
+          /* upgrade Proline dtabases */
           println("INFO -Start to setup proline Database.")
           new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run()
         }
       }
-
     }
   }
 }

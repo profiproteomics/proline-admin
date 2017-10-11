@@ -11,7 +11,6 @@ import scalafx.scene.control.Hyperlink
 import javafx.scene.layout.Priority
 import scalafx.geometry.Pos
 
-
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils
 import fr.proline.admin.gui.util.FxUtils
@@ -24,13 +23,12 @@ import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.wizard.util._
 
-
 /**
- * builds a panel with the Sequence Repository module properties: database server properties, JMS properties and parsing rules properties
+ * builds a panel with  Sequence Repository  properties database server properties, JMS properties and parsing rules properties
  *
  */
 
-class ModuleConfig(val name: ItemName) extends Item with LazyLogging {
+class SeqReposConfig(val name: ItemName) extends Item with LazyLogging {
 
   /* Sequence repository panel components */
   val panelTitle = new Label("Proline Module Configuration") {

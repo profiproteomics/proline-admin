@@ -22,9 +22,7 @@ import fr.proline.admin.gui.Wizard
 import fr.profi.util.scalafx.{ ScalaFxUtils, BoldLabel }
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.process._
-import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.gui.wizard.util.GetConfirmation
-import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.gui.wizard.util.ProgressBarWindow
 import fr.proline.admin.gui.wizard.util.UserGuideView
 
@@ -32,7 +30,7 @@ import java.io.File
 import java.io.File.separator
 
 /**
- *  builds summary panel to summarize the configurations
+ *  builds summary panel to summarize the new configurations
  *
  */
 
@@ -82,8 +80,8 @@ object SummaryPanel extends LazyLogging {
     }
 
     /* Proline module summary */
-    if (item.isInstanceOf[ModuleConfig]) {
-      val module = item.asInstanceOf[ModuleConfig]
+    if (item.isInstanceOf[SeqReposConfig]) {
+      val module = item.asInstanceOf[SeqReposConfig]
       val SeqReposArea = new VBox {
         spacing = 1
         children = Seq(
@@ -101,8 +99,8 @@ object SummaryPanel extends LazyLogging {
         contentNode = new VBox { children = Seq(SeqReposArea) })
     }
     /* Proline web summary */
-    if (item.isInstanceOf[ProlineWebConfig]) {
-      val prolineWeb = item.asInstanceOf[ProlineWebConfig]
+    if (item.isInstanceOf[PwxConfig]) {
+      val prolineWeb = item.asInstanceOf[PwxConfig]
       val prolineWebArea = new VBox {
         spacing = 1
         children = Seq(
@@ -133,8 +131,8 @@ object SummaryPanel extends LazyLogging {
         case t: Throwable => logger.error("Error while trying to save Proline Server properties.")
       }
     }
-    if (item.isInstanceOf[ModuleConfig]) {
-      val module = item.asInstanceOf[ModuleConfig]
+    if (item.isInstanceOf[SeqReposConfig]) {
+      val module = item.asInstanceOf[SeqReposConfig]
       try {
         module.PostGreSQLSeq.saveForm()
         module.jmsServer.saveForm()
@@ -152,9 +150,9 @@ object SummaryPanel extends LazyLogging {
         case t: Throwable => logger.error("Error while trying to save PostgreSQL properties.")
       }
     }
-    if (item.isInstanceOf[ProlineWebConfig]) {
+    if (item.isInstanceOf[PwxConfig]) {
       try {
-        val prolineWeb = item.asInstanceOf[ProlineWebConfig]
+        val prolineWeb = item.asInstanceOf[PwxConfig]
         prolineWeb.prolinePwx.saveForm()
       } catch {
         case t: Throwable => logger.error("Error while trying to save PostgreSQL properties.")

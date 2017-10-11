@@ -25,11 +25,11 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils
 
 /**
- *  builds a Panel with some PWX properties :mount points
+ *  builds a Panel with  PWX properties: mount points
  *
  */
 
-class ProlineWebConfig(val name: ItemName) extends Item with LazyLogging {
+class PwxConfig(val name: ItemName) extends Item with LazyLogging {
 
   /* Proline Web components */
   val panelTitle = new Label("Proline Web Configuration") {
@@ -38,7 +38,7 @@ class ProlineWebConfig(val name: ItemName) extends Item with LazyLogging {
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
     onAction = handle {
-       _openUserGuide()
+      _openUserGuide()
     }
   }
   val tabPane = new TabPane()

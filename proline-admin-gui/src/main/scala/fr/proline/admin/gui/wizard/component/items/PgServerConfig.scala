@@ -20,7 +20,6 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.component.Item
-import fr.proline.admin.gui.wizard.component.items.pgserverconfig._
 import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PostgresConfigContent
 import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PgHbaConfigContent
 import fr.proline.admin.gui.wizard.util.ItemName._

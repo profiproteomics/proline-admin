@@ -11,7 +11,6 @@ import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
 import scalafx.scene.control.TextField
 import scalafx.scene.control.Hyperlink
-import scalafx.scene.layout.StackPane
 import scalafx.scene.Node
 import scalafx.stage.Stage
 import scala.collection.mutable.ListBuffer
@@ -247,7 +246,7 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
           hideItem(errorNotValidSeqReposFile, seqReposField)
           Wizard.SeqJmsNodeConfPath = jmsNodeConfPath
           Wizard.parsingRulesPath = parsingRules
-          val moduleConfig = new ModuleConfig(SEQREPOS)
+          val moduleConfig = new SeqReposConfig(SEQREPOS)
           Wizard.items += (moduleConfig.name -> Some(moduleConfig))
           isValidPath = true
         } else {
@@ -269,7 +268,7 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
     if (prolineWebChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.webRootPath)) {
         hideItem(errorNotValidWebFile, prolineWebField)
-        val prolineWeb = new ProlineWebConfig(PWX)
+        val prolineWeb = new PwxConfig(PWX)
         Wizard.items += (prolineWeb.name -> Some(prolineWeb))
         isValidPath = true
       } else {

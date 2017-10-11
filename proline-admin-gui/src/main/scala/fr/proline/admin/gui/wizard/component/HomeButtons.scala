@@ -23,7 +23,7 @@ import fr.proline.admin.gui.wizard.component.items._
 import fr.proline.admin.gui.wizard.util.ExitPopup
 
 /**
- * builds bottom home panel cancel and go buttons
+ * builds bottom home panel: cancel and go buttons
  *
  */
 class HomeButtons(pane: String) extends VBox {
@@ -78,7 +78,7 @@ class HomeButtons(pane: String) extends VBox {
     if (PostInstall.items.isEmpty || !PostInstallPanel.setStyleSelectedItems) {
       // ItemsPanel.warningNotValidServerFile.visible = true
     } else {
-     println("test")
+      println("test")
     }
   }
 
