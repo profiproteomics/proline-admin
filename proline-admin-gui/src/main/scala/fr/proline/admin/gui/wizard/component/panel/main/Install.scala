@@ -1,24 +1,16 @@
-package fr.proline.admin.gui.wizard.component
+package fr.proline.admin.gui.wizard.component.panel.main
 
 import scalafx.Includes._
-import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.control.Button
-import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
 import scalafx.scene.control.TextField
-import scalafx.scene.control.Hyperlink
 import scalafx.scene.Node
 import scalafx.stage.Stage
-import scala.collection.mutable.ListBuffer
-
-import java.io.IOException
-import java.io.FileNotFoundException
 import java.io.File
-
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Wizard
@@ -28,11 +20,6 @@ import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.wizard.component.items._
 import fr.proline.admin.gui.process.config.AdminConfigFile
-import fr.proline.admin.gui.process.config.AdminConfig
-import fr.proline.repository.DriverType
-
-import fr.profi.util.StringUtils
-import fr.profi.util.scalafx
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
@@ -44,7 +31,7 @@ import com.typesafe.scalalogging.LazyLogging
  *
  */
 
-object InstallPanel extends VBox with HomePanel with LazyLogging {
+object Install extends VBox with HomePanel with LazyLogging {
 
   /** component of panel **/
 
@@ -219,8 +206,7 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
         if (new File(jmsNodeConfPath).exists) {
           hideItem(errorNotValidServerFile, prolineServerField)
           Wizard.jmsNodeConfPath = jmsNodeConfPath
-          val server = new ServerConfig(SERVER)
-          Wizard.items += (server.name -> Some(server))
+          Wizard.items += (SERVER -> Some(ItemFactory(SERVER)))
           isValidPath = true
         } else {
           removeItem(errorNotValidServerFile, prolineServerField, SERVER)
@@ -246,8 +232,7 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
           hideItem(errorNotValidSeqReposFile, seqReposField)
           Wizard.SeqJmsNodeConfPath = jmsNodeConfPath
           Wizard.parsingRulesPath = parsingRules
-          val moduleConfig = new SeqReposConfig(SEQREPOS)
-          Wizard.items += (moduleConfig.name -> Some(moduleConfig))
+          Wizard.items += (SEQREPOS -> Some(ItemFactory(SEQREPOS)))
           isValidPath = true
         } else {
           removeItem(errorNotValidSeqReposFile, seqReposField, SEQREPOS)
@@ -268,8 +253,7 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
     if (prolineWebChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.webRootPath)) {
         hideItem(errorNotValidWebFile, prolineWebField)
-        val prolineWeb = new PwxConfig(PWX)
-        Wizard.items += (prolineWeb.name -> Some(prolineWeb))
+        Wizard.items += (PWX -> Some(ItemFactory(PWX)))
         isValidPath = true
       } else {
         removeItem(errorNotValidWebFile, prolineWebField, PWX)
@@ -288,8 +272,7 @@ object InstallPanel extends VBox with HomePanel with LazyLogging {
       if (!Wizard.pgDataDirPath.isEmpty) {
         if (ScalaUtils.isValidDataDir(Wizard.pgDataDirPath)) {
           hideItem(errorNotValidPgData, postgreSQLField)
-          val pgServerConfig = new PgServerConfig(PGSERVER)
-          Wizard.items += (pgServerConfig.name -> Some(pgServerConfig))
+          Wizard.items += (PGSERVER -> Some(ItemFactory(PGSERVER)))
           isValidPath = true
         } else {
           removeItem(errorNotValidPgData, postgreSQLField, PGSERVER)

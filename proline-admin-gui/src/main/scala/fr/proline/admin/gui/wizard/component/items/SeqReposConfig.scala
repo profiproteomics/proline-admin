@@ -18,7 +18,6 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab._
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
-import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.wizard.util._
@@ -40,8 +39,6 @@ class SeqReposConfig(val name: ItemName) extends Item with LazyLogging {
       _openUserGuide()
     }
   }
-
-  val tabPane = new TabPane()
 
   /* database server properties tab */
   val PostGreSQLSeq = new PostGreSQLSeq(Wizard.seqRepoConfPath, Wizard.stage)

@@ -15,7 +15,6 @@ import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
-import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.wizard.util._
 
@@ -40,7 +39,6 @@ class ServerConfig(val name: ItemName) extends Item with LazyLogging {
       _openUserGuide()
     }
   }
-  val tabPane = new TabPane()
   /*  database server properties tab */
   val postgres = new PostGreSQL(Wizard.adminConfPath)
   val pgAccessTab = new Tab {

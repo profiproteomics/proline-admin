@@ -15,7 +15,6 @@ import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
-import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.wizard.util._
 
@@ -68,5 +67,4 @@ class SummaryConfig(val name: String) extends Item with LazyLogging {
     spacing = 50
     children = List(prolineServerBox, prolineModuleBox, prolineWebBox, prolinePgServerBox)
   })
-
 }

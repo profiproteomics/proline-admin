@@ -1,32 +1,27 @@
-package fr.proline.admin.gui.wizard.component
+package fr.proline.admin.gui.wizard.component.panel.bottom
 
-import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
 import scalafx.geometry.Pos
-import scalafx.application.Platform
 import scalafx.geometry.Insets
 import scalafx.scene.control.Button
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.VBox
-import scalafx.scene.layout.Priority
-import scalafx.scene.Scene
 import fr.proline.admin.gui.util._
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle._
-import scalafx.scene.control.Label
-
-import fr.proline.admin.gui.{ Wizard, PostInstall }
+import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.component.items._
 import fr.proline.admin.gui.wizard.util.ExitPopup
+import fr.proline.admin.gui.wizard.component.panel.main.Install
 
 /**
  * builds bottom home panel: cancel and go buttons
  *
  */
-class HomeButtonsPanel extends VBox {
+class HomeButtons extends VBox {
 
   /**
    * ******* *
@@ -37,7 +32,7 @@ class HomeButtonsPanel extends VBox {
   val cancelButton = new Button("Cancel") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
-      ExitPopup("Exit Setup", "Are you sure you want to exit Proline Install ?", Option(Wizard.stage), false)
+      ExitPopup("Exit Setup", "Are you sure you want to exit Proline Install ?", Some(Wizard.stage), false)
     }
   }
   val goButton = new Button(" Go ") {
@@ -48,20 +43,20 @@ class HomeButtonsPanel extends VBox {
   }
 
   private def setInstallItems() {
-    InstallPanel.getSelectedItems
-    if (Wizard.items.isEmpty || !InstallPanel.setStyleSelectedItems) {
+    Install.getSelectedItems
+    if (Wizard.items.isEmpty || !Install.setStyleSelectedItems) {
       // ItemsPanel.warningNotValidServerFile.visible = true
     } else {
-      InstallPanel.warningCorruptedFile.visible = false
+      Install.warningCorruptedFile.visible = false
       Wizard.currentNode = Wizard.items.head._2.get
       //hide the  previous button for the first panel 
-      NavButtonsPanel.prevButton.visible = false
+      NavButtons.prevButton.visible = false
       //set the first panel
       Wizard.configItemsPanel.getChildren().clear()
       Wizard.configItemsPanel.getChildren().add(Wizard.currentNode)
       //set buttons panel
       Wizard.buttonsPanel.getChildren().clear()
-      Wizard.buttonsPanel.getChildren().add(NavButtonsPanel())
+      Wizard.buttonsPanel.getChildren().add(NavButtons())
     }
   }
 

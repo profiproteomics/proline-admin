@@ -16,7 +16,6 @@ import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab._
 import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
-import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.wizard.util._
@@ -41,7 +40,6 @@ class PwxConfig(val name: ItemName) extends Item with LazyLogging {
       _openUserGuide()
     }
   }
-  val tabPane = new TabPane()
 
   /* Proline Web Tab */
   val prolinePwx = new ProlinePwxContent(Wizard.stage)

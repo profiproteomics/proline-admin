@@ -19,7 +19,6 @@ import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.Wizard
-import fr.proline.admin.gui.wizard.component.Item
 import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PostgresConfigContent
 import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PgHbaConfigContent
 import fr.proline.admin.gui.wizard.util.ItemName._
@@ -39,13 +38,8 @@ class PgServerConfig(val name: ItemName) extends Item with LazyLogging {
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
     onAction = handle {
-       _openUserGuide()
+      _openUserGuide()
     }
-  }
-
-  val tabPane = new TabPane {
-    prefWidth <== Wizard.configItemsPanel.width - 30
-    prefHeight <== Wizard.stage.height - 30
   }
 
   /* access right tab */
