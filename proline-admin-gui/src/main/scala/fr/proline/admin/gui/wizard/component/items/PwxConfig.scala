@@ -10,18 +10,16 @@ import scalafx.scene.control.Label
 import scalafx.scene.control.Hyperlink
 import scalafx.scene.layout.Priority
 import scalafx.geometry.Pos
-
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab._
-import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
+import fr.proline.admin.gui.wizard.component.items.tab._
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.wizard.util._
-
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils
+import fr.proline.admin.gui.wizard.component.items.tab.ProlinePwxContent
 
 /**
  *  builds a Panel with  PWX properties: mount points

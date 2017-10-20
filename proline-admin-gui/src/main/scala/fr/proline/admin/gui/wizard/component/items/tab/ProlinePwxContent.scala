@@ -1,22 +1,18 @@
-package fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab
+package fr.proline.admin.gui.wizard.component.items.tab
 
 import scalafx.Includes._
-import scalafx.geometry.Pos
 import scalafx.scene.layout.VBox
 import scalafx.geometry.Insets
-import scalafx.scene.layout.Priority
 import scalafx.stage.Stage
-
-import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.component.configuration.file._
-import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab.Content.ProlinePwx
-import fr.proline.admin.gui.wizard.util.PanelScorllPane
+import fr.proline.admin.gui.wizard.component.items.file.ProlinePwx
+import fr.profi.util.scalafx.CustomScrollPane
 
 /**
  * builds a panel with the mount points of  Proline Web
  *
  */
-class ProlinePwxContent(stage: Stage) extends PanelScorllPane {
+class ProlinePwxContent(stage: Stage) extends CustomScrollPane {
 
   val prolinePwx = new ProlinePwx(stage)
   setContentNode(

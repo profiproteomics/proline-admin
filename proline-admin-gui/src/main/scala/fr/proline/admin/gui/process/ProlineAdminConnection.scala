@@ -20,7 +20,7 @@ object ProlineAdminConnection extends LazyLogging {
 
   /**
    * Test if data directory in provided config exists
-   **/
+   */
   def dataDirExists(config: Config): (Boolean, String) = { //exists, path
 
     try {
@@ -37,9 +37,9 @@ object ProlineAdminConnection extends LazyLogging {
 
   /**
    * Udapte Proline Admin config (processing + UI management)
-   **/
+   */
   def loadProlineConf(verbose: Boolean = true): Boolean = { //return isConfigValid
-    
+
     //BLOCKING! otherwise update config before (conf file changes || user's choice) (are||is) effective
     //FIXME: freezing
 
@@ -49,12 +49,11 @@ object ProlineAdminConnection extends LazyLogging {
     synchronized {
       Main.stage.scene().setCursor(Cursor.WAIT)
       println("<br>" + actionString)
-      
 
       try {
         // Parse configuration
         this._setNewProlineConfig()
-        
+
         // Test connection to database
         val adminConfigOpt = new AdminConfigFile(Main.adminConfPath).read()
         require(adminConfigOpt.isDefined, "Can't load new admin config: undefined.")
@@ -73,13 +72,13 @@ object ProlineAdminConnection extends LazyLogging {
 
         case t: Throwable => {
           synchronized {
-            
+
             logger.warn("Can't load Proline configuration: ", t)
 
             // Note: Logs are redirected => we thus print the error to be sure it is displayed in the console
             System.err.println("ERROR - Can't load Proline configuration :")
             if (verbose) System.err.println(t.getMessage())
-            
+
             println(s"[ $actionString : finished with <b>error</b> ]")
           }
           // if re-thrown, system stops
@@ -101,7 +100,7 @@ object ProlineAdminConnection extends LazyLogging {
 
     /** Reload CONF file */
     val newConfigFile = ConfigFactory.parseFile(new File(Main.adminConfPath))
-    
+
     synchronized {
       logger.debug("Set new config parameters in ProlineAdmin");
       SetupProline.setConfigParams(newConfigFile)

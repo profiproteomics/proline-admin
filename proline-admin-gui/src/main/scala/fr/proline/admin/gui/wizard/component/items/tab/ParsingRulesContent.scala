@@ -1,20 +1,17 @@
-package fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab
+package fr.proline.admin.gui.wizard.component.items.tab
 
 import scalafx.Includes._
-import scalafx.geometry.Pos
 import scalafx.scene.layout.VBox
 import scalafx.geometry.Insets
 import scalafx.stage.Stage
-
-import fr.proline.admin.gui.Wizard
-import fr.proline.admin.gui.component.configuration.file._
-import fr.proline.admin.gui.wizard.util.PanelScorllPane
-import fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab.Content.ParsingRules
+//import fr.proline.admin.gui.component.configuration.file._
+import fr.proline.admin.gui.wizard.component.items.file.ParsingRules
+import fr.profi.util.scalafx.CustomScrollPane
 /**
  * builds a tab with the properties of parsing rules
  *
  */
-class ParsingRulesContent(configPath: String, stage: Stage) extends PanelScorllPane {
+class ParsingRulesContent(configPath: String, stage: Stage) extends CustomScrollPane {
   val rules = new ParsingRules(configPath, stage)
   setContentNode(
     new VBox {

@@ -1,48 +1,29 @@
-package fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab.Content
+package fr.proline.admin.gui.wizard.component.items.file
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
 import scalafx.Includes._
-import scalafx.collections.ObservableBuffer
-import scalafx.geometry.Insets
 import scalafx.geometry.Pos
-import scalafx.scene.Cursor
-import scalafx.scene.Cursor.sfxCursor2jfx
 import scalafx.scene.control.Button
-import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
 import scalafx.scene.layout.HBox
-import scalafx.scene.layout.Priority
-import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
-import scalafx.stage.Screen
 import scalafx.stage.Stage
-
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.util.FxUtils
-import fr.proline.admin.gui.util.GetConfirmation
-import fr.proline.repository.DriverType
-
-import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
-import fr.profi.util.scala.ScalaUtils.isEmpty
-import fr.profi.util.scala.ScalaUtils.stringOpt2string
 import fr.profi.util.scalafx.FileBrowsing
-import fr.profi.util.scalafx.NumericTextField
-import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.profi.util.scalafx.SimpleBorderPane
 import fr.profi.util.scalafx.BoldLabel
 import fr.proline.admin.gui.wizard.process.config._
 import fr.profi.util.scala.ScalaUtils
-
 import scala.concurrent._
 import ExecutionContext.Implicits.global
+
 
 /**
  * ParsingRules create a modal window to edit/add parsing rules file.

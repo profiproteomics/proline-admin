@@ -1,18 +1,13 @@
-package fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab
+package fr.proline.admin.gui.wizard.component.items.file
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
-import scalafx.scene.Cursor
-import scalafx.scene.Cursor.sfxCursor2jfx
 import scalafx.scene.control.Button
 import scalafx.scene.control.CheckBox
-import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
 import javafx.scene.control.Alert._
-import javafx.scene.control.Alert.AlertType
 import scalafx.scene.control.PasswordField
 import scalafx.scene.control.TextField
 import fr.profi.util.scalafx.NumericTextField
@@ -20,26 +15,19 @@ import scalafx.scene.layout.HBox
 import scalafx.scene.layout.VBox
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
-import scalafx.stage.Screen
 import scalafx.stage.Stage
-import scalafx.scene.text.{ Font, FontWeight, Text }
-import java.io.File
-import java.io.File.separator
-import java.io.IOException
 import scalafx.scene.layout.Priority
-
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.process.DatabaseConnection
-import fr.proline.repository.DriverType
 import fr.proline.admin.gui.wizard.process.config.SeqConfigFile
-import fr.proline.admin.gui.wizard.component.items.form.ITabForm
+import fr.proline.admin.gui.wizard.component.panel.main.ITabForm
 import fr.proline.admin.gui.wizard.process.config._
+import fr.proline.repository.DriverType
 
 /**
  * PostGreSQLSeq builds a tab with the database server properties

@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.wizard.component.items.ModuleConfig.tab.Content
+package fr.proline.admin.gui.wizard.component.items.file
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -25,9 +25,7 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.process.DatabaseConnection
 import fr.proline.admin.gui.process.ProlineAdminConnection
-import fr.proline.admin.gui.wizard.component.items.ServerConfig
 import fr.proline.admin.gui.process.config._
-import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.repository.DriverType
@@ -42,23 +40,29 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.wizard.process.config._
+
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-
 
 /**
  * Create a modal window to edit Proline configuration's file.
  *
  */
-class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
+class ProlineMountFiles extends VBox with LazyLogging {
 
-  //maxHeight = Screen.primary.visualBounds.height - 20 // 
+  maxHeight = Screen.primary.visualBounds.height - 20 // 
 
-  private val pwxConfigFileOpt =
-    if (isEmpty(Wizard.webRootPath)) None
-    else Option(new PwxConfigFile(Wizard.webRootPath))
-  private val pwxMountPointConfigOpt = pwxConfigFileOpt.map(_.read()).flatten
-  private val pwxJmsConfigOpt = pwxConfigFileOpt.map(_.getPwxJms()).flatten
+  /* Configuration files */
+
+  private val adminConfigFile = new AdminConfigFile(Wizard.adminConfPath)
+  private val adminConfigOpt = adminConfigFile.read()
+  require(adminConfigOpt.isDefined, "admin config is undefined .")
+  private val adminConfig = adminConfigOpt.get
+
+  private val serverConfigFileOpt =
+    if (isEmpty(Wizard.serverConfPath)) None
+    else Option(new ServerConfigFile(Wizard.serverConfPath))
+  private val serverConfigOpt = serverConfigFileOpt.map(_.read()).flatten
 
   /*
    * ********** *
@@ -66,57 +70,14 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
    * ********** *
    */
 
-  /* Jms settings  */
-
-  private var pwxHostName: String = "localhost"
-  private var pwxPort: Int = 5445
-
-  if (pwxJmsConfigOpt.isDefined) {
-    pwxHostName = pwxJmsConfigOpt.get.dbHost.get
-    pwxPort = pwxJmsConfigOpt.get.dbPort.get
-  }
-
-  private val hostLabel = new Label("Host name: ")
-  private val hostField = new TextField {
-    text = pwxHostName
-    text.onChange { (_, oldText, newText) =>
-      pwxHostName = newText
-    }
-  }
-
-  private val portLabel = new Label("Port number: ")
-  private val portField = new NumericTextField {
-    text = pwxPort.toString
-    text.onChange {
-      (_, oldText, newText) =>
-        if ((newText != null) && !newText.equals("")) {
-          pwxPort = newText.toInt
-        }
-    }
-  }
-  Seq(portLabel, hostLabel).foreach(_.minWidth = 60)
-  Seq(hostField, portField).foreach {
-    f => f.hgrow = Priority.Always
-  }
-
   /* Mount points */
-  val disableMPLabelText = "Select a validated Proline server configuration file to enable mount points setup. "
-  val infosImportMPLabelText = "File locations will be imported from Proline server configuration mount points. "
-  val infosMergeMPLabelText = "New mount points will be merged with the existing mount points in proline web configuration file. "
-
   val disableMpNoteLabel = new Label() {
-    graphic = FxUtils.newImageView(IconResource.INFORMATION)
-    text = infosMergeMPLabelText
-    style = TextStyle.BLUE_ITALIC
+    text = "Select a validated Proline server configuration file to enable mount points setup."
+    style = TextStyle.RED_ITALIC
     visible = false
   }
-  val warningLabel = new Label {
-    graphic = FxUtils.newImageView(IconResource.INFORMATION)
-    text = infosMergeMPLabelText
-    style = TextStyle.BLUE_ITALIC
-  }
 
-  val rawFilesMountPoints = ArrayBuffer[MountPointPanelPwx]()
+  val rawFilesMountPoints = ArrayBuffer[MountPointPanelWizard]()
   val rawFilesMpLabel = new BoldLabel("Raw files path:   ", upperCase = false)
   val addRawFilesMpButton = new Button("Add") {
     graphic = FxUtils.newImageView(IconResource.PLUS)
@@ -124,7 +85,7 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
   }
   val rawFilesMpBox = new VBox { spacing = 10 }
 
-  val mzdbFilesMountPoints = ArrayBuffer[MountPointPanelPwx]()
+  val mzdbFilesMountPoints = ArrayBuffer[MountPointPanelWizard]()
   val mzdbFilesMpLabel = new BoldLabel("mzDB files path: ", upperCase = false)
   val addMzdbFilesMpButton = new Button("Add") {
     graphic = FxUtils.newImageView(IconResource.PLUS)
@@ -132,7 +93,7 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
   }
   val mzdbFilesMpBox = new VBox { spacing = 10 }
 
-  val resultFilesMountPoints = ArrayBuffer[MountPointPanelPwx]()
+  val resultFilesMountPoints = ArrayBuffer[MountPointPanelWizard]()
   val resultFilesMpLabel = new BoldLabel("Result files path: ", upperCase = false)
   val addResultFilesMpButton = new Button("Add") {
     graphic = FxUtils.newImageView(IconResource.PLUS)
@@ -153,33 +114,13 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
   private val V_SPACING = 10
   private val H_SPACING = 5
 
-  /* Jms server settings */
-  val pwxJmsSettings = new TitledBorderPane(
-    title = "Jms Server",
-    titleTooltip = "Jms Server Setting",
-    contentNode = new VBox {
-      spacing = 2 * V_SPACING
-      children = Seq(
-        new VBox {
-          spacing = V_SPACING
-          children = List(hostLabel,
-            new HBox {
-              spacing = H_SPACING
-              children = Seq(hostField)
-            },
-            ScalaFxUtils.newVSpacer(minH = 10),
-            portLabel,
-            new HBox {
-              spacing = H_SPACING
-              children = Seq(portField)
-            })
-        })
-    })
+  /* DB connection */
+  //Set text- and password textfields at the same place in UI
 
   /* Mount points */
   val mountPointsSettings = new TitledBorderPane(
     title = "File Locations",
-    titleTooltip = "Mount points as defined in Proline web configuration",
+    titleTooltip = "Mount points as defined in Proline server configuration",
     contentNode = new VBox {
       spacing = 2 * V_SPACING
       children = List(
@@ -201,13 +142,10 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
         },
         resultFilesMpBox)
     })
-  val labelWarningPanel = new VBox {
-    spacing = 2
-    children = Seq(disableMpNoteLabel, warningLabel)
-  }
+
   val mountPointsWithDisableNote = new VBox {
-    spacing = 20
-    children = Seq(pwxJmsSettings, ScalaFxUtils.newVSpacer(3), labelWarningPanel, ScalaFxUtils.newVSpacer(3), mountPointsSettings)
+    spacing = 15
+    children = Seq(disableMpNoteLabel, mountPointsSettings)
   }
 
   /* VBox layout and content */
@@ -225,49 +163,40 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
   def isPrompt(str: String): Boolean = str matches """<.*>"""
 
   /* Common settings */
+  val driverTypeOpt = adminConfig.driverType
+  //  if (driverTypeOpt.isDefined) driverTypeBox.selectionModel().select(driverTypeOpt.get)
 
   /* Mount points */
-  if (pwxMountPointConfigOpt.isEmpty) {
+  if (serverConfigOpt.isEmpty) {
 
-    /* hide mount points if server config is undefined */
-    disableMpNoteLabel.text_=(disableMPLabelText)
+    /* Disable mount points if server config is undefined */
     disableMpNoteLabel.visible = true
-    warningLabel.visible = false
     mountPointsSettings.disable = true
+
     //Don't screw up layout
     disableMpNoteLabel.minHeight = 34
     disableMpNoteLabel.maxHeight = 34
 
   } else {
-    // hide this section ,mount points will be copied from server
+
+    //Don't screw up layout
     disableMpNoteLabel.minHeight = 0
     disableMpNoteLabel.maxHeight = 0
-    disableMpNoteLabel.visible = false
-    if (Wizard.items.contains(SERVER)) {
-      disableMpNoteLabel.minHeight = 34
-      disableMpNoteLabel.maxHeight = 34
-      disableMpNoteLabel.text_=(infosImportMPLabelText)
-      disableMpNoteLabel.visible = true
-      warningLabel.visible = false
-      mountPointsSettings.disable = true
 
-    } else {
+    /* Fill fields */
+    val serverConfig = serverConfigOpt.get
 
-      /* Fill fields */
-      val pwxMountPointConfig = pwxMountPointConfigOpt.get
+    val rawMp = serverConfig.rawFilesMountPoints
+    if (rawMp.isEmpty) _addRawFilesMountPoint()
+    else rawMp.foreach { case (k, v) => _addRawFilesMountPoint(k, v) }
 
-      val rawMp = pwxMountPointConfig.rawFilesMountPoints
-      if (rawMp.isEmpty) _addRawFilesMountPoint()
-      else rawMp.foreach { case (k, v) => _addRawFilesMountPoint(k, v) }
+    val mzdbMp = serverConfig.mzdbFilesMountPoints
+    if (mzdbMp.isEmpty) _addMzdbFilesMountPoint()
+    else mzdbMp.foreach { case (k, v) => _addMzdbFilesMountPoint(k, v) }
 
-      val mzdbMp = pwxMountPointConfig.mzdbFilesMountPoints
-      if (mzdbMp.isEmpty) _addMzdbFilesMountPoint()
-      else mzdbMp.foreach { case (k, v) => _addMzdbFilesMountPoint(k, v) }
-
-      val resultMp = pwxMountPointConfig.resultFilesMountPoints
-      if (resultMp.isEmpty) _addResultFilesMountPoint()
-      else resultMp.foreach { case (k, v) => _addResultFilesMountPoint(k, v) }
-    }
+    val resultMp = serverConfig.resultFilesMountPoints
+    if (resultMp.isEmpty) _addResultFilesMountPoint()
+    else resultMp.foreach { case (k, v) => _addResultFilesMountPoint(k, v) }
   }
 
   /**
@@ -276,8 +205,24 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
    * ******** *
    */
 
+  /** Get GUI information to create new AdminConfig object **/
+  private def _getTextFieldValue(txtField: TextField): Option[String] = textField2StringOpt(txtField, allowEmpty = false)
+
+  private def _toAdminConfig() = AdminConfig(
+    filePath = Wizard.adminConfPath,
+    serverConfigFilePath = Option(Wizard.serverConfPath).map(doubleBackSlashes), //FIXME: windows-specific
+    pwxConfigFilePath = Option(Wizard.webRootPath).map(doubleBackSlashes), //FIXME: windows-specific
+    pgsqlDataDir = Option(Wizard.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
+    seqRepoConfigFilePath = Option(Wizard.seqRepoConfPath).map(doubleBackSlashes),
+    driverType = Option(DriverType.POSTGRESQL),
+    prolineDataDir = Option(Wizard.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
+    dbUserName = Option(Wizard.userName),
+    dbPassword = Option(Wizard.passWord),
+    dbHost = Option(Wizard.hostName),
+    dbPort = Option(Wizard.port) //FIXME
+    )
   /** Get GUI information to create new ServerConfig object **/
-  private def _getMountPointsMap(mpArray: ArrayBuffer[MountPointPanelPwx]): Map[String, String] = {
+  private def _getMountPointsMap(mpArray: ArrayBuffer[MountPointPanelWizard]): Map[String, String] = {
     (
       for (
         mp <- mpArray.view;
@@ -287,29 +232,34 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
       ).toMap
   }
 
-  private def _toPwxJmsConfig() = PwxJmsServer(Option(pwxHostName),
-    Option(pwxPort))
-
-  private def _toServerConfig() = ServerConfig(
+  def _toServerConfig() = ServerConfig(
     rawFilesMountPoints = _getMountPointsMap(rawFilesMountPoints),
     mzdbFilesMountPoints = _getMountPointsMap(mzdbFilesMountPoints),
     resultFilesMountPoints = _getMountPointsMap(resultFilesMountPoints))
+
+  /** Test connection with DB with provided parameters **/
+  private def _testDbConnection(
+    adminConfig: AdminConfig,
+    showSuccessPopup: Boolean = true,
+    showFailurePopup: Boolean = true): Boolean = { //return connectionEstablished
+    DatabaseConnection.testDbConnection(adminConfig, showSuccessPopup, showFailurePopup)
+  }
 
   /** Add stuff to define another raw_files mount point **/
   private def _addRawFilesMountPoint(
     key: String = "",
     value: String = "") {
 
-    def _onRawFileMpDelete(mp: MountPointPanelPwx): Unit = {
+    def _onRawFileMpDelete(mp: MountPointPanelWizard): Unit = {
       rawFilesMountPoints -= mp
       rawFilesMpBox.children = rawFilesMountPoints
     }
 
-    rawFilesMountPoints += new MountPointPanelPwx(
+    rawFilesMountPoints += new MountPointPanelWizard(
       key = key,
       value = value,
       onDeleteAction = _onRawFileMpDelete,
-      parentStage = stage)
+      parentStage = Wizard.stage)
     rawFilesMpBox.children = rawFilesMountPoints
   }
 
@@ -318,16 +268,16 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
     key: String = "",
     value: String = "") {
 
-    def _onMzdbFileMpDelete(mp: MountPointPanelPwx): Unit = {
+    def _onMzdbFileMpDelete(mp: MountPointPanelWizard): Unit = {
       mzdbFilesMountPoints -= mp
       mzdbFilesMpBox.children = mzdbFilesMountPoints
     }
 
-    mzdbFilesMountPoints += new MountPointPanelPwx(
+    mzdbFilesMountPoints += new MountPointPanelWizard(
       key = key,
       value = value,
       onDeleteAction = _onMzdbFileMpDelete,
-      parentStage = stage)
+      parentStage = Wizard.stage)
     mzdbFilesMpBox.children = mzdbFilesMountPoints
   }
 
@@ -336,67 +286,55 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
     key: String = "",
     value: String = "") {
 
-    def _onResultFileMpDelete(mp: MountPointPanelPwx): Unit = {
+    def _onResultFileMpDelete(mp: MountPointPanelWizard): Unit = {
       resultFilesMountPoints -= mp
       resultFilesMpBox.children = resultFilesMountPoints
     }
 
-    resultFilesMountPoints += new MountPointPanelPwx(
+    resultFilesMountPoints += new MountPointPanelWizard(
       key = key,
       value = value,
       onDeleteAction = _onResultFileMpDelete,
-      parentStage = stage)
+      parentStage = Wizard.stage)
     resultFilesMpBox.children = resultFilesMountPoints
   }
 
-  /* save Proline PWX configuration  file */
+  /** Action run when "Save" button is pressed **/
 
-  def saveForm() {
+  def checkForm(): Boolean = {
+    //TODO
+    true
+  }
 
-    if (pwxMountPointConfigOpt.isDefined) {
-
-      val newConfig = Future {
-        if (Wizard.items.contains(SERVER)) {
-
-          //import mount points from proline server configuration 
-          val serverConfigOpt = Wizard.items.get(SERVER).get
-          val serverItem = serverConfigOpt.get.asInstanceOf[ServerConfig]
-          val mountPointsServerConfig = serverItem.mountsPoint.mountfiles._toServerConfig()
-          val newPwxJmsConfiog = _toPwxJmsConfig()
-          new PwxConfigFile(Wizard.webRootPath).write(mountPointsServerConfig, newPwxJmsConfiog)
-        } else {
-          val newPwxJmsConfiog = _toPwxJmsConfig()
-          val newPwxConfig = _toServerConfig()
-          new PwxConfigFile(Wizard.webRootPath).write(newPwxConfig, newPwxJmsConfiog)
-        }
-
+  def save() {
+    val newConfig = Future {
+      val newAdminConfig = _toAdminConfig()
+      /* Test connection to database */
+      if (serverConfigOpt.isDefined) {
+        val newServerConfig = _toServerConfig()
+        serverConfigFileOpt.get.write(newServerConfig, newAdminConfig)
       }
-      newConfig onFailure {
-        case (t) => logger.error(s"An error has occured: ${t.getMessage}")
-      }
+    }
+    newConfig onFailure {
+      case (t) => logger.error(s"An error has occured: ${t.getMessage}")
     }
   }
 
-  /* return number of mount points (files) */
   def getProperties(): String = {
-    if (Wizard.items.contains(SERVER)) {
-      s" Mount Points:\n\tSame mount points as Proline server"
-    } else {
-      val montPointsBuilder = new StringBuilder("Mount Points:\n\t")
-      montPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n\t")
-        .append(mzdbFilesMountPoints.size).append("  Mzdb files\n\t")
-        .append(resultFilesMountPoints.size).append("  Result Files\t")
-      return montPointsBuilder.toString
-    }
+    val montPointsBuilder = new StringBuilder("Mount Points:\n\t")
+    montPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n\t")
+      .append(mzdbFilesMountPoints.size).append("  Mzdb files\n\t")
+      .append(resultFilesMountPoints.size).append("  Result Files\t")
+    return montPointsBuilder.toString
   }
 }
 
 /**
  * Build 1 mount point panel
  */
-class MountPointPanelPwx(
+class MountPointPanelWizard(
   parentStage: Stage,
-  onDeleteAction: (MountPointPanelPwx) => Unit,
+  onDeleteAction: (MountPointPanelWizard) => Unit,
   key: String = "",
   value: String = "") extends HBox {
 

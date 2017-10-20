@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.wizard.component.items.serverconfig.tab
+package fr.proline.admin.gui.wizard.component.items.file
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -36,10 +36,9 @@ import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.process.DatabaseConnection
 import fr.proline.admin.gui.Wizard
-import fr.proline.repository.DriverType
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.wizard.component.items.ServerConfig
-import fr.proline.admin.gui.wizard.component.items.form.ITabForm
+import fr.proline.admin.gui.wizard.component.panel.main.ITabForm
 import fr.profi.util.scala.ScalaUtils
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.process.config.AdminConfig

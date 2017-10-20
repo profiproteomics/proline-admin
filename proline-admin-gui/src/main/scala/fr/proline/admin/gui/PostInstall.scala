@@ -22,7 +22,7 @@ import scala.util.matching.Regex
 import fr.proline.admin.gui.wizard.component.panel.bottom.HomeButtons
 import fr.proline.admin.gui.wizard.component.PostInstallPanel
 import fr.proline.admin.gui.wizard.component.items.Item
-import fr.proline.admin.gui.wizard.util.version.Module
+import fr.proline.admin.gui.wizard.util.Module
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.StringUtils
@@ -68,7 +68,6 @@ object PostInstall extends LazyLogging {
   lazy val root = new VBox {
     id = "root"
     children = new VBox {
-      alignment = Pos.CENTER
       vgrow = Priority.Always
       padding = Insets(10)
       spacing = 10

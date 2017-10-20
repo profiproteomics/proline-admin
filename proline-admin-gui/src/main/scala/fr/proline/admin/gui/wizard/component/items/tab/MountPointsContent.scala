@@ -1,21 +1,18 @@
-package fr.proline.admin.gui.wizard.component.items.serverconfig.tab
+package fr.proline.admin.gui.wizard.component.items.tab
 
 import fr.proline.admin.gui.component.configuration.form._
 import scalafx.Includes._
-import scalafx.geometry.Pos
 import scalafx.scene.layout.VBox
 import scalafx.geometry.Insets
 import scalafx.stage.Stage
-
-import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.component.configuration.file._
-import fr.proline.admin.gui.wizard.component.items.serverconfig.tab.content.ProlineMountFiles
-import fr.proline.admin.gui.wizard.util.PanelScorllPane
+import fr.proline.admin.gui.wizard.component.items.file.ProlineMountFiles
+import fr.profi.util.scalafx.CustomScrollPane
 /**
  * builds a Tab with the mount points in Proline server
  *
  */
-class MountPointsContent(stage: Stage) extends PanelScorllPane {
+class MountPointsContent(stage: Stage) extends CustomScrollPane {
 
   var mountfiles = new ProlineMountFiles()
 

@@ -1,25 +1,17 @@
-package fr.proline.admin.gui.wizard.component.items.form
+package fr.proline.admin.gui.wizard.component.panel.main
 
 import scalafx.Includes._
 import scalafx.scene.control.Label
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 import scalafx.scene.control.CheckBox
-import scalafx.scene.control.TextField
-import scala.collection.mutable.HashMap
-import scala.collection.mutable.ListBuffer
-import fr.profi.util.scala.ScalaUtils
 import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util.FxUtils
 import scalafx.scene.control.CheckBox
-import scalafx.scene.text.{ Font, FontWeight, Text }
+import scalafx.scene.text.{ Font, FontWeight }
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.HBox
-import fr.profi.util.scalafx.BoldLabel
 import scalafx.scene.control.Label
-
-import java.io.File
-
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.repository.DriverType
@@ -29,7 +21,7 @@ import fr.proline.repository.DriverType
  *
  */
 
-trait HomePanel {
+trait INotification {
 
   private val CORRUPTEDFILE = "The configuration file Proline Admin is corrupted. This may be due to improper existing settings. Default Proline Admin settings have been reset."
   val warningCorruptedFile: Label = new Label {

@@ -14,13 +14,16 @@ import scalafx.geometry.Pos
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.wizard.component.items.serverconfig.tab._
+import fr.proline.admin.gui.wizard.component.items.tab._
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.wizard.util._
+import fr.proline.admin.gui.wizard.component.items.file.{PostGreSQL,JmsServer}
+import fr.proline.admin.gui.wizard.component.items.tab.MountPointsContent
 
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
+
 
 /**
  * builds a panel with the server properties : database server properties, JMS properties and mount Points

@@ -14,8 +14,6 @@ import java.io.File
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Wizard
-import fr.proline.admin.gui.wizard.component.FileChooser._
-import fr.proline.admin.gui.wizard.component.items.form.HomePanel
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.wizard.component.items._
@@ -25,13 +23,14 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import com.typesafe.scalalogging.LazyLogging
+import fr.proline.admin.gui.wizard.component.FileChooser.ConfFileChooser
 
 /**
  * Builds a panel to choose Configurations items
  *
  */
 
-object Install extends VBox with HomePanel with LazyLogging {
+object Install extends VBox with INotification with LazyLogging {
 
   /** component of panel **/
 
@@ -177,11 +176,11 @@ object Install extends VBox with HomePanel with LazyLogging {
     })
 
   /* Install home panel content */
-  alignment = Pos.Center
-  alignmentInParent = Pos.Center
+  alignment = Pos.BottomCenter
+  alignmentInParent = Pos.BottomCenter
   spacing = 1
   fillWidth = true
-  children = Seq(ScalaFxUtils.newVSpacer(minH = 20),
+  children = Seq(ScalaFxUtils.newVSpacer(minH = 50),
     configItemsPane)
 
   private val checkBoxList = List(prolineServerChBox.getId, prolineWebChBox.getId, seqReposChBox.getId, postgreSQLChBox.getId)

@@ -1,7 +1,6 @@
-package fr.proline.admin.gui.wizard.component.items.serverconfig.tab
+package fr.proline.admin.gui.wizard.component.items.file
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
@@ -11,22 +10,20 @@ import scalafx.scene.control.{ RadioButton, ToggleGroup }
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
 import fr.profi.util.scalafx.NumericTextField
-import scalafx.stage.Screen
-import scalafx.stage.Stage
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import scalafx.scene.control.ToggleGroup
 import scalafx.scene.layout.Priority
 import scalafx.geometry.Insets
-
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.process.config.NodeConfigFile
 import fr.proline.admin.gui.wizard.process.config.NodeConfig
-import fr.proline.admin.gui.wizard.component.items.form.ITabForm
+import fr.proline.admin.gui.wizard.component.panel.main.ITabForm
 import fr.profi.util.scala.ScalaUtils
 import scala.concurrent._
 import ExecutionContext.Implicits.global
+
 
 /**
  * JmsServerTab build tab for JMS server properties : Jms host , port and Proline queue name

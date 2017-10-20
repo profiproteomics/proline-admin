@@ -19,8 +19,8 @@ import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.Wizard
-import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PostgresConfigContent
-import fr.proline.admin.gui.wizard.component.items.pgserverconfig.tab.PgHbaConfigContent
+import fr.proline.admin.gui.wizard.component.items.tab.PostgresConfigContent
+import fr.proline.admin.gui.wizard.component.items.tab.PgHbaConfigContent
 import fr.proline.admin.gui.wizard.util.ItemName._
 
 import fr.profi.util.scalafx.ScalaFxUtils
