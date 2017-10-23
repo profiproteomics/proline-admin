@@ -68,6 +68,7 @@ object PostInstall extends LazyLogging {
   lazy val root = new VBox {
     id = "root"
     children = new VBox {
+      alignment = Pos.CENTER      
       vgrow = Priority.Always
       padding = Insets(10)
       spacing = 10
