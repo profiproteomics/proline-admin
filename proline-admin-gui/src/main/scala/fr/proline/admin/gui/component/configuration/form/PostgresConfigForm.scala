@@ -456,8 +456,19 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
   private def _setAllToOptimized() {
     compoByParam.foreach {
       case (labeledParam, formLine) =>
-        formLine.checkBox.selected = true
-        formLine.slider.value = pgConfigDefaults(labeledParam).suggestedValue.toDouble
+        try {
+          formLine.checkBox.selected = true
+          if ((pgConfigDefaults(labeledParam).suggestedValue > pgConfigDefaults(labeledParam).maxValue)) {
+            formLine.slider.value = pgConfigDefaults(labeledParam).defaultValue.toDouble
+          } else {
+            formLine.slider.value = pgConfigDefaults(labeledParam).suggestedValue.toDouble
+          }
+        } catch {
+          case t: Throwable => {
+            logger.error("Error while trying to set up optimized values. ")
+            formLine.slider.value = pgConfigDefaults(labeledParam).defaultValue.toDouble
+          }
+        }
     }
   }
 
@@ -572,10 +583,10 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
 
         /* Change in map and lines array if needed */
         if (newConfigKVLineOpt.isDefined) {
-          var value="= "+valueAsString
+          var value = "= " + valueAsString
           var newConfigKVLine = newConfigKVLineOpt.get
           pgConfigFile.lineByKey(configLineKey) = newConfigKVLine
-          var tempConfigKVLine=newConfigKVLine.line.replaceAll("=(\\s)*(\\S+)",value)
+          var tempConfigKVLine = newConfigKVLine.line.replaceAll("=(\\s)*(\\S+)", value)
           configFileLines(newConfigKVLine.index) = tempConfigKVLine //newConfigKVLine.toString()
         }
     }
