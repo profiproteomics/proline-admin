@@ -1,18 +1,15 @@
-package fr.proline.admin.gui.wizard.component.FileChooser
+package fr.proline.admin.gui.wizard.component.panel.main
 
 import com.typesafe.scalalogging.LazyLogging
-
 import java.io.File
-
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 import scalafx.stage.Stage
-
 import fr.profi.util.scala.ScalaUtils
 
 /**
  * Create and show a file chooser for single configuration file's selection.
- * Used by MenuPanel.scala and Main.scala .
+ * Used in Home panel .
  */
 class ConfFileChooser(targetPath: String) extends LazyLogging {
   //TODO move to configuration.file

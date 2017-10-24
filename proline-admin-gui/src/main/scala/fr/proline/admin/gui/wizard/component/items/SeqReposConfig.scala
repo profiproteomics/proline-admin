@@ -21,7 +21,7 @@ import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.wizard.util._
 import fr.proline.admin.gui.wizard.component.items.file.JmsServer
 import fr.proline.admin.gui.wizard.component.items.tab.ParsingRulesContent
-import fr.proline.admin.gui.wizard.component.items.file.PostGreSQLSeq
+import fr.proline.admin.gui.wizard.component.items.file.SeqRepos
 
 /**
  * builds a panel with  Sequence Repository  properties database server properties, JMS properties and parsing rules properties
@@ -42,7 +42,7 @@ class SeqReposConfig(val name: ItemName) extends Item with LazyLogging {
   }
 
   /* database server properties tab */
-  val PostGreSQLSeq = new PostGreSQLSeq(Wizard.seqRepoConfPath, Wizard.stage)
+  val PostGreSQLSeq = new SeqRepos(Wizard.seqRepoConfPath, Wizard.stage)
   val PostGresSeqTab = new Tab {
     text = "PostGreSQL"
     content = PostGreSQLSeq

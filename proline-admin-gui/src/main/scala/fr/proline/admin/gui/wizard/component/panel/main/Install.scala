@@ -23,7 +23,6 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import com.typesafe.scalalogging.LazyLogging
-import fr.proline.admin.gui.wizard.component.FileChooser.ConfFileChooser
 
 /**
  * Builds a panel to choose Configurations items

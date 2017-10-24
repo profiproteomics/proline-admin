@@ -19,7 +19,7 @@ import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.PostInstall
 import fr.proline.admin.gui.wizard.component.panel.main.INotification
-import fr.proline.admin.gui.wizard.component.FileChooser.ConfFileChooser
+import fr.proline.admin.gui.wizard.component.panel.main.ConfFileChooser
 import fr.proline.admin.gui.wizard.component.items._
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.process.config.AdminConfig
