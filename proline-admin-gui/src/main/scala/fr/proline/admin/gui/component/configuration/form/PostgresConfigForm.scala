@@ -456,18 +456,12 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
   private def _setAllToOptimized() {
     compoByParam.foreach {
       case (labeledParam, formLine) =>
-        try {
-          formLine.checkBox.selected = true
-          if ((pgConfigDefaults(labeledParam).suggestedValue > pgConfigDefaults(labeledParam).maxValue)) {
-            formLine.slider.value = pgConfigDefaults(labeledParam).defaultValue.toDouble
-          } else {
-            formLine.slider.value = pgConfigDefaults(labeledParam).suggestedValue.toDouble
-          }
-        } catch {
-          case t: Throwable => {
-            logger.error("Error while trying to set up optimized values. ")
-            formLine.slider.value = pgConfigDefaults(labeledParam).defaultValue.toDouble
-          }
+        formLine.checkBox.selected = true
+        val suggestedValue = pgConfigDefaults(labeledParam).suggestedValue
+        if ((suggestedValue > pgConfigDefaults(labeledParam).maxValue) || (suggestedValue < pgConfigDefaults(labeledParam).minValue)) {
+          formLine.slider.value = pgConfigDefaults(labeledParam).defaultValue.toDouble
+        } else {
+          formLine.slider.value = pgConfigDefaults(labeledParam).suggestedValue.toDouble
         }
     }
   }
