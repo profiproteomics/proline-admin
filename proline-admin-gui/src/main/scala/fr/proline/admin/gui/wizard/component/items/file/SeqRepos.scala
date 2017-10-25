@@ -26,7 +26,8 @@ import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.wizard.process.config.SeqConfigFile
 import fr.proline.admin.gui.wizard.component.panel.main.ITabForm
 import fr.proline.admin.gui.wizard.process.config._
-
+import fr.proline.repository.DriverType
+import fr.proline.admin.gui.process.DatabaseConnection
 /**
  * PostGreSQLSeq builds a panel with the database server properties
  *
@@ -41,6 +42,9 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
 	 */
 
   // initialize postgres properties 
+  val driver = DriverType.POSTGRESQL
+  var port: Int = 5432
+  var userName, passWord, hostName: String = ""
   private val seqConfigFile = new SeqConfigFile(path)
   private val seqConfigOpt = seqConfigFile.read
   require(seqConfigOpt.isDefined, "sequence repository config is undefined")
@@ -216,7 +220,18 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
     dbHost = Some(hostName),
     dbPort = Some(port),
     dbUdsDb = Some("uds_db"))
+  /** test connection to database server */
+  def _testDbConnection(
+    showSuccessPopup: Boolean = false,
+    showFailurePopup: Boolean = false): Boolean = {
+    DatabaseConnection.testDbConnectionToWizard(driver, userName, passWord, hostName, port, showSuccessPopup, showFailurePopup)
+  }
 
+  /** get database connection */
+  def getInfos: String = {
+    if (DatabaseConnection.testDbConnectionToWizard(driver, userName, passWord, hostName, port, false, false))
+      s"""PostgreSQL: OK""" else s"""PostgreSQL: NOK"""
+  }
   /** save new Sequence Repository properties */
   def saveForm() {
     val newSeqConfig = _toSeqConfig()

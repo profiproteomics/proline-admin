@@ -43,6 +43,7 @@ import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.repository.DriverType
+import fr.proline.admin.gui.process.DatabaseConnection
 
 import scala.concurrent._
 import ExecutionContext.Implicits.global
@@ -59,6 +60,8 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
 	 * ********** *
 	 */
 
+  val driver = DriverType.POSTGRESQL
+  var port: Int = 5432
   private val adminConfigFile = new AdminConfigFile(path)
   private val adminConfigOpt = adminConfigFile.read()
   require(adminConfigOpt.isDefined, "admin config is undefined to get database server properties. ")
@@ -67,26 +70,26 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
   def isPrompt(str: String): Boolean = str matches """<.*>"""
 
   val dbUserName = adminConfig.dbUserName.get
-  if (isPrompt(dbUserName)) userName = dbUserName
-  else userName = dbUserName
+  if (isPrompt(dbUserName)) Wizard.userName = dbUserName
+  else Wizard.userName = dbUserName
 
   val dbPassword = adminConfig.dbPassword.get
-  if (isPrompt(dbPassword)) passWord = dbPassword
-  else passWord = dbPassword
+  if (isPrompt(dbPassword)) Wizard.passWord = dbPassword
+  else Wizard.passWord = dbPassword
 
   val dbHost = adminConfig.dbHost.get
-  if (isPrompt(dbHost)) hostName = dbHost
-  else hostName = dbHost
+  if (isPrompt(dbHost)) Wizard.hostName = dbHost
+  else Wizard.hostName = dbHost
 
   val dbPort = adminConfig.dbPort.get
-  port = dbPort
+  Wizard.port = dbPort
 
   //host 
 
   val hostField = new TextField {
-    if (hostName != null) text = hostName
+    if (Wizard.hostName != null) text = Wizard.hostName
     text.onChange { (_, oldText, newText) =>
-      hostName = newText
+      Wizard.hostName = newText
       checkForm
     }
   }
@@ -99,26 +102,25 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
   }
   //port
   val portField = new NumericTextField {
-    text = port.toString
+    text = Wizard.port.toString
     text.onChange {
       (_, oldText, newText) =>
         if ((newText != null) && !newText.equals("")) {
-          port = newText.toInt
+          Wizard.port = newText.toInt
           checkForm
         }
     }
   }
   //user
-
   val userField = new TextField {
-    if (userName != null) text = userName
+    if (Wizard.userName != null) text = Wizard.userName
     text.onChange { (_, oldText, newText) =>
-      userName = newText
+      Wizard.userName = newText
       checkForm
     }
   }
-  //password
 
+  //password
   val showPwdBox = new CheckBox("Show password") {
     selected = false
     vgrow = Priority.Always
@@ -132,9 +134,9 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
     text <==> passwordPWDField.text
     promptText <==> passwordPWDField.promptText
     visible <== !passwordPWDField.visible
-    if (passWord != null) text = passWord
+    if (Wizard.passWord != null) text = Wizard.passWord
     text.onChange { (_, oldText, newText) =>
-      passWord = newText
+      Wizard.passWord = newText
       checkForm
     }
   }
@@ -241,12 +243,23 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
     seqRepoConfigFilePath = Some(Wizard.seqRepoConfPath).map(doubleBackSlashes),
     driverType = Some(driver),
     prolineDataDir = Some(Wizard.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
-    dbUserName = Some(userName),
-    dbPassword = Some(passWord),
-    dbHost = Some(hostName),
-    dbPort = Some(port) //FIXME
+    dbUserName = Some(Wizard.userName),
+    dbPassword = Some(Wizard.passWord),
+    dbHost = Some(Wizard.hostName),
+    dbPort = Some(Wizard.port) //FIXME
     )
+  /** test connection to database server */
+  def _testDbConnection(
+    showSuccessPopup: Boolean = false,
+    showFailurePopup: Boolean = false): Boolean = {
+    DatabaseConnection.testDbConnectionToWizard(driver, Wizard.userName, Wizard.passWord, Wizard.hostName, Wizard.port, showSuccessPopup, showFailurePopup)
+  }
 
+  /** get database connection */
+  def getInfos: String = {
+    if (DatabaseConnection.testDbConnectionToWizard(driver, Wizard.userName, Wizard.passWord, Wizard.hostName, Wizard.port, false, false))
+      s"""PostgreSQL: OK""" else s"""PostgreSQL: NOK"""
+  }
   /** save Proline-Admin form  **/
   def saveForm() {
     /* save  new AdminConf properties */
