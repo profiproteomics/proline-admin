@@ -63,7 +63,7 @@ object RunCommand extends App with LazyLogging {
     var userPassword: String = ""
 
     @Parameter(names = Array("--administrator", "-a"), description = "Add user to administrator group.", required = false)
-    var groupUser: Boolean = false
+    var groupUser: Boolean = true
   }
 
   /** dump msi db command */
