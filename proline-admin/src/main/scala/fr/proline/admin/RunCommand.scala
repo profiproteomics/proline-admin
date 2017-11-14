@@ -62,7 +62,7 @@ object RunCommand extends App with LazyLogging {
     @Parameter(names = Array("--password", "-p"), description = "The user password. Default could be used.", required = false)
     var userPassword: String = ""
 
-    @Parameter(names = Array("--administrator", "-a"), description = "Add user to administrator group. user is in user group per default.", required = false)
+    @Parameter(names = Array("--administrator", "-a"), description = "Add user to administrator group. User is in user group per default.", required = false)
     var groupUser: Boolean = true
   }
 
@@ -198,7 +198,7 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(ExportMsiDbStatsCommand)
     jCmd.addCommand(UpgradeDatabasesCommand)
     jCmd.addCommand(DeleteProjectCommand)
-    jCmd.addCommand(ArchiveProjectCommand)
+    //jCmd.addCommand(ArchiveProjectCommand)
     //jCmd.addCommand(UnarchiveProjectCommand)
     //jCmd.addCommand(RestoreProjectCommand)
     jCmd.addCommand(DisableUserCommand)
