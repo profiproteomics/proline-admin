@@ -11,7 +11,7 @@ import java.io.File
 import java.io.File.separator
 
 /**
- * Factory of items
+ * Item's factory
  *
  */
 object ItemFactory {

@@ -24,11 +24,10 @@ import fr.profi.util.scala.ScalaUtils
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
-
 /**
  * ParsingRules create a modal window to edit/add parsing rules file.
  */
-class ParsingRules(path:String,stage:Stage) extends VBox with LazyLogging {
+class ParsingRules(path: String, stage: Stage) extends VBox with LazyLogging {
 
   /* parsing rules file */
   private val parsigRuleFile = new ParsingRulesFile(path)
@@ -286,10 +285,10 @@ class ParsingRules(path:String,stage:Stage) extends VBox with LazyLogging {
 // a Fasta directory 
 
 class FastaDirectory(
-  parentStage: Stage,
-  onDeleteAction: (FastaDirectory) => Unit,
-  key: String = "",
-  value: String = "") extends HBox {
+    parentStage: Stage,
+    onDeleteAction: (FastaDirectory) => Unit,
+    key: String = "",
+    value: String = "") extends HBox {
 
   val thisFastaDir = this
 
@@ -331,12 +330,12 @@ class FastaDirectory(
 /* Rule */
 
 class Rules(
-  parentStage: Stage,
-  onDeleteAction: (Rules) => Unit,
-  name: String,
-  fastaName: String,
-  fastaVersion: String,
-  proteinAccession: String) extends HBox {
+    parentStage: Stage,
+    onDeleteAction: (Rules) => Unit,
+    name: String,
+    fastaName: String,
+    fastaVersion: String,
+    proteinAccession: String) extends HBox {
   val thisrule = this
 
   /* Component */

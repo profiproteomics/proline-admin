@@ -25,13 +25,11 @@ import fr.profi.util.scalafx.TitledBorderPane
 import com.typesafe.scalalogging.LazyLogging
 
 /**
- * Builds a panel to choose Configurations items
+ * Builds home panel of install GUI
  *
  */
 
-object Install extends VBox with INotification with LazyLogging {
-
-  /** component of panel **/
+object InstallPane extends VBox with INotification with LazyLogging {
 
   /* try to read proline admin configuration file */
   var iniServerPath = ""

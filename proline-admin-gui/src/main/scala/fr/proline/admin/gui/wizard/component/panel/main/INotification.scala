@@ -2,19 +2,21 @@ package fr.proline.admin.gui.wizard.component.panel.main
 
 import scalafx.Includes._
 import scalafx.scene.control.Label
-import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
+
 import scalafx.scene.control.CheckBox
-import fr.proline.admin.gui.wizard.util._
-import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.util.FxUtils
+
 import scalafx.scene.control.CheckBox
 import scalafx.scene.text.{ Font, FontWeight }
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.HBox
 import scalafx.scene.control.Label
+import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.repository.DriverType
+import fr.proline.admin.gui.wizard.util._
+import fr.proline.admin.gui.IconResource
+import fr.proline.admin.gui.util.FxUtils
 
 /**
  * ItemsPanelForm contains warning label to check path's form

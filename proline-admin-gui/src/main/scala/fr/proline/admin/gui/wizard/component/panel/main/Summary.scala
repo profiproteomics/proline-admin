@@ -19,7 +19,7 @@ import fr.proline.admin.gui.wizard.util.ProgressBarWindow
 import fr.proline.admin.gui.wizard.util.UserGuideView
 import java.io.File
 import fr.proline.admin.gui.wizard.component.DbMaintenance
-import fr.proline.admin.gui.wizard.component.panel.bottom.NavButtons
+import fr.proline.admin.gui.wizard.component.panel.bottom.InstallNavButtons
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 
@@ -35,7 +35,7 @@ object Summary extends LazyLogging {
     item match {
       case pgServer: PgServerConfig => {
         val pgServer = item.asInstanceOf[PgServerConfig]
-        NavButtons.summaryPanel.prolinePgServerBox.children = new TitledBorderPane(
+        InstallNavButtons.summaryPanel.prolinePgServerBox.children = new TitledBorderPane(
           title = "PostgreSQL Server Configuration ",
           contentNode = new VBox {
             spacing = 1
@@ -54,7 +54,7 @@ object Summary extends LazyLogging {
           text = "Set up or update Proline databases"
           selected = false
         }
-        NavButtons.summaryPanel.prolineServerBox.children = new TitledBorderPane(
+        InstallNavButtons.summaryPanel.prolineServerBox.children = new TitledBorderPane(
           title = "Proline Server Configuration",
           contentNode = new VBox {
             spacing = 1
@@ -86,7 +86,7 @@ object Summary extends LazyLogging {
               text = module.jmsServer.getInfos
             }, ScalaFxUtils.newVSpacer(1))
         }
-        NavButtons.summaryPanel.prolineModuleBox.children = new TitledBorderPane(title = "Proline Sequence Repository ",
+        InstallNavButtons.summaryPanel.prolineModuleBox.children = new TitledBorderPane(title = "Proline Sequence Repository ",
           contentNode = new VBox { children = Seq(SeqReposArea) })
       }
       case pwx: PwxConfig => {
@@ -98,7 +98,7 @@ object Summary extends LazyLogging {
               text = prolineWeb.prolinePwx.getInfos
             }, ScalaFxUtils.newVSpacer(1))
         }
-        NavButtons.summaryPanel.prolineWebBox.children = new TitledBorderPane(title = "Proline Web",
+        InstallNavButtons.summaryPanel.prolineWebBox.children = new TitledBorderPane(title = "Proline Web",
           contentNode = new VBox { children = Seq(prolineWebArea) })
 
       }

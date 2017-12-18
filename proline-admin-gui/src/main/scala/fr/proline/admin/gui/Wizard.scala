@@ -5,6 +5,8 @@ import com.typesafe.scalalogging.LazyLogging
 import javafx.application.Application
 import javafx.geometry.Rectangle2D
 import javafx.stage.Screen
+import java.io.File
+
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
 import scalafx.scene.layout.HBox
@@ -16,19 +18,18 @@ import scalafx.geometry.Pos
 import scalafx.stage.Stage
 
 import scala.collection.mutable.LinkedHashMap
-import java.io.File
-
-import fr.proline.admin.gui.wizard.component.panel.main.Install
-import fr.proline.admin.gui.wizard.component.panel.bottom.HomeButtons
+import fr.proline.admin.gui.wizard.component.panel.main.InstallPane
+import fr.proline.admin.gui.wizard.component.panel.bottom.InstallButtons
 import fr.proline.admin.gui.wizard.component.items.Item
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.wizard.util.Module
+import fr.proline.admin.gui.process.UdsRepository
 import fr.profi.util.StringUtils
 import scala.util.matching.Regex
 
 /**
- * builds home panel of Proline install
+ * Graphical interface for Proline Admin install.
  *
  */
 object Wizard extends LazyLogging {
@@ -103,9 +104,8 @@ class Wizard extends Application {
     // locate application .CONF file of proline server 
 
     require(Wizard.stage == null, "stage is already instantiated")
-    val btnPanel = new HomeButtons()
-    Wizard.configItemsPanel = Install
-    Wizard.buttonsPanel = btnPanel
+    Wizard.configItemsPanel = InstallPane
+    Wizard.buttonsPanel = InstallButtons
     Wizard.stage = new Stage(stage) {
       scene = new Scene(Wizard.root)
       width = 1024
@@ -118,5 +118,9 @@ class Wizard extends Application {
     Wizard.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Wizard.stage.scene.value.getStylesheets.add("/css/Style.css")
     Wizard.stage.show()
+  }
+  override def stop() {
+    super.stop()
+    // if (UdsRepository.getUdsDbContext() != null && !UdsRepository.getUdsDbContext().isClosed()) UdsRepository.getUdsDbContext().close
   }
 }

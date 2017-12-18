@@ -19,7 +19,7 @@ import java.io.File
 import scala.collection.mutable.LinkedHashMap
 
 import scala.util.matching.Regex
-import fr.proline.admin.gui.wizard.component.panel.bottom.HomeButtons
+import fr.proline.admin.gui.wizard.component.panel.bottom.InstallButtons
 import fr.proline.admin.gui.wizard.component.PostInstallPanel
 import fr.proline.admin.gui.wizard.component.items.Item
 import fr.proline.admin.gui.wizard.util.Module
@@ -68,7 +68,7 @@ object PostInstall extends LazyLogging {
   lazy val root = new VBox {
     id = "root"
     children = new VBox {
-      alignment = Pos.CENTER      
+      alignment = Pos.CENTER
       vgrow = Priority.Always
       padding = Insets(10)
       spacing = 10
@@ -102,7 +102,7 @@ class PostInstall extends Application {
     // locate application .CONF file of proline server 
 
     require(PostInstall.stage == null, "stage is already instantiated")
-    val btnPanel = new HomeButtons()
+    val btnPanel = InstallButtons
     PostInstall.configItemsPanel = PostInstallPanel
     PostInstall.buttonsPanel = btnPanel
     PostInstall.stage = new Stage(stage) {
