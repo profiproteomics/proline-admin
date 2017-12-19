@@ -3,10 +3,7 @@ package fr.proline.admin.gui
 import com.typesafe.scalalogging.LazyLogging
 
 import javafx.application.Application
-import javafx.geometry.Rectangle2D
 import javafx.stage.Screen
-import java.io.File
-
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
 import scalafx.scene.layout.HBox
@@ -28,6 +25,7 @@ import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.wizard.util.GUIWindowSize
 import fr.profi.util.StringUtils
 import scala.util.matching.Regex
+import java.io.File
 
 /**
  * Graphical interface for Proline Admin install.
@@ -121,6 +119,8 @@ class Wizard extends Application {
   }
   override def stop() {
     super.stop()
-    // if (UdsRepository.getUdsDbContext() != null && !UdsRepository.getUdsDbContext().isClosed()) UdsRepository.getUdsDbContext().close
+    if (UdsRepository.getUdsDbContext() != null && !UdsRepository.getUdsDbContext().isClosed()) {
+       UdsRepository.getUdsDbContext().close 
+    }
   }
 }

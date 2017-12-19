@@ -16,7 +16,6 @@ import scalafx.stage.Stage
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.wizard.util.Module
 import fr.proline.admin.gui.util.FxUtils
-import javafx.geometry.Rectangle2D
 import javafx.stage.Screen
 import fr.proline.admin.gui.wizard.component.panel.bottom.MonitorBottomsPanel
 import fr.proline.admin.gui.wizard.component.panel.main.MonitorPane
