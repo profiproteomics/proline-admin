@@ -20,6 +20,7 @@ import javafx.geometry.Rectangle2D
 import javafx.stage.Screen
 import fr.proline.admin.gui.wizard.component.panel.bottom.MonitorBottomsPanel
 import fr.proline.admin.gui.wizard.component.panel.main.MonitorPane
+import fr.proline.admin.gui.wizard.util.GUIWindowSize
 
 /**
  * Graphical interface for Proline Admin Monitor .
@@ -64,9 +65,9 @@ class Monitor extends Application {
     }
 
     /* Build and show stage (in any case) */
-    val primaryScreenBounds: Rectangle2D = Screen.getPrimary().getVisualBounds()
-    Monitor.stage.setWidth(primaryScreenBounds.getWidth() / 2)
-    Monitor.stage.setHeight(primaryScreenBounds.getHeight() - 50)
+
+    Monitor.stage.setWidth(GUIWindowSize.prefWitdh)
+    Monitor.stage.setHeight(GUIWindowSize.prefHeight)
     Monitor.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Monitor.stage.scene.value.getStylesheets.add("/css/Style.css")
     Monitor.stage.show()
@@ -75,7 +76,8 @@ class Monitor extends Application {
   /** Close UDSdb context on application close **/
   override def stop() {
     super.stop()
-    // if (UdsRepository.getUdsDbContext() != null) UdsRepository.getUdsDbContext().close
+    if ((UdsRepository.getUdsDbContext() != null) && !(UdsRepository.getUdsDbContext().isClosed))
+      UdsRepository.getUdsDbContext().close
   }
 
 }

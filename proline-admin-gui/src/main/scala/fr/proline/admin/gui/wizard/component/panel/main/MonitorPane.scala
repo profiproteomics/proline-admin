@@ -16,6 +16,7 @@ import fr.proline.admin.gui.Monitor
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import javafx.stage.Stage
+import fr.proline.admin.gui.wizard.util.GUIWindowSize
 
 /**
  * Builds home panel of monitor GUI
@@ -47,25 +48,30 @@ object MonitorPane extends VBox with LazyLogging {
   val jmsProlineQueueField = new TextField {
     editable = false
   }
-  val jmsTiteledPane = new TitledBorderPane(
-    title = "",
-    titleTooltip = "JMS Server properties",
-    contentNode = new VBox {
-      spacing = V_SPACING * 2
-      children = List(infoMessage, new HBox {
-        spacing = H_SPACING * 3
-        children = List(jmsHostLabel, jmsHostField)
-      }, new HBox {
-        spacing = H_SPACING * 3
-        children = List(jmsPortLabel, jmsPortField)
-      },
-        new HBox {
+  val jmsTiteledPane = new HBox {
+    children = new TitledBorderPane(
+      title = "",
+      titleTooltip = "JMS Server properties",
+      contentNode = new VBox {
+        prefWidth.value_=(GUIWindowSize.prefWitdh - 200)
+        vgrow = Priority.ALWAYS
+        spacing = V_SPACING * 2
+        children = List(infoMessage, new HBox {
           spacing = H_SPACING * 3
-          children = List(jmsProlineQueueLabel, jmsProlineQueueField)
-        })
-    })
+          children = List(jmsHostLabel, jmsHostField)
+        }, new HBox {
+          spacing = H_SPACING * 3
+          children = List(jmsPortLabel, jmsPortField)
+        },
+          new HBox {
+            spacing = H_SPACING * 3
+            children = List(jmsProlineQueueLabel, jmsProlineQueueField)
+          })
+      })
+  }
   val jmsServerPane = new HBox {
-    spacing = H_SPACING * 4
+    spacing = H_SPACING * 2
+    fillWidth = true
     children = List(jmsServelLabel, jmsTiteledPane)
   }
 
@@ -93,49 +99,53 @@ object MonitorPane extends VBox with LazyLogging {
   val pgPasswordField = new TextField() {
     editable = false
   }
-  val pgTitledPane = new TitledBorderPane(
-    title = "",
-    titleTooltip = "PostgreSQL Server properties",
-    contentNode = new VBox {
-      spacing = V_SPACING * 2
-      children = List(new HBox {
+  val pgTitledPane = new HBox {
+    children = Seq(new TitledBorderPane(
+      title = "",
+      titleTooltip = "PostgreSQL Server properties",
+      contentNode = new VBox {
+        prefWidth.value_=(GUIWindowSize.prefWitdh - 200)
+        vgrow = Priority.ALWAYS
+        spacing = V_SPACING * 2
+        children = List(new HBox {
 
-        spacing = H_SPACING * 3
-        children = List(pgHostLabel, pgHostField)
-      }, new HBox {
-        spacing = H_SPACING * 2
-        children = List(pgPortLabel, pgPortField)
-      },
-        new HBox {
-          spacing = H_SPACING * 2
-          children = List(pgUserLabel, pgUserField)
+          spacing = H_SPACING * 3
+          children = List(pgHostLabel, pgHostField)
         }, new HBox {
           spacing = H_SPACING * 2
-          children = List(pgPasswordLabel, pgPasswordField)
-        })
-    })
+          children = List(pgPortLabel, pgPortField)
+        },
+          new HBox {
+            spacing = H_SPACING * 2
+            children = List(pgUserLabel, pgUserField)
+          }, new HBox {
+            spacing = H_SPACING * 2
+            children = List(pgPasswordLabel, pgPasswordField)
+          })
+      }))
+  }
 
   val postgreSQLServerPane = new HBox {
-    spacing = V_SPACING * 5
+    spacing = H_SPACING * 2
     fillWidth = true
     children = List(pgSQLServerLabel, pgTitledPane)
   }
 
-  Seq(pgSQLServerLabel, jmsServelLabel, pgPortLabel, pgHostLabel, pgUserLabel, pgPasswordLabel, jmsHostLabel, jmsPortLabel, jmsProlineQueueLabel).foreach(_.minWidth = 250)
+  Seq(pgSQLServerLabel, jmsServelLabel, pgPortLabel, pgHostLabel, pgUserLabel, pgPasswordLabel, jmsHostLabel, jmsPortLabel, jmsProlineQueueLabel).foreach(_.minWidth = 150)
   Seq(pgPortField, pgUserField, pgPasswordField, pgHostField, jmsHostField, jmsProlineQueueField, jmsPortField).foreach {
     f => f.hgrow = Priority.Always
   }
-  Seq(pgPortField, pgUserField, pgPasswordField, pgHostField, jmsHostField, jmsProlineQueueField, jmsPortField).foreach(_.minWidth(250))
+  //Seq(pgPortField, pgUserField, pgPasswordField, pgHostField, jmsHostField, jmsProlineQueueField, jmsPortField).foreach(_.minWidth(250))
 
   //final monitor pane 
   alignment = Pos.CENTER
   alignmentInParent = Pos.CENTER
   spacing = 1
-  fillWidth = true
+  hgrow = Priority.Always
   vgrow = Priority.ALWAYS
   children = Seq(ScalaFxUtils.newVSpacer(50),
     new VBox {
       spacing = V_SPACING * 4
-      children = List(jmsServerPane, ScalaFxUtils.newVSpacer(30), postgreSQLServerPane)
+      children = List(jmsServerPane, ScalaFxUtils.newVSpacer(20), postgreSQLServerPane)
     })
 }

@@ -25,6 +25,7 @@ import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.wizard.util.Module
 import fr.proline.admin.gui.process.UdsRepository
+import fr.proline.admin.gui.wizard.util.GUIWindowSize
 import fr.profi.util.StringUtils
 import scala.util.matching.Regex
 
@@ -112,9 +113,8 @@ class Wizard extends Application {
       height = 780
       title = s"${Module.name} ${Module.version}"
     }
-    val primaryScreenBounds: Rectangle2D = Screen.getPrimary().getVisualBounds()
-    Wizard.stage.setWidth(primaryScreenBounds.getWidth() / 2)
-    Wizard.stage.setHeight(primaryScreenBounds.getHeight() - 50)
+    Wizard.stage.setWidth(GUIWindowSize.prefWitdh)
+    Wizard.stage.setHeight(GUIWindowSize.prefHeight)
     Wizard.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Wizard.stage.scene.value.getStylesheets.add("/css/Style.css")
     Wizard.stage.show()
