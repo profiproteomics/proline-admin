@@ -119,8 +119,8 @@ class Wizard extends Application {
   }
   override def stop() {
     super.stop()
-    if (UdsRepository.getUdsDbContext() != null && !UdsRepository.getUdsDbContext().isClosed()) {
-       UdsRepository.getUdsDbContext().close 
-    }
+//    if (UdsRepository.getUdsDbContext() != null && !UdsRepository.getUdsDbContext().isClosed()) {
+//       UdsRepository.getUdsDbContext().close 
+//    }
   }
 }
