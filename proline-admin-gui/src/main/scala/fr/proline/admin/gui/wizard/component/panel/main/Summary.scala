@@ -23,6 +23,11 @@ import fr.proline.admin.gui.wizard.component.panel.bottom.InstallNavButtons
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Success
+
 /**
  *  builds summary panel to summarize the new configurations
  *
@@ -104,7 +109,6 @@ object Summary extends LazyLogging {
       }
       case _ => logger.error("Error while trying to select an item! ")
     }
-
   }
 
   /** save item's form on Button validate */
@@ -119,7 +123,7 @@ object Summary extends LazyLogging {
           if (setUpUpdateChBox.isSelected()) {
             val confirmed = GetConfirmation("Are you sure you want to update Proline databases ?\n(This process may take hours.)")
             if (confirmed) {
-              ProgressBarWindow("Setup/Update", new DbMaintenance(), Option(Wizard.stage))
+              ProgressBarWindow("Setup/Update",Some(Wizard.stage),false,DbMaintenance.doWork())
             }
           }
         } catch {
@@ -127,7 +131,6 @@ object Summary extends LazyLogging {
         }
       }
       case seqRepos: SeqReposConfig => {
-
         val module = item.asInstanceOf[SeqReposConfig]
         try {
           module.PostGreSQLSeq.saveForm()
@@ -136,10 +139,8 @@ object Summary extends LazyLogging {
         } catch {
           case t: Throwable => logger.error("Error while trying to save Proline Module properties.")
         }
-
       }
       case pgServerConfig: PgServerConfig => {
-
         val pgServerConfig = item.asInstanceOf[PgServerConfig]
         try {
           pgServerConfig.pgHbaForm.saveForm()
@@ -147,7 +148,6 @@ object Summary extends LazyLogging {
         } catch {
           case t: Throwable => logger.error("Error while trying to save PostgreSQL properties.")
         }
-
       }
       case pwx: PwxConfig => {
         try {
@@ -156,7 +156,6 @@ object Summary extends LazyLogging {
         } catch {
           case t: Throwable => logger.error("Error while trying to save PostgreSQL properties.")
         }
-
       }
       case _ => logger.error("Error while trying to save the new modifications! ")
     }

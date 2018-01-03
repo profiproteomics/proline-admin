@@ -242,7 +242,7 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
     pgsqlDataDir = Some(Wizard.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
     seqRepoConfigFilePath = Some(Wizard.seqRepoConfPath).map(doubleBackSlashes),
     driverType = Some(driver),
-    prolineDataDir = Some(Wizard.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
+    prolineDataDir = None, //FIXME: windows-specific
     dbUserName = Some(Wizard.userName),
     dbPassword = Some(Wizard.passWord),
     dbHost = Some(Wizard.hostName),

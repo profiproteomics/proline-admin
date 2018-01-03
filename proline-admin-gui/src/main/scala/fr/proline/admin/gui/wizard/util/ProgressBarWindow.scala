@@ -8,33 +8,33 @@ import scalafx.scene.control.Button
 import scalafx.scene.control.Label
 import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.StackPane
-import scalafx.stage.Modality
-import scalafx.stage.Stage
-import fr.profi.util.scalafx.ScalaFxUtils
-import fr.proline.admin.gui.Wizard
 import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
 import scalafx.scene.control.ProgressIndicator
-import fr.proline.admin.gui.wizard.component.DbMaintenance
-import javafx.concurrent.WorkerStateEvent
-import javafx.event.EventHandler
-import fr.profi.util.scalafx.ScalaFxUtils.newVSpacer
+import scalafx.stage.Modality
+import scalafx.stage.Stage
+import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.util._
+import fr.proline.admin.gui.wizard.component.DbMaintenance
+import fr.profi.util.scalafx.ScalaFxUtils
+import fr.profi.util.scalafx.ScalaFxUtils.newVSpacer
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+import scala.util.{ Success, Failure }
 /**
- * builds progress bar window 
- * 
+ * builds progress bar window
+ *
  */
-
 class ProgressBarWindow(
-  wTitle: String,
-  task: DbMaintenance,
-  wParent: Option[Stage] = Option(Wizard.stage),
-  isResizable: Boolean = false) extends Stage {
+    wTitle: String,
+    wParent: Option[Stage] = Option(Wizard.stage),
+    isResizable: Boolean = false,
+    f: Future[Unit]) extends Stage {
   val popup = this
+  val progressIndic = new ProgressIndicator()
   title = wTitle
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
-  task.start()
   scene = new Scene {
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
     root = new VBox {
@@ -47,29 +47,26 @@ class ProgressBarWindow(
           padding = Insets(10)
           spacing = 30
           children = Seq(
-            new Label("Setup / Update Proline databases\n  \t\t in progress . . ."),
-            new ProgressIndicator {
-              progress <== task.progress
-            }, newVSpacer(5))
+            new Label("Setup / Update Proline databases\n  \t\t in progress..."),
+            progressIndic, newVSpacer(5))
         })
     }
   }
-  task.setOnSucceeded(new EventHandler[WorkerStateEvent] {
-    override def handle(event: WorkerStateEvent) {
+  f.onComplete {
+    case Success(value) => {
+      progressIndic.progress_=(100D)
       popup.close()
     }
-  })
-  task.setOnFailed(new EventHandler[WorkerStateEvent] {
-    override def handle(event: WorkerStateEvent) {
-      HelpPopup("Setup/Update", "Setup/Update Proline databases failed !")
+    case Failure(error) => {
       popup.close()
+      System.out.println("Error while trying to setup/update PRoline databases: ", error)
     }
-  })
+  }
 }
 object ProgressBarWindow {
   def apply(
     wTitle: String,
-    task: DbMaintenance,
     wParent: Option[Stage] = Option(Wizard.stage),
-    isResizable: Boolean = false) { new ProgressBarWindow(wTitle, task, wParent, isResizable).showAndWait() }
+    isResizable: Boolean = false,
+    f: Future[Unit]) { new ProgressBarWindow(wTitle, wParent, isResizable, f).showAndWait() }
 }
