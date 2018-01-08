@@ -27,6 +27,7 @@ import ExecutionContext.Implicits.global
 
 /**
  * ParsingRules create a modal window to edit/add parsing rules file.
+ *
  */
 class ParsingRules(path: String, stage: Stage) extends VBox with LazyLogging {
 
@@ -48,7 +49,7 @@ class ParsingRules(path: String, stage: Stage) extends VBox with LazyLogging {
   val fastaDirBox = new VBox { spacing = 10 }
   val RulesBox = new VBox { spacing = 10 }
   val defaultProteinAccessionTip = "Default Java Regex with capturing group for protein accession if fasta file name doesn't match parsing_rules RegEx \n >(\\S+) :  String after '>' and before first space"
-  val defaultProteinAccessionLabel = new Label("Default Protein Accession: ")
+  val defaultProteinAccessionLabel = new BoldLabel("Default Protein Accession: ", upperCase = false)
   val defaultProteinAccessionField = new TextField {
     if (defaultProteinAccession != null) text = defaultProteinAccession
     text.onChange { (_, oldText, newText) =>
