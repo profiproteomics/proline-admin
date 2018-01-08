@@ -10,6 +10,7 @@ import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.VBox
+import scalafx.scene.control.Tooltip
 import scalafx.stage.Stage
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.process.config._
@@ -46,6 +47,7 @@ class ParsingRules(path: String, stage: Stage) extends VBox with LazyLogging {
   /* default accession protein */
   val fastaDirBox = new VBox { spacing = 10 }
   val RulesBox = new VBox { spacing = 10 }
+  val defaultProteinAccessionTip = "Default Java Regex with capturing group for protein accession if fasta file name doesn't match parsing_rules RegEx \n >(\\S+) :  String after '>' and before first space"
   val defaultProteinAccessionLabel = new Label("Default Protein Accession: ")
   val defaultProteinAccessionField = new TextField {
     if (defaultProteinAccession != null) text = defaultProteinAccession
@@ -54,6 +56,7 @@ class ParsingRules(path: String, stage: Stage) extends VBox with LazyLogging {
     }
     prefWidth <== stage.width - 60
     promptText = "Default protein accession"
+    tooltip = defaultProteinAccessionTip
   }
   val resetAccessionButton = new Button("Default") {
     minWidth = 80
@@ -74,6 +77,7 @@ class ParsingRules(path: String, stage: Stage) extends VBox with LazyLogging {
   }
 
   /* local Fasta directories */
+
   val localFastaDirLablel = new BoldLabel("Local Fasta Directories: ", upperCase = false)
   val localFastaDirs = new ArrayBuffer[FastaDirectory]()
   val addLocalFastaDirectory = new Button("Add") {
@@ -293,11 +297,12 @@ class FastaDirectory(
   val thisFastaDir = this
 
   /* component */
-
+  val localFastaDirTip = """Specify path to fasta files for SeqRepository daemon. Multiple path separated by ',' between []. For example local-fasta-directories =["S:\\sequence"]"""
   val valueField = new TextField {
     prefWidth <== thisFastaDir.width
     promptText = "Full path"
     text = value
+    tooltip = localFastaDirTip
   }
   val browseButton = new Button("Browse") {
     minWidth = 80
@@ -340,10 +345,11 @@ class Rules(
 
   /* Component */
   val warningDatalabel: Label = new Label {
-    text = "Fill the following properties of Fasta rule to be considered."
+    text = """Fill the following properties of Fasta rule to be considered."""
     style = TextStyle.RED_ITALIC
     visible = false
   }
+  val nameTip = "identifying rule definition"
   val nameLabel = new Label("Id")
   val nameText = new TextField {
     prefWidth <== thisrule.width
@@ -352,8 +358,9 @@ class Rules(
     text.onChange { (_, oldText, newText) =>
       checkForm()
     }
+    tooltip = nameTip
   }
-
+  val fastaNameTip = """FASTA file name must match specified Java Regex CASE_INSENSITIVE. multiple Regex separated by ',' between []"""
   val fastaNameLabel = new Label("Fasta Pattern")
   val fastaNameText = new TextField {
     prefWidth <== thisrule.width
@@ -362,8 +369,9 @@ class Rules(
     text.onChange { (_, oldText, newText) =>
       checkForm()
     }
+    tooltip = fastaNameTip
   }
-
+  val fastaVersionTip = """Java Regex with capturing group for fasta release version string (CASE_INSENSITIVE)"""
   val fastaVersionLabel = new Label("Fasta File Version")
   val fastaVersionText = new TextField {
     prefWidth <== thisrule.width
@@ -372,8 +380,9 @@ class Rules(
     text.onChange { (_, oldText, newText) =>
       checkForm()
     }
+    tooltip = fastaVersionTip
   }
-
+  val proteinAccessionTip = """Java Regex with capturing group for protein accession"""
   val proteinAccessionLabel = new Label("Accession Parse Rule")
   val proteinAccessionText = new TextField {
     prefWidth <== thisrule.width
@@ -382,6 +391,7 @@ class Rules(
     text.onChange { (_, oldText, newText) =>
       checkForm()
     }
+    tooltip = proteinAccessionTip
   }
 
   val removeButton = new Button("Remove") {
