@@ -43,7 +43,7 @@ object ButtonsPanel extends LazyLogging {
     }
   }
 
-   /* Set up ProlineDataStore */
+  /* Set up ProlineDataStore */
   val setupProlineButton = new Button("Set up Proline datastore") {
     onAction = handle {
 
@@ -55,9 +55,8 @@ object ButtonsPanel extends LazyLogging {
           actionButton = this,
           actionString = Utils.mkCmd("setup"),
           action = () => synchronized {
-            new SetupProline(SetupProline.getUpdatedConfig(),UdsRepository.getUdsDbConnector()).run()
-          }
-        )
+            new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run()
+          })
       }
     }
   }
@@ -91,12 +90,11 @@ object ButtonsPanel extends LazyLogging {
               case e: Exception => {
                 println("ERROR - Databases upgrade failed: \n", e.getMessage)
                 logger.error("ERROR - Databases upgrade failed", e)
-              }  
+              }
             }
 
             //dsConnectorFactory.closeAll()
-          }
-        ) //someActionRunning.set(false)
+          }) //someActionRunning.set(false)
       }
     }
   }
@@ -112,7 +110,7 @@ object ButtonsPanel extends LazyLogging {
    * ********************** *
    * ENABLE/DISABLE BUTTONS *
    * ********************** *
-   **/
+   */
 
   /* Some booleans describing UDS db state in order to smartly enable/disable buttons */
   private val prolineMustBeSetUp = new BooleanProperty()
@@ -124,7 +122,7 @@ object ButtonsPanel extends LazyLogging {
   setupProlineButton.disable <== when(prolineMustBeSetUp) choose false otherwise true
   upgradeDBsButton.disable <== when(dbCanBeUsed) choose false otherwise true
   manageResourcesButton.disable <== when(dbCanBeUsed) choose false otherwise true
-  
+
   //  editConfButton.disable <== when(someActionRunning) choose true otherwise false
   //  setupProlineButton.disable <== when(prolineMustBeSetUp && !someActionRunning) choose false otherwise true
   //  createUserButton.disable <== when(dbCanBeUsed && !someActionRunning) choose false otherwise true
@@ -175,7 +173,7 @@ object ButtonsPanel extends LazyLogging {
       Platform.runLater {
         prolineMustBeSetUp.set(!_prolineIsSetUp)
         dbCanBeUsed.set(_prolineIsSetUp)
-        logger.info("Proline is set up: " +_prolineIsSetUp)
+        logger.info("Proline is set up: " + _prolineIsSetUp)
       }
     }
 
@@ -216,8 +214,7 @@ object ButtonsPanel extends LazyLogging {
     configurationButton,
     setupProlineButton,
     upgradeDBsButton,
-    manageResourcesButton
-  ).foreach { b =>
+    manageResourcesButton).foreach { b =>
       b.prefHeight = 40
       b.prefWidth = 250
       b.styleClass += ("mainButtons")
@@ -244,25 +241,24 @@ object ButtonsPanel extends LazyLogging {
         ScalaFxUtils.newVSpacer(),
         upgradeDBsButton,
         ScalaFxUtils.newVSpacer(),
-        manageResourcesButton
-      )
+        manageResourcesButton)
     }
   }
 
-//  /** Make sure PG datadir is known before showing a stage **/
-//  private def _showIfPgDataDirIsDefined(stage: Stage) {
-//
-//    if (Main.postgresqlDataDir == null) {
-//      ShowPopupWindow(
-//        "Unknown data directory",
-//        "PostgreSQL data directory must be known in order to its configuration.\n" ++
-//          """You can choose them in the "Select configuration files" menu."""
-//      )
-//
-//    } else {
-//      stage.showAndWait()
-//    }
-//  }
+  //  /** Make sure PG datadir is known before showing a stage **/
+  //  private def _showIfPgDataDirIsDefined(stage: Stage) {
+  //
+  //    if (Main.postgresqlDataDir == null) {
+  //      ShowPopupWindow(
+  //        "Unknown data directory",
+  //        "PostgreSQL data directory must be known in order to its configuration.\n" ++
+  //          """You can choose them in the "Select configuration files" menu."""
+  //      )
+  //
+  //    } else {
+  //      stage.showAndWait()
+  //    }
+  //  }
 
   /**
    * ****************** *

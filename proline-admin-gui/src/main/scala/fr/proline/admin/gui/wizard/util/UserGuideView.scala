@@ -15,7 +15,7 @@ object UserGuideView extends LazyLogging {
       try {
         java.awt.Desktop.getDesktop().browse(new File(path).toURI());
       } catch {
-        case t: Throwable => logger.error(s"Error while trying to open help file $t ")
+        case t: Throwable => logger.error(s"Error while trying to open help file: $t ")
       }
     }
 }

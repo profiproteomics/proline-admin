@@ -18,10 +18,11 @@ import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.admin.gui.wizard.util.ProgressBarWindow
 import fr.proline.admin.gui.wizard.util.UserGuideView
 import java.io.File
-import fr.proline.admin.gui.wizard.component.DbMaintenance
+import fr.proline.admin.gui.wizard.component.DbMaintenanceTask
 import fr.proline.admin.gui.wizard.component.panel.bottom.InstallNavButtons
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
+import fr.proline.admin.service.db.SetupProline
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -123,7 +124,7 @@ object Summary extends LazyLogging {
           if (setUpUpdateChBox.isSelected()) {
             val confirmed = GetConfirmation("Are you sure you want to update Proline databases ?\n(This process may take hours.)")
             if (confirmed) {
-              ProgressBarWindow("Setup/Update",Some(Wizard.stage),false,DbMaintenance.doWork())
+              ProgressBarWindow("Setup/Update", "Setup / Update Proline databases\n  \t\t in progress...", Some(Wizard.stage), false, DbMaintenanceTask.Worker)
             }
           }
         } catch {

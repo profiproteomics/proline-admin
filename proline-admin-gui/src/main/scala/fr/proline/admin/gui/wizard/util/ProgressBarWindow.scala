@@ -4,40 +4,47 @@ import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.Scene
-import scalafx.scene.control.Button
-import scalafx.scene.control.Label
+import scalafx.scene.control.{ Button, Label }
+import scalafx.scene.layout.{ VBox, HBox, StackPane }
 import scalafx.scene.input.KeyEvent
-import scalafx.scene.layout.StackPane
-import scalafx.scene.layout.VBox
-import scalafx.scene.layout.HBox
 import scalafx.scene.control.ProgressIndicator
 import scalafx.stage.Modality
 import scalafx.stage.Stage
+import scalafx.concurrent.{ Task, Worker }
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.util._
-import fr.proline.admin.gui.wizard.component.DbMaintenance
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.newVSpacer
-import scala.concurrent._
-import ExecutionContext.Implicits.global
-import scala.util.{ Success, Failure }
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.IconResource
+
 /**
- * builds progress bar window
+ * builds progressBar Window
  *
  */
 class ProgressBarWindow(
     wTitle: String,
-    wParent: Option[Stage] = Option(Wizard.stage),
+    wText: String,
+    wParent: Option[Stage],
     isResizable: Boolean = false,
-    f: Future[Unit]) extends Stage {
+    task: Task[_]) extends Stage {
   val popup = this
-  val progressIndic = new ProgressIndicator()
+  val text = new Label(wText)
+  val progress = new ProgressIndicator() {
+    minWidth = 250
+    progress <== task.progress
+  }
   title = wTitle
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
+  popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
+  //start task 
+  new Thread(task).start()
+  //create scene 
   scene = new Scene {
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
     root = new VBox {
+      minWidth = 250
       alignment = Pos.Center
       spacing = 15
       padding = Insets(10)
@@ -47,26 +54,40 @@ class ProgressBarWindow(
           padding = Insets(10)
           spacing = 30
           children = Seq(
-            new Label("Setup / Update Proline databases\n  \t\t in progress..."),
-            progressIndic, newVSpacer(5))
+            text,
+            progress, newVSpacer(5))
         })
     }
   }
-  f.onComplete {
-    case Success(value) => {
-      progressIndic.progress_=(100D)
-      popup.close()
-    }
-    case Failure(error) => {
-      popup.close()
-      System.out.println("Error while trying to setup/update PRoline databases: ", error)
+  task.state.onChange { (_, _, newState) =>
+    newState match {
+      case Worker.State.Succeeded.delegate => {
+        println("task succeeded.")
+        popup.close()
+      }
+      case Worker.State.Failed.delegate => {
+        println("task failed.")
+        popup.close()
+      }
+      case Worker.State.Running.delegate => {
+        println("task running...")
+      }
+      case Worker.State.Scheduled.delegate => {
+        println("task scheduled.")
+      }
+      case Worker.State.Ready.delegate => {
+        println("task is ready.")
+      }
+      case _ => { println("task has other state.") }
     }
   }
 }
+
 object ProgressBarWindow {
   def apply(
     wTitle: String,
-    wParent: Option[Stage] = Option(Wizard.stage),
+    wText: String,
+    wParent: Option[Stage],
     isResizable: Boolean = false,
-    f: Future[Unit]) { new ProgressBarWindow(wTitle, wParent, isResizable, f).showAndWait() }
+    worker: Task[_]) { new ProgressBarWindow(wTitle, wText, wParent, isResizable, worker).showAndWait() }
 }
