@@ -44,7 +44,7 @@ import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.repository.DriverType
 import fr.proline.admin.gui.process.DatabaseConnection
-
+import fr.profi.util.scalafx.CustomScrollPane
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
@@ -52,6 +52,19 @@ import ExecutionContext.Implicits.global
  * PostGreSQL build tab of PostGreSQL database server properties.
  *
  */
+
+class ServerPane(path: String) extends CustomScrollPane {
+
+  val server = new Server(path)
+  setContentNode(
+    new VBox {
+      prefWidth <== Wizard.stage.width - 85
+      prefHeight <== Wizard.stage.height - 45
+      padding = Insets(5, 0, 0, 0)
+      children = Seq(server)
+    })
+}
+
 class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLogging {
 
   /*
@@ -166,7 +179,7 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
     f => f.hgrow = Priority.Always
   }
   //VBox & HBox spacing
-  private val V_SPACING = 10
+  private val V_SPACING = 5
   private val H_SPACING = 5
 
   //TitledBorderPane
@@ -175,7 +188,7 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
     contentNode = new VBox {
       prefWidth <== Wizard.configItemsPanel.width - 30
       prefHeight <== Wizard.configItemsPanel.height - 30
-      spacing = 2 * V_SPACING
+      spacing = V_SPACING
       children = Seq(warningDatalabel,
         hostLabel,
         new HBox {

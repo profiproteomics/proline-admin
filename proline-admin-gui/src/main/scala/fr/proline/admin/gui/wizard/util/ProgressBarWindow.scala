@@ -70,15 +70,15 @@ class ProgressBarWindow(
         popup.close()
       }
       case Worker.State.Running.delegate => {
-        println("task running...")
+        println("task running.")
       }
       case Worker.State.Scheduled.delegate => {
         println("task scheduled.")
       }
       case Worker.State.Ready.delegate => {
-        println("task is ready.")
+        println("task ready.")
       }
-      case _ => { println("task has other state.") }
+      case _ => { println("Error: task has another state.") }
     }
   }
 }
@@ -89,5 +89,5 @@ object ProgressBarWindow {
     wText: String,
     wParent: Option[Stage],
     isResizable: Boolean = false,
-    worker: Task[_]) { new ProgressBarWindow(wTitle, wText, wParent, isResizable, worker).showAndWait() }
+    task: Task[_]) { new ProgressBarWindow(wTitle, wText, wParent, isResizable, task).showAndWait() }
 }

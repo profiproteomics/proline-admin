@@ -66,7 +66,7 @@ object Summary extends LazyLogging {
             spacing = 1
             children = Seq(
               new Label {
-                text = server.postgres.getInfos
+                text = server.postgres.server.getInfos
               },
               new Label {
                 text = server.mountsPoint.getInfos
@@ -83,7 +83,7 @@ object Summary extends LazyLogging {
           spacing = 1
           children = Seq(
             new Label {
-              text = module.PostGreSQLSeq.getInfos
+              text = module.PostGreSQLSeq.seqRepos.getInfos
             },
             new Label {
               text = module.parsingRules.getInfos
@@ -118,7 +118,7 @@ object Summary extends LazyLogging {
       case server: ServerConfig => {
         val server = item.asInstanceOf[ServerConfig]
         try {
-          server.postgres.saveForm()
+          server.postgres.server.saveForm()
           server.jmsServer.saveForm()
           server.mountsPoint.saveForm()
           if (setUpUpdateChBox.isSelected()) {
@@ -134,7 +134,7 @@ object Summary extends LazyLogging {
       case seqRepos: SeqReposConfig => {
         val module = item.asInstanceOf[SeqReposConfig]
         try {
-          module.PostGreSQLSeq.saveForm()
+          module.PostGreSQLSeq.seqRepos.saveForm()
           module.jmsServer.saveForm()
           module.parsingRules.saveForm()
         } catch {

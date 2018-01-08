@@ -28,10 +28,24 @@ import fr.proline.admin.gui.wizard.component.panel.main.ITabForm
 import fr.proline.admin.gui.wizard.process.config._
 import fr.proline.repository.DriverType
 import fr.proline.admin.gui.process.DatabaseConnection
+import fr.profi.util.scalafx.CustomScrollPane
+import fr.proline.admin.gui.Wizard
+
 /**
  * PostGreSQLSeq builds a panel with the database server properties
  *
  */
+
+class SeqReposPane(path: String, stage: Stage) extends CustomScrollPane {
+  val seqRepos = new SeqRepos(path, stage)
+  setContentNode(
+    new VBox {
+      prefWidth <== Wizard.stage.width - 85
+      prefHeight <== Wizard.stage.height - 40
+      padding = Insets(5, 0, 0, 0)
+      children = Seq(seqRepos)
+    })
+}
 
 class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITabForm with LazyLogging {
 
@@ -148,7 +162,7 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
     f => f.hgrow = Priority.Always
   }
   //VBox & HBox spacing
-  private val V_SPACING = 10
+  private val V_SPACING = 5
   private val H_SPACING = 5
 
   //TitledBorderPane
@@ -157,7 +171,7 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
     contentNode = new VBox {
       prefWidth <== stage.width - 85
       prefHeight <== stage.height - 35
-      spacing = 2 * V_SPACING
+      spacing = V_SPACING
       children = Seq(
         warningDatalabel,
         hostLabel,
@@ -239,4 +253,5 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
   }
 
 }
+
 
