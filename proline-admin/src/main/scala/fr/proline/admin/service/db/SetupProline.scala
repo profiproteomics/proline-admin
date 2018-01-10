@@ -12,6 +12,9 @@ import fr.proline.repository.{IDatabaseConnector, DriverType, ProlineDatabaseTyp
 import fr.profi.util.ThreadLogger
 import fr.profi.util.resources._
 import fr.profi.util.sql.getTimeAsSQLTimestamp
+import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
+import fr.profi.util.security._
+
 
 /**
  * @author David Bouyssie
@@ -51,6 +54,10 @@ class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseC
         logger.info("External databases connection settings imported !")
         
       })
+      //create default admin user 
+       tryInTransaction(udsDbConnector, { udsEM =>
+        createDefaultAdmin(udsEM)
+      })
       
     } finally {
       if( localConnector ) {
@@ -79,7 +86,27 @@ class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseC
 
     logger.info("Proline has been successfully set up !")
   }
-  
+  // create default user Admin
+  private def createDefaultAdmin(udsEM: EntityManager) {
+    try {
+      val query = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
+      val listUsers = query.getResultList()
+      if (listUsers.isEmpty) {
+        logger.info("Creating default admin user")
+        val udsUser = new UdsUser()
+        udsUser.setLogin("admin")
+        udsUser.setPasswordHash(sha256Hex("proline"))
+        udsUser.setCreationMode("MANUAL")
+        var serializedPropertiesMap = new java.util.HashMap[String, Object]
+        serializedPropertiesMap.put("user_group", UdsUser.UserGroupType.ADMIN.name())
+        udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap)
+        udsEM.persist(udsUser)
+        logger.info("Default admin user has been created succefully !")
+      }
+    } catch {
+      case t: Throwable => logger.error("error while creating default admin user", t)
+    }
+  }
   private def _importAdminInformation(udsEM: EntityManager) {
     
     val udsDbConfig = prolineConfig.udsDBConfig
