@@ -216,9 +216,6 @@ object RunCommand extends App with LazyLogging {
         case SetupProlineCommand.Parameters.firstName => {
           // Run the setup proline service
           SetupProline()
-          //create default Admin user
-          logger.info("Creating default admin user")
-          CreateUser("admin", Some("proline"), Some(false))
         }
         case CreateProjectCommand.Parameters.firstName => {
 
