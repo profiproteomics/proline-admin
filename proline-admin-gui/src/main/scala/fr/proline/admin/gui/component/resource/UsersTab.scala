@@ -38,6 +38,9 @@ import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 import javafx.scene.shape._
 import javafx.animation._
 import javafx.util.Duration
+
+import fr.profi.util.security.sha256Hex
+
 /**
  * ******************* *
  * Content of UsersTab *
@@ -335,8 +338,10 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
         /* Create user */
 
         val pswd = if (pswdOpt.isDefined) pswdOpt.get else "proline" //TODO: define in config!
-        if (isAdmin.isSelected) { userCreator = new CreateUser(udsDbContext, _login, pswd, false) }
-        else { userCreator = new CreateUser(udsDbContext, _login, pswd, true) }
+        val encryptedPswd = sha256Hex(pswd)
+        if (isAdmin.isSelected) { userCreator = new CreateUser(udsDbContext, _login, encryptedPswd, false) }
+        else { userCreator = new CreateUser(udsDbContext, _login, encryptedPswd, true) }
+
         if (userCreator != null) {
           userCreator.run()
           warningCreatedUser()
