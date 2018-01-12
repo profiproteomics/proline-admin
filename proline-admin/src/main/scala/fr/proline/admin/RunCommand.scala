@@ -251,9 +251,8 @@ object RunCommand extends App with LazyLogging {
           RestoreProject(dsConnectorFactory, RestoreProjectCommand.projectId, RestoreProjectCommand.ownerId, RestoreProjectCommand.BinDirectoryPath, RestoreProjectCommand.projectDirectoryPath)
         }
         case CreateUserCommand.Parameters.firstName => {
-          import fr.proline.admin.service.user.CreateUser
           val pswd = if (CreateUserCommand.userPassword.isEmpty()) None else Some(CreateUserCommand.userPassword)
-          CreateUser(CreateUserCommand.userLogin, pswd, Option(CreateUserCommand.groupUser))
+          CreateUser(CreateUserCommand.userLogin, pswd, Option(CreateUserCommand.groupUser), Option(false))
         }
 
         case ResetPasswordCommand.Parameters.firstName => {

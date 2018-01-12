@@ -410,12 +410,12 @@ package object sql extends LazyLogging {
     val pgConnTemplateStatement = pgConnTemplate.createStatement
     
     val dbName = dbConfig.dbName
-    if( _checkDbExists(pgConnTemplateStatement,dbName) == false ) {
-      logger.info(s"Creating database '$dbName'...") 
-      pgConnTemplateStatement.executeUpdate(s"CREATE DATABASE $dbName;")
-    }
-    
+
     try {
+      if( _checkDbExists(pgConnTemplateStatement,dbName) == false ) {
+        logger.info(s"Creating database '$dbName'...")
+        pgConnTemplateStatement.executeUpdate("CREATE DATABASE \""+dbName+"\";")
+      }
       // Check that database has been created
       assert(
         _checkDbExists(pgConnTemplateStatement, dbName),
@@ -424,7 +424,8 @@ package object sql extends LazyLogging {
       
     } catch {
       case t: Throwable => {
-        logger.error("createPgDatabase failed: "+t.getStackTrace)
+        logger.error("createPgDatabase failed: ",t)
+        t.printStackTrace()
         throw t
       }
     } finally {
