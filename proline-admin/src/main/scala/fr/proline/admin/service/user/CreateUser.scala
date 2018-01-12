@@ -8,10 +8,15 @@ import fr.proline.core.orm.uds.{ Project => UdsProject, UserAccount => UdsUser }
 import fr.proline.core.orm.util.DataStoreConnectorFactory
 import javax.persistence.EntityTransaction
 import fr.proline.repository.DriverType
+import fr.profi.util.security._
 
 /**
  * @author David Bouyssie
  *
+ * @param udsDbContext : connection context to UDSDb to create user into
+ * @param isGroupUser : true if user belongs to user group false if it is an admin
+ * @param login : login of new user
+ * @param password Specified password should be encrypted using sha256Hex
  */
 class CreateUser(
   udsDbContext: DatabaseConnectionContext,
@@ -24,9 +29,6 @@ class CreateUser(
 
   def run() {
 
-    import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
-    import fr.profi.util.security._
-    
     val udsUser = new UdsUser()
       
     val isTxOk = udsDbContext.tryInTransaction {
@@ -38,11 +40,11 @@ class CreateUser(
 
       // Create the project
       udsUser.setLogin(login)
-      udsUser.setPasswordHash(sha256Hex(password))
+      udsUser.setPasswordHash(password)
       udsUser.setCreationMode("MANUAL")
 
 
-      var serializedPropertiesMap = new java.util.HashMap[String, Object]
+      val serializedPropertiesMap = new java.util.HashMap[String, Object]
       if (isGroupUser) {
         serializedPropertiesMap.put("user_group",UdsUser.UserGroupType.USER.name())
       } else {
@@ -67,7 +69,15 @@ class CreateUser(
 
 object CreateUser extends LazyLogging {
 
-  def apply(login: String, pswd: Option[String] = None, user: Option[Boolean] = None): Long = {
+  /**
+    *
+    * @param login login of new user
+    * @param pswd  Option , specify new user password. If none, default will be used
+    * @param user : specify if user belongs to user group (otherwise it belong to admin)
+    * @param passwdEncrypted : specify if specified password is already encrypted or not.
+    * @return id of created user
+    */
+  def apply(login: String, pswd: Option[String] = None, user: Option[Boolean] = None, passwdEncrypted: Option[Boolean] = None ): Long = {
 
     // Retrieve Proline configuration
     val prolineConf = SetupProline.config
@@ -96,7 +106,13 @@ object CreateUser extends LazyLogging {
 
       try {
         // Create user
-        val password = if (pswd.isDefined) pswd.get else "proline"
+        val password = if (pswd.isDefined){
+          if(passwdEncrypted.isDefined && (passwdEncrypted.get == true) )
+            pswd.get
+          else
+            sha256Hex(pswd.get)
+        } else sha256Hex("proline")
+
         val isGroupUser = if (user.isDefined) user.get else true
         val userCreator = new CreateUser(udsDbContext, login, password, isGroupUser)
         userCreator.run()
