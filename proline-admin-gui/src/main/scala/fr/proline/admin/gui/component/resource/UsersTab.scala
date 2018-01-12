@@ -21,7 +21,6 @@ import scalafx.scene.layout.GridPane
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.VBox
 import scalafx.scene.control.CheckBox
-
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.component.ButtonsPanel
 import fr.proline.admin.gui.component.resource.implicits.UserView
@@ -30,14 +29,14 @@ import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.util.ShowPopupWindow
 import fr.proline.admin.service.user.CreateUser
 import fr.proline.core.orm.uds.UserAccount
-
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.EnhancedTableView
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
-
 import javafx.scene.shape._
 import javafx.animation._
 import javafx.util.Duration
+
+import fr.profi.util.security.sha256Hex
 /**
  * ******************* *
  * Content of UsersTab *
@@ -335,8 +334,9 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
         /* Create user */
 
         val pswd = if (pswdOpt.isDefined) pswdOpt.get else "proline" //TODO: define in config!
-        if (isAdmin.isSelected) { userCreator = new CreateUser(udsDbContext, _login, pswd, false) }
-        else { userCreator = new CreateUser(udsDbContext, _login, pswd, true) }
+        val encryptedPswd = sha256Hex(pswd)
+        if (isAdmin.isSelected) { userCreator = new CreateUser(udsDbContext, _login, encryptedPswd, false) }
+        else { userCreator = new CreateUser(udsDbContext, _login, encryptedPswd, true) }
         if (userCreator != null) {
           userCreator.run()
           warningCreatedUser()
