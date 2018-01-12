@@ -97,7 +97,7 @@ object CreateUser extends LazyLogging {
       try {
         // Create user
         val password = if (pswd.isDefined) pswd.get else "proline"
-        val isGroupUser = if (user.isDefined) user.get else false
+        val isGroupUser = if (user.isDefined) user.get else true
         val userCreator = new CreateUser(udsDbContext, login, password, isGroupUser)
         userCreator.run()
 

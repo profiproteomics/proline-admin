@@ -58,7 +58,7 @@ class UpgradeAllDatabases(
       })
 
       /* Upgrade all Projects (MSI and LCMS) Dbs */
-      val projectIds = ProjectRepository.findAllProjectIds(udsEM)
+      val projectIds = ProjectRepository.findAllActiveProjectIds(udsEM)
 
       if ((projectIds != null) && projectIds.isEmpty() == false) {
 
