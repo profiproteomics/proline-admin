@@ -13,6 +13,7 @@ import scalafx.stage.Stage
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Main
 import scalafx.scene.layout.VBox
+import fr.proline.admin.gui.IconResource
 
 /**
  * **************************************** *
@@ -39,7 +40,7 @@ class PopupWindow(
   initModality(Modality.WINDOW_MODAL)
   resizable = isResizable
   if (wParent.isDefined) initOwner(wParent.get)
-
+   popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
   //height = 200
   //      if (X.isDefined) this.x = X.get
   //      if (Y.isDefined) this.y = Y.get
@@ -62,6 +63,7 @@ class PopupWindow(
         },
 
         new Button("OK") {
+          graphic = FxUtils.newImageView(IconResource.TICK)
           onAction = handle { popup.close() }
         }
       )

@@ -56,6 +56,7 @@ import ExecutionContext.Implicits.global
  * Form to edit and update PostgreSQL connections (pg_hba.conf) *
  * ************************************************************ *
  */
+
 class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFilesForm with LazyLogging {
 
   /* Read initial settings */
@@ -69,6 +70,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
    */
 
   /* Warning on commented lines */
+  
   val warningLabel = new Label {
     graphic = FxUtils.newImageView(IconResource.WARNING)
     text = """Commented lines within "IPv4 connections" and "IPv6 connections" sections will be erased when changes are applied."""
