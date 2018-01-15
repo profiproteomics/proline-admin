@@ -36,7 +36,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 
 /**
- * builds home panel to choose post install Items
+ * builds home panel 
  *
  */
 

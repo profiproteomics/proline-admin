@@ -17,13 +17,12 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.component.items.tab._
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.wizard.util._
-import fr.proline.admin.gui.wizard.component.items.file.{Server,JmsServer}
+import fr.proline.admin.gui.wizard.component.items.file.{ Server, ServerPane, JmsServer }
 import fr.proline.admin.gui.wizard.component.items.tab.MountPointsContent
 
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
-
 
 /**
  * builds a panel with the server properties : database server properties, JMS properties and mount Points
@@ -43,7 +42,7 @@ class ServerConfig(val name: ItemName) extends Item with LazyLogging {
     }
   }
   /*  database server properties tab */
-  val postgres = new Server(Wizard.adminConfPath)
+  val postgres = new ServerPane(Wizard.adminConfPath)
   val pgAccessTab = new Tab {
     text = "PostGreSQL"
     content = postgres

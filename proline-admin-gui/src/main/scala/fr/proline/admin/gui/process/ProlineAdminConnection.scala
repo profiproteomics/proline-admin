@@ -8,6 +8,7 @@ import scalafx.application.Platform
 import scalafx.scene.Cursor
 import scalafx.scene.Cursor.sfxCursor2jfx
 import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.component.ButtonsPanel
 import fr.proline.admin.gui.util.GetConfirmation
 import fr.proline.admin.service.db.SetupProline
@@ -93,14 +94,80 @@ object ProlineAdminConnection extends LazyLogging {
 
   } // ends loadProlineConf
 
+  def loadProlineInstallConfig(verbose: Boolean = true): Boolean = {
+    //return isConfigValid
+
+    //BLOCKING! otherwise update config before (conf file changes || user's choice) (are||is) effective
+    //FIXME: freezing
+
+    val actionString = "<b>>> Loading Proline configuration...</b>"
+    var _isConfigValid = false
+
+    synchronized {
+      Wizard.stage.scene().setCursor(Cursor.WAIT)
+      println("<br>" + actionString)
+      try {
+        // Parse configuration
+        this._setNewProlineInstallConfig()
+
+        // Test connection to database
+        val adminConfigOpt = new AdminConfigFile(Wizard.adminConfPath).read()
+        require(adminConfigOpt.isDefined, "Can't load new admin config: undefined.")
+        val connectionEstablished = DatabaseConnection.testDbConnection(adminConfigOpt.get, showSuccessPopup = false, showFailurePopup = true)
+        require(connectionEstablished, "Can't load new admin config: database is unreachable.")
+
+        logger.info(s"Action '$actionString' finished with success.")
+        if (verbose) println(s"""<br/>[ $actionString : <b>success</b> ]""")
+        _isConfigValid = true
+
+      } catch {
+
+        case fxt: IllegalStateException => {
+          if (verbose) logger.warn(fxt.getLocalizedMessage()) //useful?
+        }
+
+        case t: Throwable => {
+          synchronized {
+
+            logger.warn("Can't load Proline configuration: ", t)
+
+            // Note: Logs are redirected => we thus print the error to be sure it is displayed in the console
+            System.err.println("ERROR - Can't load Proline configuration :")
+            if (verbose) System.err.println(t.getMessage())
+
+            println(s"[ $actionString : finished with <b>error</b> ]")
+          }
+          // if re-thrown, system stops
+        }
+
+      } finally {
+        //ButtonsPanel.computeButtonsAvailability(verbose = verbose, isConfigSemanticsValid = _isConfigValid)
+        Wizard.stage.scene().setCursor(Cursor.DEFAULT)
+      }
+    }
+    _isConfigValid
+
+  }
   /**
-   *  Update SetupProline config when CONF file changes
+   *  Update SetupProline config when CO{
+   *  NF file changes
    */
-  private def _setNewProlineConfig() {
+
+  private def _setNewProlineInstallConfig() {
 
     /** Reload CONF file */
-    val newConfigFile = ConfigFactory.parseFile(new File(Main.adminConfPath))
+    val newConfigFile = ConfigFactory.parseFile(new File(Wizard.adminConfPath))
 
+    synchronized {
+      logger.debug("Set new config parameters in ProlineAdmin");
+      SetupProline.setConfigParams(newConfigFile)
+      logger.debug("Set new udsDB config");
+      UdsRepository.setUdsDbConfig(SetupProline.getUpdatedConfig.udsDBConfig)
+    }
+  }
+  private def _setNewProlineConfig() {
+    /** Reload CONF file */
+    val newConfigFile = ConfigFactory.parseFile(new File(Main.adminConfPath))
     synchronized {
       logger.debug("Set new config parameters in ProlineAdmin");
       SetupProline.setConfigParams(newConfigFile)

@@ -16,7 +16,7 @@ import fr.proline.admin.gui.Monitor
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import javafx.stage.Stage
-import fr.proline.admin.gui.wizard.util.GUIWindowSize
+import fr.proline.admin.gui.wizard.util.WindowSize
 
 /**
  * Builds home panel of monitor GUI
@@ -53,7 +53,7 @@ object MonitorPane extends VBox with LazyLogging {
       title = "",
       titleTooltip = "JMS Server properties",
       contentNode = new VBox {
-        prefWidth.value_=(GUIWindowSize.prefWitdh - 200)
+        prefWidth.value_=(WindowSize.prefWitdh - 200)
         vgrow = Priority.ALWAYS
         spacing = V_SPACING * 2
         children = List(infoMessage, new HBox {
@@ -104,7 +104,7 @@ object MonitorPane extends VBox with LazyLogging {
       title = "",
       titleTooltip = "PostgreSQL Server properties",
       contentNode = new VBox {
-        prefWidth.value_=(GUIWindowSize.prefWitdh - 200)
+        prefWidth.value_=(WindowSize.prefWitdh - 200)
         vgrow = Priority.ALWAYS
         spacing = V_SPACING * 2
         children = List(new HBox {

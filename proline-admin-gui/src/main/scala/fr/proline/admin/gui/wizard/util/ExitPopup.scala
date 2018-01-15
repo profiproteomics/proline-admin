@@ -32,6 +32,7 @@ class ExitPopup(
   title = wTitle
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
+  popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
   val yesButton = new Button("Yes") {
     graphic = FxUtils.newImageView(IconResource.TICK)
     onAction = handle {

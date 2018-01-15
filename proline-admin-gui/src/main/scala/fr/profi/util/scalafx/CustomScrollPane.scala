@@ -9,9 +9,8 @@ import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
 
 class CustomScrollPane(
-  contentNode: Node = null,
-  hBarPolicy: ScrollBarPolicy = ScrollBarPolicy.NEVER
-) extends ScrollPane {
+    contentNode: Node = null,
+    hBarPolicy: ScrollBarPolicy = ScrollBarPolicy.NEVER) extends ScrollPane {
 
   hbarPolicy = hBarPolicy
   vbarPolicy = ScrollBarPolicy.AS_NEEDED

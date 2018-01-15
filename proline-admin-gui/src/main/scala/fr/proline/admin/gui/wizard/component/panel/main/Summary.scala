@@ -18,10 +18,16 @@ import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.admin.gui.wizard.util.ProgressBarWindow
 import fr.proline.admin.gui.wizard.util.UserGuideView
 import java.io.File
-import fr.proline.admin.gui.wizard.component.DbMaintenance
+import fr.proline.admin.gui.wizard.component.DbMaintenanceTask
 import fr.proline.admin.gui.wizard.component.panel.bottom.InstallNavButtons
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
+import fr.proline.admin.service.db.SetupProline
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Success
 
 /**
  *  builds summary panel to summarize the new configurations
@@ -60,7 +66,7 @@ object Summary extends LazyLogging {
             spacing = 1
             children = Seq(
               new Label {
-                text = server.postgres.getInfos
+                text = server.postgres.server.getInfos
               },
               new Label {
                 text = server.mountsPoint.getInfos
@@ -77,7 +83,7 @@ object Summary extends LazyLogging {
           spacing = 1
           children = Seq(
             new Label {
-              text = module.PostGreSQLSeq.getInfos
+              text = module.PostGreSQLSeq.seqRepos.getInfos
             },
             new Label {
               text = module.parsingRules.getInfos
@@ -104,7 +110,6 @@ object Summary extends LazyLogging {
       }
       case _ => logger.error("Error while trying to select an item! ")
     }
-
   }
 
   /** save item's form on Button validate */
@@ -113,13 +118,13 @@ object Summary extends LazyLogging {
       case server: ServerConfig => {
         val server = item.asInstanceOf[ServerConfig]
         try {
-          server.postgres.saveForm()
+          server.postgres.server.saveForm()
           server.jmsServer.saveForm()
           server.mountsPoint.saveForm()
           if (setUpUpdateChBox.isSelected()) {
             val confirmed = GetConfirmation("Are you sure you want to update Proline databases ?\n(This process may take hours.)")
             if (confirmed) {
-              ProgressBarWindow("Setup/Update", new DbMaintenance(), Option(Wizard.stage))
+              ProgressBarWindow("Setup/Update", "Setup / Update Proline databases\n  \t\t in progress...", Some(Wizard.stage), false, DbMaintenanceTask.Worker)
             }
           }
         } catch {
@@ -127,19 +132,16 @@ object Summary extends LazyLogging {
         }
       }
       case seqRepos: SeqReposConfig => {
-
         val module = item.asInstanceOf[SeqReposConfig]
         try {
-          module.PostGreSQLSeq.saveForm()
+          module.PostGreSQLSeq.seqRepos.saveForm()
           module.jmsServer.saveForm()
           module.parsingRules.saveForm()
         } catch {
           case t: Throwable => logger.error("Error while trying to save Proline Module properties.")
         }
-
       }
       case pgServerConfig: PgServerConfig => {
-
         val pgServerConfig = item.asInstanceOf[PgServerConfig]
         try {
           pgServerConfig.pgHbaForm.saveForm()
@@ -147,7 +149,6 @@ object Summary extends LazyLogging {
         } catch {
           case t: Throwable => logger.error("Error while trying to save PostgreSQL properties.")
         }
-
       }
       case pwx: PwxConfig => {
         try {
@@ -156,7 +157,6 @@ object Summary extends LazyLogging {
         } catch {
           case t: Throwable => logger.error("Error while trying to save PostgreSQL properties.")
         }
-
       }
       case _ => logger.error("Error while trying to save the new modifications! ")
     }

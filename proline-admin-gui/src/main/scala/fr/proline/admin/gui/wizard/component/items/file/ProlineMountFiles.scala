@@ -215,7 +215,7 @@ class ProlineMountFiles extends VBox with LazyLogging {
     pgsqlDataDir = Option(Wizard.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
     seqRepoConfigFilePath = Option(Wizard.seqRepoConfPath).map(doubleBackSlashes),
     driverType = Option(DriverType.POSTGRESQL),
-    prolineDataDir = Option(Wizard.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
+    prolineDataDir = None, //FIXME: windows-specific
     dbUserName = Option(Wizard.userName),
     dbPassword = Option(Wizard.passWord),
     dbHost = Option(Wizard.hostName),

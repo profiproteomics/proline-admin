@@ -339,7 +339,7 @@ class DynamicDataStoreConnectorFactory(
     pdiDbConnector
   }
 
-  override def getPsDbConnector() = {
+ override def getPsDbConnector() = {
     psInitialized = true
     psDbConnector
   }
@@ -393,7 +393,7 @@ class DynamicDataStoreConnectorFactory(
 
       if (psInitialized) {
         psDbConnector.close()
-      }
+     }
 
       try {
         udsEM.close()

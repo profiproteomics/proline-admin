@@ -18,8 +18,8 @@ import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 
 class ConfirmationDialog(
-  dTitle: String,
-  dText: String) {
+    dTitle: String,
+    dText: String) {
 
   var isActionConfirmed = false
 
@@ -68,6 +68,7 @@ class ConfirmationDialog(
           graphic = FxUtils.newImageView(IconResource.CANCEL)
           onAction = handle { confirmDialog.close() } //isActionConfirmed = false
         }
+
         Seq(yesButton, cancelButton).foreach(_.minWidth(30))
         /**
          * ****** *
@@ -90,7 +91,7 @@ class ConfirmationDialog(
         }
       }
     }
-
+    _stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     /** Display this window */
     _stage.showAndWait()
   }
@@ -111,7 +112,6 @@ object GetConfirmation {
     if (yesText != null && yesText != "Yes") confDialog.setYesButtonText(yesText)
     if (cancelText != null && cancelText != "Cancel") confDialog.setCancelButtonText(cancelText)
     confDialog.showIn(initOwner)
-
     confDialog.isActionConfirmed //when stage closed()
   }
 }

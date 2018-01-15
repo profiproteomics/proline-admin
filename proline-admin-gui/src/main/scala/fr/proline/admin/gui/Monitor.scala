@@ -19,7 +19,7 @@ import fr.proline.admin.gui.util.FxUtils
 import javafx.stage.Screen
 import fr.proline.admin.gui.wizard.component.panel.bottom.MonitorBottomsPanel
 import fr.proline.admin.gui.wizard.component.panel.main.MonitorPane
-import fr.proline.admin.gui.wizard.util.GUIWindowSize
+import fr.proline.admin.gui.wizard.util.WindowSize
 
 /**
  * Graphical interface for Proline Admin Monitor .
@@ -65,8 +65,8 @@ class Monitor extends Application {
 
     /* Build and show stage (in any case) */
 
-    Monitor.stage.setWidth(GUIWindowSize.prefWitdh)
-    Monitor.stage.setHeight(GUIWindowSize.prefHeight)
+    Monitor.stage.setWidth(WindowSize.prefWitdh)
+    Monitor.stage.setHeight(WindowSize.prefHeight)
     Monitor.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Monitor.stage.scene.value.getStylesheets.add("/css/Style.css")
     Monitor.stage.show()
