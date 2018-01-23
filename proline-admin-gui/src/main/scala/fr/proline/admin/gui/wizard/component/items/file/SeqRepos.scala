@@ -40,8 +40,8 @@ class SeqReposPane(path: String, stage: Stage) extends CustomScrollPane {
   val seqRepos = new SeqRepos(path, stage)
   setContentNode(
     new VBox {
-      prefWidth <== Wizard.stage.width - 85
-      prefHeight <== Wizard.stage.height - 40
+      prefWidth <== Wizard.stage.width - 90
+      prefHeight <== Wizard.stage.height - 220
       padding = Insets(5, 0, 0, 0)
       children = Seq(seqRepos)
     })
@@ -169,8 +169,8 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
   val dbConnectionSettingPane = new TitledBorderPane(
     title = "Database Server",
     contentNode = new VBox {
-      prefWidth <== stage.width - 85
-      prefHeight <== stage.height - 35
+      prefWidth <== stage.width - 75
+      prefHeight <== stage.height - 220
       spacing = V_SPACING
       children = Seq(
         warningDatalabel,
@@ -183,27 +183,27 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
             children = Seq(hostField, warningAboutHostLabel)
           })
         },
-        ScalaFxUtils.newVSpacer(minH = 10),
+        ScalaFxUtils.newVSpacer(minH = 1),
         portLabel,
         new HBox {
           spacing = H_SPACING
           children = Seq(portField)
         },
-        ScalaFxUtils.newVSpacer(minH = 10),
+        ScalaFxUtils.newVSpacer(minH = 1),
         userLabel,
         new HBox {
           spacing = H_SPACING
           children = Seq(userField)
         },
-        ScalaFxUtils.newVSpacer(minH = 10),
+        ScalaFxUtils.newVSpacer(minH = 1),
         passWordLabel,
         new HBox {
           spacing = H_SPACING
           children = List(dbPwdPane, showPwdBox)
-        }, ScalaFxUtils.newVSpacer(minH = 10),
+        }, ScalaFxUtils.newVSpacer(minH = 1),
         new HBox {
           children = List(ScalaFxUtils.newHSpacer(minW = 100), testConnectionButton)
-        }, ScalaFxUtils.newVSpacer(minH = 12))
+        })
     })
 
   alignment = Pos.Center
@@ -211,8 +211,11 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
   spacing = V_SPACING
   margin = Insets(5, 5, 5, 5)
   children = List(
-    ScalaFxUtils.newVSpacer(minH = 20),
-    dbConnectionSettingPane)
+    new VBox {
+      vgrow = Priority.Always
+      hgrow = Priority.Always
+      children = Seq(dbConnectionSettingPane)
+    })
 
   /** check Sequence Repository fields form  */
   def checkForm: Boolean = {

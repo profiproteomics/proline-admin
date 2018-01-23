@@ -58,8 +58,8 @@ class ServerPane(path: String) extends CustomScrollPane {
   val server = new Server(path)
   setContentNode(
     new VBox {
-      prefWidth <== Wizard.stage.width - 85
-      prefHeight <== Wizard.stage.height - 45
+      prefWidth <== Wizard.stage.width - 80
+      prefHeight <== Wizard.stage.height - 220
       padding = Insets(5, 0, 0, 0)
       children = Seq(server)
     })
@@ -186,8 +186,8 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
   val dbConnectionSettingPane = new TitledBorderPane(
     title = "Database Server",
     contentNode = new VBox {
-      prefWidth <== Wizard.configItemsPanel.width - 30
-      prefHeight <== Wizard.configItemsPanel.height - 30
+      prefWidth <==Wizard.stage.width  - 80
+      prefHeight <== Wizard.stage.height - 220
       spacing = V_SPACING
       children = Seq(warningDatalabel,
         hostLabel,
@@ -199,27 +199,27 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
             children = Seq(hostField, warningAboutHostLabel)
           })
         },
-        ScalaFxUtils.newVSpacer(minH = 10),
+        ScalaFxUtils.newVSpacer(minH = 5),
         portLabel,
         new HBox {
           spacing = H_SPACING
           children = Seq(portField)
         },
-        ScalaFxUtils.newVSpacer(minH = 10),
+        ScalaFxUtils.newVSpacer(minH = 1),
         userLabel,
         new HBox {
           spacing = H_SPACING
           children = Seq(userField)
         },
-        ScalaFxUtils.newVSpacer(minH = 10),
+        ScalaFxUtils.newVSpacer(minH = 1),
         passWordLabel,
         new HBox {
           spacing = H_SPACING
           children = List(dbPwdPane, showPwdBox)
-        }, ScalaFxUtils.newVSpacer(minH = 10),
+        }, ScalaFxUtils.newVSpacer(minH = 5),
         new HBox {
           children = List(ScalaFxUtils.newHSpacer(minW = 100), testConnectionButton)
-        }, ScalaFxUtils.newVSpacer(minH = 12))
+        })
     })
 
   // position in center
@@ -229,7 +229,6 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
   spacing = V_SPACING
   margin = Insets(5, 5, 5, 5)
   children = List(
-    ScalaFxUtils.newVSpacer(minH = 20),
     new VBox {
       vgrow = Priority.Always
       hgrow = Priority.Always

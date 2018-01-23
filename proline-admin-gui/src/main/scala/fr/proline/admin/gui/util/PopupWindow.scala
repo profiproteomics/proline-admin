@@ -41,10 +41,6 @@ class PopupWindow(
   resizable = isResizable
   if (wParent.isDefined) initOwner(wParent.get)
    popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
-  //height = 200
-  //      if (X.isDefined) this.x = X.get
-  //      if (Y.isDefined) this.y = Y.get
-
   scene = new Scene {
 
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
@@ -53,15 +49,12 @@ class PopupWindow(
       alignment = Pos.Center
       spacing = 15
       padding = Insets(10)
-      //content = new TextArea {
+
       children = List(
 
         new Label(wText) {
           wrapText = true
-          //editable = false
-          //style = "-fx-border-style: none;-fx-focus-color: transparent;"
         },
-
         new Button("OK") {
           graphic = FxUtils.newImageView(IconResource.TICK)
           onAction = handle { popup.close() }

@@ -1,3 +1,5 @@
+
+
 package fr.proline.admin.gui
 
 import com.typesafe.scalalogging.LazyLogging
@@ -91,6 +93,7 @@ class Wizard extends Application {
 
     /* Locate Proline Admin 'config' folder */
 
+    
     val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
     Wizard.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
     val configPath = Wizard.targetPath + """/config/"""
@@ -108,7 +111,9 @@ class Wizard extends Application {
     Wizard.stage = new Stage(stage) {
       scene = new Scene(Wizard.root)
       width = 1024
+      minWidth = 700
       height = 780
+      minHeight = 700
       title = s"${Module.name} ${Module.version}"
     }
     Wizard.stage.setWidth(WindowSize.prefWitdh)
@@ -119,8 +124,5 @@ class Wizard extends Application {
   }
   override def stop() {
     super.stop()
-    //    if (UdsRepository.getUdsDbContext() != null && !UdsRepository.getUdsDbContext().isClosed()) {
-    //       UdsRepository.getUdsDbContext().close 
-    //    }
   }
 }
