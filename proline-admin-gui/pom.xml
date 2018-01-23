@@ -22,7 +22,7 @@
 		<version.path>${basedir}/src/main/scala/fr/proline/admin/gui</version.path>
 	</properties>
 	<scm>
-		<connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-Admin-GUI/tag/0.7.0</connection>
+		<connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-Admin-GUI/tags/0.7.0</connection>
 	</scm>
 
 	<dependencies>
