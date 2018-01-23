@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>Proline-Admin-GUI</artifactId>
-	<version>0.7.0-SNAPSHOT</version>
+	<version>0.7.0</version>
 
 	<name>${project.artifactId}</name>
 	<description>A GUI for Proline Administration</description>
@@ -22,7 +22,7 @@
 		<version.path>${basedir}/src/main/scala/fr/proline/admin/gui</version.path>
 	</properties>
 	<scm>
-		<connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-Admin-GUI/branches/0.7.0-RCandidates</connection>
+		<connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-Admin-GUI/tag/0.7.0</connection>
 	</scm>
 
 	<dependencies>
