@@ -25,7 +25,7 @@ import fr.profi.util.scalafx.ScalaFxUtils._
  *
  */
 
-class SummaryConfig(val name: String) extends Item with LazyLogging {
+class SummaryConfig(val orderId: Int) extends Item with LazyLogging {
 
   /**
    * component

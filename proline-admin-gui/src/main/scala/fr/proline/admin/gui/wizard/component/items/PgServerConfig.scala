@@ -30,7 +30,8 @@ import fr.profi.util.scalafx.ScalaFxUtils._
  *
  */
 
-class PgServerConfig(val name: ItemName) extends Item with LazyLogging {
+class PgServerConfig(val orderId: Int) extends Item with LazyLogging {
+
   /* postgreSQL panel components */
   val panelTitle = new Label("PostgreSQL Server Configuration") {
     styleClass = List("item")

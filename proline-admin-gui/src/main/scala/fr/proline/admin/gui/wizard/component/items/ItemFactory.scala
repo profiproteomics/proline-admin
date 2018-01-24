@@ -17,17 +17,17 @@ import java.io.File.separator
 object ItemFactory {
   def apply(item: ItemName): Item = {
     item match {
+      case PGSERVER => {
+        new PgServerConfig(1)
+      }
       case SERVER => {
-        new ServerConfig(item)
+        new ServerConfig(2)
       }
       case SEQREPOS => {
-        new SeqReposConfig(item)
+        new SeqReposConfig(3)
       }
       case PWX => {
-        new PwxConfig(item)
-      }
-      case PGSERVER => {
-        new PgServerConfig(item)
+        new PwxConfig(4)
       }
     }
   }

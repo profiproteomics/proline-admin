@@ -34,9 +34,8 @@ import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import com.typesafe.scalalogging.LazyLogging
 
-
 /**
- * builds home panel 
+ * builds home panel
  *
  */
 
@@ -182,17 +181,17 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
         if (new File(jmsNodeConfPath).exists) {
           ScalaFxUtils.NodeStyle.remove(prolineServerField)
           ScalaFxUtils.NodeStyle.hide(errorNotValidServerFile)
-          val server = new ServerConfig(SERVER)
-          PostInstall.items += (server.name -> Some(server))
+          val server = new ServerConfig(2)
+          PostInstall.items += (server.orderId -> Some(server))
           isValidPath = true
         } else {
-          removeItem(errorNotValidServerFile, prolineServerField, SERVER)
+          removeItem(errorNotValidServerFile, prolineServerField, 2)
         }
       } else {
-        removeItem(errorNotValidServerFile, prolineServerField, SERVER)
+        removeItem(errorNotValidServerFile, prolineServerField, 2)
       }
     } else {
-      PostInstall.items -= (SERVER)
+      PostInstall.items -= (2)
       hideItem(errorNotValidServerFile, prolineServerField)
     }
     isValidPath
@@ -210,17 +209,17 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
           hideItem(errorNotValidSeqReposFile, seqReposField)
           PostInstall.SeqJmsNodeConfPath = jmsNodeConfPath
           PostInstall.parsingRulesPath = parsingRules
-          val moduleConfig = new SeqReposConfig(SEQREPOS)
-          PostInstall.items += (moduleConfig.name -> Some(moduleConfig))
+          val moduleConfig = new SeqReposConfig(3)
+          PostInstall.items += (moduleConfig.orderId -> Some(moduleConfig))
           isValidPath = true
         } else {
-          removeItem(errorNotValidSeqReposFile, seqReposField, SEQREPOS)
+          removeItem(errorNotValidSeqReposFile, seqReposField, 3)
         }
       } else {
-        removeItem(errorNotValidSeqReposFile, seqReposField, SEQREPOS)
+        removeItem(errorNotValidSeqReposFile, seqReposField, 3)
       }
     } else {
-      PostInstall.items -= (SEQREPOS)
+      PostInstall.items -= (3)
       hideItem(errorNotValidSeqReposFile, seqReposField)
     }
     isValidPath
@@ -232,14 +231,14 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
     if (postgreSQLChBox.isSelected) {
       if (ScalaUtils.isValidDataDir(PostInstall.pgDataDirPath)) {
         hideItem(errorNotValidPgData, postgreSQLField)
-        val pgServerConfig = new PgServerConfig(PGSERVER)
-        PostInstall.items += (pgServerConfig.name -> Some(pgServerConfig))
+        val pgServerConfig = new PgServerConfig(1)
+        PostInstall.items += (pgServerConfig.orderId -> Some(pgServerConfig))
         isValidPath = true
       } else {
-        removeItem(errorNotValidPgData, postgreSQLField, PGSERVER)
+        removeItem(errorNotValidPgData, postgreSQLField, 1)
       }
     } else {
-      PostInstall.items -= (PGSERVER)
+      PostInstall.items -= (1)
       hideItem(errorNotValidPgData, postgreSQLField)
     }
     isValidPath
@@ -252,8 +251,8 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
   }
 
   /* remove item from items map */
-  def removeItem(label: Node, field: Node, item: ItemName) {
-    PostInstall.items -= (item)
+  def removeItem(label: Node, field: Node, id: Int) {
+    PostInstall.items -= (id)
     ScalaFxUtils.NodeStyle.show(label)
     ScalaFxUtils.NodeStyle.set(field)
   }

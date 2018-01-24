@@ -25,7 +25,7 @@ import scalafx.scene.control.Button.sfxButton2jfx
 
 object InstallNavButtons extends LazyLogging with INavButtons {
 
-  var summaryPanel = new SummaryConfig("summary")
+  var summaryPanel = new SummaryConfig(4)
 
   /** Display buttons in a HBox **/
   def apply(): HBox = {

@@ -52,7 +52,7 @@ object PostInstall extends LazyLogging {
   var jmsPort: Int = 5445
   var nodeIndex = 0
   var currentNode: Item = _
-  var items: LinkedHashMap[ItemName, Option[Item]] = LinkedHashMap.empty[ItemName, Option[Item]]
+  var items: LinkedHashMap[Int, Option[Item]] = LinkedHashMap.empty[Int, Option[Item]]
 
   /*
    *  main panel contains :

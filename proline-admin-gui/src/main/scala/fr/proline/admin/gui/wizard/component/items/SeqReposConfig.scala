@@ -28,7 +28,7 @@ import fr.proline.admin.gui.wizard.component.items.file.{ SeqRepos, SeqReposPane
  *
  */
 
-class SeqReposConfig(val name: ItemName) extends Item with LazyLogging {
+class SeqReposConfig(val orderId: Int) extends Item with LazyLogging {
 
   /* Sequence repository panel components */
   val panelTitle = new Label("Proline Module Configuration") {

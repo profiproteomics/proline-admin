@@ -55,7 +55,7 @@ object Wizard extends LazyLogging {
   var jmsPort: Int = 5445
   var nodeIndex = 0
   var currentNode: Item = _
-  var items: LinkedHashMap[ItemName, Option[Item]] = LinkedHashMap.empty[ItemName, Option[Item]]
+  var items: Map[Int, Option[Item]] = Map.empty[Int, Option[Item]]
 
   /*
    *  main panel contains :
@@ -93,7 +93,6 @@ class Wizard extends Application {
 
     /* Locate Proline Admin 'config' folder */
 
-    
     val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
     Wizard.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
     val configPath = Wizard.targetPath + """/config/"""

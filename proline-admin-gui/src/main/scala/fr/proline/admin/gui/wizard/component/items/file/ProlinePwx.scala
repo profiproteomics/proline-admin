@@ -28,12 +28,11 @@ import fr.proline.admin.gui.wizard.process.config._
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
-
 /**
  * Create a modal window to edit Proline configuration's file.
  *
  */
-class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
+class ProlinePwx(stage: Stage) extends VBox with LazyLogging {
 
   //maxHeight = Screen.primary.visualBounds.height - 20 // 
 
@@ -226,7 +225,7 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
     disableMpNoteLabel.minHeight = 0
     disableMpNoteLabel.maxHeight = 0
     disableMpNoteLabel.visible = false
-    if (Wizard.items.contains(SERVER)) {
+    if (Wizard.items.contains(2)) {
       disableMpNoteLabel.minHeight = 34
       disableMpNoteLabel.maxHeight = 34
       disableMpNoteLabel.text_=(infosImportMPLabelText)
@@ -339,10 +338,10 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
     if (pwxMountPointConfigOpt.isDefined) {
 
       val newConfig = Future {
-        if (Wizard.items.contains(SERVER)) {
+        if (Wizard.items.contains(2)) {
 
           //import mount points from proline server configuration 
-          val serverConfigOpt = Wizard.items.get(SERVER).get
+          val serverConfigOpt = Wizard.items.get(2).get
           val serverItem = serverConfigOpt.get.asInstanceOf[ServerConfig]
           val mountPointsServerConfig = serverItem.mountsPoint.mountfiles._toServerConfig()
           val newPwxJmsConfiog = _toPwxJmsConfig()
@@ -362,7 +361,7 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
 
   /* return number of mount points (files) */
   def getProperties(): String = {
-    if (Wizard.items.contains(SERVER)) {
+    if (Wizard.items.contains(2)) {
       s" Mount Points:\n\tSame mount points as Proline server"
     } else {
       val montPointsBuilder = new StringBuilder("Mount Points:\n\t")
@@ -378,10 +377,10 @@ class ProlinePwx(stage:Stage) extends VBox with LazyLogging {
  * Build 1 mount point panel
  */
 class MountPointPanelPwx(
-  parentStage: Stage,
-  onDeleteAction: (MountPointPanelPwx) => Unit,
-  key: String = "",
-  value: String = "") extends HBox {
+    parentStage: Stage,
+    onDeleteAction: (MountPointPanelPwx) => Unit,
+    key: String = "",
+    value: String = "") extends HBox {
 
   val thisMountPoint = this
 

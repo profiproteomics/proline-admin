@@ -26,11 +26,13 @@ object InstallButtons extends VBox with IButtons {
 
   def go() {
     InstallPane.getSelectedItems
+     Wizard.items = Wizard.items.toSeq.sortBy(_._1).toMap
     if (Wizard.items.isEmpty || !InstallPane.setStyleSelectedItems) {
       // ItemsPanel.warningNotValidServerFile.visible = true
     } else {
       InstallPane.warningCorruptedFile.visible = false
       Wizard.currentNode = Wizard.items.head._2.get
+
       //hide the  previous button for the first panel 
       InstallNavButtons.prevButton.visible = false
       //set the first panel

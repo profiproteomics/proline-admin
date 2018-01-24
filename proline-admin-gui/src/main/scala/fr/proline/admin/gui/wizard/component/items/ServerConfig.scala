@@ -29,7 +29,7 @@ import fr.profi.util.scalafx.ScalaFxUtils._
  *
  */
 
-class ServerConfig(val name: ItemName) extends Item with LazyLogging {
+class ServerConfig(val orderId: Int) extends Item with LazyLogging {
 
   /* Proline server components  */
   val panelTitle = new Label("Proline Server Configuration") {

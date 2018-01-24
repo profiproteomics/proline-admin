@@ -26,7 +26,7 @@ import fr.proline.admin.gui.wizard.component.items.tab.ProlinePwxContent
  *
  */
 
-class PwxConfig(val name: ItemName) extends Item with LazyLogging {
+class PwxConfig(val orderId: Int) extends Item with LazyLogging {
 
   /* Proline Web components */
   val panelTitle = new Label("Proline Web Configuration") {

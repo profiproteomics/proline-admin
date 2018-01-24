@@ -202,16 +202,16 @@ object InstallPane extends VBox with INotification with LazyLogging {
         if (new File(jmsNodeConfPath).exists) {
           hideItem(errorNotValidServerFile, prolineServerField)
           Wizard.jmsNodeConfPath = jmsNodeConfPath
-          Wizard.items += (SERVER -> Some(ItemFactory(SERVER)))
+          Wizard.items += (2 -> Some(ItemFactory(SERVER)))
           isValidPath = true
         } else {
-          removeItem(errorNotValidServerFile, prolineServerField, SERVER)
+          removeItem(errorNotValidServerFile, prolineServerField, 2)
         }
       } else {
-        removeItem(errorNotValidServerFile, prolineServerField, SERVER)
+        removeItem(errorNotValidServerFile, prolineServerField, 2)
       }
     } else {
-      Wizard.items -= (SERVER)
+      Wizard.items -= (2)
       hideItem(errorNotValidServerFile, prolineServerField)
     }
     isValidPath
@@ -228,16 +228,16 @@ object InstallPane extends VBox with INotification with LazyLogging {
           hideItem(errorNotValidSeqReposFile, seqReposField)
           Wizard.SeqJmsNodeConfPath = jmsNodeConfPath
           Wizard.parsingRulesPath = parsingRules
-          Wizard.items += (SEQREPOS -> Some(ItemFactory(SEQREPOS)))
+          Wizard.items += (3 -> Some(ItemFactory(SEQREPOS)))
           isValidPath = true
         } else {
-          removeItem(errorNotValidSeqReposFile, seqReposField, SEQREPOS)
+          removeItem(errorNotValidSeqReposFile, seqReposField, 2)
         }
       } else {
-        removeItem(errorNotValidSeqReposFile, seqReposField, SEQREPOS)
+        removeItem(errorNotValidSeqReposFile, seqReposField, 2)
       }
     } else {
-      Wizard.items -= (SEQREPOS)
+      Wizard.items -= (3)
       hideItem(errorNotValidSeqReposFile, seqReposField)
     }
     isValidPath
@@ -249,13 +249,13 @@ object InstallPane extends VBox with INotification with LazyLogging {
     if (prolineWebChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.webRootPath)) {
         hideItem(errorNotValidWebFile, prolineWebField)
-        Wizard.items += (PWX -> Some(ItemFactory(PWX)))
+        Wizard.items += (4 -> Some(ItemFactory(PWX)))
         isValidPath = true
       } else {
-        removeItem(errorNotValidWebFile, prolineWebField, PWX)
+        removeItem(errorNotValidWebFile, prolineWebField, 4)
       }
     } else {
-      Wizard.items -= (PWX)
+      Wizard.items -= (4)
       hideItem(errorNotValidWebFile, prolineWebField)
     }
     isValidPath
@@ -268,24 +268,24 @@ object InstallPane extends VBox with INotification with LazyLogging {
       if (!Wizard.pgDataDirPath.isEmpty) {
         if (ScalaUtils.isValidDataDir(Wizard.pgDataDirPath)) {
           hideItem(errorNotValidPgData, postgreSQLField)
-          Wizard.items += (PGSERVER -> Some(ItemFactory(PGSERVER)))
+          Wizard.items += (1 -> Some(ItemFactory(PGSERVER)))
           isValidPath = true
         } else {
-          removeItem(errorNotValidPgData, postgreSQLField, PGSERVER)
+          removeItem(errorNotValidPgData, postgreSQLField, 1)
         }
       } else {
-        removeItem(errorNotValidPgData, postgreSQLField, PGSERVER)
+        removeItem(errorNotValidPgData, postgreSQLField, 1)
       }
     } else {
-      Wizard.items -= (PGSERVER)
+      Wizard.items -= (1)
       hideItem(errorNotValidPgData, postgreSQLField)
     }
     isValidPath
   }
 
   /* remove item from items map */
-  def removeItem(label: Node, field: Node, item: ItemName) {
-    Wizard.items -= (item)
+  def removeItem(label: Node, field: Node, order: Int) {
+    Wizard.items -= (order)
     ScalaFxUtils.NodeStyle.show(label)
     ScalaFxUtils.NodeStyle.set(field)
   }
