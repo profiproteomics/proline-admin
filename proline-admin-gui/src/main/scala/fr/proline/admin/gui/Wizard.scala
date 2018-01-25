@@ -112,7 +112,7 @@ class Wizard extends Application {
       width = 1024
       minWidth = 700
       height = 780
-      minHeight = 700
+      minHeight = 630
       title = s"${Module.name} ${Module.version}"
     }
     Wizard.stage.setWidth(WindowSize.prefWitdh)

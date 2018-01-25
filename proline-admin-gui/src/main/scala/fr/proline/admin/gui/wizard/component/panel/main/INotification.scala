@@ -80,7 +80,6 @@ trait INotification {
   }
   val postgreSQLLabel = new HBox {
     prefWidth = 320
-
     disable <== !postgreSQLChBox.selected
     children = List(new Label("Path to PostgreSQL Data Directory "))
   }
@@ -106,9 +105,10 @@ trait INotification {
     onAction = handle { getSelectedParent }
   }
   val seqReposLabel = new HBox {
+     prefHeight = 40
     prefWidth = 320
     disable <== !seqReposChBox.selected
-    children = List(new Label("Path to SeqRepo Root\n(the file application.conf should be located under /config )"))
+    children = List(new Label("<Server root/seqrepo>\n The file application.conf should be in <seqrepo>/config"))
   }
   //Proline web  
   val prolineWebChBox = new CheckBox("Proline Web Configuration File") {
@@ -120,9 +120,10 @@ trait INotification {
   }
 
   val prolineWebLabel = new HBox {
+     prefHeight = 40
     prefWidth = 320
     disable <== !prolineWebChBox.selected
-    children = List(new Label("Path to Web Root\n(the file application.conf should be located under /config)"))
+    children = List(new Label("<Proline Web>\n The file application.conf should be in <pwx>/config"))
   }
 
   // Proline server  
@@ -137,7 +138,7 @@ trait INotification {
     prefHeight = 40
     prefWidth = 320
     disable <== !prolineServerChBox.selected
-    children = List(new Label("Path to Server Root\n(the file application.conf should be located under /config)"))
+    children = List(new Label("<Server root/server>\n The file application.conf should be in <server>/config"))
   }
   /* selected checkbox */
 

@@ -26,7 +26,7 @@ object InstallButtons extends VBox with IButtons {
 
   def go() {
     InstallPane.getSelectedItems
-     Wizard.items = Wizard.items.toSeq.sortBy(_._1).toMap
+    Wizard.items = Wizard.items.toSeq.sortBy(_._1).toMap
     if (Wizard.items.isEmpty || !InstallPane.setStyleSelectedItems) {
       // ItemsPanel.warningNotValidServerFile.visible = true
     } else {

@@ -11,7 +11,7 @@ import java.io.File
 import java.io.File.separator
 
 /**
- * Item's factory
+ * create items via item name 
  *
  */
 object ItemFactory {
@@ -20,15 +20,16 @@ object ItemFactory {
       case PGSERVER => {
         new PgServerConfig(1)
       }
+      case PWX => {
+        new PwxConfig(3)
+      }
       case SERVER => {
         new ServerConfig(2)
       }
       case SEQREPOS => {
-        new SeqReposConfig(3)
+        new SeqReposConfig(4)
       }
-      case PWX => {
-        new PwxConfig(4)
-      }
+
     }
   }
 }

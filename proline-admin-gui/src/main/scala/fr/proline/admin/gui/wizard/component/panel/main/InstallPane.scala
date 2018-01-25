@@ -177,7 +177,7 @@ object InstallPane extends VBox with INotification with LazyLogging {
   alignmentInParent = Pos.BottomCenter
   spacing = 1
   fillWidth = true
-  children = Seq(ScalaFxUtils.newVSpacer(minH = 50),
+  children = Seq(ScalaFxUtils.newVSpacer(minH = 10),
     configItemsPane)
 
   private val checkBoxList = List(prolineServerChBox.getId, prolineWebChBox.getId, seqReposChBox.getId, postgreSQLChBox.getId)
