@@ -8,5 +8,5 @@ import javafx.stage.Screen
 object WindowSize {
   val primaryScreenBounds: Rectangle2D = Screen.getPrimary().getVisualBounds()
   val prefWitdh = primaryScreenBounds.getWidth() * 0.75
-  val prefHeight = primaryScreenBounds.getHeight() * 0.98
+  val prefHeight = primaryScreenBounds.getHeight() * 0.75
 }

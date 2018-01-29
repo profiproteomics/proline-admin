@@ -57,6 +57,10 @@ object Summary extends LazyLogging {
           text = "Set up or update Proline databases"
           selected = false
         }
+        val serverInfos = new Label {
+          text = server.mountsPoint.getInfos
+        }
+        serverInfos.prefHeight_=(100)
         InstallNavButtons.summaryPanel.prolineServerBox.children = new TitledBorderPane(
           title = "Proline Server Configuration",
           contentNode = new VBox {
@@ -65,9 +69,7 @@ object Summary extends LazyLogging {
               new Label {
                 text = server.postgres.server.getInfos
               },
-              new Label {
-                text = server.mountsPoint.getInfos
-              },
+              serverInfos,
               new Label {
                 text = server.jmsServer.getInfos
               }, ScalaFxUtils.newVSpacer(10), setUpUpdateChBox, ScalaFxUtils.newVSpacer(1))
@@ -112,6 +114,15 @@ object Summary extends LazyLogging {
   /** save item's form on Button validate */
   def saveItem[T](item: T) {
     item match {
+      case pgServerConfig: PgServerConfig => {
+        val pgServerConfig = item.asInstanceOf[PgServerConfig]
+        try {
+          pgServerConfig.pgHbaForm.saveForm()
+          pgServerConfig.postgresForm.saveForm()
+        } catch {
+          case t: Throwable => logger.error("Error while trying to save PostgreSQL properties.")
+        }
+      }
       case server: ServerConfig => {
         val server = item.asInstanceOf[ServerConfig]
         try {
@@ -138,15 +149,7 @@ object Summary extends LazyLogging {
           case t: Throwable => logger.error("Error while trying to save Proline Module properties.")
         }
       }
-      case pgServerConfig: PgServerConfig => {
-        val pgServerConfig = item.asInstanceOf[PgServerConfig]
-        try {
-          pgServerConfig.pgHbaForm.saveForm()
-          pgServerConfig.postgresForm.saveForm()
-        } catch {
-          case t: Throwable => logger.error("Error while trying to save PostgreSQL properties.")
-        }
-      }
+
       case pwx: PwxConfig => {
         try {
           val prolineWeb = item.asInstanceOf[PwxConfig]

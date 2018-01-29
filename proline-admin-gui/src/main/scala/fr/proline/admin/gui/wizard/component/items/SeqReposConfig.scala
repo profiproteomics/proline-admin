@@ -59,7 +59,7 @@ class SeqReposConfig(val orderId: Int) extends Item with LazyLogging {
   /* parsing rules tab */
   val parsingRules = new ParsingRulesContent(Wizard.parsingRulesPath, Wizard.stage)
   val parsingRulesTab = new Tab {
-    text = "Sequence Repository Specific"
+    text = "Sequence Repository"
     content = parsingRules
     closable = false
   }

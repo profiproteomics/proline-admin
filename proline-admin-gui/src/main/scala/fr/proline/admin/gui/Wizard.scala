@@ -30,7 +30,7 @@ import scala.util.matching.Regex
 import java.io.File
 
 /**
- * Graphical interface for Proline Admin install.
+ * Graphical interface for Proline-Admin install.
  *
  */
 object Wizard extends LazyLogging {
@@ -59,9 +59,9 @@ object Wizard extends LazyLogging {
   var items: Map[Int, Option[Item]] = Map.empty[Int, Option[Item]]
 
   /*
-   *  main panel contains :
-   * 	panel of buttons :go and cancel
-   * 	panel of items
+   *  main panel :
+   *  panel of items
+   * 	panel of buttons go and cancel
    * 
    */
 
@@ -116,8 +116,6 @@ class Wizard extends Application {
       minHeight = 630
       title = s"${Module.name} ${Module.version}"
     }
-    Wizard.stage.setWidth(WindowSize.prefWitdh)
-    Wizard.stage.setHeight(WindowSize.prefHeight)
     Wizard.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Wizard.stage.scene.value.getStylesheets.add("/css/Style.css")
     Wizard.stage.show()

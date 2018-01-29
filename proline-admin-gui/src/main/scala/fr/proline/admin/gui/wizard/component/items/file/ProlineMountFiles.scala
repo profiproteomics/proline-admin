@@ -325,18 +325,19 @@ class ProlineMountFiles extends VBox with LazyLogging {
     montPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n\t")
       .append(mzdbFilesMountPoints.size).append("  Mzdb files\n\t")
       .append(resultFilesMountPoints.size).append("  Result Files\t")
-    return montPointsBuilder.toString
+     montPointsBuilder.toString
   }
 }
 
 /**
- * Build 1 mount point panel
+ * Build one mount point panel
+ *
  */
 class MountPointPanelWizard(
-  parentStage: Stage,
-  onDeleteAction: (MountPointPanelWizard) => Unit,
-  key: String = "",
-  value: String = "") extends HBox {
+    parentStage: Stage,
+    onDeleteAction: (MountPointPanelWizard) => Unit,
+    key: String = "",
+    value: String = "") extends HBox {
 
   val thisMountPoint = this
 

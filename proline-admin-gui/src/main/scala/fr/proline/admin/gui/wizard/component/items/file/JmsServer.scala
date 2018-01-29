@@ -24,7 +24,6 @@ import fr.profi.util.scala.ScalaUtils
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
-
 /**
  * JmsServerTab build tab for JMS server properties : Jms host , port and Proline queue name
  *
