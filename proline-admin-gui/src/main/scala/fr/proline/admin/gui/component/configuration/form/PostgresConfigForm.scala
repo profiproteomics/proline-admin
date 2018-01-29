@@ -29,6 +29,7 @@ import scalafx.stage.Stage
 
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.process.config.ConfigFileKVLine
 import fr.proline.admin.gui.process.config.postgres._
 import fr.proline.admin.gui.process.config.postgres.PgParamType._
@@ -394,11 +395,17 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
   /* Buttons */
   val setAllToOptimizedButton = new Button("Set all to optimized value") {
     wrapText = true
-    onAction = handle { _setAllToOptimized() }
+    onAction = handle {
+      _setAllToOptimized()
+      Wizard.isPgOptimized = true
+    }
   }
   val setQllToDefaultsButton = new Button("Set all to default value") {
     wrapText = true
-    onAction = handle { _setAllToDefault() }
+    onAction = handle {
+      _setAllToDefault()
+      Wizard.isPgOptimized = false
+    }
   }
 
   /*

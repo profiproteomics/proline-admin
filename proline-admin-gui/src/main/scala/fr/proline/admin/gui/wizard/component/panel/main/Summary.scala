@@ -47,10 +47,7 @@ object Summary extends LazyLogging {
             spacing = 1
             children = Seq(
               new Label {
-                text = s"""Access Right: OK """
-              },
-              new Label {
-                text = s"""Optimization: OK """
+                text = s"""${Wizard.isPgOptimized match { case true => "PostgreSQL Server Configuration: Optimzed values" case false => "PostgreSQL Server Configuration: Default values" }}"""
               }, ScalaFxUtils.newVSpacer(1))
           })
       }

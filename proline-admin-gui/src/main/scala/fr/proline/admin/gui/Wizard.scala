@@ -55,6 +55,7 @@ object Wizard extends LazyLogging {
   var jmsPort: Int = 5445
   var nodeIndex = 0
   var currentNode: Item = _
+  var isPgOptimized = false
   var items: Map[Int, Option[Item]] = Map.empty[Int, Option[Item]]
 
   /*
