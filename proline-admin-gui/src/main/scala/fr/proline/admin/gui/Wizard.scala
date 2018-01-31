@@ -113,7 +113,7 @@ class Wizard extends Application {
       width = 1024
       minWidth = 700
       height = 780
-      minHeight = 630
+      minHeight = 650
       title = s"${Module.name} ${Module.version}"
     }
     Wizard.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)

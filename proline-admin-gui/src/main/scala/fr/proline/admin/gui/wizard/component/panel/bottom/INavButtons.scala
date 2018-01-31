@@ -29,7 +29,7 @@ trait INavButtons extends LazyLogging {
    * BUTTONS *
    * ******* *
    */
-  val cancelButton = new Button("Cancel") {
+  val cancelButton = new Button("Exit") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
       cancel()
@@ -48,14 +48,13 @@ trait INavButtons extends LazyLogging {
       previous()
     }
   }
-  val validateButton = new Button("Validate & Exit") {
+  val validateButton = new Button("Validate") {
     graphic = FxUtils.newImageView(IconResource.SAVE)
     onAction = handle {
       // validate modifications 
       val confirmed = GetConfirmation("Are you sure that you want to save the new Proline configurations? ")
       if (confirmed) {
         validate()
-        System.exit(0)
       }
     }
   }
@@ -84,7 +83,7 @@ trait INavButtons extends LazyLogging {
   Seq(
     cancelButton, nextButton, prevButton, validateButton).foreach { b =>
       b.prefHeight = 20
-      b.prefWidth = 140
+      b.prefWidth = 120
       b.styleClass += ("mainButtons")
     }
 }

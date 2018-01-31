@@ -41,9 +41,10 @@ class SummaryConfig(val orderId: Int) extends Item with LazyLogging {
   }
 
   /* initialize summary panels */
-
   var prolineServerBox = new VBox {}
+  prolineServerBox.minHeight_=(180)
   var prolineModuleBox = new VBox {}
+  prolineModuleBox.minHeight(120)
   var prolineWebBox = new VBox {}
   var prolinePgServerBox = new VBox {}
   alignment = Pos.Center
@@ -60,10 +61,10 @@ class SummaryConfig(val orderId: Int) extends Item with LazyLogging {
     }, ScalaFxUtils.newHSpacer(minW = 45), new HBox {
       children = Seq(headerHelpIcon)
     })
-  }, ScalaFxUtils.newVSpacer(minH = 30), new VBox {
+  }, ScalaFxUtils.newVSpacer(minH = 20), new VBox {
     prefWidth <== Wizard.configItemsPanel.width - 30
     prefHeight <== Wizard.configItemsPanel.height - 30
-    spacing = 50
+    spacing = 20
     children = List(prolineServerBox, prolineModuleBox, prolineWebBox, prolinePgServerBox)
   })
 }

@@ -17,6 +17,7 @@ import fr.proline.admin.gui.process._
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.admin.gui.wizard.util.ProgressBarWindow
 import fr.proline.admin.gui.wizard.util.UserGuideView
+import fr.proline.admin.gui.wizard.util.HelpPopup
 import java.io.File
 import fr.proline.admin.gui.wizard.component.DbMaintenanceTask
 import fr.proline.admin.gui.wizard.component.panel.bottom.InstallNavButtons
@@ -28,6 +29,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Failure
 import scala.util.Success
+import scalafx.application.Platform
 
 /**
  *  builds summary panel to summarize the new configurations
@@ -120,7 +122,13 @@ object Summary extends LazyLogging {
           pgServerConfig.pgHbaForm.saveForm()
           pgServerConfig.postgresForm.saveForm()
         } catch {
-          case t: Throwable => logger.error("Error while trying to save PostgreSQL properties.")
+
+          case t: Throwable => {
+
+            HelpPopup("Error", "An error has occured\nMake sure that you have administrator rights\nto edit PostgreSQL configurations files", Some(Wizard.stage), true)
+            logger.error("Error while trying to save PostgreSQL properties.")
+
+          }
         }
       }
       case server: ServerConfig => {
@@ -155,10 +163,16 @@ object Summary extends LazyLogging {
           val prolineWeb = item.asInstanceOf[PwxConfig]
           prolineWeb.prolinePwx.saveForm()
         } catch {
-          case t: Throwable => logger.error("Error while trying to save PostgreSQL properties.")
+
+          case t: Throwable => {
+            logger.error("Error while trying to save PostgreSQL properties.")
+          }
         }
       }
-      case _ => logger.error("Error while trying to save the new modifications! ")
+      case _ => {
+        logger.error("Error while trying to save the new modifications! ")
+      }
+
     }
   }
 }

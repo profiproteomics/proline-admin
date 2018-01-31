@@ -25,6 +25,8 @@ import fr.proline.admin.gui.wizard.util.ItemName._
 
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.IconResource
 /**
  * builds a panel with the postgreSQL properties: access rights and optimization
  *

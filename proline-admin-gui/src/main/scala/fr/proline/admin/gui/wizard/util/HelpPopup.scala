@@ -14,18 +14,21 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Wizard
 import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.IconResource
 
 /**
  * builds Help popup window
- * 
+ *
  */
 
 class HelpPopup(
-  wTitle: String,
-  wText: String,
-  wParent: Option[Stage] = Option(Wizard.stage),
-  isResizable: Boolean = false) extends Stage {
+    wTitle: String,
+    wText: String,
+    wParent: Option[Stage],
+    isResizable: Boolean = false) extends Stage {
   val popup = this
+  popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
   title = wTitle
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
@@ -58,6 +61,6 @@ object HelpPopup {
   def apply(
     wTitle: String,
     wText: String,
-    wParent: Option[Stage] = Option(Wizard.stage),
+    wParent: Option[Stage],
     isResizable: Boolean = false) { new HelpPopup(wTitle, wText, wParent, isResizable).showAndWait() }
 }

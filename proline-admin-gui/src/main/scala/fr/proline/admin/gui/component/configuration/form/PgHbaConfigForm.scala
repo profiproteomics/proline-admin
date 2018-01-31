@@ -31,12 +31,15 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
+import scalafx.application.Platform
 
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.config.postgres._
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.util.ShowPopupWindow
+import fr.proline.admin.gui.Wizard
+import fr.proline.admin.gui.wizard.util.HelpPopup
 
 import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.primitives._
@@ -70,7 +73,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
    */
 
   /* Warning on commented lines */
-  
+
   val warningLabel = new Label {
     graphic = FxUtils.newImageView(IconResource.WARNING)
     text = """Commented lines within "IPv4 connections" and "IPv6 connections" sections will be erased when changes are applied."""
@@ -446,7 +449,8 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
       }
     }
     newConfig onFailure {
-      case (t) => logger.error(s"An error has occured: ${t.getMessage}")
+      case (t) =>
+        logger.error(s"An error has occured: ${t.getMessage}")
     }
     newConfig onSuccess {
       case (t) => logger.info("pg_hba.conf successfully updated !")
@@ -461,17 +465,17 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
  * ********************* *
  */
 case class PgHbaLine(
-  onDeleteAction: (PgHbaLine) => Unit,
-  initIndex: Int,
-  addressType: AddressType.Value = AddressType.IPv4,
+    onDeleteAction: (PgHbaLine) => Unit,
+    initIndex: Int,
+    addressType: AddressType.Value = AddressType.IPv4,
 
-  connectionType: ConnectionType.Value = ConnectionType.HOST,
-  database: String = "",
-  user: String = "",
-  address: String = "",
-  maxIPCount: Int = -1,
-  method: Method.Value = Method.MD5,
-  commented: Boolean = false) extends HBox {
+    connectionType: ConnectionType.Value = ConnectionType.HOST,
+    database: String = "",
+    user: String = "",
+    address: String = "",
+    maxIPCount: Int = -1,
+    method: Method.Value = Method.MD5,
+    commented: Boolean = false) extends HBox {
 
   val thisLine = this
 
@@ -692,12 +696,12 @@ case class PgHbaLine(
  * ********************************* *
  */
 class DatabaseNameDialog(
-  all: Boolean,
-  sameUser: Boolean,
-  sameRole: Boolean,
-  replication: Boolean,
-  names: String //comma-separated list
-  ) extends Stage {
+    all: Boolean,
+    sameUser: Boolean,
+    sameRole: Boolean,
+    replication: Boolean,
+    names: String //comma-separated list
+    ) extends Stage {
 
   val thisDialog = this
 
@@ -862,9 +866,9 @@ object NewDatabaseNameDialog {
  * ********************************* *
  */
 class AdressDialog(
-  all: Boolean,
-  samenet: Boolean,
-  samehost: Boolean) extends Stage {
+    all: Boolean,
+    samenet: Boolean,
+    samehost: Boolean) extends Stage {
 
   val thisDialog = this
   title = "Choose a host name"
