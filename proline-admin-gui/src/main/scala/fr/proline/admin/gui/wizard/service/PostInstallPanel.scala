@@ -1,19 +1,14 @@
-package fr.proline.admin.gui.wizard.component
+package fr.proline.admin.gui.wizard.service
 
 import scalafx.Includes._
 import scalafx.geometry.Pos
 import scalafx.scene.control.Button
-import scalafx.geometry.Insets
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
 import scalafx.scene.control.TextField
-import scalafx.scene.control.Hyperlink
-import scalafx.scene.layout.StackPane
 import scalafx.scene.Node
 import scalafx.stage.Stage
-import scala.collection.mutable.ListBuffer
-import java.io.FileNotFoundException
 import java.io.File
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
@@ -22,17 +17,15 @@ import fr.proline.admin.gui.wizard.component.panel.main.INotification
 import fr.proline.admin.gui.wizard.component.panel.main.ConfFileChooser
 import fr.proline.admin.gui.wizard.component.items._
 import fr.proline.admin.gui.process.config.AdminConfigFile
-import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.wizard.util.ItemName._
 import fr.proline.admin.gui.wizard.util._
-import fr.proline.repository.DriverType
-import fr.profi.util.StringUtils
-import fr.profi.util.scalafx
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import com.typesafe.scalalogging.LazyLogging
+import scalafx.scene.control.CheckBox.sfxCheckBox2jfx
+import scalafx.scene.control.TextField.sfxTextField2jfx
 
 /**
  * builds home panel

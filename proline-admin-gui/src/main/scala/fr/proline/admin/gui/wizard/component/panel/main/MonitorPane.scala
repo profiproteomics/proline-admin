@@ -15,8 +15,9 @@ import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.Monitor
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
-import javafx.stage.Stage
+import scalafx.stage.Stage
 import fr.proline.admin.gui.wizard.util.WindowSize
+import fr.proline.admin.gui.Monitor
 
 /**
  * Builds home panel of monitor GUI
@@ -40,21 +41,20 @@ object MonitorPane extends VBox with LazyLogging {
   val jmsPortLabel = new Label("Port: ")
   val jmsProlineQueueLabel = new Label("Proline Queue Name:")
   val jmsHostField = new TextField() {
-    editable = false
+    disable = true
   }
   val jmsPortField = new TextField() {
-    editable = false
+    disable = true
   }
   val jmsProlineQueueField = new TextField {
-    editable = false
+    disable = true
   }
   val jmsTiteledPane = new HBox {
     children = new TitledBorderPane(
       title = "",
       titleTooltip = "JMS Server properties",
       contentNode = new VBox {
-        prefWidth.value_=(WindowSize.prefWitdh - 200)
-        vgrow = Priority.ALWAYS
+        prefWidth = (WindowSize.prefWitdh)
         spacing = V_SPACING * 2
         children = List(infoMessage, new HBox {
           spacing = H_SPACING * 3
@@ -71,6 +71,8 @@ object MonitorPane extends VBox with LazyLogging {
   }
   val jmsServerPane = new HBox {
     spacing = H_SPACING * 2
+    vgrow = Priority.Always
+    hgrow = Priority.Always
     fillWidth = true
     children = List(jmsServelLabel, jmsTiteledPane)
   }
@@ -88,24 +90,24 @@ object MonitorPane extends VBox with LazyLogging {
   val pgUserLabel = new Label("User: ")
   val pgPasswordLabel = new Label("Password: ")
   val pgHostField = new TextField() {
-    editable = false
+    disable = true
   }
   val pgPortField = new TextField() {
-    editable = false
+    disable = true
   }
   val pgUserField = new TextField() {
-    editable = false
+    disable = true
   }
   val pgPasswordField = new TextField() {
-    editable = false
+    disable = true
   }
   val pgTitledPane = new HBox {
+
     children = Seq(new TitledBorderPane(
       title = "",
       titleTooltip = "PostgreSQL Server properties",
       contentNode = new VBox {
-        prefWidth.value_=(WindowSize.prefWitdh - 200)
-        vgrow = Priority.ALWAYS
+        prefWidth = (WindowSize.prefWitdh)
         spacing = V_SPACING * 2
         children = List(new HBox {
 
@@ -135,7 +137,6 @@ object MonitorPane extends VBox with LazyLogging {
   Seq(pgPortField, pgUserField, pgPasswordField, pgHostField, jmsHostField, jmsProlineQueueField, jmsPortField).foreach {
     f => f.hgrow = Priority.Always
   }
-  //Seq(pgPortField, pgUserField, pgPasswordField, pgHostField, jmsHostField, jmsProlineQueueField, jmsPortField).foreach(_.minWidth(250))
 
   //final monitor pane 
   alignment = Pos.CENTER
@@ -143,9 +144,9 @@ object MonitorPane extends VBox with LazyLogging {
   spacing = 1
   hgrow = Priority.Always
   vgrow = Priority.ALWAYS
-  children = Seq(ScalaFxUtils.newVSpacer(50),
+  children = Seq(ScalaFxUtils.newVSpacer(25),
     new VBox {
       spacing = V_SPACING * 4
-      children = List(jmsServerPane, ScalaFxUtils.newVSpacer(20), postgreSQLServerPane)
+      children = List(jmsServerPane, ScalaFxUtils.newVSpacer(10), postgreSQLServerPane)
     })
 }

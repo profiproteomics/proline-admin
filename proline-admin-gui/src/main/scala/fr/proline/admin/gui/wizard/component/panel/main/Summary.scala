@@ -19,7 +19,7 @@ import fr.proline.admin.gui.wizard.util.ProgressBarWindow
 import fr.proline.admin.gui.wizard.util.UserGuideView
 import fr.proline.admin.gui.wizard.util.HelpPopup
 import java.io.File
-import fr.proline.admin.gui.wizard.component.DbMaintenanceTask
+import fr.proline.admin.gui.wizard.service.DbMaintenanceTask
 import fr.proline.admin.gui.wizard.component.panel.bottom.InstallNavButtons
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource

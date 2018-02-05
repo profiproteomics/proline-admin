@@ -20,6 +20,8 @@ import javafx.stage.Screen
 import fr.proline.admin.gui.wizard.component.panel.bottom.MonitorBottomsPanel
 import fr.proline.admin.gui.wizard.component.panel.main.MonitorPane
 import fr.proline.admin.gui.wizard.util.WindowSize
+import javafx.beans.property.DoubleProperty
+import javafx.beans.property.ReadOnlyDoubleProperty
 
 /**
  * Graphical interface for Proline Admin Monitor .
@@ -41,7 +43,6 @@ object Monitor extends LazyLogging {
       children = List(itemsPanel, buttonsPanel)
     }
   }
-
   var stage: scalafx.stage.Stage = null
   /** Launch application and display main window. */
   def main(args: Array[String]) = {
@@ -57,16 +58,15 @@ class Monitor extends Application {
     Monitor.itemsPanel = MonitorPane
     Monitor.buttonsPanel = MonitorBottomsPanel
     Monitor.stage = new Stage(stage) {
-      scene = new Scene(Monitor.root)
       width = 1024
+      minWidth = 700
       height = 780
+      minHeight = 650
+      scene = new Scene(Monitor.root)
       title = s"${Module.name} ${Module.version}"
     }
 
     /* Build and show stage (in any case) */
-
-    Monitor.stage.setWidth(WindowSize.prefWitdh)
-    Monitor.stage.setHeight(WindowSize.prefHeight)
     Monitor.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Monitor.stage.scene.value.getStylesheets.add("/css/Style.css")
     Monitor.stage.show()
@@ -75,8 +75,6 @@ class Monitor extends Application {
   /** Close UDSdb context on application close **/
   override def stop() {
     super.stop()
-    if ((UdsRepository.getUdsDbContext() != null) && !(UdsRepository.getUdsDbContext().isClosed))
-      UdsRepository.getUdsDbContext().close
   }
 
 }

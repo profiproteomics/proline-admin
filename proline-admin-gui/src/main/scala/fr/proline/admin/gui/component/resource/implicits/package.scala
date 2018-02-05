@@ -13,6 +13,8 @@ import fr.proline.repository.ConnectionMode
 import fr.proline.repository.DriverType
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
+import scalafx.concurrent.Service
+
 
 package object implicits {
 
@@ -99,4 +101,13 @@ package object implicits {
     val dbHost = new ObjectProperty(this, "dbHost", externaldb.getHost())
 
   }
+
+  /**
+   * ************************************************************** *
+   * Simplified model for Task  to ScalaFx TableView *
+   * ************************************************************** *
+   */
+//  implicit class TaskView(service: Service) {
+//    val taskState = new ObjectProperty(this, "taskState", service)
+//  }
 }

@@ -340,7 +340,7 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
         if (userCreator != null) {
           userCreator.run()
           warningCreatedUser()
-          isAdmin.selected=false
+          isAdmin.selected = false
         }
       })
   }
