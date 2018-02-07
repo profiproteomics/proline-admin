@@ -9,6 +9,7 @@ import scalafx.scene.Cursor
 import scalafx.scene.Cursor.sfxCursor2jfx
 import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.Wizard
+import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.component.ButtonsPanel
 import fr.proline.admin.gui.util.GetConfirmation
 import fr.proline.admin.service.db.SetupProline
@@ -238,4 +239,16 @@ object ProlineAdminConnection extends LazyLogging {
       }
     }*/
   }
+   def _setNewProlineConfigMonitor() {
+    /** Reload CONF file */
+    val newConfigFileMonitor = ConfigFactory.parseFile(new File(Monitor.adminConfPath))
+    synchronized {
+      logger.debug("Set new config parameters in ProlineAdmin");
+      SetupProline.setConfigParams(newConfigFileMonitor)
+      logger.debug("Set new udsDB config");
+      UdsRepository.setUdsDbConfig(SetupProline.getUpdatedConfig.udsDBConfig)
+
+    }
+  }
+
 }

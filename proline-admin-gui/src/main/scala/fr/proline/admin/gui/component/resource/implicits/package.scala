@@ -14,7 +14,8 @@ import fr.proline.repository.DriverType
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import scalafx.concurrent.Service
-
+import javafx.beans.property.{ BooleanProperty, StringProperty }
+import java.lang.Boolean
 
 package object implicits {
 
@@ -23,9 +24,8 @@ package object implicits {
    * Simplified model for uds Project, adapted to ScalaFx TableView *
    * ************************************************************** *
    */
-  implicit class ProjectView(udsProject: Project) {
+  class ProjectView(udsProject: Project) {
     //class ProjectView(owner:UserAccount, project: Project, schemaVersion: String, dbSize:Double) {
-
     val id = new ObjectProperty(this, "id", udsProject.getId)
     val ownerLogin = new ObjectProperty(this, "owner", udsProject.getOwner.getLogin)
     val name = new ObjectProperty(this, "name", udsProject.getName)
@@ -107,7 +107,7 @@ package object implicits {
    * Simplified model for Task  to ScalaFx TableView *
    * ************************************************************** *
    */
-//  implicit class TaskView(service: Service) {
-//    val taskState = new ObjectProperty(this, "taskState", service)
-//  }
+  //  implicit class TaskView(service: Service) {
+  //    val taskState = new ObjectProperty(this, "taskState", service)
+  //  }
 }

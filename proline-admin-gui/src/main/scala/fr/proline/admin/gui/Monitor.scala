@@ -13,13 +13,16 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
+
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.wizard.util.Module
 import fr.proline.admin.gui.util.FxUtils
-import javafx.stage.Screen
+
 import fr.proline.admin.gui.wizard.component.panel.bottom.MonitorBottomsPanel
 import fr.proline.admin.gui.wizard.component.panel.main.MonitorPane
 import fr.proline.admin.gui.wizard.util.WindowSize
+import fr.proline.admin.gui.process.ProlineAdminConnection
+import fr.proline.admin.gui.process.UdsRepository
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.ReadOnlyDoubleProperty
 
@@ -32,7 +35,8 @@ object Monitor extends LazyLogging {
   /* Panels */
   var itemsPanel: VBox = _
   var buttonsPanel: VBox = _
-
+  var targetPath: String = _
+  var adminConfPath: String = _
   /* Primary stage's root */
   lazy val root = new VBox {
     id = "root"
@@ -64,6 +68,19 @@ class Monitor extends Application {
       minHeight = 650
       scene = new Scene(Monitor.root)
       title = s"${Module.name} ${Module.version}"
+    }
+    /* Locate 'config' folder */
+    val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
+    Monitor.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
+    val configPath = Monitor.targetPath + """/config/"""
+
+    /* Locate application.CONF file and update Proline config in consequence */
+    val _appConfPath = configPath + "application.conf"
+
+    /* Usual case : default conf file exists */
+    if (new File(_appConfPath).exists()) {
+      Monitor.adminConfPath = _appConfPath
+      ProlineAdminConnection._setNewProlineConfigMonitor()
     }
 
     /* Build and show stage (in any case) */
