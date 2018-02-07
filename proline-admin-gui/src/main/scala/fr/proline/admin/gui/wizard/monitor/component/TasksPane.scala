@@ -5,7 +5,7 @@ import scalafx.scene.control.TableColumn._
 import scalafx.scene.layout.VBox
 
 /**
- * Builds a task view
+ * Build tasks view
  * @aromdhani
  */
 
