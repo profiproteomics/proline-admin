@@ -18,6 +18,7 @@ object MonitorBottomsPanel extends VBox with IButtons {
   def go() {
     Monitor.itemsPanel.getChildren.clear()
     Monitor.itemsPanel.getChildren.addAll(MainPane)
+    this.goButt.visible_=(false)
   }
   def exit() {
     ExitPopup("Exit Setup", "Are you sure that you want to exit Proline-Admin Monitor ?", Some(Monitor.stage), false)

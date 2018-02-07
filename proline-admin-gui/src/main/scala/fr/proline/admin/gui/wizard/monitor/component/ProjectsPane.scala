@@ -1,5 +1,6 @@
 package fr.proline.admin.gui.wizard.monitor.component
 
+import scalafx.Includes._
 import scalafx.scene.control.{ TableColumn, TableView }
 import scalafx.scene.control.TableColumn._
 import scalafx.scene.layout.{ VBox, HBox }
@@ -7,10 +8,10 @@ import javafx.scene.{ control => jfxsc }
 import scalafx.beans.property.{ BooleanProperty, StringProperty }
 import scala.collection.immutable.List
 import scalafx.collections.ObservableBuffer
-
 import scalafx.beans.property.ObjectProperty
 import scalafx.geometry.Pos
 import scalafx.scene.control.Button
+
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.core.orm.uds.Project
 import fr.profi.util.scalafx.TitledBorderPane
@@ -19,6 +20,9 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util._
+import fr.proline.admin.gui.Monitor._
+import fr.proline.admin.gui.Monitor
+
 /**
  * builds projects view
  * @aromdhani
@@ -59,6 +63,10 @@ object ProjectPane extends VBox {
   val newProjButton = new Button {
     text = "New project"
     graphic = FxUtils.newImageView(IconResource.PLUS)
+    onAction = handle {
+      NewProjectPane("New Project", Some(Monitor.stage), false)
+    }
+
   }
 
   val deleteProjButton = new Button {

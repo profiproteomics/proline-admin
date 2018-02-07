@@ -15,7 +15,7 @@ import fr.proline.admin.gui.util._
  */
 trait IButtons {
   //Buttons 
-  val cancelButt = new Button("Cancel") {
+  val cancelButt = new Button("Exit") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
       exit()

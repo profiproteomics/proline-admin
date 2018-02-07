@@ -1,21 +1,24 @@
 package fr.proline.admin.gui.wizard.monitor.component
-
+import scalafx.Includes._
 import scalafx.scene.control.{ TableColumn, TableView }
 import scalafx.scene.control.TableColumn._
 import scala.collection.immutable.List
 import scalafx.scene.layout.{ VBox, HBox }
 import scalafx.scene.control.Button
-
+import scalafx.geometry.Pos
 import javafx.scene.{ control => jfxsc }
 import scalafx.collections.ObservableBuffer
+
+import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.core.orm.uds.UserAccount
 import fr.proline.admin.gui.component.resource.implicits.UserView
 import fr.profi.util.scalafx.TitledBorderPane
-import scalafx.geometry.Pos
 import fr.profi.util.scala.ScalaUtils._
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util._
+
+
 /**
  * builds users view
  * @aromdhani
@@ -56,6 +59,9 @@ object UsesrsPane extends VBox {
   val addUserButton = new Button {
     text = "Add user"
     graphic = FxUtils.newImageView(IconResource.PLUS)
+    onAction = handle {
+      NewUserPane("New User", Some(Monitor.stage), true)
+    }
   }
 
   val disableUserButton = new Button {
