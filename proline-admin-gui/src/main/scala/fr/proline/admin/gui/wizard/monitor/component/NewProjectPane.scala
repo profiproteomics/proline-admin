@@ -18,11 +18,17 @@ import scalafx.scene.control.TextField
 import com.sun.javafx.css.StyleClass
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-
-import fr.proline.admin.gui.Wizard
+import fr.proline.core.orm.uds.UserAccount
+import fr.proline.admin.gui.Monitor
 import fr.profi.util.scalafx.ScalaFxUtils
+import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
+import fr.proline.admin.gui.wizard.service.Project
+import fr.proline.admin.gui.wizard.util.ProgressBarPopup
+import scalafx.collections.ObservableBuffer
+
 /**
- * builds new Project panel
+ * build new Project panel
+ * @aromdhani
  *
  */
 
@@ -30,31 +36,56 @@ class NewProjectPane(
     wTitle: String,
     wParent: Option[Stage],
     isResizable: Boolean = false) extends Stage {
-  val popup = this
+  val newProjectPane = this
   title = wTitle
+  minWidth_=(400)
+  minHeight_=(200)
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
-  popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
-  // component
+  newProjectPane.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
+
+  // Component
+
   val projectNameLabel = new Label("Project name")
   val projectNameTextField = new TextField()
   val projectDescLabel = new Label("Project description")
   val projectDescTextField = new TextField()
   val ownerLabel = new Label("Project owner")
-  val ownerList = new ComboBox {
-  }
+  val ownerList = new ComboBox[String]()
+  ownerList.items_=(ObservableBuffer(ProjectPane.userList))
   val addButton = new Button("Add") {
     graphic = FxUtils.newImageView(IconResource.TICK)
     onAction = handle {
-      //create project task
-      popup.close()
+      if (!projectNameTextField.getText.isEmpty()) {
+        if (!ownerList.selectionModel.apply().isEmpty()) {
+          val projectTask = new Project(projectNameTextField.getText, projectDescTextField.getText, 2)
+          ProgressBarPopup("New project", "Creating project in progress ...", Some(Monitor.stage), true, projectTask.Worker)
+          newProjectPane.close()
+          ProjectPane.refreshTableView()
+        } else {
+          warningUserLabel.visible_=(true)
+        }
+      }
     }
   }
   val cancelButton = new Button("Cancel") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
-      popup.close()
+      newProjectPane.close()
     }
+  }
+  val warningNameLabel = new Label {
+    text = "Project name must not be empty"
+    visible <== projectNameTextField.text.isEmpty()
+    prefWidth = 200
+    style = TextStyle.RED_ITALIC
+  }
+
+  val warningUserLabel = new Label {
+    text = "Project owner must not be empty"
+    visible = false
+    prefWidth = 200
+    style = TextStyle.RED_ITALIC
   }
   //layout
   val projectNamePanel = new HBox {
@@ -71,7 +102,7 @@ class NewProjectPane(
   }
   val projectPanel = new VBox {
     spacing = 10
-    children = Seq(projectNamePanel, projectDescPanel, projectOwnerPanel)
+    children = Seq(warningNameLabel, warningUserLabel, projectNamePanel, projectDescPanel, projectOwnerPanel)
   }
 
   Seq(addButton,
@@ -82,15 +113,15 @@ class NewProjectPane(
     }
   Seq(projectNameTextField,
     projectDescTextField, ownerList).foreach { component =>
-      component.prefWidth = 120
+      component.prefWidth = 200
       component.hgrow_=(Priority.ALWAYS)
     }
   Seq(projectNameLabel,
     projectDescLabel, ownerLabel).foreach { label =>
-      label.prefWidth = 120
+      label.prefWidth = 200
     }
   scene = new Scene {
-    onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
+    onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(newProjectPane, ke) }
     root = new VBox {
       alignment = Pos.Center
       spacing = 15

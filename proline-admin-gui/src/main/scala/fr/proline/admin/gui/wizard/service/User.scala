@@ -14,7 +14,7 @@ import fr.profi.util.security.sha256Hex
  *
  */
 
-class UserTask(val login: String, val pwField: Option[String], isAdmin: Boolean) {
+class User(val login: String, val pwField: Option[String], isAdmin: Boolean) {
   var shouldThrow = new AtomicBoolean(false)
   //Create user task 
   object Worker extends Task(new jfxc.Task[Unit] {

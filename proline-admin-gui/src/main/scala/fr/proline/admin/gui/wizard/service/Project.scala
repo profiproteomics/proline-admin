@@ -11,7 +11,7 @@ import fr.proline.admin.service.user.CreateProject
 import fr.proline.admin.service.db.CreateProjectDBs
 
 /**
- * task to create a new project
+ * Task to create new project
  * @aromdhani
  *
  */
@@ -26,15 +26,12 @@ class Project(val newProjectName: String, val newProjectDesc: String, val ownerI
       val projectCreator = new CreateProject(udsDbContext, newProjectName, newProjectDesc, ownerId)
       projectCreator.doWork()
       val projectId = projectCreator.projectId
-
       /* Create project databases */
       if (projectId > 0L) {
         new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
-
       } else {
-        logger.error("Invalid Project Id: " + projectId)
+        logger.error("Invalid Project Id: ", projectId)
       }
-
     }
   })
 

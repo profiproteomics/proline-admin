@@ -1,5 +1,6 @@
 package fr.proline.admin.gui.wizard.monitor.component
 
+import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
@@ -28,14 +29,15 @@ import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 import fr.proline.admin.gui.wizard.util.ProgressBarPopup
 
 /**
- * builds new Project panel
+ * build new User panel
+ * @aromdhani
  *
  */
 
 class NewUserPane(
     wTitle: String,
     wParent: Option[Stage],
-    isResizable: Boolean = false) extends Stage {
+    isResizable: Boolean = false) extends Stage with LazyLogging {
   val popup = this
   title = wTitle
   minWidth_=(400)
@@ -59,7 +61,7 @@ class NewUserPane(
     style = TextStyle.RED_ITALIC
   }
   val warningLoginLabel = new Label {
-    text = "Login could not be empty"
+    text = "Login must not be empty"
     visible <== loginTextField.text.isEmpty()
     prefWidth = 200
     style = TextStyle.RED_ITALIC
@@ -76,12 +78,17 @@ class NewUserPane(
     onAction = handle {
       //check password
       if (userFirstPwTextField.getText() == userSecondPwTextField.getText()) {
-        //login is empty 
+        //login must not be empty 
         if (!loginTextField.getText.isEmpty()) {
-          val userTask = new UserTask(loginTextField.getText, Some(userFirstPwTextField.getText()), isAdmin.selected.apply())
-          ProgressBarPopup("New user", "Creating user in progress ...", Some(Monitor.stage), true, userTask.Worker)
-          UsesrsPane.refreshTableView()
-          popup.close()
+          try {
+            val userTask = new User(loginTextField.getText, Some(userFirstPwTextField.getText()), isAdmin.selected.apply())
+            ProgressBarPopup("New user", "Creating user in progress ...", Some(Monitor.stage), true, userTask.Worker)
+            popup.close()
+            UsesrsPane.refreshTableView()
+          } catch {
+            case t: Throwable => logger.error("Error while trying to execute task create user")
+          }
+
         }
       } else {
         warningPwLabel.visible_=(true)
@@ -123,12 +130,12 @@ class NewUserPane(
   isAdmin.setPrefWidth(200)
   Seq(userFirstPwTextField,
     userSecondPwTextField, loginTextField).foreach { component =>
-      component.prefWidth = 120
+      component.prefWidth = 200
       component.hgrow_=(Priority.ALWAYS)
     }
   Seq(loginLabel,
     userFirstPwLabel, userSecondPwLabel, isAdmin).foreach { component =>
-      component.prefWidth = 120
+      component.prefWidth = 200
     }
   scene = new Scene {
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }

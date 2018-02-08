@@ -31,8 +31,8 @@ import fr.proline.admin.gui.Monitor
 object ProjectPane extends VBox {
 
   //import data from  database 
-  val projectViews = UdsRepository.getAllProjects().toBuffer[Project].sortBy(_.getId).map(new ProjectView(_))
-  val tableLines = ObservableBuffer(projectViews)
+  lazy val projectViews = getProjectViews()
+  lazy val tableLines = ObservableBuffer(projectViews)
   //create table view 
   val projectTable = new TableView[ProjectView](tableLines) {
     columns ++= List(
@@ -108,5 +108,18 @@ object ProjectPane extends VBox {
 
   spacing = 20
   children = Seq(usersTitledPane)
+
+  // get projectViews list from database
+  def getProjectViews(): Seq[ProjectView] = {
+    UdsRepository.getAllProjects().toBuffer[Project].sortBy(_.getId).map(new ProjectView(_))
+  }
+
+  lazy val userList = UdsRepository.getAllUserAccounts().map(_.getLogin).toSeq
+
+  // refresh tableView 
+  def refreshTableView() {
+    tableLines.removeAll(ObservableBuffer(getProjectViews()))
+    tableLines.addAll(ObservableBuffer(getProjectViews()))
+  }
 
 }
