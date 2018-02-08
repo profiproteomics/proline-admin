@@ -15,7 +15,7 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.process._
 import fr.proline.admin.gui.wizard.util.GetConfirmation
-import fr.proline.admin.gui.wizard.util.ProgressBarWindow
+import fr.proline.admin.gui.wizard.util.ProgressBarPopup
 import fr.proline.admin.gui.wizard.util.UserGuideView
 import fr.proline.admin.gui.wizard.util.HelpPopup
 import java.io.File
@@ -140,7 +140,7 @@ object Summary extends LazyLogging {
           if (setUpUpdateChBox.isSelected()) {
             val confirmed = GetConfirmation("Are you sure you want to update Proline databases ?\n(This process may take hours.)")
             if (confirmed) {
-              ProgressBarWindow("Setup/Update", "Setup / Update Proline databases\n  \t\t in progress...", Some(Wizard.stage), false, DbMaintenanceTask.Worker)
+              ProgressBarPopup("Setup/Update", "Setup / Update Proline databases\n  \t\t in progress...", Some(Wizard.stage), false, DbMaintenanceTask.Worker)
             }
           }
         } catch {

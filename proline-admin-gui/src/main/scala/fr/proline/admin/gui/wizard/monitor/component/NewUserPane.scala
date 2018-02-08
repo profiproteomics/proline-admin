@@ -19,12 +19,13 @@ import scalafx.scene.layout.{ VBox, HBox }
 import scalafx.scene.control.TextField
 import com.sun.javafx.css.StyleClass
 
+import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.wizard.service._
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
-import com.sun.glass.ui.Application.EventHandler
+import fr.proline.admin.gui.wizard.util.ProgressBarPopup
 
 /**
  * builds new Project panel
@@ -78,7 +79,8 @@ class NewUserPane(
         //login is empty 
         if (!loginTextField.getText.isEmpty()) {
           val userTask = new UserTask(loginTextField.getText, Some(userFirstPwTextField.getText()), isAdmin.selected.apply())
-          new Thread(userTask.Worker).start()
+          ProgressBarPopup("New user", "Creating user in progress ...", Some(Monitor.stage), true, userTask.Worker)
+          UsesrsPane.refreshTableView()
           popup.close()
         }
       } else {

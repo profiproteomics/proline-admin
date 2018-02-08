@@ -18,16 +18,15 @@ import fr.profi.util.scala.ScalaUtils._
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util._
 
-
 /**
- * builds users view
+ * build users view
  * @aromdhani
  *
  */
 object UsesrsPane extends VBox {
 
   //import data from database 
-  val userViews = UdsRepository.getAllUserAccounts().toBuffer[UserAccount].sortBy(_.getId).map(new UserView(_))
+  val userViews = getUserViews()
   val tableLines = ObservableBuffer(userViews)
   //create the table user view 
   val usersTable = new TableView[UserView](tableLines) {
@@ -91,4 +90,15 @@ object UsesrsPane extends VBox {
 
   spacing = 20
   children = Seq(usersTitledPane)
+
+  //get userView from list of users in  database
+  def getUserViews(): Seq[UserView] = {
+    UdsRepository.getAllUserAccounts().toBuffer[UserAccount].sortBy(_.getId).map(new UserView(_))
+  }
+
+  //refresh table 
+  def refreshTableView() {
+    tableLines.removeAll(ObservableBuffer(getUserViews()))
+    tableLines.addAll(ObservableBuffer(getUserViews()))
+  }
 }
