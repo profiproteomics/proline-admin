@@ -31,5 +31,4 @@ class UserTask(val login: String, val pwField: Option[String], isAdmin: Boolean)
       }
     }
   })
-
 }

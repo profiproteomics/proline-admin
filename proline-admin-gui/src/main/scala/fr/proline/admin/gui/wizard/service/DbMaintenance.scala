@@ -20,7 +20,6 @@ object DbMaintenanceTask {
   object Worker extends Task(new jfxc.Task[Unit] {
 
     protected def call(): Unit =
-
       {
         synchronized {
           ProlineAdminConnection.loadProlineInstallConfig(verbose = true)
@@ -29,15 +28,12 @@ object DbMaintenanceTask {
             val udsDBConfig = UdsRepository.getUdsDbConfig()
             println("INFO - Proline configuration is valid.")
             _prolineConfIsOk = true
-
           } catch {
             case t: Throwable => {
               println("Proline configuration is not valid : ", t.printStackTrace())
               _prolineConfIsOk = false
             }
-
           }
-
           if (_prolineConfIsOk == true) {
             val _prolineIsSetUp = UdsRepository.isUdsDbReachable(true)
             /* upgrade Proline databases */
@@ -45,22 +41,14 @@ object DbMaintenanceTask {
               println("INFO - Proline is already setup.")
               val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
               new UpgradeAllDatabases(dsConnectorFactory).doWork()
-
             } else {
-
               /* setup Proline */
-
               println("INFO -Start to setup proline Database.")
               new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run()
-
             }
-
           }
-
         }
-
       }
-
   })
 
 }
