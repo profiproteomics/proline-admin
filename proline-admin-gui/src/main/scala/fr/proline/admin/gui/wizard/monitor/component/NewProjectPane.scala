@@ -25,6 +25,7 @@ import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 import fr.proline.admin.gui.wizard.service.Project
 import fr.proline.admin.gui.wizard.util.ProgressBarPopup
 import scalafx.collections.ObservableBuffer
+import scalafx.util.StringConverter
 
 /**
  * build new Project panel
@@ -51,17 +52,19 @@ class NewProjectPane(
   val projectDescLabel = new Label("Project description")
   val projectDescTextField = new TextField()
   val ownerLabel = new Label("Project owner")
-  val ownerList = new ComboBox[String]()
-  ownerList.items_=(ObservableBuffer(ProjectPane.userList))
+  val ownerList = new ComboBox[UserAccount](ProjectPane.userList) {
+    converter = StringConverter.toStringConverter((user: UserAccount) => user.getLogin)
+  }
+
   val addButton = new Button("Add") {
     graphic = FxUtils.newImageView(IconResource.TICK)
     onAction = handle {
       if (!projectNameTextField.getText.isEmpty()) {
         if (!ownerList.selectionModel.apply().isEmpty()) {
-          val projectTask = new Project(projectNameTextField.getText, projectDescTextField.getText, 2)
-          ProgressBarPopup("New project", "Creating project in progress ...", Some(Monitor.stage), true, projectTask.Worker)
-          newProjectPane.close()
+          val projectTask = new Project(projectNameTextField.getText, projectDescTextField.getText, ownerList.getValue.getId)
+          ProgressBarPopup("New project", "Creating project in progress ...", Some(newProjectPane), true, projectTask.Worker)
           ProjectPane.refreshTableView()
+          newProjectPane.close()
         } else {
           warningUserLabel.visible_=(true)
         }

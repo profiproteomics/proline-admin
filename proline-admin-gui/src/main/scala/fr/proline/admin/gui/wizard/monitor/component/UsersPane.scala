@@ -26,8 +26,8 @@ import fr.proline.admin.gui.util._
 object UsesrsPane extends VBox {
 
   //import data from database 
-  val userViews = getUserViews()
-  val tableLines = ObservableBuffer(userViews)
+  lazy val userViews = getUserViews()
+  lazy val tableLines = ObservableBuffer(userViews)
   //create the table user view 
   val usersTable = new TableView[UserView](tableLines) {
     columns ++= List(
@@ -98,7 +98,7 @@ object UsesrsPane extends VBox {
 
   //refresh table 
   def refreshTableView() {
-    tableLines.removeAll(ObservableBuffer(getUserViews()))
+    tableLines.clear()
     tableLines.addAll(ObservableBuffer(getUserViews()))
   }
 }

@@ -114,12 +114,12 @@ object ProjectPane extends VBox {
     UdsRepository.getAllProjects().toBuffer[Project].sortBy(_.getId).map(new ProjectView(_))
   }
 
-  lazy val userList = UdsRepository.getAllUserAccounts().map(_.getLogin).toSeq
+  lazy val userList = UdsRepository.getAllUserAccounts().toSeq
 
   // refresh tableView 
   def refreshTableView() {
-    tableLines.removeAll(ObservableBuffer(getProjectViews()))
-    tableLines.addAll(ObservableBuffer(getProjectViews()))
+    
+     //tableLines.addAll(ObservableBuffer(getProjectViews()))
   }
 
 }
