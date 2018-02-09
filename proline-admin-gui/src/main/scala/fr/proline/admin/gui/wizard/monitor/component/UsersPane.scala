@@ -109,7 +109,7 @@ object UsesrsPane extends VBox {
     }
   }
   //refresh table 
-  private def refreshTableView() {
+   def refreshTableView() {
     tableLines.clear()
     tableLines.addAll(ObservableBuffer(getUserViews()))
     usersTable.refresh()
