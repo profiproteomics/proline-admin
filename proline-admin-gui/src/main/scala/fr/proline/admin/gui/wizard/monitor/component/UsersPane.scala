@@ -17,7 +17,8 @@ import fr.proline.admin.gui.component.resource.implicits.UserView
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.profi.util.scala.ScalaUtils._
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.util._
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.wizard.util.GetConfirmation
 
 /**
  * build users view
@@ -109,7 +110,7 @@ object UsesrsPane extends VBox {
     }
   }
   //refresh table 
-   def refreshTableView() {
+  def refreshTableView() {
     tableLines.clear()
     tableLines.addAll(ObservableBuffer(getUserViews()))
     usersTable.refresh()

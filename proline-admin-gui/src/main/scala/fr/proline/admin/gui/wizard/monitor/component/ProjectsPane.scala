@@ -71,10 +71,10 @@ object ProjectPane extends VBox {
   }
 
   val deleteProjButton = new Button {
-    text = "Delete project"
+    text = "Disable project"
     graphic = FxUtils.newImageView(IconResource.TRASH)
     onAction = handle {
-      deleteProject()
+      disableProject()
 
     }
   }
@@ -134,11 +134,11 @@ object ProjectPane extends VBox {
   }
 
   // delete project 
-  private def deleteProject() {
-    val confirmed = GetConfirmation("Are you sure that you want to delete the slected project? ", "Confirm your action", "Yes", "Cancel", Monitor.stage)
+  private def disableProject() {
+    val confirmed = GetConfirmation("Are you sure that you want to disable the selected project? ", "Confirm your action", "Yes", "Cancel", Monitor.stage)
     if (confirmed) {
       val dataStore = UdsRepository.getDataStoreConnFactory()
-      DeleteProject(dataStore, projectTable.getSelectionModel.getSelectedItem.id.apply(), true)
+      DeleteProject(dataStore, projectTable.getSelectionModel.getSelectedItem.id.apply(), false)
       refreshTableView()
     }
   }
