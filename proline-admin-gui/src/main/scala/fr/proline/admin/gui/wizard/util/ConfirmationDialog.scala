@@ -19,7 +19,8 @@ import fr.proline.admin.gui.IconResource
 
 class ConfirmationDialog(
     dTitle: String,
-    dText: String) {
+    dText: String,
+    stage: Stage) {
 
   var isActionConfirmed = false
 
@@ -32,7 +33,7 @@ class ConfirmationDialog(
 
   /** END TMP CODE */
 
-  def showIn(dInitOwner: Stage = Wizard.stage) {
+  def showIn(dInitOwner: Stage = stage) {
 
     /** Define modal window */
     val _stage = new Stage {
@@ -69,7 +70,7 @@ class ConfirmationDialog(
           onAction = handle { confirmDialog.close() } //isActionConfirmed = false
         }
 
-        Seq(yesButton, cancelButton).foreach(_.minWidth(30))
+        Seq(yesButton, cancelButton).foreach(_.minWidth(50))
         /**
          * ****** *
          * LAYOUT *
@@ -105,9 +106,9 @@ object GetConfirmation {
     title: String = "Confirm your action",
     yesText: String = "Yes", //TODO: delete me
     cancelText: String = "Cancel",
-    initOwner: Stage = Wizard.stage): Boolean = {
+    initOwner: Stage): Boolean = {
 
-    val confDialog = new ConfirmationDialog(dTitle = title, dText = text)
+    val confDialog = new ConfirmationDialog(dTitle = title, dText = text, stage = initOwner)
 
     if (yesText != null && yesText != "Yes") confDialog.setYesButtonText(yesText)
     if (cancelText != null && cancelText != "Cancel") confDialog.setCancelButtonText(cancelText)

@@ -1,5 +1,6 @@
 package fr.proline.admin.gui.wizard.monitor.component
 
+import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
@@ -36,7 +37,7 @@ import scalafx.util.StringConverter
 class NewProjectPane(
     wTitle: String,
     wParent: Option[Stage],
-    isResizable: Boolean = false) extends Stage {
+    isResizable: Boolean = false) extends Stage with LazyLogging {
   val newProjectPane = this
   title = wTitle
   minWidth_=(400)
@@ -61,10 +62,14 @@ class NewProjectPane(
     onAction = handle {
       if (!projectNameTextField.getText.isEmpty()) {
         if (!ownerList.selectionModel.apply().isEmpty()) {
-          val projectTask = new Project(projectNameTextField.getText, projectDescTextField.getText, ownerList.getValue.getId)
-          ProgressBarPopup("New project", "Creating project in progress ...", Some(newProjectPane), true, projectTask.Worker)
-          ProjectPane.refreshTableView()
-          newProjectPane.close()
+          try {
+            val projectTask = new Project(projectNameTextField.getText, projectDescTextField.getText, ownerList.getValue.getId)
+            ProgressBarPopup("New project", "Creating project in progress ...", Some(newProjectPane), true, projectTask.Worker)
+            newProjectPane.close()
+            //ProjectPane.refreshTableView()
+          } catch {
+            case t: Throwable => logger.error("Error while trying to execute task create project")
+          }
         } else {
           warningUserLabel.visible_=(true)
         }

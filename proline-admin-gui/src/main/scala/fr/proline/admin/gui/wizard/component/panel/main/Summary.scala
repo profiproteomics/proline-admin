@@ -138,7 +138,7 @@ object Summary extends LazyLogging {
           server.jmsServer.saveForm()
           server.mountsPoint.saveForm()
           if (setUpUpdateChBox.isSelected()) {
-            val confirmed = GetConfirmation("Are you sure you want to update Proline databases ?\n(This process may take hours.)")
+            val confirmed = GetConfirmation("Are you sure you want to update Proline databases ?\n(This process may take hours.)", "Confirm your action", "Yes", "Cancel", Wizard.stage)
             if (confirmed) {
               ProgressBarPopup("Setup/Update", "Setup / Update Proline databases\n  \t\t in progress...", Some(Wizard.stage), false, DbMaintenanceTask.Worker)
             }

@@ -12,6 +12,7 @@ import scalafx.collections.ObservableBuffer
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.core.orm.uds.UserAccount
+import fr.proline.admin.service.user.DisableUser
 import fr.proline.admin.gui.component.resource.implicits.UserView
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.profi.util.scala.ScalaUtils._
@@ -20,7 +21,7 @@ import fr.proline.admin.gui.util._
 
 /**
  * build users view
- * @aromdhani
+ * @author aromdhani
  *
  */
 object UsesrsPane extends VBox {
@@ -66,6 +67,9 @@ object UsesrsPane extends VBox {
   val disableUserButton = new Button {
     text = "Disable user"
     graphic = FxUtils.newImageView(IconResource.TRASH)
+    onAction = handle {
+      disableUser()
+    }
 
   }
   Seq(
@@ -96,9 +100,18 @@ object UsesrsPane extends VBox {
     UdsRepository.getAllUserAccounts().toBuffer[UserAccount].sortBy(_.getId).map(new UserView(_))
   }
 
+  // disable user 
+  private def disableUser() {
+    val confirmed = GetConfirmation("Are you sure that you want to disable the selected user? ", "Confirm your action", "Yes", "Cancel", Monitor.stage)
+    if (confirmed) {
+      DisableUser(usersTable.getSelectionModel.getSelectedItem.id.apply())
+      refreshTableView()
+    }
+  }
   //refresh table 
-  def refreshTableView() {
+  private def refreshTableView() {
     tableLines.clear()
     tableLines.addAll(ObservableBuffer(getUserViews()))
+    usersTable.refresh()
   }
 }

@@ -13,6 +13,7 @@ import scalafx.stage.Modality
 import scalafx.stage.Stage
 
 import fr.profi.util.scalafx.ScalaFxUtils
+import fr.proline.admin.gui._
 import fr.proline.admin.gui.Main
 
 class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog extends ChoiceDialog
@@ -64,11 +65,13 @@ class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog ex
             isActionConfirmed = true
             confirmDialog.close()
           }
+           graphic = FxUtils.newImageView(IconResource.TICK)
         }
 
         val cancelButton = new Button(_cancelButtonText) { //No
           //styleClass += ("minorButtons")
           onAction = handle { confirmDialog.close() } //isActionConfirmed = false
+          graphic = FxUtils.newImageView(IconResource.CANCEL)
         }
 
         /**

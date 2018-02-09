@@ -38,13 +38,13 @@ class NewUserPane(
     wTitle: String,
     wParent: Option[Stage],
     isResizable: Boolean = false) extends Stage with LazyLogging {
-  val popup = this
+  val newUserPane = this
   title = wTitle
   minWidth_=(400)
   minHeight_=(200)
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
-  popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
+  newUserPane.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
   // component
   val loginLabel = new Label("User login")
   val loginTextField = new TextField()
@@ -82,9 +82,9 @@ class NewUserPane(
         if (!loginTextField.getText.isEmpty()) {
           try {
             val userTask = new User(loginTextField.getText, Some(userFirstPwTextField.getText()), isAdmin.selected.apply())
-            ProgressBarPopup("New user", "Creating user in progress ...", Some(Monitor.stage), true, userTask.Worker)
-            popup.close()
+            ProgressBarPopup("New user", "Creating user in progress ...", Some(newUserPane), true, userTask.Worker)
             UsesrsPane.refreshTableView()
+            newUserPane.close()
           } catch {
             case t: Throwable => logger.error("Error while trying to execute task create user")
           }
@@ -98,7 +98,7 @@ class NewUserPane(
   val cancelButton = new Button("Cancel") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
-      popup.close()
+      newUserPane.close()
     }
   }
   //layout
@@ -138,7 +138,7 @@ class NewUserPane(
       component.prefWidth = 200
     }
   scene = new Scene {
-    onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
+    onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(newUserPane, ke) }
     root = new VBox {
       alignment = Pos.Center
       spacing = 15

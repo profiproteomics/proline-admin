@@ -17,6 +17,7 @@ import fr.proline.admin.gui.wizard.component.items._
 import fr.proline.admin.gui.wizard.util.ExitPopup
 import fr.proline.admin.gui.wizard.component.panel.main.Summary
 import scalafx.scene.control.Button.sfxButton2jfx
+import fr.proline.admin.gui.Wizard
 
 /**
  * Panel contains navigation buttons : previous next and cancel
@@ -52,7 +53,7 @@ trait INavButtons extends LazyLogging {
     graphic = FxUtils.newImageView(IconResource.SAVE)
     onAction = handle {
       // validate modifications 
-      val confirmed = GetConfirmation("Are you sure that you want to save the new Proline configurations? ")
+      val confirmed = GetConfirmation("Are you sure that you want to save the new Proline configurations? ", "Confirm your action", "Yes", "Cancel", Wizard.stage)
       if (confirmed) {
         validate()
       }

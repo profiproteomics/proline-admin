@@ -14,6 +14,7 @@ import scalafx.scene.control.Button
 
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.core.orm.uds.Project
+import fr.proline.admin.service.user.DeleteProject
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.component.resource.implicits.ProjectView
 import fr.profi.util.scalafx.ScalaFxUtils
@@ -72,16 +73,26 @@ object ProjectPane extends VBox {
   val deleteProjButton = new Button {
     text = "Delete project"
     graphic = FxUtils.newImageView(IconResource.TRASH)
+    onAction = handle {
+      deleteProject()
+
+    }
   }
 
   val saveProjButton = new Button {
     text = "Save project"
     graphic = FxUtils.newImageView(IconResource.SAVE)
+    onAction = handle {
+      saveProject()
+    }
   }
 
   val restoreProjButton = new Button {
     text = "Restore project"
     graphic = FxUtils.newImageView(IconResource.LOAD)
+    onAction = handle {
+      restoreProject()
+    }
   }
 
   Seq(
@@ -118,8 +129,25 @@ object ProjectPane extends VBox {
 
   // refresh tableView 
   def refreshTableView() {
-    
-     //tableLines.addAll(ObservableBuffer(getProjectViews()))
+    tableLines.clear()
+    tableLines.addAll(ObservableBuffer(getProjectViews()))
   }
 
+  // delete project 
+  private def deleteProject() {
+    val confirmed = GetConfirmation("Are you sure that you want to delete the slected project? ", "Confirm your action", "Yes", "Cancel", Monitor.stage)
+    if (confirmed) {
+      val dataStore = UdsRepository.getDataStoreConnFactory()
+      DeleteProject(dataStore, projectTable.getSelectionModel.getSelectedItem.id.apply(), true)
+      refreshTableView()
+    }
+  }
+  // save project 
+  private def saveProject() {
+
+  }
+  //import project  
+  private def restoreProject() {
+
+  }
 }

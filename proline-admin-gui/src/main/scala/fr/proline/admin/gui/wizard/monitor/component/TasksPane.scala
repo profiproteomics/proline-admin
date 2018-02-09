@@ -10,5 +10,8 @@ import scalafx.scene.layout.VBox
  */
 
 object TasksPane extends VBox {
-
+  //import tasks list
+  
+  //create tasks view 
+ 
 }
