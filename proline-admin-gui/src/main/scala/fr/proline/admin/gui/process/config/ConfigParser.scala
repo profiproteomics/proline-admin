@@ -264,10 +264,10 @@ sqlite-config {
 
 /** Model what is in the Proline server (WebCore) configuration file, corresponding to ProlineSettingsForm fields **/
 case class ServerConfig(
-  //serverConfFilePath: String,
-  rawFilesMountPoints: Map[String, String] = Map(),
-  mzdbFilesMountPoints: Map[String, String] = Map(),
-  resultFilesMountPoints: Map[String, String] = Map()) {
+    //serverConfFilePath: String,
+    rawFilesMountPoints: Map[String, String] = Map(),
+    mzdbFilesMountPoints: Map[String, String] = Map(),
+    resultFilesMountPoints: Map[String, String] = Map()) {
 
   def toTypeSafeConfigString(): String = {
     /* Mount points strings */
@@ -422,8 +422,8 @@ authentication {
 
 /**case class of Jms server pws config file */
 case class PwxJmsServer(
-  val dbHost: Option[String] = None,
-  val dbPort: Option[Int] = None) {
+    val dbHost: Option[String] = None,
+    val dbPort: Option[Int] = None) {
 
   def toTypeSafePwxJms: String = {
     val pwxJmsStrBuilder = new StringBuilder()

@@ -30,12 +30,16 @@ import fr.proline.admin.gui.wizard.process.config.NodeConfig
 
 object MonitorPane extends VBox with LazyLogging {
 
-  //Proline server initial values 
-
+  //Proline server and Proline Jms server  initial values 
   private val adminConfig = Monitor.serverInitialConfing.get
   private val JmsConfig = Monitor.serverJmsInitialConfig.get
 
-  //Proline JMS server initial values 
+  private val errorLabel = new Label {
+    text = "Error while trying to read initial Proline server configurations\nMake sure that you have already setup Proline."
+    visible = false
+    style = TextStyle.RED_ITALIC
+  }
+
   val infoMessage = new BoldLabel("(By default, same server as Proline Server Cortex)")
   private val V_SPACING = 10
   private val H_SPACING = 5
@@ -171,7 +175,7 @@ object MonitorPane extends VBox with LazyLogging {
   vgrow = Priority.ALWAYS
   children = Seq(ScalaFxUtils.newVSpacer(25),
     new VBox {
-      spacing = V_SPACING * 4
-      children = List(jmsServerPane, ScalaFxUtils.newVSpacer(10), postgreSQLServerPane)
+      spacing = V_SPACING * 2
+      children = List(errorLabel, jmsServerPane, ScalaFxUtils.newVSpacer(10), postgreSQLServerPane)
     })
 }

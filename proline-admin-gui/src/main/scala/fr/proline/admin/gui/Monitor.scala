@@ -31,6 +31,10 @@ import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.wizard.process.config.NodeConfigFile
 import fr.proline.admin.gui.wizard.process.config.NodeConfig
 
+import scala.concurrent.{ Future }
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{ Failure, Success }
+
 /**
  * Graphical interface for Proline Admin Monitor .
  */
@@ -75,18 +79,27 @@ class Monitor extends Application with LazyLogging {
     /* Usual case : default conf file exists */
     if (new File(_appConfPath).exists()) {
       Monitor.adminConfPath = _appConfPath
-      Monitor.serverInitialConfing = getProlineServerInitialConfig
-      Monitor.serverJmsInitialConfig = getJmsServerInitialConfig
-      ProlineAdminConnection._setNewProlineConfigMonitor()
+      try {
+        Monitor.serverInitialConfing = getProlineServerInitialConfig
+        Monitor.serverJmsInitialConfig = getJmsServerInitialConfig
+        prolineAdminConnection onSuccess {
+          case result => logger.trace("Connection to Proline Database Server is valid.")
+        }
+        prolineAdminConnection onFailure {
+          case error => logger.error("Connection to Proline Database Server is invalid.")
+        }
+      } catch {
+        case t: Throwable => logger.error("Error while trying to get Proline server initial configurations.")
+      }
     } else {
       logger.warn("application.conf file does not exist!")
     }
   }
+  val prolineAdminConnection: Future[Unit] = Future { ProlineAdminConnection._setNewProlineConfigMonitor() }
 
   /** get Proline Server and Proline JMS Server properties */
-
   def getProlineServerInitialConfig(): Option[AdminConfig] = {
-    val adminConfFile = new AdminConfigFile(Monitor.adminConfPath);
+    val adminConfFile = new AdminConfigFile(Monitor.adminConfPath)
     val adminConfigOpt = adminConfFile.read()
     require(adminConfigOpt.isDefined, "admin config is undefined.Make sure that Proline configuration file(application.conf) exists.")
     adminConfigOpt
@@ -120,7 +133,7 @@ class Monitor extends Application with LazyLogging {
       width = 1024
       minWidth = 700
       height = 780
-      minHeight = 650
+      minHeight = 680
       scene = new Scene(Monitor.root)
       title = s"${Module.name} ${Module.version}"
     }

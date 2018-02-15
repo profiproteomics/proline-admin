@@ -66,14 +66,6 @@ object UdsRepository extends LazyLogging {
     }
   }
 
-  //  /** Close UDS db connector */
-  //  def closeUdsDbConnector() {
-  //    if (udsDbConnector != null) {
-  //      if (udsDbConnector.isClosed == false) udsDbConnector.close()
-  //      udsDbConnector = null
-  //    }
-  //  }
-
   /**
    * Get UDS database CONNECTOR
    */

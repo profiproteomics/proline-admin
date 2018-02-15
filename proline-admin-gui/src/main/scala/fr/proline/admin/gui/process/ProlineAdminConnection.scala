@@ -239,7 +239,7 @@ object ProlineAdminConnection extends LazyLogging {
       }
     }*/
   }
-   def _setNewProlineConfigMonitor() {
+  def _setNewProlineConfigMonitor() {
     /** Reload CONF file */
     val newConfigFileMonitor = ConfigFactory.parseFile(new File(Monitor.adminConfPath))
     synchronized {
