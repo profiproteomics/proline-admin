@@ -20,6 +20,8 @@ import fr.proline.admin.gui.wizard.util.WindowSize
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.process.config.AdminConfig
+import fr.proline.admin.gui.wizard.process.config.NodeConfigFile
+import fr.proline.admin.gui.wizard.process.config.NodeConfig
 
 /**
  * Builds home panel of monitor GUI
@@ -29,13 +31,11 @@ import fr.proline.admin.gui.process.config.AdminConfig
 object MonitorPane extends VBox with LazyLogging {
 
   //Proline server initial values 
-  private val adminConfFile = new AdminConfigFile(Monitor.adminConfPath);
-  private val adminConfigOpt = adminConfFile.read()
-  require(adminConfigOpt.isDefined, "admin config is undefined.Make sure that proline configuration files exists.")
-  private val adminConfig = adminConfigOpt.get
 
-  //Proline JMS server initials values 
+  private val adminConfig = Monitor.serverInitialConfing.get
+  private val JmsConfig = Monitor.serverJmsInitialConfig.get
 
+  //Proline JMS server initial values 
   val infoMessage = new BoldLabel("(By default, same server as Proline Server Cortex)")
   private val V_SPACING = 10
   private val H_SPACING = 5
@@ -47,18 +47,25 @@ object MonitorPane extends VBox with LazyLogging {
       font = Font.font("SanSerif", FontWeight.Bold, 12)
     })
   }
+
   val jmsHostLabel = new Label("Host: ")
-  val jmsPortLabel = new Label("Port: ")
-  val jmsProlineQueueLabel = new Label("Proline Queue Name:")
   val jmsHostField = new TextField() {
     disable = true
+    text = JmsConfig.jmsServerHost.get
   }
+
+  val jmsPortLabel = new Label("Port: ")
   val jmsPortField = new TextField() {
     disable = true
+    text = JmsConfig.jmsServePort.get.toString
   }
+
+  val jmsProlineQueueLabel = new Label("Proline Queue Name:")
   val jmsProlineQueueField = new TextField {
     disable = true
+    text = JmsConfig.requestQueueName.get
   }
+
   val jmsTiteledPane = new HBox {
     children = new TitledBorderPane(
       title = "",
@@ -95,24 +102,26 @@ object MonitorPane extends VBox with LazyLogging {
       font = Font.font("SanSerif", FontWeight.Bold, 12)
     })
   }
-  val pgHostLabel = new Label("Host: ")
-  val pgPortLabel = new Label("Port: ")
-  val pgUserLabel = new Label("User: ")
-  val pgPasswordLabel = new Label("Password: ")
 
+  val pgHostLabel = new Label("Host: ")
   val pgHostField = new TextField() {
     disable = true
     text = adminConfig.dbHost.get
   }
 
+  val pgPortLabel = new Label("Port: ")
   val pgPortField = new TextField() {
     disable = true
     text = adminConfig.dbPort.get.toString
   }
+
+  val pgUserLabel = new Label("User: ")
   val pgUserField = new TextField() {
     disable = true
     text = adminConfig.dbUserName.get
   }
+
+  val pgPasswordLabel = new Label("Password: ")
   val pgPasswordField = new TextField() {
     disable = true
     text = adminConfig.dbPassword.get

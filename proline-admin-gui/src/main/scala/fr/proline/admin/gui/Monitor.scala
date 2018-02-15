@@ -26,6 +26,11 @@ import fr.proline.admin.gui.process.UdsRepository
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.ReadOnlyDoubleProperty
 
+import fr.proline.admin.gui.process.config.AdminConfigFile
+import fr.proline.admin.gui.process.config.AdminConfig
+import fr.proline.admin.gui.wizard.process.config.NodeConfigFile
+import fr.proline.admin.gui.wizard.process.config.NodeConfig
+
 /**
  * Graphical interface for Proline Admin Monitor .
  */
@@ -37,6 +42,10 @@ object Monitor extends LazyLogging {
   var buttonsPanel: VBox = _
   var targetPath: String = _
   var adminConfPath: String = _
+  var jmsConfigPath: String = _
+  var serverInitialConfing: Option[AdminConfig] = _
+  var serverJmsInitialConfig: Option[NodeConfig] = _
+
   /* Primary stage's root */
   lazy val root = new VBox {
     id = "root"
@@ -54,22 +63,52 @@ object Monitor extends LazyLogging {
   }
 
 }
-class Monitor extends Application {
+class Monitor extends Application with LazyLogging {
 
   override def init: Unit = {
     /* Locate 'config' folder */
     val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
     Monitor.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
-    val configPath = Monitor.targetPath + """/config/"""
-
+    val configPath = Monitor.targetPath + File.separator + """config""" + File.separator
     /* Locate application.CONF file and update Proline config in consequence */
     val _appConfPath = configPath + "application.conf"
-
     /* Usual case : default conf file exists */
     if (new File(_appConfPath).exists()) {
       Monitor.adminConfPath = _appConfPath
+      Monitor.serverInitialConfing = getProlineServerInitialConfig
+      Monitor.serverJmsInitialConfig = getJmsServerInitialConfig
       ProlineAdminConnection._setNewProlineConfigMonitor()
+    } else {
+      logger.warn("application.conf file does not exist!")
     }
+  }
+
+  /** get Proline Server and Proline JMS Server properties */
+
+  def getProlineServerInitialConfig(): Option[AdminConfig] = {
+    val adminConfFile = new AdminConfigFile(Monitor.adminConfPath);
+    val adminConfigOpt = adminConfFile.read()
+    require(adminConfigOpt.isDefined, "admin config is undefined.Make sure that Proline configuration file(application.conf) exists.")
+    adminConfigOpt
+  }
+
+  /**get Proline Jms server initial properties */
+
+  def getJmsServerInitialConfig(): Option[NodeConfig] = {
+    val initialAdminConfigOpt = getProlineServerInitialConfig()
+    if (initialAdminConfigOpt.isDefined) {
+      if (initialAdminConfigOpt.get.serverConfigFilePath.isDefined && initialAdminConfigOpt.get.serverConfigFilePath.get.trim() != "") {
+        val prolineServerConfigParent = new File(initialAdminConfigOpt.get.serverConfigFilePath.get).getParent
+        Monitor.jmsConfigPath = new File(prolineServerConfigParent + File.separator + "jms-node.conf").getCanonicalPath
+      } else {
+        logger.error("the path to proline server configuration file is empty!")
+      }
+    }
+    //Jms Server properties
+    val nodeConfigFile = new NodeConfigFile(Monitor.jmsConfigPath)
+    val nodeConfigOpt: Option[NodeConfig] = nodeConfigFile.read
+    require(nodeConfigOpt.isDefined, "Jms-node Config is undefined. Make sure that Proline JMS server configuration file exists.")
+    nodeConfigOpt
   }
 
   def start(stage: javafx.stage.Stage): Unit = {

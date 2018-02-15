@@ -68,7 +68,7 @@ class NewUserPane(
   }
 
   val isAdmin = new CheckBox {
-    text = "Add user to administrttor group"
+    text = "Add user to administrator group"
     selected = false
     minWidth = 200
   }
