@@ -34,6 +34,7 @@ object ProjectPane extends VBox {
   //import data from  database 
   lazy val projectViews = getProjectViews()
   lazy val tableLines = ObservableBuffer(projectViews)
+
   //create table view 
   val projectTable = new TableView[ProjectView](tableLines) {
     columns ++= List(
@@ -120,34 +121,38 @@ object ProjectPane extends VBox {
   spacing = 20
   children = Seq(usersTitledPane)
 
-  // get projectViews list from database
+  /** get projectViews list from database*/
   def getProjectViews(): Seq[ProjectView] = {
     UdsRepository.getAllProjects().toBuffer[Project].sortBy(_.getId).map(new ProjectView(_))
   }
 
   lazy val userList = UdsRepository.getAllUserAccounts().toSeq
 
-  // refresh tableView 
+  /** refresh tableView*/
   def refreshTableView() {
     tableLines.clear()
     tableLines.addAll(ObservableBuffer(getProjectViews()))
   }
 
-  // delete project 
+  /** disable project*/
   private def disableProject() {
     val confirmed = GetConfirmation("Are you sure that you want to disable the selected project? ", "Confirm your action", "Yes", "Cancel", Monitor.stage)
     if (confirmed) {
+      //drop project from uds_db , keep Lcms and Msi databases 
       val dataStore = UdsRepository.getDataStoreConnFactory()
       DeleteProject(dataStore, projectTable.getSelectionModel.getSelectedItem.id.apply(), false)
       refreshTableView()
+      UdsRepository.getDataStoreConnFactory()
     }
   }
-  // save project 
+  /** save project */
   private def saveProject() {
 
   }
-  //import project  
+
+  /** restore project */
   private def restoreProject() {
 
   }
+
 }

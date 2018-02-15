@@ -56,19 +56,7 @@ object Monitor extends LazyLogging {
 }
 class Monitor extends Application {
 
-  def start(stage: javafx.stage.Stage): Unit = {
-
-    require(Monitor.stage == null, "stage is already instantiated")
-    Monitor.itemsPanel = MonitorPane
-    Monitor.buttonsPanel = MonitorBottomsPanel
-    Monitor.stage = new Stage(stage) {
-      width = 1024
-      minWidth = 700
-      height = 780
-      minHeight = 650
-      scene = new Scene(Monitor.root)
-      title = s"${Module.name} ${Module.version}"
-    }
+  override def init: Unit = {
     /* Locate 'config' folder */
     val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
     Monitor.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
@@ -82,7 +70,21 @@ class Monitor extends Application {
       Monitor.adminConfPath = _appConfPath
       ProlineAdminConnection._setNewProlineConfigMonitor()
     }
+  }
 
+  def start(stage: javafx.stage.Stage): Unit = {
+
+    require(Monitor.stage == null, "stage is already instantiated")
+    Monitor.itemsPanel = MonitorPane
+    Monitor.buttonsPanel = MonitorBottomsPanel
+    Monitor.stage = new Stage(stage) {
+      width = 1024
+      minWidth = 700
+      height = 780
+      minHeight = 650
+      scene = new Scene(Monitor.root)
+      title = s"${Module.name} ${Module.version}"
+    }
     /* Build and show stage (in any case) */
     Monitor.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Monitor.stage.scene.value.getStylesheets.add("/css/Style.css")

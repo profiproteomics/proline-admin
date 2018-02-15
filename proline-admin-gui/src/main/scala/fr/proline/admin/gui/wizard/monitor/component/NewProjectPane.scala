@@ -30,7 +30,7 @@ import scalafx.util.StringConverter
 
 /**
  * build new Project panel
- * @aromdhani
+ * @author aromdhani
  *
  */
 

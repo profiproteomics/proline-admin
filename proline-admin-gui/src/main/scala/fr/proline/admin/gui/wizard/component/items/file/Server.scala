@@ -54,7 +54,6 @@ import ExecutionContext.Implicits.global
  */
 
 class ServerPane(path: String) extends CustomScrollPane {
-
   val server = new Server(path)
   setContentNode(
     new VBox {
@@ -77,7 +76,7 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
   var port: Int = 5432
   private val adminConfigFile = new AdminConfigFile(path)
   private val adminConfigOpt = adminConfigFile.read()
-  require(adminConfigOpt.isDefined, "admin config is undefined to get database server properties. ")
+  require(adminConfigOpt.isDefined, "admin config is undefined. Make sure that proline configuration files exists. ")
   private val adminConfig = adminConfigOpt.get
 
   def isPrompt(str: String): Boolean = str matches """<.*>"""

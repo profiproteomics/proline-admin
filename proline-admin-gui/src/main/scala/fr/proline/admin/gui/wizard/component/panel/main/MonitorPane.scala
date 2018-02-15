@@ -18,6 +18,8 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import scalafx.stage.Stage
 import fr.proline.admin.gui.wizard.util.WindowSize
 import fr.proline.admin.gui.Monitor
+import fr.proline.admin.gui.process.config.AdminConfigFile
+import fr.proline.admin.gui.process.config.AdminConfig
 
 /**
  * Builds home panel of monitor GUI
@@ -25,6 +27,14 @@ import fr.proline.admin.gui.Monitor
  */
 
 object MonitorPane extends VBox with LazyLogging {
+
+  //Proline server initial values 
+  private val adminConfFile = new AdminConfigFile(Monitor.adminConfPath);
+  private val adminConfigOpt = adminConfFile.read()
+  require(adminConfigOpt.isDefined, "admin config is undefined.Make sure that proline configuration files exists.")
+  private val adminConfig = adminConfigOpt.get
+
+  //Proline JMS server initials values 
 
   val infoMessage = new BoldLabel("(By default, same server as Proline Server Cortex)")
   private val V_SPACING = 10
@@ -89,17 +99,23 @@ object MonitorPane extends VBox with LazyLogging {
   val pgPortLabel = new Label("Port: ")
   val pgUserLabel = new Label("User: ")
   val pgPasswordLabel = new Label("Password: ")
+
   val pgHostField = new TextField() {
     disable = true
+    text = adminConfig.dbHost.get
   }
+
   val pgPortField = new TextField() {
     disable = true
+    text = adminConfig.dbPort.get.toString
   }
   val pgUserField = new TextField() {
     disable = true
+    text = adminConfig.dbUserName.get
   }
   val pgPasswordField = new TextField() {
     disable = true
+    text = adminConfig.dbPassword.get
   }
   val pgTitledPane = new HBox {
 
