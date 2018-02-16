@@ -57,7 +57,7 @@ object Summary extends LazyLogging {
         val server = item.asInstanceOf[ServerConfig]
         setUpUpdateChBox = new CheckBox {
           text = "Set up or update Proline databases"
-          selected = false
+          selected = true
         }
         val serverInfos = new Label {
           text = server.mountsPoint.getInfos

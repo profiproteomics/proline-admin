@@ -13,7 +13,6 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
 import fr.profi.util.scala.ScalaUtils
 
-
 /**
  * GRAPHICAL UTILITIES
  */
@@ -41,16 +40,14 @@ object FxUtils extends LazyLogging {
   }
   /* directory browsing in Wizard */
 
-  
   /** File browsing **/
   def browseFile(
     fcTitle: String,
     fcInitialDir: String = "",
     fcExtFilters: Array[ExtensionFilter] = Array(),
-    fcInitOwner: Stage = Main.stage
-    //multipleSelection: Boolean = false
-  ): File = {
-    
+    fcInitOwner: Stage = Main.stage //multipleSelection: Boolean = false
+    ): File = {
+
     //fr.profi.util.scalafx.FileBrowsing.browseFile(fcTitle, fcInitialDir, fcExtFilters, fcInitOwner, multipleSelection = true)
 
     /** Define multiple file chooser */
@@ -65,7 +62,6 @@ object FxUtils extends LazyLogging {
           else initialDirectory = new File(initDir.getParent())
         }
       }
-
       // Extension filter(s)
       extensionFilters.add(new ExtensionFilter("All files", "*"))
       fcExtFilters.foreach(extensionFilters.add(_))
@@ -86,13 +82,12 @@ object FxUtils extends LazyLogging {
   def browseDirectory(
     dcTitle: String,
     dcInitialDir: String = "",
-    dcInitOwner: Stage = Main.stage
-  ): File = {
+    dcInitOwner: Stage = Main.stage): File = {
 
     /** Define directory chooser */
     val dc = new DirectoryChooser {
       title = dcTitle
-      
+
       if (ScalaUtils.isEmpty(dcInitialDir) == false) {
         val _initFile = new File(dcInitialDir)
         if (_initFile.isDirectory()) initialDirectory = _initFile
@@ -104,12 +99,10 @@ object FxUtils extends LazyLogging {
     dc.showDialog(dcInitOwner)
   }
 
-
   /**
    * ******** *
    * WRAPPERS *
    * ******** *
    */
-
 
 }

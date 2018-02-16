@@ -152,7 +152,7 @@ object ProjectPane extends VBox {
 
   /** restore project */
   private def restoreProject() {
-
+    LoadProjectPane("Load Project", Some(Monitor.stage), false)
   }
 
 }

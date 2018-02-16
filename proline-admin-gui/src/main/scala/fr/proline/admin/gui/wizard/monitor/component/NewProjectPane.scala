@@ -11,12 +11,14 @@ import scalafx.scene.control.ComboBox
 import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.StackPane
 import scalafx.stage.Modality
-import scalafx.stage.Stage
-import fr.profi.util.scalafx.ScalaFxUtils
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.{ VBox, HBox }
+import scalafx.collections.ObservableBuffer
+import scalafx.util.StringConverter
+import scalafx.stage.Stage
+import fr.profi.util.scalafx.ScalaFxUtils
 import scalafx.scene.control.TextField
-import com.sun.javafx.css.StyleClass
+
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.core.orm.uds.UserAccount
@@ -25,11 +27,10 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 import fr.proline.admin.gui.wizard.service.NewProject
 import fr.proline.admin.gui.wizard.util.ProgressBarPopup
-import scalafx.collections.ObservableBuffer
-import scalafx.util.StringConverter
+
 
 /**
- * build new Project panel
+ * build new project panel
  * @author aromdhani
  *
  */
@@ -42,6 +43,8 @@ class NewProjectPane(
   title = wTitle
   minWidth_=(400)
   minHeight_=(200)
+  width_=(450)
+  height_=(350)
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
   newProjectPane.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)

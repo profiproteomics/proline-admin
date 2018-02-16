@@ -83,7 +83,7 @@ class Monitor extends Application with LazyLogging {
         Monitor.serverInitialConfing = getProlineServerInitialConfig
         Monitor.serverJmsInitialConfig = getJmsServerInitialConfig
         prolineAdminConnection onSuccess {
-          case result => logger.info("Connection to Proline Database Server is valid.")
+          case result => logger.trace("Connection to Proline Database Server is valid.")
         }
         prolineAdminConnection onFailure {
           case error => logger.error("Connection to Proline Database Server is invalid.")
