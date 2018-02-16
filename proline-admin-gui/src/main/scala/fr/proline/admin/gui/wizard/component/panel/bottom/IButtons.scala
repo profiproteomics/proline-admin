@@ -15,13 +15,13 @@ import fr.proline.admin.gui.util._
  */
 trait IButtons {
   //Buttons 
-  val cancelButt = new Button("Exit") {
+  val exitButton = new Button("Exit") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
       exit()
     }
   }
-  val goButt = new Button(" Go ") {
+  val goButton = new Button(" Go ") {
     graphic = FxUtils.newImageView(IconResource.EXECUTE)
     onAction = handle {
       go()
@@ -29,8 +29,8 @@ trait IButtons {
   }
   //layout
   Seq(
-    cancelButt,
-    goButt).foreach { b =>
+    exitButton,
+    goButton).foreach { b =>
       b.prefHeight = 20
       b.prefWidth = 120
       b.styleClass += ("mainButtons")
@@ -40,8 +40,8 @@ trait IButtons {
     padding = Insets(10)
     spacing = 10
     children = Seq(
-      goButt,
-      cancelButt)
+      goButton,
+      exitButton)
   })
 
   def exit(): Unit

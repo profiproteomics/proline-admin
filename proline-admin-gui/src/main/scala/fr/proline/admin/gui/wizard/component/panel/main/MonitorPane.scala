@@ -43,6 +43,7 @@ object MonitorPane extends VBox with LazyLogging {
     visible = false
     style = TextStyle.RED_ITALIC
   }
+
   try {
     val adminConfig = Monitor.serverInitialConfing.get
     serverHost = adminConfig.dbHost.get

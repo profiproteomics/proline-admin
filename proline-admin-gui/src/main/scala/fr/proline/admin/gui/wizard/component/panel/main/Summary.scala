@@ -19,7 +19,7 @@ import fr.proline.admin.gui.wizard.util.ProgressBarPopup
 import fr.proline.admin.gui.wizard.util.UserGuideView
 import fr.proline.admin.gui.wizard.util.HelpPopup
 import java.io.File
-import fr.proline.admin.gui.wizard.service.DbMaintenanceTask
+import fr.proline.admin.gui.wizard.service.DataBaseMaintenance
 import fr.proline.admin.gui.wizard.component.panel.bottom.InstallNavButtons
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
@@ -140,7 +140,7 @@ object Summary extends LazyLogging {
           if (setUpUpdateChBox.isSelected()) {
             val confirmed = GetConfirmation("Are you sure you want to update Proline databases ?\n(This process may take hours.)", "Confirm your action", "Yes", "Cancel", Wizard.stage)
             if (confirmed) {
-              ProgressBarPopup("Setup/Update", "Setup / Update Proline databases\n  \t\t in progress...", Some(Wizard.stage), false, DbMaintenanceTask.Worker)
+              ProgressBarPopup("Setup/Update", "Setup / Update Proline databases\n  \t\t in progress...", Some(Wizard.stage), false, DataBaseMaintenance.Worker)
             }
           }
         } catch {

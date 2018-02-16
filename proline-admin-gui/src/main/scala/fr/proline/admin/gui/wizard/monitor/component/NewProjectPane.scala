@@ -23,7 +23,7 @@ import fr.proline.core.orm.uds.UserAccount
 import fr.proline.admin.gui.Monitor
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
-import fr.proline.admin.gui.wizard.service.Project
+import fr.proline.admin.gui.wizard.service.NewProject
 import fr.proline.admin.gui.wizard.util.ProgressBarPopup
 import scalafx.collections.ObservableBuffer
 import scalafx.util.StringConverter
@@ -63,7 +63,7 @@ class NewProjectPane(
       if (!projectNameTextField.getText.isEmpty()) {
         if (!ownerList.selectionModel.apply().isEmpty()) {
           try {
-            val projectTask = new Project(projectNameTextField.getText, projectDescTextField.getText, ownerList.getValue.getId)
+            val projectTask = new NewProject(projectNameTextField.getText, projectDescTextField.getText, ownerList.getValue.getId)
             ProgressBarPopup("New project", "Creating project in progress ...", Some(newProjectPane), true, projectTask.Worker)
             newProjectPane.close()
             //ProjectPane.refreshTableView()

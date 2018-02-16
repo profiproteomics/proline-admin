@@ -81,7 +81,7 @@ class NewUserPane(
         //login must not be empty 
         if (!loginTextField.getText.isEmpty()) {
           try {
-            val userTask = new User(loginTextField.getText, Some(userFirstPwTextField.getText()), isAdmin.selected.apply())
+            val userTask = new NewUser(loginTextField.getText, Some(userFirstPwTextField.getText()), isAdmin.selected.apply())
             ProgressBarPopup("New user", "Creating user in progress ...", Some(newUserPane), true, userTask.Worker)
             UsesrsPane.refreshTableView()
             newUserPane.close()

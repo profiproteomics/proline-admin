@@ -10,7 +10,6 @@ import scalafx.scene.control.Label
  */
 
 object MainPane extends VBox {
-
   spacing = 20
   children = Seq(new Label(""),UsesrsPane, ProjectPane)
 }

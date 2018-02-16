@@ -16,7 +16,7 @@ import fr.proline.admin.service.db.CreateProjectDBs
  *
  */
 
-class Project(val newProjectName: String, val newProjectDesc: String, val ownerId: Long) extends LazyLogging {
+class NewProject(val newProjectName: String, val newProjectDesc: String, val ownerId: Long) extends LazyLogging {
   var shouldThrow = new AtomicBoolean(false)
   object Worker extends Task(new jfxc.Task[Unit] {
     protected def call(): Unit = {

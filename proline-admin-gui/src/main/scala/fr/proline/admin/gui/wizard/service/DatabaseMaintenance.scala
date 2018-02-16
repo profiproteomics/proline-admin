@@ -11,11 +11,9 @@ import javafx.{ concurrent => jfxc }
  *
  * Create task to setup or upgrade Proline databases
  *
- *
- *
  */
 
-object DbMaintenanceTask {
+object DataBaseMaintenance {
 
   object Worker extends Task(new jfxc.Task[Unit] {
 
