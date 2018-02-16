@@ -237,9 +237,9 @@ object UdsRepository extends LazyLogging {
     val externalDbs = try {
       val externalDbClass = classOf[ExternalDb]
       val jpqlSelectExternalDb = s"FROM ${externalDbClass.getName}"
-      val externalDbList=udsEM.createQuery(jpqlSelectExternalDb,externalDbClass).getResultList()
+      val externalDbList = udsEM.createQuery(jpqlSelectExternalDb, externalDbClass).getResultList()
       externalDbList.asScala.toArray
-      
+
     } catch {
       case t: Throwable => {
         synchronized {
@@ -252,7 +252,7 @@ object UdsRepository extends LazyLogging {
     }
     externalDbs
   }
-  
+
   /**
    *  Get the exhaustive list of Project instances in database, grouped by owner
    */
@@ -306,7 +306,7 @@ object UdsRepository extends LazyLogging {
 }
 
 class DynamicDataStoreConnectorFactory(
-  private val udsDbConnector: IDatabaseConnector = null) extends IDataStoreConnectorFactory with LazyLogging {
+    private val udsDbConnector: IDatabaseConnector = null) extends IDataStoreConnectorFactory with LazyLogging {
 
   require(udsDbConnector != null, "udsDbConnector is null")
 
@@ -331,7 +331,7 @@ class DynamicDataStoreConnectorFactory(
     pdiDbConnector
   }
 
- override def getPsDbConnector() = {
+  override def getPsDbConnector() = {
     psInitialized = true
     psDbConnector
   }
@@ -385,7 +385,7 @@ class DynamicDataStoreConnectorFactory(
 
       if (psInitialized) {
         psDbConnector.close()
-     }
+      }
 
       try {
         udsEM.close()

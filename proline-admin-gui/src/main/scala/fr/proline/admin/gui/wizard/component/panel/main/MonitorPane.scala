@@ -30,14 +30,42 @@ import fr.proline.admin.gui.wizard.process.config.NodeConfig
 
 object MonitorPane extends VBox with LazyLogging {
 
-  //Proline server and Proline Jms server  initial values 
-  private val adminConfig = Monitor.serverInitialConfing.get
-  private val JmsConfig = Monitor.serverJmsInitialConfig.get
-
-  private val errorLabel = new Label {
-    text = "Error while trying to read initial Proline server configurations\nMake sure that you have already setup Proline."
+  // Proline server initial properties 
+  private var jmsServerHost: String = "localhost"
+  private var jmsServerPort: Int = 5445
+  private var jmsServerQueueName = "ProlineServiceRequestQueue"
+  private var serverHost: String = "<db_host>"
+  private var serverUser: String = "<db_user>"
+  private var serverPort: Int = 5432
+  private var serverPassword: String = "<db_password>"
+  private val errorServerLabel = new Label {
+    text = "Error while trying to read initial Proline server configurations. Make sure that you have already setup Proline."
     visible = false
     style = TextStyle.RED_ITALIC
+  }
+  try {
+    val adminConfig = Monitor.serverInitialConfing.get
+    serverHost = adminConfig.dbHost.get
+    serverUser = adminConfig.dbUserName.get
+    serverPort = adminConfig.dbPort.get
+    serverPassword = adminConfig.dbPassword.get
+  } catch {
+    case t: Throwable =>
+      logger.error("Error while trying to get Proline sevrer initial configurations.")
+      errorServerLabel.visible_=(true)
+  }
+
+  //Jms server initial properties 
+  try {
+    val JmsConfig = Monitor.serverJmsInitialConfig.get
+    jmsServerHost = JmsConfig.jmsServerHost.get
+    jmsServerPort = JmsConfig.jmsServePort.get
+    jmsServerQueueName = JmsConfig.requestQueueName.get
+
+  } catch {
+    case t: Throwable =>
+      logger.error("Error while trying to get Proline JMS server initial configuration!")
+      errorServerLabel.visible_=(true)
   }
 
   val infoMessage = new BoldLabel("(By default, same server as Proline Server Cortex)")
@@ -55,19 +83,19 @@ object MonitorPane extends VBox with LazyLogging {
   val jmsHostLabel = new Label("Host: ")
   val jmsHostField = new TextField() {
     disable = true
-    text = JmsConfig.jmsServerHost.get
+    text = jmsServerHost
   }
 
   val jmsPortLabel = new Label("Port: ")
   val jmsPortField = new TextField() {
     disable = true
-    text = JmsConfig.jmsServePort.get.toString
+    text = jmsServerPort.toString
   }
 
   val jmsProlineQueueLabel = new Label("Proline Queue Name:")
   val jmsProlineQueueField = new TextField {
     disable = true
-    text = JmsConfig.requestQueueName.get
+    text = jmsServerQueueName
   }
 
   val jmsTiteledPane = new HBox {
@@ -110,25 +138,25 @@ object MonitorPane extends VBox with LazyLogging {
   val pgHostLabel = new Label("Host: ")
   val pgHostField = new TextField() {
     disable = true
-    text = adminConfig.dbHost.get
+    text = serverHost
   }
 
   val pgPortLabel = new Label("Port: ")
   val pgPortField = new TextField() {
     disable = true
-    text = adminConfig.dbPort.get.toString
+    text = serverPort.toString
   }
 
   val pgUserLabel = new Label("User: ")
   val pgUserField = new TextField() {
     disable = true
-    text = adminConfig.dbUserName.get
+    text = serverUser
   }
 
   val pgPasswordLabel = new Label("Password: ")
   val pgPasswordField = new TextField() {
     disable = true
-    text = adminConfig.dbPassword.get
+    text = serverPassword
   }
   val pgTitledPane = new HBox {
 
@@ -176,6 +204,6 @@ object MonitorPane extends VBox with LazyLogging {
   children = Seq(ScalaFxUtils.newVSpacer(25),
     new VBox {
       spacing = V_SPACING * 2
-      children = List(errorLabel, jmsServerPane, ScalaFxUtils.newVSpacer(10), postgreSQLServerPane)
+      children = List(errorServerLabel, jmsServerPane, ScalaFxUtils.newVSpacer(10), postgreSQLServerPane)
     })
 }

@@ -83,7 +83,7 @@ class Monitor extends Application with LazyLogging {
         Monitor.serverInitialConfing = getProlineServerInitialConfig
         Monitor.serverJmsInitialConfig = getJmsServerInitialConfig
         prolineAdminConnection onSuccess {
-          case result => logger.trace("Connection to Proline Database Server is valid.")
+          case result => logger.info("Connection to Proline Database Server is valid.")
         }
         prolineAdminConnection onFailure {
           case error => logger.error("Connection to Proline Database Server is invalid.")
@@ -91,8 +91,6 @@ class Monitor extends Application with LazyLogging {
       } catch {
         case t: Throwable => logger.error("Error while trying to get Proline server initial configurations.")
       }
-    } else {
-      logger.warn("application.conf file does not exist!")
     }
   }
   val prolineAdminConnection: Future[Unit] = Future { ProlineAdminConnection._setNewProlineConfigMonitor() }
@@ -105,7 +103,7 @@ class Monitor extends Application with LazyLogging {
     adminConfigOpt
   }
 
-  /**get Proline Jms server initial properties */
+  /** get Proline Jms server initial properties */
 
   def getJmsServerInitialConfig(): Option[NodeConfig] = {
     val initialAdminConfigOpt = getProlineServerInitialConfig()
