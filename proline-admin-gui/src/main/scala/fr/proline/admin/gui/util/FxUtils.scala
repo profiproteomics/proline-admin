@@ -94,7 +94,6 @@ object FxUtils extends LazyLogging {
         else initialDirectory = _initFile.getParentFile
       }
     }
-
     /** Show directory chooser and return selected directory */
     dc.showDialog(dcInitOwner)
   }

@@ -22,12 +22,12 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.core.orm.uds.UserAccount
 
 /**
- * builds load project pane
+ * builds save project pane
  * @author aromdhani
  *
  */
 
-class LoadProjectPane(
+class SaveProjectPane(
     wTitle: String,
     wParent: Option[Stage],
     isResizable: Boolean = false) extends Stage with LazyLogging {
@@ -36,24 +36,15 @@ class LoadProjectPane(
   minWidth_=(400)
   minHeight_=(200)
   width_=(600)
-  height_=(300)
+  height_=(250)
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
   saveProjectPane.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
-
   // Component 
-  val projectPathLabel = new Label("Select project diretcory")
-  val projectNameLabel = new Label("Project name")
-  val projectDescLabel = new Label("Project description")
-  val projectOwnerLabel = new Label("Project owner")
+  val projectPathLabel = new Label("Select save location")
   val projectPathTextField = new TextField()
-  val projecNameTextField = new TextField()
-  val projectDescTextField = new TextField()
-  val ownerList = new ComboBox[UserAccount](ProjectPane.userList) {
-    converter = StringConverter.toStringConverter((user: UserAccount) => user.getLogin)
-  }
-  val loadButton = new Button {
-    text = "Load"
+  val saveButton = new Button {
+    text = "Save"
     graphic = FxUtils.newImageView(IconResource.TICK)
     onAction = handle {
       load()
@@ -75,12 +66,12 @@ class LoadProjectPane(
   }
 
   //Style 
-  Seq(projectNameLabel, projectOwnerLabel, projectDescLabel, projectPathLabel, projecNameTextField, projectDescTextField, projectPathTextField, ownerList).foreach { component =>
+  Seq(projectPathLabel, projectPathTextField).foreach { component =>
     component.prefWidth = 200
     component.hgrow_=(Priority.ALWAYS)
   }
 
-  Seq(loadButton,
+  Seq(saveButton,
     cancelButton).foreach { b =>
       b.prefHeight = 20
       b.prefWidth = 120
@@ -92,21 +83,9 @@ class LoadProjectPane(
     spacing = 30
     children = Seq(projectPathLabel, projectPathTextField, browseButton)
   }
-  val projectNamePanel = new HBox {
-    spacing = 30
-    children = Seq(projectNameLabel, projecNameTextField)
-  }
-  val projectDescPanel = new HBox {
-    spacing = 30
-    children = Seq(projectDescLabel, projectDescTextField)
-  }
-  val projectOwnerPanel = new HBox {
-    spacing = 30
-    children = Seq(projectOwnerLabel, ownerList)
-  }
   val loadProjectPanel = new VBox {
     spacing = 10
-    children = Seq(browseProjectPanel, projectNamePanel, projectDescPanel, projectOwnerPanel)
+    children = Seq(browseProjectPanel)
   }
   scene = new Scene {
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(saveProjectPane, ke) }
@@ -120,7 +99,7 @@ class LoadProjectPane(
           alignment = Pos.Center
           padding = Insets(10)
           spacing = 30
-          children = Seq(loadButton,
+          children = Seq(saveButton,
             cancelButton)
         })
     }
@@ -138,9 +117,9 @@ class LoadProjectPane(
     saveProjectPane.close()
   }
 }
-object LoadProjectPane {
+object SaveProjectPane {
   def apply(
     wTitle: String,
     wParent: Option[Stage],
-    isResizable: Boolean = false) { new LoadProjectPane(wTitle, wParent, isResizable).showAndWait() }
+    isResizable: Boolean = false) { new SaveProjectPane(wTitle, wParent, isResizable).showAndWait() }
 }

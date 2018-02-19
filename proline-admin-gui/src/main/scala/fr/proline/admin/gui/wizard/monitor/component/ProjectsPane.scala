@@ -20,13 +20,14 @@ import fr.proline.admin.gui.component.resource.implicits.ProjectView
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.util._
+import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.Monitor._
 import fr.proline.admin.gui.Monitor
+import fr.proline.admin.gui.wizard.util.GetConfirmation
 
 /**
  * builds projects view
- * @aromdhani
+ * @author aromdhani
  *
  */
 object ProjectPane extends VBox {
@@ -147,12 +148,12 @@ object ProjectPane extends VBox {
   }
   /** save project */
   private def saveProject() {
-
+    SaveProjectPane("Save Project", Some(Monitor.stage), false)
   }
 
   /** restore project */
   private def restoreProject() {
-    LoadProjectPane("Load Project", Some(Monitor.stage), false)
-  }
 
+    LoadProjectPane("Restore Project", Some(Monitor.stage), false)
+  }
 }

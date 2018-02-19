@@ -43,8 +43,8 @@ class NewProjectPane(
   title = wTitle
   minWidth_=(400)
   minHeight_=(200)
-  width_=(450)
-  height_=(350)
+  width_=(500)
+  height_=(300)
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
   newProjectPane.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
