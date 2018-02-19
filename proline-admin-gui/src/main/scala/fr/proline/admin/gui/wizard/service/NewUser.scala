@@ -16,7 +16,7 @@ import fr.profi.util.security.sha256Hex
 
 class NewUser(val login: String, val pwField: Option[String], isAdmin: Boolean) {
   var shouldThrow = new AtomicBoolean(false)
-  //Create user task 
+  /** Create user task */
   object Worker extends Task(new jfxc.Task[Unit] {
     protected def call(): Unit = {
       val udsDbContext = UdsRepository.getUdsDbContext()

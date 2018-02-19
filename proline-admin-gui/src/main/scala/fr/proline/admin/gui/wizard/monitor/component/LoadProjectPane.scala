@@ -18,6 +18,7 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.input.KeyEvent
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.util.FxUtils
+import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 import fr.proline.admin.gui.IconResource
 import fr.proline.core.orm.uds.UserAccount
 
@@ -35,7 +36,7 @@ class LoadProjectPane(
   title = wTitle
   minWidth_=(400)
   minHeight_=(200)
-  width_=(600)
+  width_=(650)
   height_=(300)
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
@@ -47,16 +48,25 @@ class LoadProjectPane(
   val projectDescLabel = new Label("Project description")
   val projectOwnerLabel = new Label("Project owner")
   val projectPathTextField = new TextField()
-  val projecNameTextField = new TextField()
-  val projectDescTextField = new TextField()
+  val projecNameTextField = new TextField {
+    disable = true
+  }
+  val projectDescTextField = new TextField {
+    disable = true
+  }
   val ownerList = new ComboBox[UserAccount](ProjectPane.userList) {
     converter = StringConverter.toStringConverter((user: UserAccount) => user.getLogin)
   }
   val loadButton = new Button {
-    text = "Load"
+    text = "Restore"
     graphic = FxUtils.newImageView(IconResource.TICK)
     onAction = handle {
-      load()
+      if (!ownerList.selectionModel.get.isEmpty()) {
+        warningOwnerLabel.visible_=(false)
+        //restore project task 
+      } else {
+        warningOwnerLabel.visible_=(true)
+      }
     }
   }
   val cancelButton = new Button {
@@ -70,11 +80,19 @@ class LoadProjectPane(
     text = "Browse..."
     graphic = FxUtils.newImageView(IconResource.LOAD)
     onAction = handle {
-      load()
+      _browseProjectDir()
     }
   }
-
-  //Style 
+  val warningPathLabel = new Label {
+    text = "Enter a validated project location.The project folder must contains SQL backup and project_properties.json files. "
+    style = TextStyle.RED_ITALIC
+    visible = false
+  }
+  val warningOwnerLabel = new Label {
+    text = "Select a project owner."
+    style = TextStyle.RED_ITALIC
+    visible = false
+  }
   Seq(projectNameLabel, projectOwnerLabel, projectDescLabel, projectPathLabel, projecNameTextField, projectDescTextField, projectPathTextField, ownerList).foreach { component =>
     component.prefWidth = 200
     component.hgrow_=(Priority.ALWAYS)
@@ -106,7 +124,7 @@ class LoadProjectPane(
   }
   val loadProjectPanel = new VBox {
     spacing = 10
-    children = Seq(browseProjectPanel, projectNamePanel, projectDescPanel, projectOwnerPanel)
+    children = Seq(warningPathLabel, warningOwnerLabel, browseProjectPanel, projectNamePanel, projectDescPanel, projectOwnerPanel)
   }
   scene = new Scene {
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(saveProjectPane, ke) }
@@ -126,12 +144,33 @@ class LoadProjectPane(
     }
   }
 
-  /** load project to Proline databases */
-  def load(): Unit = {
+  /** browse a project location */
+  def _browseProjectDir() {
     val file = FxUtils.browseDirectory(
       dcTitle = "Select project directrory",
-      dcInitialDir = "",
+      dcInitialDir = projectPathTextField.text(),
       dcInitOwner = saveProjectPane)
+    try {
+      if (!isValidProject(file)) {
+        warningPathLabel.visible_=(true)
+      } else {
+        warningPathLabel.visible_=(false)
+        val newPath = file.getPath()
+        if (file != null) {
+          projectPathTextField.text = newPath
+        }
+      }
+    } catch {
+      case t: Throwable => logger.error("error while trying to select a project location", t)
+    }
+  }
+  /** check  list of files in project folder */
+  def isValidProject(projectPath: java.io.File): Boolean = {
+    projectPath.listFiles().foldLeft(true) {
+      case (isValid, file) => {
+        isValid && file.getName.matches("(lcms_db_project_[0-9]+.bak){1}|(msi_db_project_[0-9]+.bak){1}|(uds_db_schema.bak){1}|(project_properties.json){1}")
+      }
+    }
   }
   /** cancel and close load project popup */
   def cancel(): Unit = {

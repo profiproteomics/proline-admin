@@ -36,18 +36,18 @@ class SaveProjectPane(
   minWidth_=(400)
   minHeight_=(200)
   width_=(600)
-  height_=(250)
+  height_=(200)
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
   saveProjectPane.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
   // Component 
-  val projectPathLabel = new Label("Select save location")
+  val projectPathLabel = new Label("Select project save location")
   val projectPathTextField = new TextField()
   val saveButton = new Button {
     text = "Save"
     graphic = FxUtils.newImageView(IconResource.TICK)
     onAction = handle {
-      load()
+
     }
   }
   val cancelButton = new Button {
@@ -61,7 +61,7 @@ class SaveProjectPane(
     text = "Browse..."
     graphic = FxUtils.newImageView(IconResource.LOAD)
     onAction = handle {
-      load()
+      _browseProjectSaveDir()
     }
   }
 
@@ -105,12 +105,20 @@ class SaveProjectPane(
     }
   }
 
-  /** load project to Proline databases */
-  def load(): Unit = {
+  /** browse a project save location */
+  def _browseProjectSaveDir() {
     val file = FxUtils.browseDirectory(
-      dcTitle = "Select project directrory",
-      dcInitialDir = "",
+      dcTitle = "Select save project location",
+      dcInitialDir = projectPathTextField.text(),
       dcInitOwner = saveProjectPane)
+    try {
+      val newPath = file.getPath()
+      if (file != null) {
+        projectPathTextField.text = newPath
+      }
+    } catch {
+      case t: Throwable => logger.error("error while trying to select a project save location", t)
+    }
   }
   /** cancel and close load project popup */
   def cancel(): Unit = {

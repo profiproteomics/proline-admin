@@ -15,8 +15,8 @@ import javafx.{ concurrent => jfxc }
 
 object DataBaseMaintenance {
 
+  /** create database maintenance task */
   object Worker extends Task(new jfxc.Task[Unit] {
-
     protected def call(): Unit =
       {
         synchronized {

@@ -18,9 +18,9 @@ import fr.proline.admin.service.db.CreateProjectDBs
 
 class NewProject(val newProjectName: String, val newProjectDesc: String, val ownerId: Long) extends LazyLogging {
   var shouldThrow = new AtomicBoolean(false)
+  /** create new user project task */
   object Worker extends Task(new jfxc.Task[Unit] {
     protected def call(): Unit = {
-      /* Create project */
       val udsDbContext = UdsRepository.getUdsDbContext()
       val prolineConf = SetupProline.getUpdatedConfig
       val projectCreator = new CreateProject(udsDbContext, newProjectName, newProjectDesc, ownerId)
