@@ -18,12 +18,14 @@ import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.admin.gui.wizard.util.ProgressBarPopup
 import fr.proline.admin.gui.wizard.util.UserGuideView
 import fr.proline.admin.gui.wizard.util.HelpPopup
-import java.io.File
+
 import fr.proline.admin.gui.wizard.service.DataBaseMaintenance
 import fr.proline.admin.gui.wizard.component.panel.bottom.InstallNavButtons
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.service.db.SetupProline
+
+import java.io.File
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

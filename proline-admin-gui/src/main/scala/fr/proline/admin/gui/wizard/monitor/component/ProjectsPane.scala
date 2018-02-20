@@ -1,5 +1,6 @@
 package fr.proline.admin.gui.wizard.monitor.component
 
+import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
 import scalafx.scene.control.{ TableColumn, TableView }
 import scalafx.scene.control.TableColumn._
@@ -25,16 +26,23 @@ import fr.proline.admin.gui.Monitor._
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.wizard.util.GetConfirmation
 
+import scala.concurrent.{ Future }
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{ Failure, Success }
+import scala.concurrent.Await
+import scala.concurrent.duration.DurationInt
+import fr.proline.core.orm.uds.UserAccount
+
 /**
  * builds projects view
  * @author aromdhani
  *
  */
-object ProjectPane extends VBox {
+object ProjectPane extends VBox with LazyLogging {
 
   //import data from  database 
-  lazy val projectViews = getProjectViews()
-  lazy val tableLines = ObservableBuffer(projectViews)
+  var projectViews = getProjectViews()
+  var tableLines = ObservableBuffer(projectViews)
 
   //create table view 
   val projectTable = new TableView[ProjectView](tableLines) {
@@ -69,7 +77,6 @@ object ProjectPane extends VBox {
     onAction = handle {
       NewProjectPane("New Project", Some(Monitor.stage), false)
     }
-
   }
 
   val deleteProjButton = new Button {
@@ -77,7 +84,6 @@ object ProjectPane extends VBox {
     graphic = FxUtils.newImageView(IconResource.TRASH)
     onAction = handle {
       disableProject()
-
     }
   }
 
@@ -118,16 +124,20 @@ object ProjectPane extends VBox {
       spacing = 20
       children = Seq(projectTable, buttonsPanel)
     })
-
   spacing = 20
   children = Seq(usersTitledPane)
 
-  /** get projectViews list from database*/
-  def getProjectViews(): Seq[ProjectView] = {
+  /** get a list of projectViews */
+  def getProjectViews(): Seq[ProjectView] = Await.result(getProjectViewsFuture, 3.seconds)
+
+  /**this future return  a list of project views from databases */
+  def getProjectViewsFuture(): Future[Seq[ProjectView]] = Future {
     UdsRepository.getAllProjects().toBuffer[Project].sortBy(_.getId).map(new ProjectView(_))
   }
 
-  lazy val userList = UdsRepository.getAllUserAccounts().toSeq
+  /** this future return a list of user from database */
+  def getuserViews(): Future[Seq[UserAccount]] = Future { UdsRepository.getAllUserAccounts().toSeq }
+  var userList: Seq[UserAccount] = Await.result(getuserViews(), 3.seconds)
 
   /** refresh tableView*/
   def refreshTableView() {
@@ -154,6 +164,6 @@ object ProjectPane extends VBox {
   /** restore project */
   private def restoreProject() {
 
-    LoadProjectPane("Restore Project", Some(Monitor.stage), false)
+    RestoreProjectPane("Restore Project", Some(Monitor.stage), false)
   }
 }

@@ -9,7 +9,7 @@ import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.layout.{ VBox, HBox }
 import scalafx.scene.control.Label
-import scalafx.scene.control.ComboBox
+import scalafx.scene.control.{ ComboBox, CheckBox }
 import scalafx.scene.control.TextField
 import scalafx.scene.control.Button
 import scalafx.util.StringConverter
@@ -23,21 +23,21 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.core.orm.uds.UserAccount
 
 /**
- * builds load project pane
+ * builds restore project pane
  * @author aromdhani
  *
  */
 
-class LoadProjectPane(
+class RestoreProjectPane(
     wTitle: String,
     wParent: Option[Stage],
     isResizable: Boolean = false) extends Stage with LazyLogging {
   val saveProjectPane = this
   title = wTitle
   minWidth_=(400)
-  minHeight_=(200)
+  minHeight_=(250)
   width_=(650)
-  height_=(300)
+  height_=(350)
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
   saveProjectPane.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
@@ -48,11 +48,15 @@ class LoadProjectPane(
   val projectDescLabel = new Label("Project description")
   val projectOwnerLabel = new Label("Project owner")
   val projectPathTextField = new TextField()
+  val renameProjectChbx = new CheckBox {
+    text = "Rename Project"
+    selected = false
+  }
   val projecNameTextField = new TextField {
-    disable = true
+    disable <== !renameProjectChbx.selected
   }
   val projectDescTextField = new TextField {
-    disable = true
+    disable <== !renameProjectChbx.selected
   }
   val ownerList = new ComboBox[UserAccount](ProjectPane.userList) {
     converter = StringConverter.toStringConverter((user: UserAccount) => user.getLogin)
@@ -64,6 +68,7 @@ class LoadProjectPane(
       if (!ownerList.selectionModel.get.isEmpty()) {
         warningOwnerLabel.visible_=(false)
         //restore project task 
+
       } else {
         warningOwnerLabel.visible_=(true)
       }
@@ -93,7 +98,7 @@ class LoadProjectPane(
     style = TextStyle.RED_ITALIC
     visible = false
   }
-  Seq(projectNameLabel, projectOwnerLabel, projectDescLabel, projectPathLabel, projecNameTextField, projectDescTextField, projectPathTextField, ownerList).foreach { component =>
+  Seq(projectNameLabel, projectOwnerLabel, projectDescLabel, projectPathLabel, projecNameTextField, projectDescTextField, projectPathTextField, ownerList, renameProjectChbx).foreach { component =>
     component.prefWidth = 200
     component.hgrow_=(Priority.ALWAYS)
   }
@@ -124,7 +129,7 @@ class LoadProjectPane(
   }
   val loadProjectPanel = new VBox {
     spacing = 10
-    children = Seq(warningPathLabel, warningOwnerLabel, browseProjectPanel, projectNamePanel, projectDescPanel, projectOwnerPanel)
+    children = Seq(warningPathLabel, warningOwnerLabel, browseProjectPanel, renameProjectChbx, projectNamePanel, projectDescPanel, projectOwnerPanel)
   }
   scene = new Scene {
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(saveProjectPane, ke) }
@@ -164,6 +169,7 @@ class LoadProjectPane(
       case t: Throwable => logger.error("error while trying to select a project location", t)
     }
   }
+
   /** check  list of files in project folder */
   def isValidProject(projectPath: java.io.File): Boolean = {
     projectPath.listFiles().foldLeft(true) {
@@ -172,14 +178,16 @@ class LoadProjectPane(
       }
     }
   }
+
   /** cancel and close load project popup */
   def cancel(): Unit = {
     saveProjectPane.close()
   }
+
 }
-object LoadProjectPane {
+object RestoreProjectPane {
   def apply(
     wTitle: String,
     wParent: Option[Stage],
-    isResizable: Boolean = false) { new LoadProjectPane(wTitle, wParent, isResizable).showAndWait() }
+    isResizable: Boolean = false) { new RestoreProjectPane(wTitle, wParent, isResizable).showAndWait() }
 }
