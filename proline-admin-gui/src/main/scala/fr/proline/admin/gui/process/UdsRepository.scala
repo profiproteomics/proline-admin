@@ -226,7 +226,6 @@ object UdsRepository extends LazyLogging {
       //udsEM.close()
       if (udsDbContext != null) udsDbContext.close()
     }*/
-
     projects
   }
   /* get all databases */

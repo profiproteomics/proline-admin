@@ -163,7 +163,6 @@ object ProjectPane extends VBox with LazyLogging {
 
   /** restore project */
   private def restoreProject() {
-
     RestoreProjectPane("Restore Project", Some(Monitor.stage), false)
   }
 }

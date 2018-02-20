@@ -21,6 +21,7 @@ import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 import fr.proline.admin.gui.IconResource
 import fr.proline.core.orm.uds.UserAccount
+import fr.proline.admin.gui.process.UdsRepository
 
 /**
  * builds restore project pane
@@ -98,7 +99,12 @@ class RestoreProjectPane(
     style = TextStyle.RED_ITALIC
     visible = false
   }
-  Seq(projectNameLabel, projectOwnerLabel, projectDescLabel, projectPathLabel, projecNameTextField, projectDescTextField, projectPathTextField, ownerList, renameProjectChbx).foreach { component =>
+  val warningDefinedProject = new Label {
+    text = "This project name already defined for this user. Please rename your project."
+    visible = false
+    style = TextStyle.RED_ITALIC
+  }
+  Seq(projectNameLabel, projectOwnerLabel, warningDefinedProject, projectDescLabel, projectPathLabel, projecNameTextField, projectDescTextField, projectPathTextField, ownerList, renameProjectChbx).foreach { component =>
     component.prefWidth = 200
     component.hgrow_=(Priority.ALWAYS)
   }
@@ -182,6 +188,11 @@ class RestoreProjectPane(
   /** cancel and close load project popup */
   def cancel(): Unit = {
     saveProjectPane.close()
+  }
+
+  /** check if project name is already defined */
+  def isDefinedProject(projectName: String, projectOwnerId: Long): Boolean = {
+    if (UdsRepository.findProjectsByOwnerId(projectOwnerId).view.find(_.getName == projectName).isEmpty) true else false
   }
 
 }
