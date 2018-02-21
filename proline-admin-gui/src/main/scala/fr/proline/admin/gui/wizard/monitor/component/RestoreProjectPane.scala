@@ -99,12 +99,15 @@ class RestoreProjectPane(
     style = TextStyle.RED_ITALIC
     visible = false
   }
-  val warningDefinedProject = new Label {
+  val warningDefinedProjectLabel = new Label {
     text = "This project name already defined for this user. Please rename your project."
     visible = false
     style = TextStyle.RED_ITALIC
   }
-  Seq(projectNameLabel, projectOwnerLabel, warningDefinedProject, projectDescLabel, projectPathLabel, projecNameTextField, projectDescTextField, projectPathTextField, ownerList, renameProjectChbx).foreach { component =>
+  val warningPanel = new VBox {
+    children = Seq(warningPathLabel, warningOwnerLabel, warningDefinedProjectLabel)
+  }
+  Seq(projectNameLabel, projectOwnerLabel, warningDefinedProjectLabel, projectDescLabel, projectPathLabel, projecNameTextField, projectDescTextField, projectPathTextField, ownerList, renameProjectChbx).foreach { component =>
     component.prefWidth = 200
     component.hgrow_=(Priority.ALWAYS)
   }
@@ -135,7 +138,7 @@ class RestoreProjectPane(
   }
   val loadProjectPanel = new VBox {
     spacing = 10
-    children = Seq(warningPathLabel, warningOwnerLabel, browseProjectPanel, renameProjectChbx, projectNamePanel, projectDescPanel, projectOwnerPanel)
+    children = Seq(warningPanel, browseProjectPanel, renameProjectChbx, projectNamePanel, projectDescPanel, projectOwnerPanel)
   }
   scene = new Scene {
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(saveProjectPane, ke) }
@@ -154,7 +157,6 @@ class RestoreProjectPane(
         })
     }
   }
-
   /** browse a project location */
   def _browseProjectDir() {
     val file = FxUtils.browseDirectory(
