@@ -28,7 +28,6 @@ import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 import fr.proline.admin.gui.wizard.service.NewProject
 import fr.proline.admin.gui.wizard.util.ProgressBarPopup
 
-
 /**
  * build new project panel
  * @author aromdhani
@@ -47,7 +46,6 @@ class NewProjectPane(
   height_=(300)
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
-  newProjectPane.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
 
   // Component
 
@@ -69,9 +67,8 @@ class NewProjectPane(
             val projectTask = new NewProject(projectNameTextField.getText, projectDescTextField.getText, ownerList.getValue.getId)
             ProgressBarPopup("New project", "Creating project in progress ...", Some(newProjectPane), true, projectTask.Worker)
             newProjectPane.close()
-            //ProjectPane.refreshTableView()
           } catch {
-            case t: Throwable => logger.error("Error while trying to execute task create project")
+            case t: Throwable => logger.error("Error while trying to execute task create project: ", t.printStackTrace())
           }
         } else {
           warningUserLabel.visible_=(true)

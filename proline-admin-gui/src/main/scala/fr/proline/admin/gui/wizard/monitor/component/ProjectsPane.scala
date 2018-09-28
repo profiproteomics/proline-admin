@@ -43,7 +43,7 @@ object ProjectPane extends VBox with LazyLogging {
   //import data from  database 
   var projectViews = getProjectViews()
   var tableLines = ObservableBuffer(projectViews)
-
+  var selectedProject: Option[ProjectView] = None
   //create table view 
   val projectTable = new TableView[ProjectView](tableLines) {
     columns ++= List(
@@ -88,7 +88,7 @@ object ProjectPane extends VBox with LazyLogging {
   }
 
   val saveProjButton = new Button {
-    text = "Save project"
+    text = "Archive project"
     graphic = FxUtils.newImageView(IconResource.SAVE)
     onAction = handle {
       saveProject()
@@ -158,7 +158,8 @@ object ProjectPane extends VBox with LazyLogging {
   }
   /** save project */
   private def saveProject() {
-    SaveProjectPane("Save Project", Some(Monitor.stage), false)
+    selectedProject = Option(projectTable.getSelectionModel.getSelectedItem)
+    ArchiveProjectPane("Save Project", Some(Monitor.stage), false)
   }
 
   /** restore project */

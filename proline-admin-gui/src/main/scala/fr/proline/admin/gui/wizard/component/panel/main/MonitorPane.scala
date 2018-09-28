@@ -38,6 +38,8 @@ object MonitorPane extends VBox with LazyLogging {
   private var serverUser: String = "<db_user>"
   private var serverPort: Int = 5432
   private var serverPassword: String = "<db_password>"
+  //used  to get bin dir to archive a project or to retsore project 
+  var serverPgsqlDataDir: Option[String] = None
   private val errorServerLabel = new Label {
     text = "Error while trying to read initial Proline server configurations. Make sure that you have already setup Proline."
     visible = false
@@ -50,6 +52,7 @@ object MonitorPane extends VBox with LazyLogging {
     serverUser = adminConfig.dbUserName.get
     serverPort = adminConfig.dbPort.get
     serverPassword = adminConfig.dbPassword.get
+    serverPgsqlDataDir = adminConfig.pgsqlDataDir
   } catch {
     case t: Throwable =>
       logger.error("Error while trying to get Proline sevrer initial configurations.")

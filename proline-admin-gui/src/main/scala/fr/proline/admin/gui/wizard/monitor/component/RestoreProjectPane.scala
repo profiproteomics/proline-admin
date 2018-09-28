@@ -174,7 +174,7 @@ class RestoreProjectPane(
         }
       }
     } catch {
-      case t: Throwable => logger.error("error while trying to select a project location", t)
+      case t: Throwable => logger.error("Error while trying to select a project location: ", t.printStackTrace())
     }
   }
 

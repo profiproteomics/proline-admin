@@ -88,9 +88,8 @@ class NewUserPane(
             UsesrsPane.refreshTableView()
             newUserPane.close()
           } catch {
-            case t: Throwable => logger.error("Error while trying to execute task create user")
+            case t: Throwable => logger.error("Error while trying to execute task create user: ", t.printStackTrace())
           }
-
         }
       } else {
         warningPwLabel.visible_=(true)
