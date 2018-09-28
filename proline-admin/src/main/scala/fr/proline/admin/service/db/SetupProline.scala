@@ -182,33 +182,20 @@ object SetupProline {
     val driverAlias = prolineConfig.getString("driver-type")
     // TODO: add default driver config to make it optional
     val driverConfig = config.getConfig(driverAlias + "-config")
+    // TODO: find what is "application-" + driverAlias
+    val appDriverSpecificConf = ConfigFactory.load(classLoader, "application-" + driverAlias)
     val driver = DriverType.valueOf(driverAlias.toUpperCase())
     
     val dataDirStrOpt = if (driver == DriverType.POSTGRESQL) None else Some(prolineConfig.getString("data-directory"))
     val dataDirOpt = dataDirStrOpt.map(new File(_))
-    
-    val dsDbNaming = GetDataStoreDbNaming(driver)
-    
-    val dbNamingMapping = Map(
-      "uds" -> dsDbNaming.udsDbName,
-      "pdi"-> dsDbNaming.pdiDbName,
-      "ps"-> dsDbNaming.psDbName,
-      "msi"-> dsDbNaming.msiDbName,
-      "lcms"-> dsDbNaming.lcMsDbName
-    )
 
     // Load database specific settings
     val dbList = List("uds", "pdi", "ps", "msi", "lcms")
     val dbSetupConfigByType = dbList.map { dbType =>
 
       // Retrieve settings relative to database connection
-      val dbName = dbNamingMapping(dbType)
-      val defaultDbConf = ConfigFactory.parseString(s"""connection-properties = {dbName = "$dbName" }""")
-      
-      val dbKey = dbType + "-db"
-      val dbConfig = if (config.hasPath(dbKey)) config.getConfig(dbKey).withFallback(defaultDbConf)
-      else defaultDbConf
-      
+      val dbDriverSpecificConf = appDriverSpecificConf.getConfig(dbType + "-db")
+      val dbConfig = config.getConfig(dbType + "-db").withFallback(dbDriverSpecificConf)
       val connectionConfig = dbConfig.getConfig("connection-properties")
       //      val schemaVersion = dbConfig.getString("version")  
 
