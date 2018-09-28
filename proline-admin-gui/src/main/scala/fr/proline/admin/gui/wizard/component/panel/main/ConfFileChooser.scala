@@ -39,7 +39,6 @@ class ConfFileChooser(targetPath: String) extends LazyLogging {
           if (configFile.isFile()) new File(configFile.getParent())
           else configFile
       }
-
     } else {
       fc.initialDirectory = new File(targetPath + "/config")
     }

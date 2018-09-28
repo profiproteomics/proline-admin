@@ -2,41 +2,29 @@ package fr.proline.admin.gui
 
 import com.typesafe.scalalogging.LazyLogging
 
-import java.io.File
-
 import javafx.application.Application
-
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
 import scalafx.scene.layout.HBox
+import scalafx.scene.layout.VBox
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
-import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
-
-import fr.proline.admin.gui.process.UdsRepository
-import fr.proline.admin.gui.wizard.util.Module
-import fr.proline.admin.gui.util.FxUtils
 
 import fr.proline.admin.gui.wizard.component.panel.bottom.MonitorBottomsPanel
 import fr.proline.admin.gui.wizard.component.panel.main.MonitorPane
-import fr.proline.admin.gui.wizard.util.WindowSize
 import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.UdsRepository
-import javafx.beans.property.DoubleProperty
-import javafx.beans.property.ReadOnlyDoubleProperty
-
-import fr.proline.admin.gui.process.config.AdminConfigFile
-import fr.proline.admin.gui.process.config.AdminConfig
-import fr.proline.admin.gui.wizard.process.config.NodeConfigFile
-import fr.proline.admin.gui.wizard.process.config.NodeConfig
-
-import scala.concurrent.{ Future }
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{ Failure, Success }
+import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.wizard.util.Module
+import fr.profi.util.StringUtils
+import java.io.File
 
 /**
- * Graphical interface for Proline Admin Monitor .
+ * Proline-Admin Monitor.
+ *
+ * @author aromdhani
+ *
  */
 
 object Monitor extends LazyLogging {
@@ -44,11 +32,10 @@ object Monitor extends LazyLogging {
   /* Panels */
   var itemsPanel: VBox = _
   var buttonsPanel: VBox = _
+
+  /* configuration file path */
   var targetPath: String = _
   var adminConfPath: String = _
-  var jmsConfigPath: String = _
-  var serverInitialConfing: Option[AdminConfig] = _
-  var serverJmsInitialConfig: Option[NodeConfig] = _
 
   /* Primary stage's root */
   lazy val root = new VBox {
@@ -61,12 +48,16 @@ object Monitor extends LazyLogging {
     }
   }
   var stage: scalafx.stage.Stage = null
+
+  /** utilities */
+  def adminConfPathIsEmpty(): Boolean = StringUtils.isEmpty(adminConfPath)
+
   /** Launch application and display main window. */
   def main(args: Array[String]) = {
     Application.launch(classOf[Monitor])
   }
-
 }
+
 class Monitor extends Application with LazyLogging {
 
   override def init: Unit = {
@@ -74,52 +65,11 @@ class Monitor extends Application with LazyLogging {
     val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
     Monitor.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
     val configPath = Monitor.targetPath + File.separator + """config""" + File.separator
-    /* Locate application.CONF file and update Proline config in consequence */
+    /* Locate application.CONF file */
     val _appConfPath = configPath + "application.conf"
     /* Usual case : default conf file exists */
-    if (new File(_appConfPath).exists()) {
-      Monitor.adminConfPath = _appConfPath
-      try {
-        Monitor.serverInitialConfing = getProlineServerInitialConfig
-        Monitor.serverJmsInitialConfig = getJmsServerInitialConfig
-        prolineAdminConnection onSuccess {
-          case result => logger.trace("Connection to Proline Database Server is valid.")
-        }
-        prolineAdminConnection onFailure {
-          case error => logger.error("Connection to Proline Database Server is invalid.")
-        }
-      } catch {
-        case t: Throwable => logger.error("Error while trying to get Proline server initial configurations.")
-      }
-    }
-  }
-  val prolineAdminConnection: Future[Unit] = Future { ProlineAdminConnection._setNewProlineConfigMonitor() }
-
-  /** get Proline Server and Proline JMS Server properties */
-  def getProlineServerInitialConfig(): Option[AdminConfig] = {
-    val adminConfFile = new AdminConfigFile(Monitor.adminConfPath)
-    val adminConfigOpt = adminConfFile.read()
-    require(adminConfigOpt.isDefined, "admin config is undefined.Make sure that Proline configuration file(application.conf) exists.")
-    adminConfigOpt
-  }
-
-  /** get Proline Jms server initial properties */
-
-  def getJmsServerInitialConfig(): Option[NodeConfig] = {
-    val initialAdminConfigOpt = getProlineServerInitialConfig()
-    if (initialAdminConfigOpt.isDefined) {
-      if (initialAdminConfigOpt.get.serverConfigFilePath.isDefined && initialAdminConfigOpt.get.serverConfigFilePath.get.trim() != "") {
-        val prolineServerConfigParent = new File(initialAdminConfigOpt.get.serverConfigFilePath.get).getParent
-        Monitor.jmsConfigPath = new File(prolineServerConfigParent + File.separator + "jms-node.conf").getCanonicalPath
-      } else {
-        logger.error("the path to proline server configuration file is empty!")
-      }
-    }
-    //Jms Server properties
-    val nodeConfigFile = new NodeConfigFile(Monitor.jmsConfigPath)
-    val nodeConfigOpt: Option[NodeConfig] = nodeConfigFile.read
-    require(nodeConfigOpt.isDefined, "Jms-node Config is undefined. Make sure that Proline JMS server configuration file exists.")
-    nodeConfigOpt
+    require(new File(_appConfPath).exists(), "The configuration file application.conf does not exists!")
+    Monitor.adminConfPath = _appConfPath
   }
 
   def start(stage: javafx.stage.Stage): Unit = {
@@ -128,21 +78,30 @@ class Monitor extends Application with LazyLogging {
     Monitor.itemsPanel = MonitorPane
     Monitor.buttonsPanel = MonitorBottomsPanel
     Monitor.stage = new Stage(stage) {
-      width = 1024
+      width = 1050
       minWidth = 700
       height = 780
       minHeight = 680
       scene = new Scene(Monitor.root)
       title = s"${Module.name} ${Module.version}"
     }
-    /* Build and show stage (in any case) */
+
+    /* Build and show stage */
     Monitor.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Monitor.stage.scene.value.getStylesheets.add("/css/Style.css")
     Monitor.stage.show()
+    /* initial configurations */
+    try {
+      ProlineAdminConnection._setNewProlineConfigs(Monitor.adminConfPath)
+    } catch {
+      case t: Throwable => logger.error("Error while trying to get Proline-admin initial configurations.", t.getMessage)
+    }
   }
 
   /** Close UDSdb context on application close **/
   override def stop() {
+    if (UdsRepository.getUdsDbContext() != null) UdsRepository.getUdsDbContext().close()
+    if (UdsRepository.getDataStoreConnFactory() != null) UdsRepository.getDataStoreConnFactory().closeAll()
     super.stop()
   }
 

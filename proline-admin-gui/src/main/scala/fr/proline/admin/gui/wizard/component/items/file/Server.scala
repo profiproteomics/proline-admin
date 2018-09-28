@@ -3,56 +3,37 @@ package fr.proline.admin.gui.wizard.component.items.file
 import com.typesafe.scalalogging.LazyLogging
 
 import scalafx.Includes._
-import scalafx.geometry.Insets
-import scalafx.geometry.Pos
-import scalafx.scene.Cursor
-import scalafx.scene.Cursor.sfxCursor2jfx
+import scalafx.stage.Stage
+import scalafx.geometry.{ Insets, Pos }
 import scalafx.scene.control.Button
 import scalafx.scene.control.CheckBox
-import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
-import javafx.scene.control.Alert._
-import javafx.scene.control.Alert.AlertType
 import scalafx.scene.control.PasswordField
 import scalafx.scene.control.TextField
-import fr.profi.util.scalafx.NumericTextField
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.VBox
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
-import scalafx.stage.Screen
-import scalafx.stage.Stage
-import scalafx.scene.text.{ Font, FontWeight, Text }
-import java.io.File
-import java.io.File.separator
-import scalafx.scene.layout.Priority
 
-import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
-import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import fr.profi.util.scalafx.ScalaFxUtils._
-import fr.profi.util.scalafx.TitledBorderPane
-import fr.proline.admin.gui.process.DatabaseConnection
-import fr.proline.admin.gui.Wizard
-import fr.proline.admin.gui.process.config.AdminConfigFile
-import fr.proline.admin.gui.wizard.component.items.ServerConfig
-import fr.proline.admin.gui.wizard.component.panel.main.ITabForm
-import fr.profi.util.scala.ScalaUtils
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.process.config.AdminConfig
-import fr.proline.admin.gui.wizard.util.GetConfirmation
-import fr.proline.repository.DriverType
 import fr.proline.admin.gui.process.DatabaseConnection
-import fr.profi.util.scalafx.CustomScrollPane
-import scala.concurrent._
-import ExecutionContext.Implicits.global
+import fr.proline.admin.gui.wizard.component.panel.main.ITabForm
+import fr.proline.admin.gui.Wizard
 
+import fr.profi.util.scalafx.{ NumericTextField, TitledBorderPane, CustomScrollPane, ScalaFxUtils }
+import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
+import fr.proline.repository.DriverType
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
+import ExecutionContext.Implicits.global
 /**
- * PostGreSQL build tab of PostGreSQL database server properties.
+ * build a scroll panel
+ * @param path The path of server file configuration
  *
  */
-
 class ServerPane(path: String) extends CustomScrollPane {
   val server = new Server(path)
   setContentNode(
@@ -63,7 +44,11 @@ class ServerPane(path: String) extends CustomScrollPane {
       children = Seq(server)
     })
 }
-
+/**
+ * Server build a vbox layout with a database server properties.
+ * @param path The path of server file configuration
+ *
+ */
 class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLogging {
 
   /*
@@ -76,7 +61,7 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
   var port: Int = 5432
   private val adminConfigFile = new AdminConfigFile(path)
   private val adminConfigOpt = adminConfigFile.read()
-  require(adminConfigOpt.isDefined, "admin config is undefined. Make sure that proline configuration files exists. ")
+  require(adminConfigOpt.isDefined, "Admin config is undefined. Make sure that proline configuration files exists.")
   private val adminConfig = adminConfigOpt.get
 
   def isPrompt(str: String): Boolean = str matches """<.*>"""
@@ -185,10 +170,10 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
   val dbConnectionSettingPane = new TitledBorderPane(
     title = "Database Server",
     contentNode = new VBox {
-      prefWidth <==Wizard.stage.width  - 80
+      prefWidth <== Wizard.stage.width - 80
       prefHeight <== Wizard.stage.height - 220
       spacing = V_SPACING
-      children = Seq(warningDatalabel,
+      children = Seq(emptyFieldErrorLabel,
         hostLabel,
         new HBox {
           spacing = H_SPACING
@@ -236,14 +221,13 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
 
   /** check Proline Admin Form */
   def checkForm: Boolean = {
-    if (ScalaUtils.isEmpty(hostField.getText) || ScalaUtils.isEmpty(userField.getText)
-      || ScalaUtils.isEmpty(portField.getText) || ScalaUtils.isEmpty(passwordPWDField.getText)) {
-      warningDatalabel.visible = true
-      false
+    val isValidatedFields = Seq(hostField, userField, passwordPWDField, portField).forall(!_.getText.trim.isEmpty())
+    if (isValidatedFields) {
+      emptyFieldErrorLabel.visible = false
     } else {
-      warningDatalabel.visible = false
-      true
+      emptyFieldErrorLabel.visible = true
     }
+    isValidatedFields
   }
   /** get GUI information to create a new Proline Admin Config Object **/
   private def _toAdminConfig() = AdminConfig(

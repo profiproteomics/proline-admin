@@ -2,37 +2,35 @@ package fr.proline.admin.gui.wizard.component.items.file
 
 import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
-import scalafx.geometry.Insets
-import scalafx.geometry.Pos
+import scalafx.stage.Stage
+import scalafx.geometry.{ Insets, Pos }
 import scalafx.scene.control.Button
 import scalafx.scene.control.CheckBox
 import scalafx.scene.control.Label
-import javafx.scene.control.Alert._
 import scalafx.scene.control.PasswordField
 import scalafx.scene.control.TextField
-import fr.profi.util.scalafx.NumericTextField
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.VBox
-import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
-import scalafx.stage.Stage
 import scalafx.scene.layout.Priority
-import fr.profi.util.scalafx.ScalaFxUtils
-import fr.profi.util.scala.ScalaUtils
+
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import fr.profi.util.scalafx.ScalaFxUtils._
-import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.wizard.process.config.SeqConfigFile
 import fr.proline.admin.gui.wizard.component.panel.main.ITabForm
 import fr.proline.admin.gui.wizard.process.config._
-import fr.proline.repository.DriverType
 import fr.proline.admin.gui.process.DatabaseConnection
-import fr.profi.util.scalafx.CustomScrollPane
 import fr.proline.admin.gui.Wizard
 
+import fr.proline.repository.DriverType
+import fr.profi.util.scalafx.ScalaFxUtils
+import fr.profi.util.scalafx.CustomScrollPane
+import fr.profi.util.scalafx.TitledBorderPane
+import fr.profi.util.scalafx.NumericTextField
 /**
- * PostGreSQLSeq builds a panel with the database server properties
+ * PostGreSQLSeq build a panel with the database server properties.
+ * @param path The path of Sequence Repository configuration file.
+ * @param stage The parent stage of the Sequence repository panel.
  *
  */
 
@@ -40,13 +38,18 @@ class SeqReposPane(path: String, stage: Stage) extends CustomScrollPane {
   val seqRepos = new SeqRepos(path, stage)
   setContentNode(
     new VBox {
-      prefWidth <== Wizard.stage.width - 90
-      prefHeight <== Wizard.stage.height - 220
+      prefWidth <== Wizard.stage.width
+      prefHeight <== Wizard.stage.height
       padding = Insets(5, 0, 0, 0)
       children = Seq(seqRepos)
     })
 }
 
+/**
+ * build a Vbox layout with the sequence repository properties
+ * @param path the path of sequence repository configuration file .
+ * @param stage the parent stage of sequence repository layout.
+ */
 class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITabForm with LazyLogging {
 
   /*
@@ -54,33 +57,27 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
 	 * COMPONENTS *
 	 * ********** *
 	 */
-
   // initialize postgres properties 
   val driver = DriverType.POSTGRESQL
   var port: Int = 5432
-  var userName, passWord, hostName: String = ""
+  var userName, passWord, hostName: String = _
   private val seqConfigFile = new SeqConfigFile(path)
   private val seqConfigOpt = seqConfigFile.read
-  require(seqConfigOpt.isDefined, "sequence repository config is undefined")
+  require(seqConfigOpt.isDefined, "Sequence repository config is undefined")
   private val seqConfig = seqConfigOpt.get
+  //Check if server Config is defined 
+  val serverConfigItemOpt = Wizard.items.get(2).flatten
+  userName = seqConfig.dbUserName.getOrElse("")
+  passWord = seqConfig.dbPassword.getOrElse("")
+  hostName = seqConfig.dbHost.getOrElse("")
+  port = seqConfig.dbPort.getOrElse(5432)
 
-  def isPrompt(str: String): Boolean = str matches """<.*>"""
-
-  val dbUserName = seqConfig.dbUserName.getOrElse("")
-  if (isPrompt(dbUserName)) userName = dbUserName
-  else userName = dbUserName
-
-  val dbPassword = seqConfig.dbPassword.getOrElse("")
-  if (isPrompt(dbPassword)) passWord = dbPassword
-  else passWord = dbPassword
-
-  val dbHost = seqConfig.dbHost.getOrElse("")
-  if (isPrompt(dbHost)) hostName = dbHost
-  else hostName = dbHost
-
-  val dbPort = seqConfig.dbPort.getOrElse(5432)
-  port = dbPort
-
+  //warning 
+  val warningHostText = "WARNING: Using localhost or 127.0.0.1 is not advised, as it will make Proline available from this computer only."
+  val warningHostLabel = new Label {
+    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+    text = warningHostText
+  }
   //host 
   val hostField = new TextField {
     if (hostName != null) text = hostName
@@ -88,12 +85,6 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
       hostName = newText
       checkForm
     }
-  }
-  //warning 
-  val warningAboutRestartText = "WARNING: Using localhost or 127.0.0.1 is not advised, as it will make Proline available from this computer only."
-  val warningAboutHostLabel = new Label {
-    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
-    text = warningAboutRestartText
   }
   //port
   val portField = new NumericTextField {
@@ -173,14 +164,14 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
       prefHeight <== stage.height - 220
       spacing = V_SPACING
       children = Seq(
-        warningDatalabel,
+        emptyFieldErrorLabel,
         hostLabel,
         new HBox {
           spacing = H_SPACING
           children = Seq(new VBox {
             prefWidth <== stage.width - 35
             spacing = 2
-            children = Seq(hostField, warningAboutHostLabel)
+            children = Seq(hostField, warningHostLabel)
           })
         },
         ScalaFxUtils.newVSpacer(minH = 1),
@@ -219,25 +210,22 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
 
   /** check Sequence Repository fields form  */
   def checkForm: Boolean = {
-    if (ScalaUtils.isEmpty(hostField.getText) || ScalaUtils.isEmpty(userField.getText)
-      || ScalaUtils.isEmpty(portField.getText) || ScalaUtils.isEmpty(passwordPWDField.getText)) {
-      warningDatalabel.visible = true
-      false
-    } else {
-      warningDatalabel.visible = false
-      true
-    }
+    val isValidatedFields = Seq(hostField, userField, portField, passwordPWDField).forall(!_.getText.isEmpty())
+    if (isValidatedFields) emptyFieldErrorLabel.visible = false else emptyFieldErrorLabel.visible = true
+    isValidatedFields
   }
+
   /** get GUI information to create a new SeqRepos Object */
   private def _toSeqConfig() = SeqConfig(
     driverType = Some(driver),
     maxPoolConnection = Some(3),
-    dbUserName = Some(userName),
-    dbPassword = Some(passWord),
-    dbHost = Some(hostName),
-    dbPort = Some(port),
+    dbUserName = if (serverConfigItemOpt.isDefined) Some(Wizard.userName) else Some(userName),
+    dbPassword = if (serverConfigItemOpt.isDefined) Some(Wizard.passWord) else Some(passWord),
+    dbHost = if (serverConfigItemOpt.isDefined) Some(Wizard.hostName) else Some(hostName),
+    dbPort = if (serverConfigItemOpt.isDefined) Some(Wizard.port) else Some(port),
     dbUdsDb = Some("uds_db"))
-  /** test connection to database server */
+
+  /** test connection to the database server */
   def _testDbConnection(
     showSuccessPopup: Boolean = false,
     showFailurePopup: Boolean = false): Boolean = {
@@ -249,6 +237,7 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
     if (DatabaseConnection.testDbConnectionToWizard(driver, userName, passWord, hostName, port, false, false))
       s"""PostgreSQL: OK""" else s"""PostgreSQL: NOK"""
   }
+
   /** save new Sequence Repository properties */
   def saveForm() {
     val newSeqConfig = _toSeqConfig()

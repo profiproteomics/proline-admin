@@ -2,31 +2,31 @@ package fr.proline.admin.gui.wizard.component.items.file
 
 import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
-import scalafx.geometry.Insets
-import scalafx.geometry.Pos
-import scalafx.scene.layout.HBox
-import scalafx.scene.layout.VBox
+import scalafx.geometry.{ Insets, Pos }
 import scalafx.scene.control.{ RadioButton, ToggleGroup }
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
-import fr.profi.util.scalafx.NumericTextField
-import fr.profi.util.scalafx.ScalaFxUtils
-import fr.profi.util.scalafx.ScalaFxUtils._
-import fr.profi.util.scalafx.TitledBorderPane
-import scalafx.scene.control.ToggleGroup
+import scalafx.scene.layout.HBox
+import scalafx.scene.layout.VBox
 import scalafx.scene.layout.Priority
-import scalafx.geometry.Insets
+
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.process.config.NodeConfigFile
 import fr.proline.admin.gui.wizard.process.config.NodeConfig
 import fr.proline.admin.gui.wizard.component.panel.main.ITabForm
+import fr.profi.util.scalafx.NumericTextField
+import fr.profi.util.scalafx.ScalaFxUtils
+import fr.profi.util.scalafx.ScalaFxUtils._
+import fr.profi.util.scalafx.TitledBorderPane
 import fr.profi.util.scala.ScalaUtils
-import scala.concurrent._
+
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
 /**
- * JmsServerTab build tab for JMS server properties : Jms host , port and Proline queue name
- *
+ * JmsServerTab build a tab for JMS server properties : Jms host , port and Proline queue name.
+ * @param path the path of jms server configuration file.
  */
 
 class JmsServer(path: String) extends VBox with ITabForm with LazyLogging {
@@ -36,12 +36,11 @@ class JmsServer(path: String) extends VBox with ITabForm with LazyLogging {
 	 * COMPONENTS *
 	 * ********** *
 	 */
-
   //initialize jms-node configuration properties
 
   val nodeConfigFile = new NodeConfigFile(path)
   val nodeConfigOpt: Option[NodeConfig] = nodeConfigFile.read
-  require(nodeConfigOpt.isDefined, "jms-node config is undefined")
+  require(nodeConfigOpt.isDefined, "Jms-node config is undefined.")
   val nodeConfig = nodeConfigOpt.get
 
   private var _jmsHostName = nodeConfig.jmsServerHost.getOrElse("")
@@ -111,7 +110,7 @@ class JmsServer(path: String) extends VBox with ITabForm with LazyLogging {
       prefHeight <== Wizard.configItemsPanel.height - 30
       spacing = 3
       children = Seq(
-        warningDatalabel,
+        emptyFieldErrorLabel,
         hostLabel, new HBox {
           spacing = 5
           children = Seq(hostField)
@@ -148,23 +147,19 @@ class JmsServer(path: String) extends VBox with ITabForm with LazyLogging {
 
   /** check fields */
   def checkForm: Boolean = {
-    if (ScalaUtils.isEmpty(hostField.getText) || ScalaUtils.isEmpty(portField.getText) || ScalaUtils.isEmpty(queueNameField.getText)) {
-      warningDatalabel.visible = true
-      false
-    } else {
-      warningDatalabel.visible = false
-      true
-    }
+    val isValidatedFields = Seq(hostField, portField, queueNameField).forall(!_.getText.trim().isEmpty())
+    if (isValidatedFields) emptyFieldErrorLabel.visible = false else emptyFieldErrorLabel.visible = true
+    isValidatedFields
   }
 
-  /** get GUI inbformation to create new jmsConfih object */
+  /** Get GUI information to create new jmsConfig object */
   private def _toJMSConfig() = NodeConfig(Option(this._jmsHostName),
     Option(this._jmsPort),
     Option(this._prolineQueueName),
     Option(-1),
     Option(true))
 
-  /** save proline's Server nodeConfig properties */
+  /** Save proline's Server nodeConfig properties */
   def saveForm() {
     /* new jmsConfig */
     if (nodeConfigOpt.isDefined) {

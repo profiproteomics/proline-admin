@@ -4,20 +4,21 @@ import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
 import scalafx.geometry.Pos
 import scalafx.geometry.Insets
-import scalafx.scene.control.Button
-import scalafx.scene.layout.HBox
-import fr.proline.admin.gui.wizard.util.GetConfirmation
-import fr.profi.util.scala.ScalaUtils._
-import fr.profi.util.scalafx.ScalaFxUtils.TextStyle._
+
+import scalafx.scene.control.{ Button, Label, ProgressIndicator }
+import scalafx.scene.layout.{ HBox, VBox }
 import javafx.scene.control.ContentDisplay
-import fr.proline.admin.gui.util.FxUtils
+
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.component.items._
-import fr.proline.admin.gui.wizard.util.ExitPopup
 import fr.proline.admin.gui.wizard.component.panel.main.Summary
-import scalafx.scene.control.Button.sfxButton2jfx
 import fr.proline.admin.gui.Wizard
+import fr.profi.util.scala.ScalaUtils._
+import fr.proline.admin.gui.util.FxUtils
+import fr.profi.util.scalafx.ScalaFxUtils.TextStyle._
+import fr.proline.admin.gui.wizard.util.GetConfirmation
+import javafx.scene.layout.Priority
 
 /**
  * Panel contains navigation buttons : previous next and cancel
@@ -59,7 +60,20 @@ trait INavButtons extends LazyLogging {
       }
     }
   }
+  val progressBar = new ProgressIndicator {
+    prefHeight = 20
+    prefWidth = 20
+  }
 
+  val statusLabel = new Label {
+    text = s"Updating data and Proline setup in progress, Please wait..."
+  }
+  val progressPanel = new HBox {
+    spacing = 10
+    visible = false
+    hgrow = Priority.ALWAYS
+    children = Seq(progressBar, statusLabel)
+  }
   def cancel(): Unit
   def next(): Unit
   def previous(): Unit

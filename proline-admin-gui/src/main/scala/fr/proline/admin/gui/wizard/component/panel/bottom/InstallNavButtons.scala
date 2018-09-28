@@ -2,25 +2,18 @@ package fr.proline.admin.gui.wizard.component.panel.bottom
 
 import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
-import scalafx.geometry.Pos
-import scalafx.geometry.Insets
+import scalafx.geometry.{ Pos, Insets }
 import scalafx.scene.control.Button
 import scalafx.scene.layout.HBox
-import fr.proline.admin.gui.wizard.util.GetConfirmation
-import fr.profi.util.scala.ScalaUtils._
-import fr.profi.util.scalafx.ScalaFxUtils.TextStyle._
-import javafx.scene.control.ContentDisplay
-import fr.proline.admin.gui.util.FxUtils
+
 import fr.proline.admin.gui.Wizard
-import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.wizard.component.items._
-import fr.proline.admin.gui.wizard.util.ExitPopup
+import fr.proline.admin.gui.wizard.component.items.SummaryConfig
 import fr.proline.admin.gui.wizard.component.panel.main.Summary
-import scalafx.scene.control.Button.sfxButton2jfx
+import fr.proline.admin.gui.wizard.util.ExitPopup
 
 /**
  * Panel contains navigation buttons : previous next and cancel
- *
+ * @author aromdhani
  */
 
 object InstallNavButtons extends LazyLogging with INavButtons {
@@ -34,25 +27,28 @@ object InstallNavButtons extends LazyLogging with INavButtons {
       padding = Insets(10)
       spacing = 10
       children = Seq(
-        prevBox, nextBox, cancelBox)
+        progressPanel,
+        prevBox,
+        nextBox,
+        cancelBox)
     }
   }
 
-  /** exit proline Admin */
+  /** exit proline Admin application */
   def cancel() {
     ExitPopup("Exit Setup", "Are you sure you want to exit Proline Install? ", Some(Wizard.stage), false)
   }
 
-  /** get next item */
+  /** get next item. */
   def next() {
     InstallNavButtons.prevButton.visible = true
     /* change items */
     if (Wizard.nodeIndex < Wizard.items.toSeq.size - 1) {
-        Wizard.nodeIndex = Wizard.nodeIndex + 1
-        Wizard.currentNode = Wizard.items.toSeq.apply(Wizard.nodeIndex)._2.get
-        Wizard.configItemsPanel.getChildren().clear()
-        Wizard.configItemsPanel.getChildren().add(Wizard.currentNode)
-      } else {
+      Wizard.nodeIndex = Wizard.nodeIndex + 1
+      Wizard.currentNode = Wizard.items.toSeq.apply(Wizard.nodeIndex)._2.get
+      Wizard.configItemsPanel.getChildren().clear()
+      Wizard.configItemsPanel.getChildren().add(Wizard.currentNode)
+    } else {
       if (Wizard.nodeIndex == Wizard.items.toSeq.size - 1) {
         /* Summary panel */
         Wizard.nodeIndex = Wizard.nodeIndex + 1
@@ -69,7 +65,7 @@ object InstallNavButtons extends LazyLogging with INavButtons {
     }
   }
 
-  /** get previous item */
+  /** get previous item. */
   def previous() {
     if (Wizard.nodeIndex > 0) {
       InstallNavButtons.nextBox.getChildren().clear()
@@ -84,10 +80,10 @@ object InstallNavButtons extends LazyLogging with INavButtons {
     }
   }
 
-  /** save all parameters */
+  /** save all parameters. */
   def validate() {
     Wizard.items.toSeq.foreach {
-      case (_1, _2) => Summary.saveItem(_2.get)
+      case (order, itemOpt) => Summary.saveItem(itemOpt.get)
     }
   }
 }

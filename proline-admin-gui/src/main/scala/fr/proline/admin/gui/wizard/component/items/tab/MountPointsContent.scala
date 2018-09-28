@@ -9,7 +9,7 @@ import fr.proline.admin.gui.component.configuration.file._
 import fr.proline.admin.gui.wizard.component.items.file.ProlineMountFiles
 import fr.profi.util.scalafx.CustomScrollPane
 /**
- * builds a Tab with the mount points in Proline server
+ * builds a scrollable panel with the mount points of Proline server
  *
  */
 class MountPointsContent(stage: Stage) extends CustomScrollPane {

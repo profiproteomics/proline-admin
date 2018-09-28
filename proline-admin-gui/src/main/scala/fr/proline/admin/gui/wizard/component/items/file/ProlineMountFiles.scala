@@ -5,47 +5,38 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.collection.mutable.ArrayBuffer
 
 import scalafx.Includes._
-import scalafx.collections.ObservableBuffer
-import scalafx.geometry.Insets
+import scalafx.stage.Screen
+import scalafx.stage.Stage
 import scalafx.geometry.Pos
-import scalafx.scene.Cursor
-import scalafx.scene.Cursor.sfxCursor2jfx
 import scalafx.scene.control.Button
-import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
-import scalafx.scene.layout.HBox
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.VBox
-import scalafx.stage.Screen
-import scalafx.stage.Stage
+import scalafx.scene.layout.HBox
+import scalafx.collections.ObservableBuffer
 
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.process.DatabaseConnection
-import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.util.FxUtils
-import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.repository.DriverType
-
 import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
 import fr.profi.util.scala.ScalaUtils.isEmpty
-import fr.profi.util.scala.ScalaUtils.stringOpt2string
 import fr.profi.util.scalafx.BoldLabel
 import fr.profi.util.scalafx.FileBrowsing
-import fr.profi.util.scalafx.NumericTextField
-import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.proline.admin.gui.wizard.process.config._
 
-import scala.concurrent._
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
 /**
- * Create a modal window to edit Proline configuration's file.
+ * build a VBox layout to add or remove file location.
  *
  */
 class ProlineMountFiles extends VBox with LazyLogging {
@@ -321,11 +312,15 @@ class ProlineMountFiles extends VBox with LazyLogging {
   }
 
   def getProperties(): String = {
-    val montPointsBuilder = new StringBuilder("Mount Points:\n\t")
-    montPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n\t")
-      .append(mzdbFilesMountPoints.size).append("  Mzdb files\n\t")
-      .append(resultFilesMountPoints.size).append("  Result Files\t")
-     montPointsBuilder.toString
+    val montPointsBuilder = new StringBuilder()
+    if (Seq(rawFilesMountPoints, mzdbFilesMountPoints, resultFilesMountPoints).forall(_.isEmpty)) { montPointsBuilder.toString }
+    else {
+      montPointsBuilder.append("Mount Points:\n\t")
+      montPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n\t")
+        .append(mzdbFilesMountPoints.size).append("  Mzdb files\n\t")
+        .append(resultFilesMountPoints.size).append("  Result Files\t")
+      montPointsBuilder.toString
+    }
   }
 }
 

@@ -15,48 +15,37 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.process._
 import fr.proline.admin.gui.wizard.util.GetConfirmation
-import fr.proline.admin.gui.wizard.util.ProgressBarPopup
-import fr.proline.admin.gui.wizard.util.UserGuideView
+import fr.proline.admin.gui.wizard.util.UserGuide
 import fr.proline.admin.gui.wizard.util.HelpPopup
 
-import fr.proline.admin.gui.wizard.service.DataBaseMaintenance
+import fr.proline.admin.gui.wizard.service.SetupDbs
 import fr.proline.admin.gui.wizard.component.panel.bottom.InstallNavButtons
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.service.db.SetupProline
 
-import java.io.File
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.util.Failure
-import scala.util.Success
-import scalafx.application.Platform
+import scalafx.scene.layout.Priority
 
 /**
- *  builds summary panel to summarize the new configurations
- *
+ *  Builds summary panel to summarize the new configurations.
+ *  @author aromdhani
  */
 
 object Summary extends LazyLogging {
-
   var setUpUpdateChBox: CheckBox = _
-  def getItem[T](item: T) {
+  def getItem(item: Item) {
     item match {
       case pgServer: PgServerConfig => {
-        val pgServer = item.asInstanceOf[PgServerConfig]
-        InstallNavButtons.summaryPanel.prolinePgServerBox.children = new TitledBorderPane(
+        InstallNavButtons.summaryPanel.prolinePgServerPanel.children = new TitledBorderPane(
           title = "PostgreSQL Server Configuration ",
           contentNode = new VBox {
             spacing = 1
             children = Seq(
               new Label {
-                text = s"""${Wizard.isPgOptimized match { case true => "PostgreSQL Server Configuration: Optimzed values" case false => "PostgreSQL Server Configuration: Default values" }}"""
+                text = s"""${Wizard.isPgOptimized match { case true => "PostgreSQL Server Configuration: Optimzed values." case false => "PostgreSQL Server Configuration: Default values." }}"""
               }, ScalaFxUtils.newVSpacer(1))
           })
       }
       case server: ServerConfig => {
-        val server = item.asInstanceOf[ServerConfig]
         setUpUpdateChBox = new CheckBox {
           text = "Set up or update Proline databases"
           selected = true
@@ -64,11 +53,12 @@ object Summary extends LazyLogging {
         val serverInfos = new Label {
           text = server.mountsPoint.getInfos
         }
-        serverInfos.prefHeight_=(100)
-        InstallNavButtons.summaryPanel.prolineServerBox.children = new TitledBorderPane(
+
+        InstallNavButtons.summaryPanel.prolineServerPanel.children = new TitledBorderPane(
           title = "Proline Server Configuration",
           contentNode = new VBox {
             spacing = 1
+            hgrow = Priority.ALWAYS
             children = Seq(
               new Label {
                 text = server.postgres.server.getInfos
@@ -78,71 +68,62 @@ object Summary extends LazyLogging {
                 text = server.jmsServer.getInfos
               }, ScalaFxUtils.newVSpacer(10), setUpUpdateChBox, ScalaFxUtils.newVSpacer(1))
           })
-
       }
       case seqRepos: SeqReposConfig => {
-        val module = item.asInstanceOf[SeqReposConfig]
         val SeqReposArea = new VBox {
           spacing = 1
           children = Seq(
             new Label {
-              text = module.PostGreSQLSeq.seqRepos.getInfos
+              text = seqRepos.postgreSQLSeqPanel.seqRepos.getInfos
             },
             new Label {
-              text = module.parsingRules.getInfos
+              text = seqRepos.parsingRules.getInfos
             },
             new Label {
-              text = module.jmsServer.getInfos
+              text = seqRepos.jmsServerPanel.getInfos
             }, ScalaFxUtils.newVSpacer(1))
         }
-        InstallNavButtons.summaryPanel.prolineModuleBox.children = new TitledBorderPane(title = "Proline Sequence Repository ",
+        InstallNavButtons.summaryPanel.prolineModulePanel.children = new TitledBorderPane(title = "Proline Sequence Repository ",
           contentNode = new VBox { children = Seq(SeqReposArea) })
       }
       case pwx: PwxConfig => {
-        val prolineWeb = item.asInstanceOf[PwxConfig]
         val prolineWebArea = new VBox {
           spacing = 1
           children = Seq(
             new Label {
-              text = prolineWeb.prolinePwx.getInfos
+              text = pwx.prolinePwx.getInfos
             }, ScalaFxUtils.newVSpacer(1))
         }
-        InstallNavButtons.summaryPanel.prolineWebBox.children = new TitledBorderPane(title = "Proline Web",
+        InstallNavButtons.summaryPanel.prolineWebPanel.children = new TitledBorderPane(title = "Proline Web",
           contentNode = new VBox { children = Seq(prolineWebArea) })
-
       }
       case _ => logger.error("Error while trying to select an item! ")
     }
   }
 
   /** save item's form on Button validate */
-  def saveItem[T](item: T) {
+  def saveItem(item: Item) {
     item match {
       case pgServerConfig: PgServerConfig => {
-        val pgServerConfig = item.asInstanceOf[PgServerConfig]
         try {
           pgServerConfig.pgHbaForm.saveForm()
           pgServerConfig.postgresForm.saveForm()
         } catch {
-
           case t: Throwable => {
-
             HelpPopup("Error", "An error has occured\nMake sure that you have administrator rights\nto edit PostgreSQL configurations files", Some(Wizard.stage), true)
             logger.error("Error while trying to save PostgreSQL properties.")
-
           }
         }
       }
       case server: ServerConfig => {
-        val server = item.asInstanceOf[ServerConfig]
         try {
           server.postgres.server.saveForm()
           server.jmsServer.saveForm()
           server.mountsPoint.saveForm()
           if (setUpUpdateChBox.isSelected()) {
-            val confirmed = GetConfirmation("Are you sure you want to update Proline databases ?\n(This process may take hours.)", "Confirm your action", "Yes", "Cancel", Wizard.stage)
+            val confirmed = GetConfirmation("Are you sure you want to setup and update Proline databases ?\n(This process may take hours.)", "Confirm your action", "Yes", "Cancel", Wizard.stage)
             if (confirmed) {
-              ProgressBarPopup("Setup/Update", "Setup / Update Proline databases\n  \t\t in progress...", Some(Wizard.stage), false, DataBaseMaintenance.Worker)
+              SetupDbs(Wizard.stage).restart()
             }
           }
         } catch {
@@ -150,22 +131,18 @@ object Summary extends LazyLogging {
         }
       }
       case seqRepos: SeqReposConfig => {
-        val module = item.asInstanceOf[SeqReposConfig]
         try {
-          module.PostGreSQLSeq.seqRepos.saveForm()
-          module.jmsServer.saveForm()
-          module.parsingRules.saveForm()
+          seqRepos.postgreSQLSeqPanel.seqRepos.saveForm()
+          seqRepos.jmsServerPanel.saveForm()
+          seqRepos.parsingRules.saveForm()
         } catch {
           case t: Throwable => logger.error("Error while trying to save Proline Module properties.")
         }
       }
-
       case pwx: PwxConfig => {
         try {
-          val prolineWeb = item.asInstanceOf[PwxConfig]
-          prolineWeb.prolinePwx.saveForm()
+          pwx.prolinePwx.saveForm()
         } catch {
-
           case t: Throwable => {
             logger.error("Error while trying to save PostgreSQL properties.")
           }

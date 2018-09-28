@@ -1,35 +1,39 @@
 package fr.proline.admin.gui.wizard.component.items.file
 
 import com.typesafe.scalalogging.LazyLogging
-import scala.collection.mutable.ArrayBuffer
+
 import scalafx.Includes._
+import scalafx.stage.Stage
 import scalafx.geometry.Pos
 import scalafx.scene.control.Button
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
+import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.Priority
-import scalafx.scene.layout.VBox
-import scalafx.stage.Stage
+
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.wizard.component.items.ServerConfig
 import fr.proline.admin.gui.process.config._
-import fr.proline.admin.gui.wizard.util.ItemName._
-import fr.proline.admin.gui.util.FxUtils
-import fr.profi.util.scala.ScalaUtils.isEmpty
 import fr.profi.util.scalafx.BoldLabel
 import fr.profi.util.scalafx.FileBrowsing
 import fr.profi.util.scalafx.NumericTextField
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
-import fr.proline.admin.gui.wizard.process.config._
-import scala.concurrent._
+import fr.profi.util.scala.ScalaUtils.isEmpty
+import fr.proline.admin.gui.util.FxUtils
+
+import scala.collection.mutable.ArrayBuffer
+
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
 /**
- * Create a modal window to edit Proline configuration's file.
+ * build a VBox to edit Proline web configuration file.
+ * @param stage The parent stage of the Layout
  *
  */
 class ProlinePwx(stage: Stage) extends VBox with LazyLogging {
@@ -52,7 +56,6 @@ class ProlinePwx(stage: Stage) extends VBox with LazyLogging {
 
   private var pwxHostName: String = "localhost"
   private var pwxPort: Int = 5445
-
   if (pwxJmsConfigOpt.isDefined) {
     pwxHostName = pwxJmsConfigOpt.get.dbHost.get
     pwxPort = pwxJmsConfigOpt.get.dbPort.get

@@ -14,9 +14,6 @@ import fr.proline.repository.ProlineDatabaseType
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.repository.ConnectionMode
 import fr.proline.repository.DriverType
-import scalafx.concurrent.Service
-import javafx.beans.property.{ BooleanProperty, StringProperty }
-import java.lang.Boolean
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -96,13 +93,4 @@ package object implicits {
     val id = new ObjectProperty(this, "id", service)
     val state = new ObjectProperty(this, "state", service)
   }
-
-  /**
-   * ************************************************************** *
-   * Simplified model for Task  to ScalaFx TableView *
-   * ************************************************************** *
-   */
-  //  implicit class TaskView(service: Service) {
-  //    val taskState = new ObjectProperty(this, "taskState", service)
-  //  }
 }

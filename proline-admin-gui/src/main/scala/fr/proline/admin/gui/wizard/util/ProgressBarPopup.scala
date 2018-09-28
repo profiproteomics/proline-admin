@@ -20,7 +20,7 @@ import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 
 /**
- * build progressBar Window
+ * Build progressBar Window
  * @aromdhani
  *
  */
@@ -28,20 +28,16 @@ class ProgressBarPopup(
     wTitle: String,
     wText: String,
     wParent: Option[Stage],
-    isResizable: Boolean = false,
-    task: Task[_]) extends Stage with LazyLogging {
+    isResizable: Boolean = false) extends Stage with LazyLogging {
   val popup = this
   val text = new Label(wText)
   val progress = new ProgressIndicator() {
     minWidth = 250
-    progress <== task.progress
   }
   title = wTitle
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
   popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
-  //start task 
-  new Thread(task).start()
   //create scene 
   scene = new Scene {
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
@@ -61,32 +57,16 @@ class ProgressBarPopup(
         })
     }
   }
-  task.state.onChange { (_, _, newState) =>
-    newState match {
-      case Worker.State.Succeeded.delegate => {
-        logger.info("Task has finished with success.")
-        popup.close()
-      }
-      case Worker.State.Failed.delegate => {
-        logger.error("Task has failed.")
-        popup.close()
-      }
-      case Worker.State.Running.delegate => {
-      }
-      case Worker.State.Scheduled.delegate => {
-      }
-      case Worker.State.Ready.delegate => {
-      }
-      case _ => { logger.error("Error while trying to execute this task") }
-    }
-  }
 }
 
 object ProgressBarPopup {
+
   def apply(
     wTitle: String,
     wText: String,
     wParent: Option[Stage],
-    isResizable: Boolean = false,
-    task: Task[_]) { new ProgressBarPopup(wTitle, wText, wParent, isResizable, task).showAndWait() }
+    isResizable: Boolean = false) = {
+    new ProgressBarPopup(wTitle, wText, wParent, isResizable)
+
+  }
 }

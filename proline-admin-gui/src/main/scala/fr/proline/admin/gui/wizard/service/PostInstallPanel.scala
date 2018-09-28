@@ -43,11 +43,11 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
     iniServerPath = adminConf.getServerConfigPath().getOrElse("")
     iniSeqReposPath = adminConf.getSeqRepoConfigPath().getOrElse("")
     iniPgDirPath = adminConf.getPostgreSqlDataDir().getOrElse("")
-    warningCorruptedFile.visible = false
+    corruptedFileLabel.visible = false
   } catch {
     case pe: com.typesafe.config.ConfigException.Parse => {
       logger.error("Error while trying to parse initial settings from Proline Admin configuration file. Default settings will be reset.")
-      warningCorruptedFile.visible = true
+      corruptedFileLabel.visible = true
       resetAdminConfig(PostInstall.adminConfPath)
     }
   }
@@ -107,7 +107,7 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
   }
 
   /* Style */
-  Seq(postgreSQLLabel, seqReposLabel, prolineServerLabel).foreach(_.minWidth = 60)
+  Seq(postgreSQLPanel, seqReposPanel, prolineServerPanel).foreach(_.minWidth = 60)
   Seq(postgreSQLField, seqReposField, prolineServerField).foreach {
     f => f.hgrow = Priority.Always
   }
@@ -116,7 +116,7 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
   private val H_SPACING = 5
   val warningBox = new VBox {
     spacing = 0.5
-    children = Seq(warningCorruptedFile, errorNotValidServerFile, errorNotValidSeqReposFile, errorNotValidPgData)
+    children = Seq(corruptedFileLabel, invalidServerFileLabel, invalidSeqReposFileLabel, invalidPgDataLabel)
   }
   val configItemsPane = new TitledBorderPane(
     title = "Select Configuration Item",
@@ -128,7 +128,7 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
         prolineServerChBox,
         new HBox {
           spacing = 5
-          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), prolineServerLabel, prolineServerField, prolineServerBrowseButton)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), prolineServerPanel, prolineServerField, prolineServerBrowseButton)
         },
         ScalaFxUtils.newVSpacer(minH = 1, maxH = 1),
         prolineModulesChBox,
@@ -137,12 +137,12 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
           children = Seq(ScalaFxUtils.newHSpacer(minW = 30, maxW = 30), seqReposChBox)
         }, new HBox {
           spacing = 5
-          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), seqReposLabel, seqReposField, seqReposBrowseButton)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), seqReposPanel, seqReposField, seqReposBrowseButton)
         },
         ScalaFxUtils.newVSpacer(minH = 1, maxH = 1),
         postgreSQLChBox, new HBox {
           spacing = 5
-          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), postgreSQLLabel, postgreSQLField, postgresBrowseButton)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), postgreSQLPanel, postgreSQLField, postgresBrowseButton)
         }, ScalaFxUtils.newVSpacer(10))
     })
 
@@ -173,19 +173,19 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
         val jmsNodeConfPath = new File(PostInstall.serverConfPath).getParent() + File.separator + """jms-node.conf"""
         if (new File(jmsNodeConfPath).exists) {
           ScalaFxUtils.NodeStyle.remove(prolineServerField)
-          ScalaFxUtils.NodeStyle.hide(errorNotValidServerFile)
+          ScalaFxUtils.NodeStyle.hide(invalidServerFileLabel)
           val server = new ServerConfig(2)
           PostInstall.items += (server.orderId -> Some(server))
           isValidPath = true
         } else {
-          removeItem(errorNotValidServerFile, prolineServerField, 2)
+          removeItem(invalidServerFileLabel, prolineServerField, 2)
         }
       } else {
-        removeItem(errorNotValidServerFile, prolineServerField, 2)
+        removeItem(invalidServerFileLabel, prolineServerField, 2)
       }
     } else {
       PostInstall.items -= (2)
-      hideItem(errorNotValidServerFile, prolineServerField)
+      hideItem(invalidServerFileLabel, prolineServerField)
     }
     isValidPath
   }
@@ -199,21 +199,21 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
         val jmsNodeConfPath = new File(seqReposField.getText).getParent() + File.separator + """jms-node.conf"""
         val parsingRules = new File(seqReposField.getText).getParent() + File.separator + """parsing-rules.conf"""
         if (new File(jmsNodeConfPath).exists && new File(parsingRules).exists) {
-          hideItem(errorNotValidSeqReposFile, seqReposField)
+          hideItem(invalidSeqReposFileLabel, seqReposField)
           PostInstall.SeqJmsNodeConfPath = jmsNodeConfPath
           PostInstall.parsingRulesPath = parsingRules
           val moduleConfig = new SeqReposConfig(3)
           PostInstall.items += (moduleConfig.orderId -> Some(moduleConfig))
           isValidPath = true
         } else {
-          removeItem(errorNotValidSeqReposFile, seqReposField, 3)
+          removeItem(invalidSeqReposFileLabel, seqReposField, 3)
         }
       } else {
-        removeItem(errorNotValidSeqReposFile, seqReposField, 3)
+        removeItem(invalidSeqReposFileLabel, seqReposField, 3)
       }
     } else {
       PostInstall.items -= (3)
-      hideItem(errorNotValidSeqReposFile, seqReposField)
+      hideItem(invalidSeqReposFileLabel, seqReposField)
     }
     isValidPath
   }
@@ -223,16 +223,16 @@ object PostInstallPanel extends VBox with INotification with LazyLogging {
     var isValidPath = false
     if (postgreSQLChBox.isSelected) {
       if (ScalaUtils.isValidDataDir(PostInstall.pgDataDirPath)) {
-        hideItem(errorNotValidPgData, postgreSQLField)
+        hideItem(invalidPgDataLabel, postgreSQLField)
         val pgServerConfig = new PgServerConfig(1)
         PostInstall.items += (pgServerConfig.orderId -> Some(pgServerConfig))
         isValidPath = true
       } else {
-        removeItem(errorNotValidPgData, postgreSQLField, 1)
+        removeItem(invalidPgDataLabel, postgreSQLField, 1)
       }
     } else {
       PostInstall.items -= (1)
-      hideItem(errorNotValidPgData, postgreSQLField)
+      hideItem(invalidPgDataLabel, postgreSQLField)
     }
     isValidPath
   }

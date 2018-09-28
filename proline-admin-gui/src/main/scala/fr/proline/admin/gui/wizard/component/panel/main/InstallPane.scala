@@ -8,6 +8,7 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.VBox
 import scalafx.scene.layout.HBox
 import scalafx.scene.control.TextField
+import scalafx.scene.control.Hyperlink
 import scalafx.scene.Node
 import scalafx.stage.Stage
 import java.io.File
@@ -25,7 +26,8 @@ import fr.profi.util.scalafx.TitledBorderPane
 import com.typesafe.scalalogging.LazyLogging
 
 /**
- * Builds home panel of install GUI
+ * Builds home panel of Proline install.
+ * @author aromdhani
  *
  */
 
@@ -42,12 +44,11 @@ object InstallPane extends VBox with INotification with LazyLogging {
     iniSeqReposPath = adminConf.getSeqRepoConfigPath().getOrElse("")
     iniPgDirPath = adminConf.getPostgreSqlDataDir().getOrElse("")
     iniPwxPath = adminConf.getPwxConfigPath().getOrElse("")
-    warningCorruptedFile.visible = false
+    corruptedFileLabel.visible = false
   } catch {
     case pe: com.typesafe.config.ConfigException.Parse => {
-      //try to reinitialize initial  values of configuration files 
       logger.error("Error while trying to parse initial settings from Proline Admin configuration file. Default settings will be reset.")
-      warningCorruptedFile.visible = true
+      corruptedFileLabel.visible = true
       resetAdminConfig(Wizard.adminConfPath)
     }
   }
@@ -61,6 +62,13 @@ object InstallPane extends VBox with INotification with LazyLogging {
     }
     text.onChange { (_, oldText, newText) =>
       Wizard.pgDataDirPath = newText
+    }
+  }
+  val headerHelpIcon = new Hyperlink {
+    graphic = FxUtils.newImageView(IconResource.HELP)
+    alignmentInParent = Pos.BASELINE_RIGHT
+    onAction = handle {
+      _openUserGuide()
     }
   }
   val postgresBrowseButton = new Button("Browse...") {
@@ -81,6 +89,7 @@ object InstallPane extends VBox with INotification with LazyLogging {
       Wizard.webRootPath = newText
     }
   }
+
   val prolineWebBrowseButton = new Button("Browse...") {
     graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !prolineWebChBox.selected
@@ -99,6 +108,7 @@ object InstallPane extends VBox with INotification with LazyLogging {
       Wizard.seqRepoConfPath = newText
     }
   }
+
   val seqReposBrowseButton = new Button("Browse ...") {
     graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !seqReposChBox.selected
@@ -117,6 +127,7 @@ object InstallPane extends VBox with INotification with LazyLogging {
       Wizard.serverConfPath = newText
     }
   }
+
   val prolineServerBrowseButton = new Button("Browse...") {
     graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !prolineServerChBox.selected
@@ -124,9 +135,14 @@ object InstallPane extends VBox with INotification with LazyLogging {
       _browseServerConfigFile(Wizard.stage)
     }
   }
-
+  //set initial values 
+  prolineServerChBox.selected_=(!prolineServerField.getText.trim().isEmpty())
+  seqReposChBox.selected_=(!seqReposField.getText.trim().isEmpty())
+  prolineWebChBox.selected_=(!prolineWebField.getText.trim().isEmpty())
+  postgreSQLChBox.selected_=(!postgreSQLField.getText.trim().isEmpty())
+  prolineModulesChBox.selected_=(seqReposChBox.isSelected || prolineWebChBox.isSelected)
   /* Style */
-  Seq(postgreSQLLabel, prolineWebLabel, seqReposLabel, prolineServerLabel).foreach(_.minWidth = 60)
+  Seq(postgreSQLPanel, pwxPanel, seqReposPanel, prolineServerPanel).foreach(_.minWidth = 60)
   Seq(postgreSQLField, prolineWebField, seqReposField, prolineServerField).foreach {
     f => f.hgrow = Priority.Always
   }
@@ -136,8 +152,9 @@ object InstallPane extends VBox with INotification with LazyLogging {
   private val H_SPACING = 5
   val warningBox = new VBox {
     spacing = 0.5
-    children = Seq(warningCorruptedFile, errorNotValidServerFile, errorNotValidSeqReposFile, errorNotValidWebFile, errorNotValidPgData)
+    children = Seq(corruptedFileLabel, invalidServerFileLabel, invalidSeqReposFileLabel, invalidPwxFileLabel, invalidPgDataLabel)
   }
+  Seq(corruptedFileLabel, invalidServerFileLabel, invalidSeqReposFileLabel, invalidPwxFileLabel, invalidPgDataLabel).foreach { node => node.managed <== node.visible }
   val configItemsPane = new TitledBorderPane(
     title = "Select Configuration Item",
     contentNode = new VBox {
@@ -148,7 +165,7 @@ object InstallPane extends VBox with INotification with LazyLogging {
         prolineServerChBox,
         new HBox {
           spacing = 5
-          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), prolineServerLabel, prolineServerField, prolineServerBrowseButton)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), prolineServerPanel, prolineServerField, prolineServerBrowseButton)
         },
         ScalaFxUtils.newVSpacer(minH = 1, maxH = 1),
         prolineModulesChBox,
@@ -157,20 +174,24 @@ object InstallPane extends VBox with INotification with LazyLogging {
           children = Seq(ScalaFxUtils.newHSpacer(minW = 30, maxW = 30), seqReposChBox)
         }, new HBox {
           spacing = 5
-          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), seqReposLabel, seqReposField, seqReposBrowseButton)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), seqReposPanel, seqReposField, seqReposBrowseButton)
         }, new HBox {
           spacing = 5
           children = Seq(ScalaFxUtils.newHSpacer(minW = 30, maxW = 30), prolineWebChBox)
         }, new HBox {
           spacing = 5
-          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), prolineWebLabel, prolineWebField, prolineWebBrowseButton)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), pwxPanel, prolineWebField, prolineWebBrowseButton)
         },
         ScalaFxUtils.newVSpacer(minH = 1, maxH = 1),
         postgreSQLChBox, new HBox {
           spacing = 5
-          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), postgreSQLLabel, postgreSQLField, postgresBrowseButton)
+          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), postgreSQLPanel, postgreSQLField, postgresBrowseButton)
         }, ScalaFxUtils.newVSpacer(10))
     })
+
+  val helpPane = new HBox {
+    children = Seq(ScalaFxUtils.newHSpacer(minW = configItemsPane.getWidth - 50), headerHelpIcon)
+  }
 
   /* Install home panel content */
   alignment = Pos.BottomCenter
@@ -178,175 +199,130 @@ object InstallPane extends VBox with INotification with LazyLogging {
   spacing = 1
   fillWidth = true
   children = Seq(ScalaFxUtils.newVSpacer(minH = 10),
+    helpPane,
     configItemsPane)
 
-  private val checkBoxList = List(prolineServerChBox.getId, prolineWebChBox.getId, seqReposChBox.getId, postgreSQLChBox.getId)
-
-  /* get selected items */
-  def getSelectedItems {
-    checkBoxList.map {
-      case "serverChBoxId" => isValidServerPath
-      case "seqReposChBoxId" => isValidSeqreposPath
-      case "prolineWebChBoxId" => isValidPwxPath
-      case "postgresChBoxId" => isValidPgDataDir
-      case _ => logger.error(s"Error while trying to select configuration file")
-    }
-  }
-
   /* select Proline server item */
-  private def isValidServerPath: Boolean = {
+  def isValidServerPath: Boolean = {
     var isValidPath = false
     if (prolineServerChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.serverConfPath)) {
         val jmsNodeConfPath = new File(Wizard.serverConfPath).getParent() + File.separator + """jms-node.conf"""
         if (new File(jmsNodeConfPath).exists) {
-          hideItem(errorNotValidServerFile, prolineServerField)
+          hideItem(invalidServerFileLabel, prolineServerField)
           Wizard.jmsNodeConfPath = jmsNodeConfPath
           Wizard.items += (2 -> Some(ItemFactory(SERVER)))
           isValidPath = true
         } else {
-          removeItem(errorNotValidServerFile, prolineServerField, 2)
+          removeItem(invalidServerFileLabel, prolineServerField, 2)
         }
       } else {
-        removeItem(errorNotValidServerFile, prolineServerField, 2)
+        removeItem(invalidServerFileLabel, prolineServerField, 2)
       }
     } else {
       Wizard.items -= (2)
-      hideItem(errorNotValidServerFile, prolineServerField)
+      hideItem(invalidServerFileLabel, prolineServerField)
     }
     isValidPath
   }
 
   /* select Sequence Repository item */
-  private def isValidSeqreposPath: Boolean = {
+  def isValidSeqreposPath: Boolean = {
     var isValidPath = false
     if (seqReposChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.seqRepoConfPath)) {
         val jmsNodeConfPath = new File(seqReposField.getText).getParent() + File.separator + """jms-node.conf"""
         val parsingRules = new File(seqReposField.getText).getParent() + File.separator + """parsing-rules.conf"""
         if (new File(jmsNodeConfPath).exists && new File(parsingRules).exists) {
-          hideItem(errorNotValidSeqReposFile, seqReposField)
+          hideItem(invalidSeqReposFileLabel, seqReposField)
           Wizard.SeqJmsNodeConfPath = jmsNodeConfPath
           Wizard.parsingRulesPath = parsingRules
           Wizard.items += (3 -> Some(ItemFactory(SEQREPOS)))
           isValidPath = true
         } else {
-          removeItem(errorNotValidSeqReposFile, seqReposField, 2)
+          removeItem(invalidSeqReposFileLabel, seqReposField, 2)
         }
       } else {
-        removeItem(errorNotValidSeqReposFile, seqReposField, 2)
+        removeItem(invalidSeqReposFileLabel, seqReposField, 2)
       }
     } else {
       Wizard.items -= (3)
-      hideItem(errorNotValidSeqReposFile, seqReposField)
+      hideItem(invalidSeqReposFileLabel, seqReposField)
     }
     isValidPath
   }
 
   /* select  PWX item */
-  private def isValidPwxPath: Boolean = {
+  def isValidPwxPath: Boolean = {
     var isValidPath = false
     if (prolineWebChBox.isSelected) {
       if (ScalaUtils.isConfFile(Wizard.webRootPath)) {
-        hideItem(errorNotValidWebFile, prolineWebField)
+        hideItem(invalidPwxFileLabel, prolineWebField)
         Wizard.items += (4 -> Some(ItemFactory(PWX)))
         isValidPath = true
       } else {
-        removeItem(errorNotValidWebFile, prolineWebField, 4)
+        removeItem(invalidPwxFileLabel, prolineWebField, 4)
       }
     } else {
       Wizard.items -= (4)
-      hideItem(errorNotValidWebFile, prolineWebField)
+      hideItem(invalidPwxFileLabel, prolineWebField)
     }
     isValidPath
   }
 
   /* select PostgreSQL item */
-  private def isValidPgDataDir: Boolean = {
+  def isValidPgDataDir: Boolean = {
     var isValidPath = false
     if (postgreSQLChBox.isSelected) {
       if (!Wizard.pgDataDirPath.isEmpty) {
         if (ScalaUtils.isValidDataDir(Wizard.pgDataDirPath)) {
-          hideItem(errorNotValidPgData, postgreSQLField)
+          hideItem(invalidPgDataLabel, postgreSQLField)
           Wizard.items += (1 -> Some(ItemFactory(PGSERVER)))
           isValidPath = true
         } else {
-          removeItem(errorNotValidPgData, postgreSQLField, 1)
+          removeItem(invalidPgDataLabel, postgreSQLField, 1)
         }
       } else {
-        removeItem(errorNotValidPgData, postgreSQLField, 1)
+        removeItem(invalidPgDataLabel, postgreSQLField, 1)
       }
     } else {
       Wizard.items -= (1)
-      hideItem(errorNotValidPgData, postgreSQLField)
+      hideItem(invalidPgDataLabel, postgreSQLField)
     }
     isValidPath
   }
 
-  /* remove item from items map */
+  def _openUserGuide() {
+    UserGuide.openUrl(Wizard.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
+  }
+
+  /**
+   *  remove an item from items map
+   *  @param label The node
+   *  @param field the field
+   *  @param the order of the node
+   */
   def removeItem(label: Node, field: Node, order: Int) {
     Wizard.items -= (order)
     ScalaFxUtils.NodeStyle.show(label)
     ScalaFxUtils.NodeStyle.set(field)
   }
 
-  /* hide warning label and remove red border */
+  /**
+   *  hide an item from items map
+   *  @param label The node
+   *  @param field the field
+   *  @param the order of the node
+   */
   def hideItem(label: Node, field: Node) {
     ScalaFxUtils.NodeStyle.hide(label)
     ScalaFxUtils.NodeStyle.remove(field)
   }
 
-  /* check selected fields */
-  def setStyleSelectedItems: Boolean = {
-    var validPath, seqReposPath, serverPath, postGresPath, webPath = true
-    if (postgreSQLChBox.isSelected) {
-      if (!isValidPgDataDir) {
-        ScalaFxUtils.NodeStyle.set(postgreSQLField)
-        postGresPath = false
-      } else {
-        postGresPath = true
-      }
-    } else {
-      ScalaFxUtils.NodeStyle.remove(postgreSQLField)
-    }
-    if (prolineServerChBox.isSelected) {
-      if (!isValidServerPath) {
-        ScalaFxUtils.NodeStyle.set(prolineServerField)
-        serverPath = false
-      } else {
-        serverPath = true
-      }
-    } else ScalaFxUtils.NodeStyle.remove(prolineServerField)
-    if (seqReposChBox.isSelected) {
-      if (!isValidSeqreposPath) {
-        ScalaFxUtils.NodeStyle.set(seqReposField)
-        seqReposPath = false
-      } else {
-        ScalaFxUtils.NodeStyle.remove(seqReposField)
-        seqReposPath = true
-      }
-    } else {
-      ScalaFxUtils.NodeStyle.remove(seqReposField)
-    }
-    if (prolineWebChBox.isSelected) {
-      if (!isValidPwxPath) {
-        ScalaFxUtils.NodeStyle.set(prolineWebField)
-        webPath = false
-      } else {
-        webPath = true
-      }
-    } else {
-      ScalaFxUtils.NodeStyle.remove(prolineWebField)
-    }
-    if (seqReposPath && serverPath && postGresPath && webPath) {
-      validPath = true
-    } else {
-      validPath = false
-    }
-    validPath
-  }
-
-  /* browse configuration files dialog */
+  /**
+   *  browse configuration files dialog
+   *  @param stage The stage to show in the file path
+   */
   def _browseServerConfigFile(stage: Stage) {
     confChooser.setForProlineServerConf(prolineServerField.text())
     try {
@@ -356,6 +332,10 @@ object InstallPane extends VBox with INotification with LazyLogging {
       case t: Throwable => logger.error("error in file's path ")
     }
   }
+  /**
+   * browse Sequence repository configuration file
+   * @param stage The  stage to show in the configuration file.
+   */
   def _browseSeqReposConfigFile(stage: Stage) {
     confChooser.setForSeqRepoConf(seqReposField.text())
     try {
@@ -367,6 +347,10 @@ object InstallPane extends VBox with INotification with LazyLogging {
       case t: Throwable => logger.error("error in file's path ")
     }
   }
+  /**
+   * browse  Pwx configuration file
+   * @param stage  The stage to show in the proline web configuration  file
+   */
   def _browseProlineWebConfigFile(stage: Stage) {
     confChooser.setForPwxConf(prolineWebField.text())
     try {
@@ -376,6 +360,10 @@ object InstallPane extends VBox with INotification with LazyLogging {
       case t: Throwable => logger.error("error in file's path ")
     }
   }
+  /**
+   * browse PostgreSQL data directory
+   * @param stage The stage to show in the data directory
+   */
   def _browseDataDir(stage: Stage) {
     val file = FxUtils.browseDirectory(
       dcTitle = "Select PostgreSQL data directory",
@@ -387,7 +375,7 @@ object InstallPane extends VBox with INotification with LazyLogging {
         postgreSQLField.text = newPath
       }
     } catch {
-      case t: Throwable => logger.error("error in file's path ")
+      case t: Throwable => logger.error("error in file's path")
     }
   }
 

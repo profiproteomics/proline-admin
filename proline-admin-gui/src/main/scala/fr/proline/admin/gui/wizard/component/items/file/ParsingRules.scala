@@ -1,8 +1,7 @@
 package fr.proline.admin.gui.wizard.component.items.file
 
 import com.typesafe.scalalogging.LazyLogging
-import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable.ListBuffer
+
 import scalafx.Includes._
 import scalafx.geometry.Pos
 import scalafx.scene.control.Button
@@ -22,7 +21,12 @@ import fr.profi.util.scalafx.SimpleBorderPane
 import fr.profi.util.scalafx.BoldLabel
 import fr.proline.admin.gui.wizard.process.config._
 import fr.profi.util.scala.ScalaUtils
-import scala.concurrent._
+
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.ListBuffer
+
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
 /**
@@ -419,13 +423,10 @@ class Rules(
   spacing = 10
   alignment = Pos.CENTER
   children = List(ruleBox, removeButton)
-  def checkForm() {
-    if (ScalaUtils.isEmpty(nameText.getText) || ScalaUtils.isEmpty(fastaNameText.getText)
-      || ScalaUtils.isEmpty(fastaVersionText.getText) || ScalaUtils.isEmpty(proteinAccessionText.getText)) {
-      warningDatalabel.visible = true
-    } else {
-      warningDatalabel.visible = false
-    }
+  def checkForm(): Boolean = {
+    val isValidatedFields = Seq(nameText, fastaNameText, fastaVersionText, proteinAccessionText).forall(!_.getText.trim.isEmpty())
+    if (isValidatedFields) warningDatalabel.visible = false else warningDatalabel.visible = true
+    isValidatedFields
   }
   def getName = nameText.text()
   def getFastaName = fastaNameText.text()

@@ -1,80 +1,85 @@
 package fr.proline.admin.gui.wizard.component.panel.main
 
 import com.typesafe.scalalogging.LazyLogging
+import scalafx.Includes._
 import scalafx.stage.Stage
 import scalafx.geometry.Pos
-import scalafx.scene.layout.VBox
-import scalafx.scene.layout.HBox
-import scalafx.scene.control.Label
-import scalafx.scene.control.TextField
-import scalafx.scene.layout.Priority
+import scalafx.scene.layout.{ VBox, HBox, Priority }
+import scalafx.scene.control.{ Label, TextField, Hyperlink }
 import scalafx.scene.text.{ Font, FontWeight }
-import fr.profi.util.scalafx.BoldLabel
-import fr.profi.util.scalafx.TitledBorderPane
-import fr.profi.util.scalafx.TitledBorderPane
+import fr.proline.admin.gui.process.config.AdminConfig
+import fr.proline.admin.gui.process.config.AdminConfigFile
+import fr.proline.admin.gui.wizard.process.config.{ NodeConfig, ParsingRule }
+import fr.proline.admin.gui.wizard.process.config.{ NodeConfigFile, ParsingRulesFile }
 import fr.proline.admin.gui.Monitor
+
+import fr.proline.admin.gui.process.DatabaseConnection
+import fr.proline.admin.gui.wizard.util.UserGuide
+import fr.proline.admin.gui.IconResource
+import fr.proline.admin.gui.wizard.util.WindowSize
+import fr.proline.admin.gui.util.FxUtils
+import fr.profi.util.scalafx.{ BoldLabel, TitledBorderPane }
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
-import scalafx.stage.Stage
-import fr.proline.admin.gui.wizard.util.WindowSize
-import fr.proline.admin.gui.Monitor
-import fr.proline.admin.gui.process.config.AdminConfigFile
-import fr.proline.admin.gui.process.config.AdminConfig
-import fr.proline.admin.gui.wizard.process.config.NodeConfigFile
-import fr.proline.admin.gui.wizard.process.config.NodeConfig
+import java.io.File
 
 /**
- * Builds home panel of monitor GUI
+ * Builds home panel of Proline-Admin GUI monitor .
  *
  */
 
 object MonitorPane extends VBox with LazyLogging {
 
-  // Proline server initial properties 
-  private var jmsServerHost: String = "localhost"
-  private var jmsServerPort: Int = 5445
-  private var jmsServerQueueName = "ProlineServiceRequestQueue"
-  private var serverHost: String = "<db_host>"
-  private var serverUser: String = "<db_user>"
-  private var serverPort: Int = 5432
-  private var serverPassword: String = "<db_password>"
-  //used  to get bin dir to archive a project or to retsore project 
-  var serverPgsqlDataDir: Option[String] = None
-  private val errorServerLabel = new Label {
-    text = "Error while trying to read initial Proline server configurations. Make sure that you have already setup Proline."
-    visible = false
+  // get Proline-Admin initial settings  
+  val adminConfigOpt = getAdminConfigOpt()
+  require(adminConfigOpt.isDefined, "Proline Admin-config must not be empty or null.")
+  val adminConfig = adminConfigOpt.get
+  val nodeConfigOpt = getNodeConfigOpt()
+
+  // proline error and warning labels 
+  val adminConfigErrorLabel = new Label {
+    text = "The Proline-Admin configuration file not found. Make sure that you have already setup Proline."
+    graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
     style = TextStyle.RED_ITALIC
+    managed <== visible
+  }
+  val connectionErrorLabel = new Label {
+    text = "Error establishing a database connection. Please check the database config settings. Make sure that you have already setup Proline."
+    graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
+    style = TextStyle.RED_ITALIC
+    managed <== visible
+  }
+  val serverConfigWarningLabel = new Label {
+    text = "The path of Proline server and jms-node configuration files not found. Make sure that you have already setup Proline."
+    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+    style = TextStyle.ORANGE_ITALIC
+    managed <== visible
+  }
+  val seqReposWarningLabel = new Label {
+    text = "The path of the sequence repository configuration file not found. Make sure that you have already setup Proline."
+    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+    style = TextStyle.ORANGE_ITALIC
+    managed <== visible
+  }
+  val pgsqlDataDirWarningLabel = new Label {
+    text = "The path of the Proline data directory not found. Make sure that you have already setup Proline."
+    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+    style = TextStyle.ORANGE_ITALIC
+    managed <== visible
   }
 
-  try {
-    val adminConfig = Monitor.serverInitialConfing.get
-    serverHost = adminConfig.dbHost.get
-    serverUser = adminConfig.dbUserName.get
-    serverPort = adminConfig.dbPort.get
-    serverPassword = adminConfig.dbPassword.get
-    serverPgsqlDataDir = adminConfig.pgsqlDataDir
-  } catch {
-    case t: Throwable =>
-      logger.error("Error while trying to get Proline sevrer initial configurations.")
-      errorServerLabel.visible_=(true)
+  //JMS server initial properties 
+  val headerHelpIcon = new Hyperlink {
+    graphic = FxUtils.newImageView(IconResource.HELP)
+    alignmentInParent = Pos.BASELINE_RIGHT
+    onAction = handle {
+      openAdminGuide()
+    }
   }
-
-  //Jms server initial properties 
-  try {
-    val JmsConfig = Monitor.serverJmsInitialConfig.get
-    jmsServerHost = JmsConfig.jmsServerHost.get
-    jmsServerPort = JmsConfig.jmsServePort.get
-    jmsServerQueueName = JmsConfig.requestQueueName.get
-
-  } catch {
-    case t: Throwable =>
-      logger.error("Error while trying to get Proline JMS server initial configuration!")
-      errorServerLabel.visible_=(true)
-  }
-
   val infoMessage = new BoldLabel("(By default, same server as Proline Server Cortex)")
   private val V_SPACING = 10
   private val H_SPACING = 5
+
   // jms components
   val jmsServelLabel = new HBox {
     vgrow = Priority.Always
@@ -87,21 +92,20 @@ object MonitorPane extends VBox with LazyLogging {
   val jmsHostLabel = new Label("Host: ")
   val jmsHostField = new TextField() {
     disable = true
-    text = jmsServerHost
+    text = nodeConfigOpt.map(_.jmsServerHost.getOrElse("localhost")).getOrElse("localhost")
   }
 
   val jmsPortLabel = new Label("Port: ")
   val jmsPortField = new TextField() {
     disable = true
-    text = jmsServerPort.toString
+    text = nodeConfigOpt.map(_.jmsServePort.getOrElse(5442).toString()).getOrElse(5442).toString()
   }
 
   val jmsProlineQueueLabel = new Label("Proline Queue Name:")
   val jmsProlineQueueField = new TextField {
     disable = true
-    text = jmsServerQueueName
+    text = nodeConfigOpt.map(_.requestQueueName.getOrElse("ProlineServiceRequestQueue")).getOrElse("ProlineServiceRequestQueue")
   }
-
   val jmsTiteledPane = new HBox {
     children = new TitledBorderPane(
       title = "",
@@ -142,25 +146,25 @@ object MonitorPane extends VBox with LazyLogging {
   val pgHostLabel = new Label("Host: ")
   val pgHostField = new TextField() {
     disable = true
-    text = serverHost
+    text = adminConfig.dbHost.getOrElse("<db_host>")
   }
 
   val pgPortLabel = new Label("Port: ")
   val pgPortField = new TextField() {
     disable = true
-    text = serverPort.toString
+    text = adminConfig.dbPort.getOrElse(5432).toString()
   }
 
   val pgUserLabel = new Label("User: ")
   val pgUserField = new TextField() {
     disable = true
-    text = serverUser
+    text = adminConfig.dbUserName.getOrElse("<db_user>")
   }
 
   val pgPasswordLabel = new Label("Password: ")
   val pgPasswordField = new TextField() {
     disable = true
-    text = serverPassword
+    text = adminConfig.dbPassword.getOrElse("<db_password>")
   }
   val pgTitledPane = new HBox {
 
@@ -171,18 +175,17 @@ object MonitorPane extends VBox with LazyLogging {
         prefWidth = (WindowSize.prefWitdh)
         spacing = V_SPACING * 2
         children = List(new HBox {
-
           spacing = H_SPACING * 3
           children = List(pgHostLabel, pgHostField)
         }, new HBox {
-          spacing = H_SPACING * 2
+          spacing = H_SPACING * 3
           children = List(pgPortLabel, pgPortField)
         },
           new HBox {
-            spacing = H_SPACING * 2
+            spacing = H_SPACING * 3
             children = List(pgUserLabel, pgUserField)
           }, new HBox {
-            spacing = H_SPACING * 2
+            spacing = H_SPACING * 3
             children = List(pgPasswordLabel, pgPasswordField)
           })
       }))
@@ -194,9 +197,21 @@ object MonitorPane extends VBox with LazyLogging {
     children = List(pgSQLServerLabel, pgTitledPane)
   }
 
-  Seq(pgSQLServerLabel, jmsServelLabel, pgPortLabel, pgHostLabel, pgUserLabel, pgPasswordLabel, jmsHostLabel, jmsPortLabel, jmsProlineQueueLabel).foreach(_.minWidth = 150)
+  Seq(pgSQLServerLabel,
+    jmsServelLabel,
+    pgPortLabel,
+    pgHostLabel,
+    pgUserLabel,
+    pgPasswordLabel,
+    jmsHostLabel,
+    jmsPortLabel,
+    jmsProlineQueueLabel).foreach(_.minWidth = 150)
   Seq(pgPortField, pgUserField, pgPasswordField, pgHostField, jmsHostField, jmsProlineQueueField, jmsPortField).foreach {
     f => f.hgrow = Priority.Always
+  }
+
+  val helpPane = new HBox {
+    children = Seq(ScalaFxUtils.newHSpacer(minW = postgreSQLServerPane.getWidth - 50), headerHelpIcon)
   }
 
   //final monitor pane 
@@ -207,7 +222,73 @@ object MonitorPane extends VBox with LazyLogging {
   vgrow = Priority.ALWAYS
   children = Seq(ScalaFxUtils.newVSpacer(25),
     new VBox {
-      spacing = V_SPACING * 2
-      children = List(errorServerLabel, jmsServerPane, ScalaFxUtils.newVSpacer(10), postgreSQLServerPane)
+      spacing = V_SPACING
+      children = List(
+        adminConfigErrorLabel,
+        connectionErrorLabel,
+        serverConfigWarningLabel,
+        seqReposWarningLabel,
+        pgsqlDataDirWarningLabel,
+        helpPane,
+        jmsServerPane,
+        ScalaFxUtils.newVSpacer(10),
+        postgreSQLServerPane)
     })
+
+  /** open Proline-admin guide file */
+  def openAdminGuide() {
+    UserGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
+  }
+
+  /** get Proline-Admin confi initial settings  */
+  def getAdminConfigOpt(): Option[AdminConfig] = {
+    try {
+      if (Monitor.adminConfPathIsEmpty()) return None
+      else {
+        val adminConfFile = new AdminConfigFile(Monitor.adminConfPath)
+        adminConfFile.read()
+      }
+    } catch {
+      case t: Throwable => {
+        logger.error("Error occured while trying to get Proline-admin configurations", t.getMessage())
+        None
+      }
+    }
+  }
+
+  /** get Proline Server jms-node initial settings */
+  def getNodeConfigOpt(): Option[NodeConfig] = {
+    try {
+      if (adminConfig.serverConfigFilePath.isDefined && new File(adminConfig.serverConfigFilePath.get).exists) {
+        val prolineServerConfigParent = new File(adminConfig.serverConfigFilePath.get).getParent
+        val nodeConfigPath = new File(prolineServerConfigParent + File.separator + "jms-node.conf").getCanonicalPath
+        val nodeConfigFile = new NodeConfigFile(nodeConfigPath)
+        nodeConfigFile.read
+      } else {
+        logger.warn("Could not find the jms-node configurations file.")
+        None
+      }
+    } catch {
+      case t: Throwable => {
+        logger.error("Error occured while trying to get jms-node configurations", t.getMessage())
+        None
+      }
+    }
+  }
+
+  /** check Proline-Admin configurations and show warning and error labels */
+  def isAdminConfigsOk(adminConfig: AdminConfig): Seq[Boolean] = adminConfig match {
+    case adminConfigValue @ AdminConfig(filePath, serverConfigFilePath, pwx, pgsqlDataDir, seqRepoConfigFilePath, _, _, _, _, _, _) => {
+      var isConnectionEstablished = DatabaseConnection.testDbConnection(adminConfigValue, showSuccessPopup = false, showFailurePopup = false)
+      connectionErrorLabel.visible = !isConnectionEstablished
+      adminConfigErrorLabel.visible = !(new File(filePath).exists)
+      serverConfigWarningLabel.visible = !serverConfigFilePath.isDefined || !(new File(serverConfigFilePath.get).exists)
+      pgsqlDataDirWarningLabel.visible = !pgsqlDataDir.isDefined || !(new File(pgsqlDataDir.get).exists)
+      seqReposWarningLabel.visible = !seqRepoConfigFilePath.isDefined || !(new File(seqRepoConfigFilePath.get).exists)
+      Seq(isConnectionEstablished,
+        (new File(filePath).exists))
+    }
+    case _ => logger.error("Error could not extract values from AdminConfig!"); Seq.empty
+  }
+
 }

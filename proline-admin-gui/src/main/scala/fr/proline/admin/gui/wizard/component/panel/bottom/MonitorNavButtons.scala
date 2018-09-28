@@ -2,22 +2,15 @@ package fr.proline.admin.gui.wizard.component.panel.bottom
 
 import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
-import scalafx.geometry.Pos
-import scalafx.geometry.Insets
+import scalafx.geometry.{Pos,Insets}
 import scalafx.scene.control.Button
 import scalafx.scene.layout.HBox
-import fr.proline.admin.gui.wizard.util.GetConfirmation
-import fr.profi.util.scala.ScalaUtils._
-import fr.profi.util.scalafx.ScalaFxUtils.TextStyle._
-import javafx.scene.control.ContentDisplay
-import fr.proline.admin.gui.util.FxUtils
-import fr.proline.admin.gui.Wizard
+
 import fr.proline.admin.gui.Monitor
-import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.wizard.component.items._
-import fr.proline.admin.gui.wizard.util.ExitPopup
+import fr.proline.admin.gui.Wizard
+import fr.proline.admin.gui.wizard.component.items.SummaryConfig
 import fr.proline.admin.gui.wizard.component.panel.main.Summary
-import scalafx.scene.control.Button.sfxButton2jfx
+import fr.proline.admin.gui.wizard.util.ExitPopup
 
 /**
  * Panel contains navigation buttons : previous next and cancel
@@ -58,7 +51,7 @@ object MonitorNavButtons extends LazyLogging with INavButtons {
         /* Summary panel */
         Wizard.nodeIndex = Wizard.nodeIndex + 1
         Wizard.items.toSeq.foreach {
-          case (_1, _2) => Summary.getItem(_2.get)
+          case (order, itemOpt) => Summary.getItem(itemOpt.get)
         }
         Wizard.currentNode = summaryPanel
         Wizard.configItemsPanel.getChildren().clear()

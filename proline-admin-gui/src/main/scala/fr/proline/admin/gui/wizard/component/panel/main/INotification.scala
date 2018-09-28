@@ -25,63 +25,55 @@ import fr.proline.admin.gui.util.FxUtils
 
 trait INotification {
 
-  private val CORRUPTEDFILE = "The configuration file Proline Admin is corrupted. This may be due to improper existing settings. Default Proline Admin settings have been reset."
-  val warningCorruptedFile: Label = new Label {
+  private val CORRUPTEDFILE = "The configuration file Proline Admin is corrupted. This may be due to improper existing settings. Default Proline Admin settings will be reset."
+  val corruptedFileLabel: Label = new Label {
     graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
     text = CORRUPTEDFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
 
-  private val NOTVALIDPROLINESERVERFILE = "Please select a validated configuration file to set up Proline Server. "
-  val errorNotValidServerFile: Label = new Label {
+  private val INVALIDPROLINESERVERFILE = "Please select a validated configuration file to set up Proline server."
+  val invalidServerFileLabel: Label = new Label {
     graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
-    text = NOTVALIDPROLINESERVERFILE
+    text = INVALIDPROLINESERVERFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
 
-  private val NOTVALIDSEQREPOSFILE = "Please select a validated configuration file to set up Sequence Repository. "
-  val errorNotValidSeqReposFile: Label = new Label {
+  private val INVALIDSEQREPOSFILE = "Please select a validated configuration file to set up Sequence repository."
+  val invalidSeqReposFileLabel: Label = new Label {
     graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
-    text = NOTVALIDSEQREPOSFILE
+    text = INVALIDSEQREPOSFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
 
-  private val NOTVALIDPROLINEWEBFILE = "Please select a validated configuration file to set up Proline Web. "
-  val errorNotValidWebFile: Label = new Label {
+  private val INVALIDPROLINEWEBFILE = "Please select a validated configuration file to set up Proline web."
+  val invalidPwxFileLabel: Label = new Label {
     graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
-    text = NOTVALIDPROLINEWEBFILE
+    text = INVALIDPROLINEWEBFILE
     style = TextStyle.RED_ITALIC
     visible = false
   }
 
-  private val NOTVALIDPGDATA = "Please select a validated PostgreSQL data directory to set up PostgreSQL optimization and authorizations. Data directory should contain pg_hba.conf file and postgresql.conf file"
-  val errorNotValidPgData: Label = new Label {
+  private val INVALIDPGDATA = "Please select a validated PostgreSQL data directory to set up PostgreSQL optimization and authorizations. Data directory should contain pg_hba.conf file and postgresql.conf file."
+  val invalidPgDataLabel: Label = new Label {
     graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
-    text = NOTVALIDPGDATA
+    text = INVALIDPGDATA
     style = TextStyle.RED_ITALIC
     visible = false
   }
-
-  /* set style on fields */
-  def setStyleSelectedItems: Boolean
-
-  /* get the selected items  */
-  def getSelectedItems: Unit
 
   val postgreSQLChBox = new CheckBox("PostgreSQL Server Data Directory") {
     id = "postgresChBoxId"
-    selected = true
     underline = true
     font = Font.font("SanSerif", FontWeight.Bold, 12)
     vgrow = Priority.Always
   }
-  val postgreSQLLabel = new HBox {
-    prefWidth = 320
+  val postgreSQLPanel = new HBox {
     disable <== !postgreSQLChBox.selected
-    children = List(new Label("Path to PostgreSQL Data Directory "))
+    children = List(new Label("Select the PostgreSQL Data Directory "))
   }
 
   /* common components */
@@ -90,73 +82,63 @@ trait INotification {
   val prolineModulesChBox = new CheckBox("Proline Modules") {
     id = "moduleConfigId"
     underline = true
-    selected = true
     vgrow = Priority.Always
     font = Font.font("SanSerif", FontWeight.Bold, 12)
-    onAction = handle { getSelectedChildren }
+    onAction = handle { bindToChildren }
   }
 
   //Sequence Repository  
   val seqReposChBox = new CheckBox("Sequence Repository Configuration File") {
     id = "seqReposChBoxId"
-    selected = true
     underline = true
     vgrow = Priority.Always
-    onAction = handle { getSelectedParent }
+    onAction = handle { bindToParent }
   }
-  val seqReposLabel = new HBox {
-     prefHeight = 40
-    prefWidth = 320
+  val seqReposPanel = new HBox {
+
     disable <== !seqReposChBox.selected
-    children = List(new Label("<Server root/seqrepo>\n The file application.conf should be in <seqrepo>/config"))
+    children = List(new Label("Select the configuration file application.conf\nIt should be located under </config>"))
   }
+
   //Proline web  
   val prolineWebChBox = new CheckBox("Proline Web Configuration File") {
     id = "prolineWebChBoxId"
-    selected = true
     underline = true
     vgrow = Priority.Always
-    onAction = handle { getSelectedParent }
+    onAction = handle { bindToParent }
   }
 
-  val prolineWebLabel = new HBox {
-     prefHeight = 40
-    prefWidth = 320
+  val pwxPanel = new HBox {
     disable <== !prolineWebChBox.selected
-    children = List(new Label("<Proline Web>\n The file application.conf should be in <pwx>/config"))
+    children = List(new Label("Select the configuration file application.conf\nIt should be located under </conf>"))
   }
 
   // Proline server  
   val prolineServerChBox = new CheckBox("Proline Server Configuration File") {
     id = "serverChBoxId"
-    selected = true
     underline = true
     vgrow = Priority.Always
     font = Font.font("SanSerif", FontWeight.Bold, 12)
   }
-  val prolineServerLabel = new HBox {
-    prefHeight = 40
-    prefWidth = 320
+  val prolineServerPanel = new HBox {
     disable <== !prolineServerChBox.selected
-    children = List(new Label("<Server root/server>\n The file application.conf should be in <server>/config"))
+    children = List(new Label("Select the configuration file application.conf\nIt should be located under </config>"))
+  }
+
+  /* label size*/
+  Seq(prolineServerPanel, seqReposPanel, pwxPanel, postgreSQLPanel).foreach { panel =>
+    panel.prefWidth = 320
+    panel.prefHeight = 40
   }
   /* selected checkbox */
 
-  def getSelectedChildren {
-    if (prolineModulesChBox.isSelected) {
-      prolineWebChBox.selected = true
-      seqReposChBox.selected = true
-    } else {
-      prolineWebChBox.selected = false
-      seqReposChBox.selected = false
-    }
+  def bindToChildren {
+    prolineWebChBox.selected = prolineModulesChBox.isSelected
+    seqReposChBox.selected = prolineModulesChBox.isSelected
   }
 
-  def getSelectedParent {
-    if (prolineWebChBox.isSelected || seqReposChBox.isSelected)
-      prolineModulesChBox.selected = true
-    else
-      prolineModulesChBox.selected = false
+  def bindToParent {
+    prolineModulesChBox.selected = (prolineWebChBox.isSelected || seqReposChBox.isSelected)
   }
   //reset default setting when the configuration file is corrupted
   def resetAdminConfig(path: String) = {
@@ -179,16 +161,16 @@ trait INotification {
  * TabForm contains tab form of each item
  *
  */
-
 trait ITabForm {
 
   // warning label 
-  val warningDatalabel: Label = new Label {
+  val emptyFieldErrorLabel: Label = new Label {
     text = "The following field(s) cannot be empty."
     style = TextStyle.RED_ITALIC
     visible = false
   }
 
+  emptyFieldErrorLabel.managed <== emptyFieldErrorLabel.visible
   // check the form of the fields in each tab 
   def checkForm: Boolean
 
