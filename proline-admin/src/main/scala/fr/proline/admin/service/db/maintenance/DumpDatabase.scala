@@ -1,23 +1,15 @@
 package fr.proline.admin.service.db.maintenance
 
 import java.io.FileOutputStream
-import java.util.Arrays
-import java.util.Collection
-
-import org.dbunit.DataSourceDatabaseTester
-import org.dbunit.database.DatabaseConfig
-import org.dbunit.database.DatabaseSequenceFilter
-import org.dbunit.database.IDatabaseConnection
-import org.dbunit.dataset.FilteredDataSet
-import org.dbunit.dataset.datatype.DefaultDataTypeFactory
-import org.dbunit.dataset.xml.FlatXmlDataSet
-import org.dbunit.ext.h2.H2DataTypeFactory
-import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory
 
 import com.typesafe.scalalogging.LazyLogging
 
-import fr.proline.admin.service.ICommandWork
+import org.dbunit.database.DatabaseSequenceFilter
+import org.dbunit.dataset.FilteredDataSet
+import org.dbunit.dataset.xml.FlatXmlWriter
+
 import fr.proline.admin.helper.sql.createDatabaseTester
+import fr.proline.admin.service.ICommandWork
 import fr.proline.repository._
 
 /**
@@ -27,13 +19,13 @@ import fr.proline.repository._
 class DumpDatabase(
   dbConnector: IDatabaseConnector,
   outputFilePath: String,
-  excludedTableNames: Array[String] = Array("SCHEMA_VERSION")
+  excludedTableNames: Array[String] = Array("SCHEMA_VERSION"),
+  docType: Option[String] = None
 ) extends ICommandWork with LazyLogging {
 
   def doWork() {
     
     val dataSource = dbConnector.getDataSource()
-    //val dbTester = new DataSourceDatabaseTester(dataSource)
     val dbTester = createDatabaseTester( dataSource, dbConnector.getDriverType )
     val dbUnitConn = dbTester.getConnection()
     
@@ -63,11 +55,15 @@ class DumpDatabase(
     
     val filteredDS = new FilteredDataSet(filteredTableNames, sortedDS)
     
-    // TODO: remove empty tables (use QueryDataSet or do manual SQL queries to get records statistics)
-    
+    // Output filtered dataset
     val out = new FileOutputStream(outputFilePath)
-
-    FlatXmlDataSet.write(filteredDS, out)
+    val datasetWriter = new FlatXmlWriter(out)
+    if (docType.isDefined) datasetWriter.setDocType(docType.get)
+    datasetWriter.setIncludeEmptyTable(false) // remove empty tables
+    datasetWriter.write(filteredDS)
+    out.close()
+    
+    ()
   }
 
 }

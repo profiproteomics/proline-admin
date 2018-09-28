@@ -1,274 +1,343 @@
 package fr.proline.admin.service.user
 
-import javax.persistence.EntityTransaction
-import javax.persistence.FlushModeType
 import com.typesafe.scalalogging.LazyLogging
-
-import fr.proline.admin.service.ICommandWork
 import fr.proline.core.orm.util.DataStoreConnectorFactory
-import fr.proline.repository.DriverType
-import fr.proline.core.orm.uds.ExternalDb
-import fr.proline.core.orm.uds.Project
-import fr.proline.core.orm.uds.repository.ExternalDbRepository
-import fr.proline.context._
-import fr.proline.core.dal.DoJDBCReturningWork
-import fr.proline.repository._
+import fr.proline.context.DatabaseConnectionContext
+import fr.proline.admin.service.db.SetupProline
+import fr.proline.core.dal.context._
 import fr.proline.core.dal.DoJDBCWork
+import fr.proline.core.dal.DoJDBCReturningWork
+import fr.proline.core.orm.uds.{ Project, Dataset, UserAccount, ExternalDb }
+import fr.proline.core.orm.uds.repository.ExternalDbRepository
 
-import java.io.{ File, IOException, FileWriter }
-import java.nio.file.{ Files, Path, Paths }
-import java.util.Date
+import java.io.{ File, FileWriter, BufferedWriter }
+import java.nio.file.{ Files, Paths }
 import java.text.SimpleDateFormat
+import java.util.Date
+
 import scala.sys.process.Process
 import scala.sys.process.ProcessLogger
-import scala.collection.JavaConversions._
-
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
-
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVPrinter
-import org.apache.commons.csv.CSVRecord
+import scala.collection.mutable.{ ListBuffer, Map }
+import scala.util.{ Try, Success, Failure }
+import com.google.gson.{ JsonObject, JsonParser }
+import play.api.libs.json._
 import org.apache.commons.io.FileUtils
-import org.apache.commons.io.filefilter.WildcardFileFilter
 import org.zeroturnaround.zip.ZipUtil
 
 /**
- *  pg_dump  :
- *  msi_db ,lcms_db ,uds_db only schema databases
- *  some selected rows from uds_db database for the current project
+ * Archive a Proline project. It makes pg_dump of msi_db and lcms_db databases.
+ * It creates json file with the project properties.
+ *
+ * @author aromdhani
+ *
+ * @param udsDbContext The connection context to UDSDb to archive project into.
+ * @param projectId The project id.
+ * @param binDirPath The PostgreSQL bin directory path. It should contains pg_dump file.
+ * @param archiveDirPath The archive directory path.
  *
  */
-class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: Long, pathSource: String, pathDestination: String) extends ICommandWork with LazyLogging {
-  var process: Process = null
+class ArchiveProject(
+    udsDbCtx: DatabaseConnectionContext,
+    pgUserName: String,
+    projectId: Long,
+    binDirPath: String,
+    archiveDirPath: String) extends LazyLogging {
+  var isSuccess: Boolean = false
 
-  def doWork() {
-    val udsDbConnector = dsConnectorFactory.getUdsDbConnector
-    val udsDbCtx = new UdsDbConnectionContext(udsDbConnector)
-    val udsEM = udsDbCtx.getEntityManager
-    var localUdsTransaction: EntityTransaction = null
-    udsEM.setFlushMode(FlushModeType.COMMIT)
-    var udsTransacOK: Boolean = false
-    try {
-      if (!udsDbCtx.isInTransaction) {
-        localUdsTransaction = udsEM.getTransaction()
-        localUdsTransaction.begin()
-        udsTransacOK = false
-      }
-      if ((projectId > 0) && (pathSource != null) && (!pathSource.isEmpty) && (pathDestination != null) && (!pathDestination.isEmpty)) {
-        val project = udsEM.find(classOf[Project], projectId)
-        if (project != null) {
-          val externalDbMsi = ExternalDbRepository.findExternalByTypeAndProject(udsEM, fr.proline.repository.ProlineDatabaseType.MSI, project)
-          val externalDbLcms = ExternalDbRepository.findExternalByTypeAndProject(udsEM, fr.proline.repository.ProlineDatabaseType.LCMS, project)
+  def run() {
 
-          // get the properties of the project to update
+    var archiveParamsAsMap: Map[String, Object] = Map[String, Object]()
+    /*1-check the input parameters*/
+    udsDbCtx.tryInTransaction {
+      val udsEM = udsDbCtx.getEntityManager
+      require(isValidatedBinDir(binDirPath).isDefined && isValidatedArchiveDir(archiveDirPath), "Invalid parameters. Make sure that the bin directory contains the pg_dump.exe file"
+        + " and the archive directory exists.")
+      val udsProjectOpt = Option(udsEM.find(classOf[Project], projectId))
+      require((udsProjectOpt.isDefined), s"The project with id= #$projectId is undefined.")
+      val project = udsProjectOpt.get
+      archiveParamsAsMap += ("project" -> project)
+      val externalDbMsiOpt = Option(ExternalDbRepository.findExternalByTypeAndProject(udsEM, fr.proline.repository.ProlineDatabaseType.MSI, project))
+      val externalDbLcmsOpt = Option(ExternalDbRepository.findExternalByTypeAndProject(udsEM, fr.proline.repository.ProlineDatabaseType.LCMS, project))
+      require((externalDbMsiOpt.isDefined) && (externalDbLcmsOpt.isDefined), s"The external databases MSI and LCMS of project with id= #$projectId are undefined.")
+      val externalDbMsi = externalDbMsiOpt.get
+      archiveParamsAsMap += ("msi" -> externalDbMsi)
+      val externalDbLcms = externalDbLcmsOpt.get
+      archiveParamsAsMap += ("lcms" -> externalDbLcms)
+    }
+    if (archiveParamsAsMap.values.count(_ != null) == 3) {
+      logger.info(s"Start archiving the project with id = #$projectId. Please wait until to archive project complete ...")
+      /* 2-chain operations : create files, pg_dump project databases(msi and lcms), create project properties(Json file) and compress the project folder */
+      val (externalDbMsi, externalDbLcms, project) = (archiveParamsAsMap("msi").asInstanceOf[ExternalDb],
+        archiveParamsAsMap("lcms").asInstanceOf[ExternalDb],
+        archiveParamsAsMap("project").asInstanceOf[Project])
 
-          val properties = project.getSerializedProperties()
-          var parser = new JsonParser()
-          var array: JsonObject = null
-          try {
-            array = parser.parse(properties).getAsJsonObject()
-          } catch {
-            case e: Exception =>
-              logger.error("error accessing project properties")
-              array = parser.parse("{}").getAsJsonObject()
+      val archiveProject = for {
+        backupDbs <- backupDatabases(externalDbMsi.getHost(), externalDbMsi.getPort(), pgUserName, externalDbMsi.getDbName(), externalDbLcms.getDbName(), archiveDirPath, binDirPath, projectId)
+        createProjProps <- createProjProperties(project, externalDbMsi, externalDbLcms)
+        zipFile <- zipFile(archiveDirPath + File.separator + "project_" + projectId)
+      } yield ()
+
+      /* 3-update the project serialized properties or remove the project folder */
+      archiveProject match {
+        case Success(_) => {
+          val isTxOk = udsDbCtx.tryInTransaction {
+            val udsEM = udsDbCtx.getEntityManager
+            val properties = project.getSerializedProperties()
+            var parser = new JsonParser()
+            var array: JsonObject = Try { parser.parse(properties).getAsJsonObject() } getOrElse { parser.parse("{}").getAsJsonObject() }
+            val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+            array.addProperty("archive_date", sdf.format(new Date()).toString())
+            array.addProperty("is_active", false)
+            project.setSerializedProperties(array.toString())
+            udsEM.merge(project)
           }
-          if ((externalDbMsi.getHost() != null) && (!externalDbMsi.getHost().isEmpty) && (externalDbMsi.getDbUser() != null) && (!externalDbMsi.getDbUser().isEmpty) &&
-            (externalDbMsi.getDbName() != null) && (!externalDbMsi.getDbName().isEmpty) && (externalDbLcms.getDbName() != null) && (!externalDbLcms.getDbName().isEmpty) && (externalDbMsi.getPort() > 0)) {
-            try {
-              logger.info(s"Starting to backup the project with id = #$projectId...")
-
-              //pg_dump  databases for a project
-
-              logger.info(s"Starting to pg_dump of MSI,LCMS and schema of UDS databases...")
-
-              if (execPgDump(externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getDbUser(), externalDbMsi.getDbName(), externalDbLcms.getDbName(), pathDestination, pathSource, projectId)) {
-                val fileToWrite = new File(pathDestination + File.separator + "project_" + projectId + File.separator + "uds_db_data.tsv")
-
-                var csvPrinter: CSVPrinter = null
-
-                csvPrinter = new CSVPrinter(new FileWriter(fileToWrite.getAbsoluteFile()), CSVFormat.MYSQL.withDelimiter('#').withNullString("null"));
-
-                //rows of project (uds)
-
-                val serializedProperties = Option(project.getSerializedProperties())
-                csvPrinter.printRecord("project", projectId.toString, project.getName(), project.getDescription(), project.getCreationTimestamp(), serializedProperties.getOrElse(""), project.getOwner().getId().toString,
-                  project.getLockExpirationTimestamp(), project.getLockUserID())
-
-                //rows of external_db(msi)
-
-                csvPrinter.printRecord("external_db", externalDbMsi.getId().toString, externalDbMsi.getDbName(), externalDbMsi.getConnectionMode(), externalDbMsi.getDbUser(), externalDbMsi.getDbPassword(),
-                  externalDbMsi.getHost(), externalDbMsi.getPort(), externalDbMsi.getType(), externalDbMsi.getDbVersion(), externalDbMsi.getIsBusy().toString, externalDbMsi.getSerializedProperties())
-
-                // rows of external_db(lcms)
-
-                csvPrinter.printRecord("external_db", externalDbLcms.getId().toString, externalDbLcms.getDbName(), externalDbLcms.getConnectionMode(), externalDbLcms.getDbUser(), externalDbLcms.getDbPassword(),
-                  externalDbLcms.getHost(), externalDbLcms.getPort(), externalDbLcms.getType(), externalDbLcms.getDbVersion(), externalDbLcms.getIsBusy().toString, externalDbLcms.getSerializedProperties())
-                DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
-
-                  // rows of project_db_map
-
-                  ezDBC.selectAndProcess(s" SELECT project_id,external_db_id FROM project_db_map WHERE project_id=$projectId ") { record =>
-                    if (record.getLong("project_id") > 0 && record.getLong("external_db_id") > 0) {
-
-                      csvPrinter.printRecord("project_db_map", record.getLong("project_id").toString, record.getLong("external_db_id").toString)
-                    }
-                  }
-
-                  //rows of data_set
-
-                  ezDBC.selectAndProcess(s" SELECT id,number,name,description ,type ,keywords ,creation_timestamp ,modification_log,children_count ,serialized_properties, result_set_id ,result_summary_id ,aggregation_id ,fractionation_id ,quant_method_id ,parent_dataset_id ,project_id FROM data_set WHERE project_id=$projectId  order by id asc") { record =>
-                    if (record.getLong("id") > 0 && record.getInt("number") >= 0 && record.getString("name") != null && record.getString("type") != null && record.getInt("children_count") >= 0 && record.getLong("project_id") >= 0) {
-
-                      csvPrinter.printRecord("data_set", record.getLong("id").toString, record.getInt("number").toString, record.getString("name"), record.getStringOption("description").getOrElse(""), record.getString("type"), record.getStringOption("keywords").getOrElse(""),
-                        record.getString("creation_timestamp"), record.getStringOption("modification_log").getOrElse(""), record.getInt("children_count").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getLong("result_set_id").toString,
-                        record.getLong("result_summary_id").toString, record.getLong("aggregation_id").toString, record.getLong("fractionation_id").toString, record.getLong("quant_method_id").toString, record.getLong("parent_dataset_id").toString,
-                        record.getLong("project_id").toString)
-                    }
-                  }
-                  // rows of run_identification
-
-                  ezDBC.selectAndProcess(s" SELECT id,serialized_properties,run_id,raw_file_identifier FROM run_identification WHERE id in (SELECT id FROM data_set WHERE project_id=$projectId)") { record =>
-                    if (record.getLong("id") > 0) {
-                      csvPrinter.printRecord("run_identification", record.getLong("id").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getLong("run_id").toString, record.getStringOption("raw_file_identifier").getOrElse(""))
-                    }
-                  }
-
-                  // rows of project_user_account_map
-                  ezDBC.selectAndProcess(s" SELECT project_id,user_account_id,serialized_properties,write_permission FROM project_user_account_map WHERE project_id=$projectId") { record =>
-                    if ((record.getLong("project_id") > 0) && (record.getLong("user_account_id") > 0) && (record.getString("write_permission") != null)) {
-                      csvPrinter.printRecord("project_user_account", record.getLong("project_id").toString, record.getLong("user_account_id").toString, record.getStringOption("serialized_properties").getOrElse(""), record.getBoolean("write_permission").toString)
-                    }
-                  }
-                }
-                csvPrinter.flush()
-                csvPrinter.close()
-                // set the file readable only  
-                fileToWrite.setWritable(false)
-
-                //update serialized properties
-                val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-                array.addProperty("archive_date", sdf.format(new Date()).toString())
-                array.addProperty("is_active", false)
-                project.setSerializedProperties(array.toString())
-                udsEM.merge(project)
-                if (localUdsTransaction != null) {
-                  localUdsTransaction.commit()
-                  udsTransacOK = true
-                }
-
-                //zip directory 
-                ZipUtil.pack(new File(pathDestination + File.separator + "project_" + projectId), new File(pathDestination + File.separator + "project_" + projectId + ".zip"))
-
-                //get only zip directory 
-                deleteDirectory(new File(pathDestination + File.separator + "project_" + projectId))
-
-                logger.info(s"Project with id= $projectId has been archived .")
-              }
-            } catch {
-              case t: Throwable => logger.error("Error while archiving project", t)
-            }
+          if (isTxOk) {
+            isSuccess = true
+            logger.info(s"The project with id= #$projectId has been archived successfully.")
           } else {
-            logger.error("Some parameters are missing in table uds_db.external_db")
+            isSuccess = false
+            logger.error(s"Error while trying to update serialized properties!")
           }
-
-        } else {
-          logger.error(s"project # $projectId does not exist in uds_db database")
         }
-      } else {
-        logger.error(s"Invalid parameters for the project # $projectId")
+        case Failure(t) => {
+          //delete the project directory
+          deleteDirectory(new File(archiveDirPath + File.separator + "project_" + projectId))
+          isSuccess = false
+          logger.error(s"Error while trying to archive the project with id=#$projectId ", t.printStackTrace)
+        }
       }
-
-    } finally {
-      udsEM.setFlushMode(FlushModeType.AUTO)
-      udsDbCtx.close()
-      udsDbConnector.close()
     }
   }
 
-  //execute command as sequence of string
-
-  def execute(command: Seq[String]): Boolean = {
-    var exeCmd: Boolean = true
-    logger.debug("Executing " + command.mkString(" "))
-    process = Process(command).run(ProcessLogger(out => stdout(out), err => stderr(err)))
-    val exitCode = process.exitValue
-    process.destroy
-    process = null
-    logger.debug("Exit code is '" + exitCode + "'")
-    // check exit code
-    if (exitCode != 0) {
-      exeCmd = false
-      logger.error("Command has failed !")
-    }
-    return exeCmd
+  /**
+   * Check if it's a validated bin directory.
+   * @param binDirPath the path of the bin directory
+   * @return <code>Some(File)</code> if it's validated bin directory otherwise None.
+   */
+  def isValidatedBinDir(binDirPath: String): Option[File] = {
+    if (new File(binDirPath).exists()) new File(binDirPath).listFiles().find(file => file.getName.matches("^pg_dump.exe$") && file.canExecute()) else None
   }
 
-  // dump all databases 
+  /**
+   * Check if user can write in the archive directory.
+   * @param filePath the path of the archive directory
+   * @return <code>true</code> if it's validated archive directory otherwise false.
+   */
+  def isValidatedArchiveDir(filePath: String): Boolean = new File(filePath).canWrite()
 
-  def execPgDump(host: String, port: Integer, user: String, msiDb: String, lcmsDb: String, pathDestination: String, pathSource: String, projectId: Long): Boolean = {
+  /**
+   * Compresses the given directory and all its sub-directories into a ZIP file.
+   * @param the file to ZIP path
+   *
+   */
+  def zipFile(zipFilePath: String): Try[Unit] = Try {
+    ZipUtil.pack(new File(zipFilePath), new File(zipFilePath + ".zip"))
+  }
 
-    val pathDestinationProject = pathDestination + File.separator + "project_" + projectId
-    // create the files 
-    var pgDumpAll: Boolean = false
+  /**
+   * Write project properties in json file.
+   * @param the project properties file.
+   * @param data the JsObject to write
+   * @return <code>true</code> if writing json data is finished withh success.
+   */
+  def writeJsonData(file: File, data: JsObject): Boolean = {
+    var bw: Option[BufferedWriter] = None
     try {
-      val path = Paths.get(pathDestinationProject)
-      if (!Files.exists(path)) {
-        try {
-          Files.createDirectories(path)
-          val pathSrcDump = FileUtils.getFile(new File(pathSource), "pg_dump").getPath()
-          val msiBackUpFile = FileUtils.getFile(pathDestinationProject, msiDb + ".bak")
-          val lcmsBackUpFile = FileUtils.getFile(pathDestinationProject, lcmsDb + ".bak")
-          val udsBackUpFile = FileUtils.getFile(pathDestinationProject, "uds_db_schema.bak")
-          /**
-           * options of pg_dump
-           * -p, –port=PORT database server port number
-           * -i, –ignore-version proceed even when server version mismatches
-           * -h, –host=HOSTNAME database server host or socket directory
-           * -U, –username=NAME connect as specified database user
-           * -W, –password force password prompt (should happen automatically)
-           * -d, –dbname=NAME connect to database name
-           * -v, –verbose verbose mode
-           * -F, –format=c|t|p output file format (custom, tar, plain text)
-           * -c, –clean clean (drop) schema prior to create
-           * -b, –blobs include large objects in dump
-           * -v, –verbose verbose mode
-           * -f, –file=FILENAME output file name
-           */
-
-          logger.info("Starting to backup database # " + msiDb)
-          var cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", msiBackUpFile.getPath(), msiDb)
-          val pgDumpMsi = execute(cmd)
-
-          logger.info("Starting to backup database # " + lcmsDb)
-          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", lcmsBackUpFile.getPath(), lcmsDb)
-          val pgDumpLcms = execute(cmd)
-
-          logger.info("Starting to backup schema  # uds_db")
-          cmd = Seq(pathSrcDump, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "--schema-only", "-F", "c", "-b", "-v", "-f", udsBackUpFile.getPath(), "uds_db")
-          val pgDumpUds = execute(cmd)
-
-          if (pgDumpMsi && pgDumpLcms && pgDumpUds) {
-            pgDumpAll = true
-          } else {
-            deleteDirectory(new File(pathDestinationProject))
-          }
-        } catch {
-          case ioe: IOException => ioe.printStackTrace()
-        }
-      } else {
-        logger.error("the directory already exist with the same path")
+      synchronized {
+        bw = Some(new BufferedWriter(new FileWriter(file)))
+        bw.get.write(Json.stringify(data))
       }
+      true
     } catch {
-      case e: Exception => logger.error("error to execute cmd", e)
+      case t: Throwable =>
+        logger.error("Error while trying to write in json file!", t.printStackTrace);
+        false
+    } finally {
+      if (bw.isDefined) bw.get.close()
     }
-    return pgDumpAll
   }
 
+  /**
+   * Execute command as sequence of string.
+   * @param command The command as sequence of string ,watch out from the white spaces.
+   * @return <code>0</code> if the sequence executed successfully.
+   */
+  def execute(command: => Seq[String]): Int = {
+    var process: Option[Process] = None
+    var exitCode: Int = 1
+    try {
+      logger.debug("Executing " + command.mkString(" "))
+      process = Some(Process(command).run(ProcessLogger(out => stdout(out), err => stderr(err))))
+      exitCode = process.get.exitValue
+    } finally {
+      if (process.isDefined) {
+        process.get.destroy
+      }
+    }
+    logger.debug("Exit code is '" + exitCode + "'")
+    if (exitCode != 0) {
+      throw new Exception("Command has failed: " + command)
+    }
+    exitCode
+  }
+
+  /**
+   * Create and write the project properties in json file.
+   * @param project The project object
+   * @param externalDbMsi The external msi_db
+   * @param externalDbLcms The external lcms_db
+   *
+   */
+  def createProjProperties(project: Project, externalDbMsi: ExternalDb, externalDbLcms: ExternalDb): Try[Unit] = Try {
+    val projectPropFile = new File(archiveDirPath + File.separator + "project_" + projectId + File.separator + "project_properties.json")
+    val owner = project.getOwner()
+    var schemaVersion: Option[JsObject] = None
+    var dataSetList = new ListBuffer[JsObject]()
+    var runIdentificationList = new ListBuffer[JsObject]()
+    var projectUserMapList = new ListBuffer[JsObject]()
+    DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
+      //data_set
+      ezDBC.selectAndProcess(s" SELECT id, number, name, description, type, keywords, creation_timestamp, modification_log, child_count, serialized_properties, result_set_id ,result_summary_id, aggregation_id, fractionation_id, quant_method_id, parent_dataset_id, project_id FROM data_set WHERE project_id=$projectId  order by id asc") {
+        record =>
+          if (record.getLong("id") > 0 && record.getInt("number") >= 0 && record.getString("name") != null && record.getString("type") != null && record.getLong("project_id") > 0) {
+            dataSetList += Json.obj("id" -> record.getLong("id"),
+              "number" -> record.getInt("number"),
+              "name" -> record.getString("name"),
+              "description" -> record.getString("description"),
+              "type" -> record.getString("type"),
+              "keywords" -> record.getString("keywords"),
+              "creation_timestamp" -> record.getString("creation_timestamp"),
+              "modification_log" -> record.getStringOption("modification_log"),
+              "child_count" -> record.getInt("child_count"),
+              "serialized_properties" -> record.getString("serialized_properties"),
+              "result_set_id" -> record.getLong("result_set_id"),
+              "result_summary_id" -> record.getLong("result_summary_id"),
+              "aggregation_id" -> record.getLong("aggregation_id"),
+              "fractionation_id" -> record.getLong("fractionation_id"),
+              "quant_method_id" -> record.getLong("quant_method_id"),
+              "parent_dataset_id" -> record.getLong("parent_dataset_id"))
+          }
+      }
+      //run_identification
+      ezDBC.selectAndProcess(s" SELECT id,serialized_properties,run_id,raw_file_identifier FROM run_identification WHERE id in (SELECT id FROM data_set WHERE project_id=$projectId)") { record =>
+        if (record.getLong("id") > 0) {
+          runIdentificationList += Json.obj("id" -> record.getLong("id"),
+            "serialized_properties" -> record.getString("serialized_properties"),
+            "id" -> record.getLong("id"),
+            "run_id" -> record.getLong("run_id"),
+            "raw_file_identifier" -> record.getString("raw_file_identifier"))
+        }
+      }
+      //project_user_account_map
+      ezDBC.selectAndProcess(s" SELECT project_id,user_account_id,serialized_properties,write_permission FROM project_user_account_map WHERE project_id=$projectId") { record =>
+        if ((record.getLong("project_id") > 0) && (record.getLong("user_account_id") > 0) && (record.getString("write_permission") != null)) {
+          projectUserMapList += Json.obj("project_id" -> record.getLong("project_id"),
+            "user_account_id" -> record.getLong("user_account_id"),
+            "serialized_properties" -> record.getString("serialized_properties"),
+            "write_permission" -> record.getBoolean("write_permission"))
+        }
+      }
+      ezDBC.selectAndProcess("SELECT MAX(version_rank) AS version, MAX(installed_rank) AS rank  FROM schema_version") { record =>
+        schemaVersion = Some(Json.obj("version" -> record.getInt("version"),
+          "installed_rank" -> record.getInt("rank")))
+      }
+    }
+    //project properties as Json object 
+    val projectPropertiesAsJson = Json.obj(
+      "schema_version" -> schemaVersion.get,
+      "project" -> Json.obj("id" -> project.getId(),
+        "name" -> project.getName(),
+        "description" -> project.getDescription(),
+        "creation_timestamp" -> project.getCreationTimestamp().toString,
+        "serialized_properties" -> project.getSerializedProperties()),
+      "user_account" -> Json.obj(
+        "id" -> owner.getId(),
+        "creation_mode" -> owner.getCreationMode(),
+        "login" -> owner.getLogin(),
+        "password_hash" -> owner.getPasswordHash(),
+        "serialized_properties" -> owner.getSerializedProperties()),
+      "external_db" -> Json.arr(
+        Json.obj(
+          "name" -> externalDbMsi.getDbName(),
+          "version" -> externalDbMsi.getDbVersion(),
+          "host" -> externalDbMsi.getHost(),
+          "is_busy" -> externalDbMsi.getIsBusy(),
+          "port" -> externalDbMsi.getPort().toInt,
+          "serialized_properties" -> externalDbMsi.getSerializedProperties(),
+          "type" -> externalDbMsi.getType().toString,
+          "connection_mode" -> externalDbMsi.getConnectionMode().toString),
+        Json.obj(
+          "name" -> externalDbLcms.getDbName(),
+          "version" -> externalDbLcms.getDbVersion(),
+          "host" -> externalDbLcms.getHost(),
+          "is_busy" -> externalDbLcms.getIsBusy(),
+          "port" -> externalDbLcms.getPort().toInt,
+          "serialized_properties" -> externalDbLcms.getSerializedProperties(),
+          "type" -> externalDbLcms.getType().toString,
+          "connection_mode" -> externalDbLcms.getConnectionMode().toString)),
+      "data_set" -> Json.toJson(dataSetList),
+      "run_identification" -> Json.toJson(runIdentificationList),
+      "project_user_account_map" -> Json.toJson(projectUserMapList))
+    writeJsonData(projectPropFile, projectPropertiesAsJson)
+  }
+
+  /**
+   * backup Proline project databases.
+   * @param host The host name.
+   * @param port The port number its default value 5432.
+   * @param user The user name.
+   * @param msiDb The Msi database name.
+   * @param lcmsDb The Lcms database name.
+   * @param archivepath the archive path where the project will archived.
+   * @param binPath The bin directory path.
+   * @param projectId The project id.
+   * @return <code>Success(True)</code> if the pg_dump finished with success.
+   *
+   */
+  def backupDatabases(host: String, port: Integer, user: String, msiDb: String, lcmsDb: String, archiveDirPath: String, binDirPath: String, projectId: Long): Try[Boolean] =
+    createFiles(archiveDirPath, binDirPath, msiDb, lcmsDb).flatMap {
+      case (pgDumpPath, msiBackUpFile, lcmsBackUpFile) => Try {
+        logger.info("Start to pg_dump database # " + msiDb)
+        var cmd = Seq(pgDumpPath, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", msiBackUpFile.getPath(), msiDb)
+        val dumpMsiExitCode = execute(cmd)
+        logger.info("Start to pg_dump database # " + lcmsDb)
+        cmd = Seq(pgDumpPath, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", lcmsBackUpFile.getPath(), lcmsDb)
+        val dumpLcmsExitCode = execute(cmd)
+        Seq(dumpMsiExitCode,
+          dumpLcmsExitCode).forall(_ == 0)
+      }
+    }
+
+  /**
+   * Create a folder with the list of files used to archive a Proline project.
+   * @param archivePath The path of archive path where the project will be archived.
+   * @param binDirPath The bin directory of PostgreSQL should contains pg_dump.exe.
+   * @param msiDb The name of msiDb.
+   * @param lcsmDb The name of lcmsDb.
+   * @return <code>Success(String, File, File)</code> tuple of the eventual created files.
+   */
+  def createFiles(archivePath: String, binDirPath: String, msiDb: String, lcmsDb: String): Try[(String, File, File)] = Try {
+    val archiveProjectPath = archivePath + File.separator + "project_" + projectId
+    val path = Paths.get(archiveProjectPath)
+    Files.createDirectories(path)
+    val pgDumpPath = FileUtils.getFile(new File(binDirPath), "pg_dump").getPath()
+    val msiDbBackupFile = FileUtils.getFile(archiveProjectPath, msiDb + ".bak")
+    val lcmsDbBackupFile = FileUtils.getFile(archiveProjectPath, lcmsDb + ".bak")
+    (pgDumpPath, msiDbBackupFile, lcmsDbBackupFile)
+  }
+
+  /**
+   * logger debug
+   * @param err
+   */
   def stdout(out: String) {
     logger.debug(out)
   }
 
+  /**
+   * logger debug or error
+   * @param err
+   */
   def stderr(err: String) {
     if (err.startsWith("Info: ")) {
       logger.debug(err)
@@ -277,20 +346,61 @@ class ArchiveProject(dsConnectorFactory: IDataStoreConnectorFactory, projectId: 
     }
   }
 
-  //delete directory
-
-  def deleteDirectory(directoryName: File) {
+  /**
+   * Delete a directory.
+   * @param  directory The Directory to delete.
+   */
+  def deleteDirectory(directory: File): Unit = {
     try {
-      FileUtils.deleteDirectory(directoryName)
+      directory.listFiles().filter(_.isFile()).filter(_.exists()).foreach { f => if (!f.delete()) logger.error(s"Unable to delete file $f") }
+      if (directory.exists() && directory.listFiles().isEmpty) directory.delete()
     } catch {
-      case ioe: IOException => ioe.printStackTrace()
+      case t: Throwable => logger.error("Unable to delete the project folder! ", t.printStackTrace)
     }
   }
 }
 
 object ArchiveProject {
-  def apply(dsConnectorFactory: IDataStoreConnectorFactory, projectId: Long, pathSource: String, pathDestination: String): Unit = {
-    new ArchiveProject(dsConnectorFactory, projectId, pathSource, pathDestination).doWork()
+  /**
+   * @param projectId The project id.
+   * @param binDirPath The bin directory path. It should contains pg_dump.exe
+   * @param archiveDirPath The archive directory path.
+   * @return <code>true</code> if the project is archived successfully otherwise false.
+   *
+   */
+  def apply(pgUserName: String, projectId: Long, binDirPath: String, archiveDirPath: String): Boolean = {
+    val prolineConf = SetupProline.config
+    var localUdsDbConnector: Boolean = false
+    var isSuccess: Boolean = false
+    val connectorFactory = DataStoreConnectorFactory.getInstance()
+    val udsDbConnector = if (connectorFactory.isInitialized) {
+      connectorFactory.getUdsDbConnector
+    } else {
+      // Instantiate a database manager
+      val udsDBConfig = prolineConf.udsDBConfig
+      val newUdsDbConnector = udsDBConfig.toNewConnector()
+      localUdsDbConnector = true
+      newUdsDbConnector
+    }
+    try {
+      val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
+      try {
+        val archiveProject = new ArchiveProject(udsDbContext, pgUserName, projectId, binDirPath, archiveDirPath)
+        archiveProject.run()
+        isSuccess = archiveProject.isSuccess
+      } finally {
+        try {
+          udsDbContext.close()
+        } catch {
+          case exClose: Exception => print("Error while trying to close UDS Db Context", exClose)
+        }
+      }
+    } finally {
+      if (localUdsDbConnector && (udsDbConnector != null)) {
+        udsDbConnector.close()
+      }
+    }
+    isSuccess
   }
-
 }
+

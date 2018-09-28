@@ -1,14 +1,13 @@
 package fr.proline.admin.service.db.migration
 
-import scala.collection.JavaConversions._
-
 import com.typesafe.scalalogging.LazyLogging
-
-import fr.profi.jdbc.easy._
 import fr.profi.util.StringUtils
 import fr.proline.context.DatabaseConnectionContext
-import fr.proline.core.dal.context._
-import fr.proline.core.orm.uds.{ PeaklistSoftware => UdsPeaklistSoftware, SpectrumTitleParsingRule => UdsSpectrumTitleParsingRule, ObjectTreeSchema => UdsObjectTreeSchema }
+import fr.proline.core.orm.uds.{ObjectTreeSchema => UdsObjectTreeSchema}
+import fr.proline.core.orm.uds.{PeaklistSoftware => UdsPeaklistSoftware}
+import fr.proline.core.orm.uds.{SpectrumTitleParsingRule => UdsSpectrumTitleParsingRule}
+
+import scala.collection.JavaConversions._
 
 /**
  * @author David Bouyssie
@@ -48,7 +47,7 @@ class UpgradeUdsDbDefinitions(
     
     // Iterate over the enumeration of Scoring Types
     for (softRelease <- UdsPeaklistSoftware.SoftwareRelease.values()) {
-      val oldPklSoftOpt = oldPklSoftByName.get(softRelease.toString())
+      val oldPklSoftOpt = oldPklSoftByName.get(softRelease.toString)
       
       // Retrieve the last parsing rule definition from the ORM to update id
       val parsingRule = parsingRuleByPeaklistSoft(softRelease)
@@ -129,7 +128,7 @@ class UpgradeUdsDbDefinitions(
     for (schemaName <- UdsObjectTreeSchema.SchemaName.values()) {
       val schemaNameAsStr = schemaName.toString()
       
-      val schema = if( oldSchemaByName.contains(schemaNameAsStr) == false ) {
+      if( !oldSchemaByName.contains(schemaNameAsStr) ) {
         logger.info("Inserting new object tree schema: " + schemaNameAsStr)
         
         // Create new schema

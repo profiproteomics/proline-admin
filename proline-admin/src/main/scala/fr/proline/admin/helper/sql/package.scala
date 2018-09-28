@@ -3,6 +3,7 @@ package fr.proline.admin.helper
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
+import java.sql.Types
 import java.util.Collection
 
 import javax.persistence.EntityManager
@@ -35,8 +36,6 @@ import fr.proline.core.dal.DoJDBCWork
 import fr.proline.core.dal.context._
 import fr.proline.core.dal.tables.lcms.LcmsDb
 import fr.proline.core.dal.tables.msi.MsiDb
-import fr.proline.core.dal.tables.pdi.PdiDb
-import fr.proline.core.dal.tables.ps.PsDb
 import fr.proline.core.dal.tables.uds.UdsDb
 import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.repository._
@@ -271,15 +270,6 @@ package object sql extends LazyLogging {
         for( table <- MsiDb.tables )
           yield table.name.toUpperCase() -> table.mkInsertQuery((t,c) => c.filter(_.toString != "id"))
       }
-      case ProlineDatabaseType.PDI => {
-        for( table <- PdiDb.tables )
-          yield table.name.toUpperCase() -> table.mkInsertQuery((t,c) => c.filter(_.toString != "id"))
-
-      }
-      case ProlineDatabaseType.PS => {
-        for( table <- PsDb.tables )
-          yield table.name.toUpperCase() -> table.mkInsertQuery((t,c) => c.filter(_.toString != "id"))
-      }
       case ProlineDatabaseType.UDS => {
         for( table <- UdsDb.tables )
           yield table.name.toUpperCase() -> table.mkInsertQuery((t,c) => c.filter(_.toString != "id"))
@@ -301,14 +291,7 @@ package object sql extends LazyLogging {
         for( table <- MsiDb.tables )
           yield table.name.toUpperCase() -> table.columnsAsStrList.map(_.toUpperCase())
       }
-      case ProlineDatabaseType.PDI => {
-        for( table <- PdiDb.tables )
-          yield table.name.toUpperCase() -> table.columnsAsStrList.map(_.toUpperCase())
-      }
-      case ProlineDatabaseType.PS => {
-        for( table <- PsDb.tables )
-          yield table.name.toUpperCase() -> table.columnsAsStrList.map(_.toUpperCase())
-      }
+
       case ProlineDatabaseType.UDS => {
         for( table <- UdsDb.tables )
           yield table.name.toUpperCase() -> table.columnsAsStrList.map(_.toUpperCase())
@@ -549,7 +532,7 @@ package object sql extends LazyLogging {
   // Inspired from: https://github.com/crazycode/play-factory-boy/blob/master/factory-boy/src/util/DatabaseUtil.java
   protected def disableForeignKeyConstraints( dbContext: DatabaseConnectionContext ) {
     
-    DoJDBCWork.withEzDBC(dbContext, { ezDBC =>
+    DoJDBCWork.withEzDBC(dbContext) { ezDBC =>
       val driverType = dbContext.getDriverType
       
       driverType match {
@@ -557,7 +540,7 @@ package object sql extends LazyLogging {
         case DriverType.POSTGRESQL => ezDBC.execute("SET CONSTRAINTS ALL DEFERRED")
         case DriverType.SQLITE => ezDBC.execute("PRAGMA foreign_keys = OFF;")
       }
-    })
+    }
     
   }
     

@@ -19,95 +19,79 @@ import fr.profi.util.security._
  * @param password Specified password should be encrypted using sha256Hex
  */
 class CreateUser(
-  udsDbContext: DatabaseConnectionContext,
-  login: String,
-  password: String,
-  isGroupUser: Boolean
-) extends LazyLogging {
+    udsDbContext: DatabaseConnectionContext,
+    login: String,
+    password: String,
+    isGroupUser: Boolean) extends LazyLogging {
 
   var userId: Long = -1L
 
   def run() {
-
     val udsUser = new UdsUser()
-      
     val isTxOk = udsDbContext.tryInTransaction {
-      
       // Creation UDS entity manager
       val udsEM = udsDbContext.getEntityManager
-      
       logger.info(s"creating user with login '${login}'...")
-
       // Create the project
       udsUser.setLogin(login)
       udsUser.setPasswordHash(password)
       udsUser.setCreationMode("MANUAL")
 
-
       val serializedPropertiesMap = new java.util.HashMap[String, Object]
       if (isGroupUser) {
-        serializedPropertiesMap.put("user_group",UdsUser.UserGroupType.USER.name())
+        serializedPropertiesMap.put("user_group", UdsUser.UserGroupType.USER.name())
       } else {
-        serializedPropertiesMap.put("user_group",UdsUser.UserGroupType.ADMIN.name())
+        serializedPropertiesMap.put("user_group", UdsUser.UserGroupType.ADMIN.name())
       }
       udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap);
-      
-      
+
       udsEM.persist(udsUser)
     }
-    
-    if( isTxOk ) {
+    if (isTxOk) {
       userId = udsUser.getId
       logger.debug(s"User #${userId} has been created")
     } else {
       logger.error(s"User '${login}' can't be created !")
     }
-
   }
-
 }
 
 object CreateUser extends LazyLogging {
 
   /**
-    *
-    * @param login login of new user
-    * @param pswd  Option , specify new user password. If none, default will be used
-    * @param user : specify if user belongs to user group (otherwise it belong to admin)
-    * @param passwdEncrypted : specify if specified password is already encrypted or not.
-    * @return id of created user
-    */
-  def apply(login: String, pswd: Option[String] = None, user: Option[Boolean] = None, passwdEncrypted: Option[Boolean] = None ): Long = {
+   * @param login login of new user
+   * @param pswd  Option , specify new user password. If none, default will be used
+   * @param user : specify if user belongs to user group (otherwise it belong to admin)
+   * @param passwdEncrypted : specify if specified password is already encrypted or not.
+   * @return id of created user
+   */
+  def apply(login: String, pswd: Option[String] = None, user: Option[Boolean] = None, passwdEncrypted: Option[Boolean] = None): Long = {
 
     // Retrieve Proline configuration
     val prolineConf = SetupProline.config
-
     var userId: Long = -1L
-
     var localUdsDbConnector: Boolean = false
-
+    val isValidatedLogin = login match {
+      case str if str matches ("^[a-zA-Z0-9\\s_.-]+$") => true
+      case _ => false
+    }
+    require(isValidatedLogin, "Login must not be empty. Only letters, numbers, white spaces in the middle, '-', '.', and '_' may be used.")
     val connectorFactory = DataStoreConnectorFactory.getInstance()
-
     val udsDbConnector = if (connectorFactory.isInitialized) {
       connectorFactory.getUdsDbConnector
     } else {
-      
       // Create a new connector
       val udsDBConfig = prolineConf.udsDBConfig
       val newUdsDbConnector = udsDBConfig.toNewConnector()
-      
       localUdsDbConnector = true
-      
       newUdsDbConnector
     }
-
     try {
       val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
-
       try {
         // Create user
-        val password = if (pswd.isDefined){
-          if(passwdEncrypted.isDefined && (passwdEncrypted.get == true) )
+        val password = if (pswd.isDefined) {
+          if (passwdEncrypted.isDefined && (passwdEncrypted.get == true))
             pswd.get
           else
             sha256Hex(pswd.get)
@@ -126,17 +110,13 @@ object CreateUser extends LazyLogging {
         } catch {
           case exClose: Exception => logger.error("Error closing UDS Db Context", exClose)
         }
-
       }
-
     } finally {
 
       if (localUdsDbConnector && (udsDbConnector != null)) {
         udsDbConnector.close()
       }
-
     }
-
     userId
   }
 

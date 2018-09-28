@@ -1,22 +1,22 @@
 package fr.proline.admin.service.db.migration
 
 import javax.persistence.EntityManager
-import scala.collection.JavaConversions._
+
 import com.typesafe.scalalogging.StrictLogging
+import fr.profi.util.security._
 import fr.proline.admin.service.ICommandWork
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.ProlineEzDBC
-import fr.proline.core.dal.context._
 import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.core.orm.uds.repository.ProjectRepository
-import fr.proline.core.orm.util.DataStoreConnectorFactory
+import fr.proline.core.orm.uds.{UserAccount => UdsUser}
 import fr.proline.repository._
-import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
-import fr.profi.util.security._
+
+import scala.collection.JavaConversions._
 
 /**
  *
- * Upgrades all Proline Databases (UDS, PDI, PS and all projects MSI and LCMS Dbs).
+ * Upgrades all Proline Databases (UDS and all projects MSI and LCMS Dbs).
  *
  * @param dsConnectorFactory
  *            Must be a valid initialized DataStoreConnectorFactory instance.
@@ -26,7 +26,7 @@ class UpgradeAllDatabases(
 
   def doWork(): Unit = {
 
-    if ((dsConnectorFactory == null) || !dsConnectorFactory.isInitialized())
+    if ((dsConnectorFactory == null) || !dsConnectorFactory.isInitialized)
       throw new IllegalArgumentException("Invalid connectorFactory")
 
     // Open a connection to the UDSdb
@@ -39,35 +39,17 @@ class UpgradeAllDatabases(
       val udsTx = udsEM.getTransaction()
       udsTx.begin()
 
-      /* Upgrade UDS Db */
-      _updradeDatabase(udsDbConnector, "UDSdb", closeConnector = false, upgradeCallback = { udsDbVersion =>
-        /* Upgrade UDS Db definitions */
-        new UpgradeUdsDbDefinitions(udsDbCtx).run()
-      })
-
-      /* Upgrade PDI Db */
-      _updradeDatabase(dsConnectorFactory.getPdiDbConnector, "PDIdb",closeConnector = false, upgradeCallback = { pdiDbVersion =>
-        /* Update PDI Db version */
-        _updateExternalDbVersion(pdiDbVersion, udsEM, ProlineDatabaseType.PDI)
-      })
-
-      /* Upgrade PS Db */
-      _updradeDatabase(dsConnectorFactory.getPsDbConnector, "PSdb",closeConnector = false, upgradeCallback = { psDbVersion =>
-        /* Update PS Db version */
-        _updateExternalDbVersion(psDbVersion, udsEM, ProlineDatabaseType.PS)
-      })
-
       /* Upgrade all Projects (MSI and LCMS) Dbs */
       val projectIds = ProjectRepository.findAllActiveProjectIds(udsEM)
 
-      if ((projectIds != null) && projectIds.isEmpty() == false) {
+      if ((projectIds != null) && !projectIds.isEmpty) {
 
         for (projectId <- projectIds) {
           logger.debug(s"Upgrading databases of Project #$projectId")
 
           /* Upgrade MSI Db */
           val msiDbConnector = dsConnectorFactory.getMsiDbConnector(projectId)
-          val msiVersion = _updradeDatabase(
+          val msiVersion = UpgradeDatabase(
             msiDbConnector,
             s"MSIdb (project #$projectId)",
             upgradeCallback = { msiVersion =>
@@ -88,7 +70,7 @@ class UpgradeAllDatabases(
 
           /* Upgrade LCMS Db */
           val lcMsDbConnector = dsConnectorFactory.getLcMsDbConnector(projectId)
-          _updradeDatabase(lcMsDbConnector, s"LCMSdb (project #$projectId)", upgradeCallback = { lcMsVersion =>
+          UpgradeDatabase(lcMsDbConnector, s"LCMSdb (project #$projectId)", upgradeCallback = { lcMsVersion =>
             /* Update LCMS Db version */
             _updateExternalDbVersion(lcMsVersion, udsEM, ProlineDatabaseType.LCMS, Some(projectId))
           })
@@ -96,9 +78,21 @@ class UpgradeAllDatabases(
         }
 
       }
+      udsEM.flush()
+      udsTx.commit()
+      udsEM.getTransaction()
+      udsTx.begin()
+      
+      /* Upgrade UDS Db */
+      // Note: was moved after MSI/LCMS databases to handle migration of core V2
+      UpgradeDatabase(udsDbConnector, "UDSdb", closeConnector = false, upgradeCallback = { udsDbVersion =>
+        /* Upgrade UDS Db definitions */
+        new UpgradeUdsDbDefinitions(udsDbCtx).run()
+      })
 
       udsEM.flush()
       udsTx.commit()
+      
       //create default user admin  when it does not exist
       try {
         val query = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
@@ -111,7 +105,7 @@ class UpgradeAllDatabases(
           udsUser.setLogin("admin")
           udsUser.setPasswordHash(sha256Hex("proline"))
           udsUser.setCreationMode("MANUAL")
-          var serializedPropertiesMap = new java.util.HashMap[String, Object]
+          val serializedPropertiesMap = new java.util.HashMap[String, Object]
           serializedPropertiesMap.put("user_group", UdsUser.UserGroupType.ADMIN.name())
           udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap)
           udsEM.persist(udsUser)
@@ -134,7 +128,6 @@ class UpgradeAllDatabases(
         udsDbConnector.close()
       */
     }
-
     ()
   }
 
@@ -151,12 +144,17 @@ class UpgradeAllDatabases(
     extDb.setDbVersion(newVersion)
   }
 
-  private def _updradeDatabase(
+}
+
+object UpgradeDatabase extends StrictLogging {
+  
+  def apply(
     dbConnector: IDatabaseConnector,
     dbShortName: String,
     closeConnector: Boolean = true,
     repairChecksum: Boolean = true, // TODO: add this param to GUI
-    upgradeCallback: String => Unit = null): IDatabaseConnector = {
+    upgradeCallback: String => Unit = null
+  ): IDatabaseConnector = {
 
     if (dbConnector == null) {
       logger.warn(s"DataStoreConnectorFactory has no valid connector to $dbShortName")
@@ -195,21 +193,19 @@ class UpgradeAllDatabases(
 
     dbConnector
   }
-
 }
 
 object UpgradeAllDatabases extends StrictLogging {
 
-  def apply(dsConnectorFactory: IDataStoreConnectorFactory) = {
+  def apply(dsConnectorFactory: IDataStoreConnectorFactory): Unit = {
 
     try {
       new UpgradeAllDatabases(dsConnectorFactory).doWork()
 
       logger.info("Databases successfully upgraded !")
     } catch {
-      case t: Throwable => {
+      case t: Throwable =>
         logger.error("Databases upgrade failed !", t)
-      }
     }
 
   }
