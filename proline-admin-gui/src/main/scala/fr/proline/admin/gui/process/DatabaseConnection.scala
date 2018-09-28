@@ -16,7 +16,7 @@ import fr.proline.admin.gui.Wizard
  * Custom exceptions
  */
 case class UnhandledDriverTypeException(dirverType: DriverType) extends Exception(
-  s"Connection to DB of type $dirverType is not handled by ProlineAdminGUI yet.")
+  s"Connection to DB of type $dirverType is not handled by Proline-Admin-GUI yet.")
 
 case class UnknownDriverTypeException(dirverType: DriverType) extends Exception(
   "Unknown driver type: " + dirverType.getJdbcURLProtocol())

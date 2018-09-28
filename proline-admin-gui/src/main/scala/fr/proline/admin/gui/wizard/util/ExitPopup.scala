@@ -10,24 +10,23 @@ import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.StackPane
 import scalafx.stage.Modality
 import scalafx.stage.Stage
+import scalafx.scene.layout.{ VBox, HBox }
+import scalafx.application.Platform
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Wizard
-import scalafx.scene.layout.VBox
-import scalafx.scene.layout.HBox
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
-import com.sun.javafx.css.StyleClass
 
 /**
  * builds Exit popup window
- * 
+ *
  */
 
 class ExitPopup(
-  wTitle: String,
-  wText: String,
-  wParent: Option[Stage] ,
-  isResizable: Boolean = false) extends Stage {
+    wTitle: String,
+    wText: String,
+    wParent: Option[Stage],
+    isResizable: Boolean = false) extends Stage {
   val popup = this
   title = wTitle
   initModality(Modality.WINDOW_MODAL)
@@ -36,7 +35,8 @@ class ExitPopup(
   val yesButton = new Button("Yes") {
     graphic = FxUtils.newImageView(IconResource.TICK)
     onAction = handle {
-      wParent.get.close()
+      Platform.exit()
+      System.exit(0)
     }
   }
   val noButton = new Button("No") {
@@ -70,6 +70,6 @@ object ExitPopup {
   def apply(
     wTitle: String,
     wText: String,
-    wParent: Option[Stage] ,
+    wParent: Option[Stage],
     isResizable: Boolean = false) { new ExitPopup(wTitle, wText, wParent, isResizable).showAndWait() }
 }

@@ -56,7 +56,7 @@ class DataBasesTab() extends IResourceManagementTab {
  */
 class DataBasesTable() extends AbstractResourceTableView[ExternalDbView] {
 
-  val externalDbViews = UdsRepository.getAllDataBases().toBuffer[ExternalDb].sortBy(_.getId).map(new ExternalDbView(_))
+  val externalDbViews = UdsRepository.getAllExtDbs().toBuffer[ExternalDb].sortBy(_.getId).map(new ExternalDbView(_))
   protected lazy val tableLines = ObservableBuffer(externalDbViews)
   /* ExternalDb ID */
 
@@ -73,28 +73,6 @@ class DataBasesTable() extends AbstractResourceTableView[ExternalDbView] {
 
   val dbNameCol = new TableColumn[ExternalDbView, String]("Name") {
     cellValueFactory = { _.value.dbName }
-    cellFactory = { _ =>
-      new TableCell[ExternalDbView, String] {
-        style = "-fx-alignment: CENTER;"
-        item.onChange { (_, _, newValue) => text = newValue }
-      }
-    }
-  }
-  /* db password */
-
-  val dbPasswordCol = new TableColumn[ExternalDbView, String]("Password") {
-    cellValueFactory = { _.value.dbPassword }
-    cellFactory = { _ =>
-      new TableCell[ExternalDbView, String] {
-        style = "-fx-alignment: CENTER;"
-        item.onChange { (_, _, newValue) => text = newValue }
-      }
-    }
-  }
-  /* db Driver */
-
-  val dbUserCol = new TableColumn[ExternalDbView, String]("User") {
-    cellValueFactory = { _.value.dbUser }
     cellFactory = { _ =>
       new TableCell[ExternalDbView, String] {
         style = "-fx-alignment: CENTER;"

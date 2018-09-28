@@ -7,10 +7,10 @@ import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigRenderOptions
 import fr.profi.util.scala.TypesafeConfigWrapper._
 import fr.profi.util.scala.ScalaUtils
+
 import java.io.File
 import java.io.FileWriter
-import java.io.FileNotFoundException
-import java.io.IOException
+
 
 /**
  * Jms-node configuration file

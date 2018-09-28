@@ -23,17 +23,17 @@ import scalafx.scene.layout.Priority
 ) extends VBox {*/
 
 class TitledBorderPane(
-  protected val title: String,
-  protected val contentNode: Node,
-  override val titleTooltip: String = "",
-  override val colorStr: String = "slategrey") extends ITitledBorderPane {
+    protected val title: String,
+    protected val contentNode: Node,
+    override val titleTooltip: String = "",
+    override val colorStr: String = "slategrey") extends ITitledBorderPane {
   this.initContent()
 }
 
 class SimpleBorderPane(
-  protected val contentNode: Node,
-  override val titleTooltip: String = "",
-  override val colorStr: String = "slategrey") extends IBorderedPane {
+    protected val contentNode: Node,
+    override val titleTooltip: String = "",
+    override val colorStr: String = "slategrey") extends IBorderedPane {
   this.initContent()
 }
 

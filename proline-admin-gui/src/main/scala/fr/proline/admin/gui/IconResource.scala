@@ -15,6 +15,7 @@ object IconResource extends EnhancedEnum {
   val CANCEL = Value("/images/cross.png")
   val EXECUTE = Value("/images/execute.png")
   val BIGINFOS = Value("/images/biginfo.png")
+  val INFO = Value("/images/info.png")
   val TICK = Value("/images/tick.png")
   val IDENTIFICATION = Value("/images/identification.png")
   val CONNECTION = Value("/images/connection.png")
@@ -23,5 +24,12 @@ object IconResource extends EnhancedEnum {
   val RESET = Value("/images/arrowcircle.png")
   val INFORMATION = Value("/images/information.png")
   val EXCLAMATION = Value("/images/exclamationred.png")
-
+  val DISABLE = Value("/images/disable.png")
+  val UNLOCK = Value("/images/unlock.png")
+  val EDITSMALL = Value("/images/edit-small.png")
+  val PAUSE = Value("/images/control-pause.png")
+  val REFERESH = Value("/images/refresh.png")
+  val ADMIN = Value("/images/admin.png")
+  val USER = Value("/images/user.png")
+  val UPGRADE = Value("/images/upgrade.png")
 }

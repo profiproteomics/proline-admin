@@ -21,14 +21,14 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 
 /**
- * builds a panel to summarize the configurations
+ * builds a panel to summarize the configurations.
  *
  */
 
 class SummaryConfig(val orderId: Int) extends Item with LazyLogging {
 
   /**
-   * component
+   * components
    */
   val panelTitle = new Label("Summary") {
     styleClass = List("item")
@@ -39,14 +39,15 @@ class SummaryConfig(val orderId: Int) extends Item with LazyLogging {
       _openUserGuide()
     }
   }
-
   /* initialize summary panels */
-  var prolineServerBox = new VBox {}
-  prolineServerBox.minHeight_=(180)
-  var prolineModuleBox = new VBox {}
-  prolineModuleBox.minHeight(120)
-  var prolineWebBox = new VBox {}
-  var prolinePgServerBox = new VBox {}
+  var prolineServerPanel = new VBox {
+    minHeight = 180
+  }
+  var prolineModulePanel = new VBox {
+    minHeight = 120
+  }
+  var prolineWebPanel = new VBox()
+  var prolinePgServerPanel = new VBox()
   alignment = Pos.Center
   alignmentInParent = Pos.Center
   prefHeight <== Wizard.stage.height - 50
@@ -65,6 +66,6 @@ class SummaryConfig(val orderId: Int) extends Item with LazyLogging {
     prefWidth <== Wizard.configItemsPanel.width - 30
     prefHeight <== Wizard.configItemsPanel.height - 30
     spacing = 20
-    children = List(prolineServerBox, prolineModuleBox, prolineWebBox, prolinePgServerBox)
+    children = List(prolineServerPanel, prolineModulePanel, prolineWebPanel, prolinePgServerPanel)
   })
 }

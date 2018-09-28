@@ -24,7 +24,7 @@ import fr.proline.admin.gui.wizard.component.items.tab.ParsingRulesContent
 import fr.proline.admin.gui.wizard.component.items.file.{ SeqRepos, SeqReposPane }
 
 /**
- * builds a panel with  Sequence Repository  properties database server properties, JMS properties and parsing rules properties
+ * builds a panel with  Sequence Repository  properties database server properties, JMS properties and parsing rules properties.
  *
  */
 
@@ -42,20 +42,25 @@ class SeqReposConfig(val orderId: Int) extends Item with LazyLogging {
   }
 
   /* database server properties tab */
-  val PostGreSQLSeq = new SeqReposPane(Wizard.seqRepoConfPath, Wizard.stage)
+  val postgreSQLSeqPanel = new SeqReposPane(Wizard.seqRepoConfPath, Wizard.stage)
   val PostGresSeqTab = new Tab {
     text = "PostGreSQL"
-    content = PostGreSQLSeq
+    content = postgreSQLSeqPanel
     closable = false
   }
   /* JMS server tab */
-  val jmsServer = new JmsServer(Wizard.SeqJmsNodeConfPath)
+  val jmsServerPanel = new JmsServer(Wizard.SeqJmsNodeConfPath)
   val serverJMSTab = new Tab {
     text = "JMS Server"
-    content = jmsServer
+    content = jmsServerPanel
     closable = false
   }
 
+  //disable seqrepos and JMS panel when proline server config is defined
+  if (Wizard.items.contains(2)) {
+    PostGresSeqTab.disable_=(true)
+    serverJMSTab.disable_=(true)
+  }
   /* parsing rules tab */
   val parsingRules = new ParsingRulesContent(Wizard.parsingRulesPath, Wizard.stage)
   val parsingRulesTab = new Tab {

@@ -1,21 +1,25 @@
 package fr.proline.admin.gui.component.resource
 
 import scalafx.beans.property.ObjectProperty
+import scalafx.concurrent.Service
+import scalafx.scene.control.Button
+import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
+import scala.util.{ Try, Success, Failure }
+
 import fr.proline.core.orm.uds.Project
 import fr.proline.core.orm.uds.UserAccount
 import fr.proline.core.orm.uds.ExternalDb
-import scala.collection.JavaConverters._
-import scala.collection.JavaConversions._
 import fr.proline.repository.ProlineDatabaseType
 import fr.proline.admin.gui.process.UdsRepository
-import fr.proline.repository.ProlineDatabaseType
 import fr.proline.repository.ConnectionMode
 import fr.proline.repository.DriverType
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
 import scalafx.concurrent.Service
 import javafx.beans.property.{ BooleanProperty, StringProperty }
 import java.lang.Boolean
+
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 
 package object implicits {
 
@@ -24,26 +28,24 @@ package object implicits {
    * Simplified model for uds Project, adapted to ScalaFx TableView *
    * ************************************************************** *
    */
-  class ProjectView(udsProject: Project) {
-    //class ProjectView(owner:UserAccount, project: Project, schemaVersion: String, dbSize:Double) {
+  implicit class ProjectView(udsProject: Project) extends Ordered[ProjectView] {
     val id = new ObjectProperty(this, "id", udsProject.getId)
     val ownerLogin = new ObjectProperty(this, "owner", udsProject.getOwner.getLogin)
     val name = new ObjectProperty(this, "name", udsProject.getName)
+    val databases = new ObjectProperty(this, "databases", s"lcms_db_project_${udsProject.getId} - msi_db_project_${udsProject.getId}")
     val description = new ObjectProperty(this, "description", udsProject.getDescription)
-    val version = new ObjectProperty(this, "version", dbVersions(udsProject.getExternalDatabases))
-    val size = new ObjectProperty(this, "size", UdsRepository.calculateSize(udsProject.getId))
+    val lcmsDbVersion = new ObjectProperty(this, "lcmsDbVersion", Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.LCMS).get.getDbVersion }.getOrElse("no.version"))
+    val msiDbVersion = new ObjectProperty(this, "msiDbVersion", Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.MSI).get.getDbVersion }.getOrElse("no.version"))
+    val isActivated = new ObjectProperty(this, "isActivated", Try {
+      if (!new JsonParser().parse(udsProject.getSerializedProperties).getAsJsonObject.get("is_active").getAsBoolean) "Disabled" else "Active"
+    }.getOrElse("Active"))
+    lazy val lcmsSize = new ObjectProperty(this, "lcmsSize", UdsRepository.computeLcmsSize(udsProject.getId))
+    lazy val msiSize = new ObjectProperty(this, "msiSize", UdsRepository.computeMsiSize(udsProject.getId))
 
-    // schema version
-    def dbVersions(extDbs: java.util.Set[ExternalDb]): String = {
-      val vesrion = new StringBuilder()
-      var msiVersion = ""
-      var lcmsVersion = ""
-      extDbs.toList.foreach { externalDb =>
-        if (externalDb.getType() == ProlineDatabaseType.LCMS) lcmsVersion = externalDb.getDbVersion()
-        else if (externalDb.getType() == ProlineDatabaseType.MSI) msiVersion = externalDb.getDbVersion()
-      }
-      vesrion.append(msiVersion).append(" - ").append(lcmsVersion)
-      vesrion.toString
+    def compare(that: ProjectView) = {
+      if (this.id.value == that.id.value)
+        0
+      else if (this.id.value > that.id.value) 1 else -1
     }
   }
 
@@ -52,37 +54,20 @@ package object implicits {
    * Simplified model for uds User, adapted to ScalaFx TableView *
    * ************************************************************** *
    */
-  implicit class UserView(udsUserAccount: UserAccount) {
-    var userGroups = ""
-    var userIsActives = "Active"
+  implicit class UserView(udsUserAccount: UserAccount) extends Ordered[UserView] {
     val login = new ObjectProperty(this, "owner", udsUserAccount.getLogin)
     val id = new ObjectProperty(this, "id", udsUserAccount.getId)
     val pwdHash = new ObjectProperty(this, "pwdHash", udsUserAccount.getPasswordHash)
     val mode = new ObjectProperty(this, "mode", udsUserAccount.getCreationMode())
-    if ((udsUserAccount.getSerializedProperties != null) && (!udsUserAccount.getSerializedProperties.isEmpty)) {
-      if (!ConfigFactory.parseString(udsUserAccount.getSerializedProperties).isEmpty) {
-        try {
-          userGroups = ConfigFactory.parseString(udsUserAccount.getSerializedProperties).root().get("user_group").unwrapped().toString
-        } catch {
-          case e: Exception =>
-            userGroups = ""
-        }
-      }
+    val group = new ObjectProperty(this, "group", Try { new JsonParser().parse(udsUserAccount.getSerializedProperties).getAsJsonObject.get("user_group").getAsString }.getOrElse("USER"))
+    val isActivated = new ObjectProperty(this, "isActivated", Try {
+      if (!new JsonParser().parse(udsUserAccount.getSerializedProperties).getAsJsonObject.get("is_active").getAsBoolean) "Disabled" else "Active"
+    }.getOrElse("Active"))
+    def compare(that: UserView) = {
+      if (this.id.value == that.id.value)
+        0
+      else if (this.id.value > that.id.value) 1 else -1
     }
-    if ((udsUserAccount.getSerializedProperties != null) && (!udsUserAccount.getSerializedProperties.isEmpty)) {
-      if (!ConfigFactory.parseString(udsUserAccount.getSerializedProperties).isEmpty) {
-        try {
-          if (ConfigFactory.parseString(udsUserAccount.getSerializedProperties).root().get("is_active").unwrapped().toString.toBoolean == false) {
-            userIsActives = "Disabled"
-          }
-        } catch {
-          case e: Exception =>
-            userIsActives = "Active"
-        }
-      }
-    }
-    val userGroup = new ObjectProperty(this, "userGroup", userGroups)
-    val userIsActive = new ObjectProperty(this, "userIsActive", userIsActives)
   }
 
   /**
@@ -94,12 +79,22 @@ package object implicits {
 
     val dbId = new ObjectProperty(this, "dbId", externaldb.getId())
     val dbName = new ObjectProperty(this, "dbName", externaldb.getDbName())
-    val dbPassword = new ObjectProperty(this, "dbPassword", externaldb.getDbPassword())
-    val dbUser = new ObjectProperty(this, "dbUser", externaldb.getDbUser())
     val dbVersion = new ObjectProperty(this, "dbVersion", externaldb.getDbVersion().toString)
     val dbPort = new ObjectProperty(this, "dbPort", externaldb.getPort().toString)
     val dbHost = new ObjectProperty(this, "dbHost", externaldb.getHost())
+    def _host(newHost: String) {
+      dbHost.value_=(newHost)
+    }
+  }
 
+  /**
+   * ************************************************************** *
+   * Simplified model for Task  to ScalaFx TableView *
+   * ************************************************************** *
+   */
+  implicit class TaskView(service: String) {
+    val id = new ObjectProperty(this, "id", service)
+    val state = new ObjectProperty(this, "state", service)
   }
 
   /**

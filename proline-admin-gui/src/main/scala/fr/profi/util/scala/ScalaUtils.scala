@@ -72,22 +72,30 @@ object ScalaUtils {
 
   /** Double-quoted string **/
   def doubleQuoted(string: String): String = if (isDoubleQuoted(string)) string else s""""$string""""
-
+  
+  /**
+   * IS Double-quoted string
+   * @param string the string to check is doubel quoted
+   * @return Boolean
+   * *
+   */
   def isDoubleQuoted(string: String): Boolean = {
     //hard to read but ultra-efficient
     string.charAt(0) == '"' && string.charAt(string.length - 1) == '"'
   }
 
-  /** check if configuration file is validated  **/
+  /**
+   * check if configuration file is validated
+   * @param filepath the path of the configuration file
+   */
   def isConfFile(filePath: String): Boolean = (new File(filePath).exists) && (new File(filePath).getName == "application.conf")
 
-  /** check if  data directory is validated  */
+  /**
+   * check if  data directory is validated
+   *  @param path the path of postgreSQL data directory
+   */
   def isValidDataDir(path: String): Boolean = {
-    var validDir = false
-    if (new File(path).exists) {
-      if (new File(path).listFiles().filter { file => (file.getName.equals("pg_hba.conf") || file.getName.equals("postgresql.conf")) }.size == 2) validDir = true
-    }
-    validDir
+    if (new File(path).exists && new File(path).listFiles().filter { file => (file.getName.equals("pg_hba.conf") || file.getName.equals("postgresql.conf")) }.size == 2) true else false
   }
   /**
    * ********* *

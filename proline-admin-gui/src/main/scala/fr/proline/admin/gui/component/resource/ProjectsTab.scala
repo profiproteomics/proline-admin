@@ -107,7 +107,7 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
   /* Project name */
   val projectNameCol = new TableColumn[ProjectView, String]("Name") {
     cellValueFactory = { _.value.name }
-      cellFactory = { _ =>
+    cellFactory = { _ =>
       new TableCell[ProjectView, String] {
         style = "-fx-alignment: CENTER;"
         item.onChange { (_, _, newValue) => text = newValue }
@@ -129,7 +129,7 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
   /*column of schema version default  = no.version */
 
   val projectVersionCol = new TableColumn[ProjectView, String]("Schema version (Msi-Lcms)") {
-    cellValueFactory = { _.value.version }
+    cellValueFactory = { _.value.msiDbVersion }
     cellFactory = { _ =>
       new TableCell[ProjectView, String] {
         style = "-fx-alignment: CENTER;"
@@ -137,26 +137,10 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
       }
     }
   }
-
-  /* column of database size */
-
-  val projectSizeCol = new TableColumn[ProjectView, String]("Size (Msi-Lcms)") {
-    cellValueFactory = { _.value.size }
-    cellFactory = { _ =>
-      new TableCell[ProjectView, String] {
-        style = "-fx-alignment: CENTER;"
-        item.onChange { (_, _, newValue) => text = newValue }
-      }
-    }
-  }
-
-  /* column contain some button */
-
-  //val actionCol = new TableColumn[ProjectView, Boolean]("Action")
 
   /*button to delete , update */
   /* Get JavaFx columns to fill table view */
-  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[ProjectView, _]] = List(idCol, ownerCol, projectNameCol, projectDescCol, projectVersionCol, projectSizeCol)
+  protected lazy val tableColumns: List[javafx.scene.control.TableColumn[ProjectView, _]] = List(idCol, ownerCol, projectNameCol, projectDescCol, projectVersionCol)
 
   /* Set columns width */
   this.applyPercentWidth(List(
@@ -164,9 +148,7 @@ class ProjectsTable() extends AbstractResourceTableView[ProjectView] {
     (ownerCol, 10),
     (projectVersionCol, 20),
     (projectNameCol, 40),
-    (projectDescCol, 40),
-    (projectSizeCol, 20)
-    ))
+    (projectDescCol, 40)))
 
   /* Initialize table content */
   this.init()
@@ -256,7 +238,7 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
     prefHeight = 100
     wrapText = true
   }
-   val createdProjectWarningLabel = new Label {
+  val createdProjectWarningLabel = new Label {
     text = "Project has been created successfully."
     style = TextStyle.RED_ITALIC
     minHeight = 15
@@ -312,7 +294,7 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
    */
 
   /** Hide warning labels **/
-  private def _hideWarnigs() = Seq(ownerWarningLabel, nameWarningLabel,createdProjectWarningLabel).foreach(_.visible = false)
+  private def _hideWarnigs() = Seq(ownerWarningLabel, nameWarningLabel, createdProjectWarningLabel).foreach(_.visible = false)
 
   /** Clear the form **/
   protected def clearForm(): Unit = {
@@ -360,7 +342,7 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
     /* Result */
     isOwnerDefined && isNameDefined && isNameAvailable
   }
-  
+
   /** Show a Warning Label when project created **/
   private def warningCreatedProject(): Unit = {
     createdProjectWarningLabel.visible = true
@@ -405,7 +387,7 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
         if (projectId > 0L) {
           new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
           warningCreatedProject()
-          
+
         } else {
           logger.error("Invalid Project Id: " + projectId)
         }

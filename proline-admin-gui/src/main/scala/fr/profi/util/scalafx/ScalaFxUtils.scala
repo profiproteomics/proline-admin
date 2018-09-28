@@ -318,14 +318,15 @@ object ScalaFxUtils extends LazyLogging {
     val RED = "-fx-text-fill: red;"
     val GREY = "-fx-text-fill: grey;"
     val ORANGE = "-fx-text-fill: orange;"
+    val GREEN = "-fx-text-fill: green;"
 
     val RED_ITALIC = RED ++ ITALIC
     val ORANGE_ITALIC = ORANGE ++ ITALIC
     val GREY_ITALIC = GREY ++ ITALIC
     val BLUE_ITALIC = BLUE ++ ITALIC
-
+    val GREEN_ITALIC = GREEN ++ ITALIC
   }
-  
+
   object NodeStyle {
 
     def set(field: Node) {

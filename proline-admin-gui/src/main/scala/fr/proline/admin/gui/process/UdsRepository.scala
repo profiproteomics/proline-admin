@@ -1,13 +1,13 @@
 package fr.proline.admin.gui.process
 
 import com.typesafe.scalalogging.LazyLogging
+
 import scala.collection.JavaConverters._
+
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.context.DatabaseConnectionContext
-import fr.proline.core.orm.uds.ExternalDb
-import fr.proline.core.orm.uds.Project
-import fr.proline.core.orm.uds.UserAccount
+import fr.proline.core.orm.uds.{ ExternalDb, Project, UserAccount }
 import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.repository.DatabaseConnectorFactory
@@ -17,7 +17,7 @@ import fr.proline.repository.ProlineDatabaseType
 import fr.proline.repository.ProlineDatabaseType.MSI
 import fr.proline.repository.ProlineDatabaseType.LCMS
 import fr.proline.core.dal.DoJDBCWork
-import javax.persistence.Query
+import scala.util.Try
 
 /**
  * Some utilities relative to UDS database connection
@@ -33,7 +33,8 @@ object UdsRepository extends LazyLogging {
    * Get UDS database CONFIG
    */
   def getUdsDbConfig(): DatabaseSetupConfig = {
-    SetupProline.getUpdatedConfig.udsDBConfig
+    _udsDbConfig = SetupProline.getUpdatedConfig.udsDBConfig
+    _udsDbConfig
   }
 
   def setUdsDbConfig(udsDbConfig: DatabaseSetupConfig) {
@@ -41,7 +42,6 @@ object UdsRepository extends LazyLogging {
 
     // Set new udsDbConfig
     this._udsDbConfig = udsDbConfig
-
     // Close DataStore connector factory
     if (_dsConnectorFactory != null) {
       _dsConnectorFactory.closeAll()
@@ -86,28 +86,23 @@ object UdsRepository extends LazyLogging {
   }
 
   /**
-   * Get UDS entity manager
-   */
-  /*def getUdsDbEm(): EntityManager = {
-    this.getUdsDbContext().getEntityManager()
-  }*/
-
-  /**
-   * Get datastore connector factory using UDS databse
+   * Get datastore connector factory using UDS database
    */
   def getDataStoreConnFactory(): IDataStoreConnectorFactory = {
     if (_dsConnectorFactory == null) {
       // FIXME: fix the EntityManager is already closed bug (from DataStoreConnectorFactory) to reuse existing "udsDbConnector"
-      _dsConnectorFactory = new DynamicDataStoreConnectorFactory(this.getUdsDbConfig.toNewConnector())
+      _dsConnectorFactory = new DynamicDataStoreConnectorFactory(getUdsDbConnector())
     }
     _dsConnectorFactory
+  }
 
-    /*val connectorFactory = DataStoreConnectorFactory.getInstance()
-    if (!connectorFactory.isInitialized) {
-      connectorFactory.initialize(this.getUdsDbConnector())
-    }
-
-    connectorFactory*/
+  /**
+   * Get userName and password from udsDbConfig
+   *
+   */
+  def getConProperties(): (String, String) = {
+    require(!getUdsDbConfig.userName.isEmpty(), "Username must not be empty.")
+    (getUdsDbConfig.userName, getUdsDbConfig.password)
   }
 
   /**
@@ -122,74 +117,45 @@ object UdsRepository extends LazyLogging {
     try {
 
       /** Check to retrieve DB connection */
-      logger.debug("Checking connection to UDSdb")
+      logger.debug("Checking connection to UDSdb. Please wait ...")
 
       udsDbConnector.getDataSource().getConnection()
 
       /** Additionnal check for file-based databases (SQLite) */
       udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
-//      udsDbCtx.getEntityManager().find(classOf[ExternalDb], 1L)
-      val q : Query = udsDbCtx.getEntityManager().createNativeQuery("select * from schema_version")
-      val result=q.getResultList 
-      require(!result.isEmpty(),"No schame versin : Proline is not set up !")
+      udsDbCtx.getEntityManager().find(classOf[ExternalDb], 1L)
       logger.debug("Proline is already set up !")
       true
-
     } catch {
       case t: Throwable => {
-        logger.info(" THROWABLE ! "+t.getMessage)
-        t.printStackTrace()
         System.err.println("WARN - Proline is not set up !")
-        //if (verbose) System.err.println(t.getMessage())
         logger.trace("Proline is not set up : ", t)
-
         false
       }
     } finally {
       if (udsDbCtx != null) udsDbCtx.close()
-      //if (udsDbConnector != null && udsDbConnector.isClosed() == false) udsDbConnector.close()
     }
   }
   /**
    *  Get the exhaustive list of UserAccount instances in database as a map of type "login ->  id"
    */
-  def getAllUserAccounts(): Array[UserAccount] = { //login, id
-
+  def getAllUserAccounts(): Array[UserAccount] = {
     val udsDbContext = this.getUdsDbContext()
-
     try {
-
-      // from fr.profi.pwx.dal.ProlineDataStore (pwx-scala daemons)
       val udsEM = udsDbContext.getEntityManager()
-
+      udsEM.clear()
       val UdsUserAccountClass = classOf[UserAccount]
       val jpqlSelectUserAccount = s"FROM ${UdsUserAccountClass.getName}"
-
       val udsUsers = udsEM.createQuery(jpqlSelectUserAccount, UdsUserAccountClass).getResultList()
-
       val res = udsUsers.asScala.toArray
-      //      println(s"INFO - Loaded ${res.length} user(s) from UDSdb.")
       res
-
     } catch {
-      // Log Exception message, print error message in console, re-throw Exception
-      case e: Throwable => {
+      case t: Throwable => {
         synchronized {
-
-          //          def printProblematicLine(t: Throwable) {
-          //
-          //            val filterFrPro = t.getStackTrace().filter(ste => (ste.getClassName().startsWith("fr.profi.")) || (ste.getClassName().startsWith("fr.proline.")))
-          //            val pbLine = filterFrPro.head.toString()
-          //            val paGuiLine = filterFrPro.filter(ste => ste.getClassName().startsWith("fr.proline.admin.gui")).head.toString()
-          //            println(pbLine)
-          //            println("at " + paGuiLine)
-          //          }
-
           logger.warn("Can't load user accounts from UDSdb:")
-          logger.warn(e.getLocalizedMessage())
+          logger.warn(t.getLocalizedMessage())
           println("ERROR - Can't load user accounts from UDSdb")
-
-          throw e
+          throw t
         }
       }
     }
@@ -199,49 +165,46 @@ object UdsRepository extends LazyLogging {
    *  Get the exhaustive list of Project instances in database
    */
   def getAllProjects(): Array[Project] = {
-
     val udsDbContext = this.getUdsDbContext()
-    val udsEM = udsDbContext.getEntityManager()
-
     val projects = try {
-
-      // from fr.profi.pwx.dal.ProlineDataStore (pwx-scala daemons)
+      val udsEM = udsDbContext.getEntityManager()
+      udsEM.clear()
       val UdsProjectClass = classOf[Project]
       val jpqlSelectProject = s"FROM ${UdsProjectClass.getName}"
-
       val udsProjects = udsEM.createQuery(jpqlSelectProject, UdsProjectClass).getResultList()
-
-      udsProjects.asScala.toArray
-
+      val result = udsProjects.asScala.toArray
+      result
     } catch {
-      // Log Exception message, print error message in console, re-throw Exception
       case t: Throwable => {
         synchronized {
           logger.warn("Can't load projects from UDSdb :", t)
-
           System.err.println("ERROR - Can't load projects from UDSdb")
           System.err.println(t.getMessage())
+          throw t
         }
-        throw t
-      }
 
-    } /*finally {
-      //udsEM.close()
-      if (udsDbContext != null) udsDbContext.close()
-    }*/
+      }
+    }
     projects
   }
-  /* get all databases */
 
-  def getAllDataBases(): Array[ExternalDb] = {
+  /**
+   *  @return An array of external_db
+   *
+   */
+
+  def getAllExtDbs(): Array[ExternalDb] = {
     val udsDbContext = this.getUdsDbContext()
-    val udsEM = udsDbContext.getEntityManager()
     val externalDbs = try {
+      val udsEM = udsDbContext.getEntityManager()
+      udsEM.clear()
       val externalDbClass = classOf[ExternalDb]
-      val jpqlSelectExternalDb = s"FROM ${externalDbClass.getName}"
-      val externalDbList = udsEM.createQuery(jpqlSelectExternalDb, externalDbClass).getResultList()
+      val jpqlSelectExternalDb = s"Select ed FROM ${externalDbClass.getName} ed where ed.type = :msi or ed.type = :lcms"
+      val externalDbList = udsEM.createQuery(jpqlSelectExternalDb, externalDbClass)
+        .setParameter("msi", fr.proline.repository.ProlineDatabaseType.MSI)
+        .setParameter("lcms", fr.proline.repository.ProlineDatabaseType.LCMS)
+        .getResultList()
       externalDbList.asScala.toArray
-
     } catch {
       case t: Throwable => {
         synchronized {
@@ -270,41 +233,53 @@ object UdsRepository extends LazyLogging {
   }
 
   /**
-   * Get External_db MSI
+   * Get External_db MSI by project
    */
   def getProjectMsiVerison(project: Project): ExternalDb = {
-    return ExternalDbRepository.findExternalByTypeAndProject(this.getUdsDbContext.getEntityManager(), fr.proline.repository.ProlineDatabaseType.MSI, project)
+    ExternalDbRepository.findExternalByTypeAndProject(this.getUdsDbContext.getEntityManager(), fr.proline.repository.ProlineDatabaseType.MSI, project)
   }
 
   /**
-   * Get External_db LCMS
+   * Get External_db LCMS version by project
+   *
    */
 
   def getProjectLcmsVersion(project: Project): ExternalDb = {
-    return ExternalDbRepository.findExternalByTypeAndProject(this.getUdsDbContext.getEntityManager(), fr.proline.repository.ProlineDatabaseType.LCMS, project)
+    ExternalDbRepository.findExternalByTypeAndProject(this.getUdsDbContext.getEntityManager(), fr.proline.repository.ProlineDatabaseType.LCMS, project)
   }
-
   /**
-   * Calculate size of a database
+   * Compute the size of  lcms database
+   * @param projectId The project id to compute its database size.
+   *
    */
-  def calculateSize(projectId: Long): String = {
-    val udsDbContext = this.getUdsDbContext()
-    val size = new StringBuilder()
-    try {
-      DoJDBCWork.withEzDBC(udsDbContext) { ezDBC =>
-        ezDBC.selectAndProcess("SELECT pg_size_pretty(pg_database_size(datname)) as msiSize FROM pg_database WHERE datname='msi_db_project_" + projectId + "'") { record =>
-          size.append(record.getString("msiSize"))
-        }
+  def computeLcmsSize(projectId: Long): String = {
+    Try {
+      var size: String = "no.size"
+      DoJDBCWork.withEzDBC(this.getUdsDbContext) { ezDBC =>
         ezDBC.selectAndProcess("SELECT pg_size_pretty(pg_database_size(datname)) as lcmsSize FROM pg_database WHERE datname='lcms_db_project_" + projectId + "'") { record =>
-          size.append(" - ").append(record.getString("lcmsSize"))
+          size = record.getString("lcmsSize")
         }
       }
-    } catch {
-      case t: Throwable => logger.error("Error while calculating size of MSI and LCMS databases", t)
-    }
-    size.toString()
+      size
+    }.getOrElse("no.size")
   }
+  /**
+   * Compute the size of msi database
+   * @param projectId The project id to compute its database size.
+   *
+   */
 
+  def computeMsiSize(projectId: Long): String = {
+    Try {
+      var size: String = "no.size"
+      DoJDBCWork.withEzDBC(this.getUdsDbContext) { ezDBC =>
+        ezDBC.selectAndProcess("SELECT pg_size_pretty(pg_database_size(datname)) as msiSize FROM pg_database WHERE datname='msi_db_project_" + projectId + "'") { record =>
+          size = record.getString("msiSize")
+        }
+      }
+      size
+    }.getOrElse("no.size")
+  }
 }
 
 class DynamicDataStoreConnectorFactory(
@@ -312,31 +287,13 @@ class DynamicDataStoreConnectorFactory(
 
   require(udsDbConnector != null, "udsDbConnector is null")
 
-  //private lazy val udsEMF = udsDbConnector.getEntityManagerFactory()
-  //private lazy val udsEM = udsEMF.createEntityManager()
   private lazy val udsEM = udsDbConnector.createEntityManager()
-  private var pdiInitialized = false
-  private lazy val pdiDbConnector = _dbTypeToConnector(ProlineDatabaseType.PDI)
-//  private var psInitialized = false
-//  private lazy val psDbConnector = _dbTypeToConnector(ProlineDatabaseType.PS)
 
-  override def isInitialized() = {
-    true
-  }
+  override def isInitialized() = synchronized { if (udsDbConnector != null) true else false }
 
   override def getUdsDbConnector() = {
     udsDbConnector
   }
-
-  override def getPdiDbConnector() = {
-    pdiInitialized = true
-    pdiDbConnector
-  }
-
-//  override def getPsDbConnector() = {
-//    psInitialized = true
-//    psDbConnector
-//  }
 
   /**
    * Return the same MSI Db for all projectId.
@@ -373,40 +330,30 @@ class DynamicDataStoreConnectorFactory(
   }
 
   private def _extDbToConnector(externalDb: ExternalDb, prolineDbType: ProlineDatabaseType): IDatabaseConnector = {
-    val propertiesMap = externalDb.toPropertiesMap(udsDbConnector.getDriverType())
-    //propertiesMap.put("ApplicationName", m_applicationName);
-    DatabaseConnectorFactory.createDatabaseConnectorInstance(prolineDbType, propertiesMap)
+    val (userName, password) = UdsRepository.getConProperties()
+    externalDb.setDriverType(udsDbConnector.getDriverType())
+    val dbConnProps = externalDb.toPropertiesMap(userName, password).asInstanceOf[java.util.Map[Object, Object]]
+    DatabaseConnectorFactory.createDatabaseConnectorInstance(prolineDbType, dbConnProps)
   }
 
   override def closeAll() {
     this.synchronized {
-
-      if (pdiInitialized) {
-        pdiDbConnector.close()
-      }
-
-//      if (psInitialized) {
-//        psDbConnector.close()
-//      }
-
       try {
         udsEM.close()
       } catch {
-        case e: Exception => logger.error("Error closing UDS Db EntityManager", e)
+        case e: Exception => logger.error("Error closing UDS Db EntityManager", e.printStackTrace())
       }
-
       udsDbConnector.close()
-
     } // End of synchronized block on m_closeLock
 
   }
 
   override def closeLcMsDbConnector(projectId: Long) {
-    throw new Exception("closeLcMsDbConnector isn't implemented. I didn't expect to use it in PAdmin GUI")
+    throw new Exception("closeLcMsDbConnector isn't implemented. It is not expected to use it in Proline-Admin GUI")
   }
 
   override def closeMsiDbConnector(projectId: Long) {
-    throw new Exception("closeMsiDbConnector isn't implemented. I didn't expect to use it in PAdmin GUI")
+    throw new Exception("closeMsiDbConnector isn't implemented. It is not expected to use it in Proline-Admin GUI")
   }
 
   override def closeProjectConnectors(projectId: Long) {

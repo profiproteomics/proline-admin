@@ -1,9 +1,10 @@
 package fr.proline.admin.gui.wizard.process.config
 
+import com.typesafe.scalalogging.LazyLogging
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigRenderOptions
-import com.typesafe.scalalogging.LazyLogging
+
 import fr.profi.util.scala.TypesafeConfigWrapper._
 import fr.proline.repository.DriverType
 import fr.profi.util.scala.ScalaUtils

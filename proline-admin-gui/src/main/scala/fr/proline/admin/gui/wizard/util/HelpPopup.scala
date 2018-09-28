@@ -48,7 +48,8 @@ class HelpPopup(
           spacing = 30
           children = Seq(
             new Button("  Ok  ") {
-              minWidth = 20
+              minWidth = 40
+              graphic = FxUtils.newImageView(IconResource.TICK)
               onAction = handle {
                 popup.close()
               }

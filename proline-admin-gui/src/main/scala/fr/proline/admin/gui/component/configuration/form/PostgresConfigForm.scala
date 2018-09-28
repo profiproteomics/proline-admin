@@ -62,7 +62,7 @@ case class PgFormLine(
  * ***************************************************************** *
  */
 class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStage: Stage) extends VBox with IConfigFilesForm with LazyLogging {
-
+  var isUpdated = false
   /* Read initial settings */
   val pgConfigFile = new PostgresConfigFile(postgresConfigFilePath)
   val pgConfigInitSettings = pgConfigFile.lineByKey

@@ -115,7 +115,7 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
   /* user group */
 
   val userGroupCol = new TableColumn[UserView, String]("User group") {
-    cellValueFactory = { _.value.userGroup }
+    cellValueFactory = { _.value.group }
     cellFactory = { _ =>
       new TableCell[UserView, String] {
         style = "-fx-alignment: CENTER;"
@@ -125,7 +125,7 @@ class UsersTable() extends AbstractResourceTableView[UserView] {
   }
   /*user isActive */
   val isActiveCol = new TableColumn[UserView, String]("State") {
-    cellValueFactory = { _.value.userIsActive }
+    cellValueFactory = { _.value.isActivated }
     cellFactory = { _ =>
       new TableCell[UserView, String] {
         style = "-fx-alignment: CENTER;"
@@ -334,8 +334,9 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
         /* Create user */
 
         val pswd = if (pswdOpt.isDefined) pswdOpt.get else "proline" //TODO: define in config!
-        if (isAdmin.isSelected) { userCreator = new CreateUser(udsDbContext, _login, pswd, false) }
-        else { userCreator = new CreateUser(udsDbContext, _login, pswd, true) }
+        val encryptedPswd = sha256Hex(pswd)
+        if (isAdmin.isSelected) { userCreator = new CreateUser(udsDbContext, _login, encryptedPswd, false) }
+        else { userCreator = new CreateUser(udsDbContext, _login, encryptedPswd, true) }
         if (userCreator != null) {
           userCreator.run()
           warningCreatedUser()

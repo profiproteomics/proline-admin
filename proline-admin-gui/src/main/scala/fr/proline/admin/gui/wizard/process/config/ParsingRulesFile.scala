@@ -1,9 +1,10 @@
 package fr.proline.admin.gui.wizard.process.config
 
+import com.typesafe.scalalogging.LazyLogging
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigRenderOptions
-import com.typesafe.scalalogging.LazyLogging
+
 import scala.util.matching.Regex
 import scala.collection.JavaConversions._
 import scala.collection.mutable.StringBuilder
@@ -11,16 +12,17 @@ import scala.io.Source
 import scala.collection.mutable.Map
 import scala.collection.mutable.ListBuffer
 
-import java.io.File
-import java.io.FileWriter
-import fr.proline.admin.gui.util.ShowPopupWindow
 import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scala.TypesafeConfigWrapper._
 
-/** 
- * ParsingRulesFile build a model to parse and edit Sequence Repository parsing-rules file
- *  
+import java.io.File
+import java.io.FileWriter
+
+/**
+ * ParsingRulesFile build a model to parse and edit Sequence Repository parsing-rules file.
+ * @param path the path of the sequence repository file to parse.
+ *
  */
 
 class ParsingRulesFile(val path: String) extends LazyLogging {
@@ -129,9 +131,9 @@ default-protein-accession ="${ScalaUtils.doubleBackSlashes(parsingRule.defaultPr
 /** Model what in the sequence repository parsing rules file */
 
 case class ParsingRule(
-  localFastaDirectories: ListBuffer[String],
-  parsingRules: ListBuffer[Rule],
-  defaultProteinAccession: Option[String]) {
+    localFastaDirectories: ListBuffer[String],
+    parsingRules: ListBuffer[Rule],
+    defaultProteinAccession: Option[String]) {
 
   /* return local Fasta directories strings */
   def toTypeSafeFastaDirString(): String = {
@@ -187,9 +189,9 @@ case class ParsingRule(
 /* Model for  Rule */
 
 case class Rule(name: String,
-  fastaNames: ListBuffer[String],
-  fastaVersion: String,
-  proteinAccession: String) {
+    fastaNames: ListBuffer[String],
+    fastaVersion: String,
+    proteinAccession: String) {
   require(name != null && name.isEmpty() == false, "Id must not be null nor empty in Parsing rule")
   require(fastaVersion != null && fastaVersion.isEmpty() == false, "Fasta version must not be null nor empty in Parsing rule")
   require(fastaNames != null && fastaNames.size() > 0, "Fasta Names must not be null nor empty in Parsing rule")

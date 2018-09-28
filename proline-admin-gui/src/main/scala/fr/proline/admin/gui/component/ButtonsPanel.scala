@@ -81,7 +81,6 @@ object ButtonsPanel extends LazyLogging {
             val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
             // Create missing databases
             //fr.proline.admin.helper.sql.createMissingDatabases(SetupProline.config.udsDBConfig, dsConnectorFactory)
-
             /* Logback */
             try {
               new UpgradeAllDatabases(dsConnectorFactory).doWork()
@@ -92,7 +91,6 @@ object ButtonsPanel extends LazyLogging {
                 logger.error("ERROR - Databases upgrade failed", e)
               }
             }
-
             //dsConnectorFactory.closeAll()
           }) //someActionRunning.set(false)
       }
@@ -266,18 +264,6 @@ object ButtonsPanel extends LazyLogging {
    * ***************** *
    */
 
-  private def _singPokemon() = println("""INFO
-  Un jour je serai le meilleur dresseur
-  Je me battrai sans répit
-  Je ferai tout pour être vainqueur
-  Et gagner les défis
-  
-  Je parcourrai la Terre entière
-  Battant avec espoir 
-  Les Pokemon et leur mystère
-  Le secret de leur pouvoir
-  
-  POKEMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONNNNNNNNNNNNNNNNN
-  """)
+
 
 }

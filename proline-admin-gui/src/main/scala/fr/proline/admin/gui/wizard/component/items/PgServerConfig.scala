@@ -28,7 +28,7 @@ import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 /**
- * builds a panel with the postgreSQL properties: access rights and optimization
+ * build a panel with the PostgreSQL properties: access rights and optimization.
  *
  */
 
@@ -49,7 +49,7 @@ class PgServerConfig(val orderId: Int) extends Item with LazyLogging {
   val workingFilePgHbaConf = Wizard.pgDataDirPath + File.separator + "pg_hba.conf"
   val pgHbaForm = new PgHbaConfigContent(workingFilePgHbaConf, Wizard.stage)
   val pgAccessRightTab = new Tab {
-    text = "PG Access Right"
+    text = "PG Network Access"
     content = pgHbaForm
     closable = false
   }

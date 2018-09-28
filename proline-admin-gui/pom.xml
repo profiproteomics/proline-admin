@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>ProFI-Pom</artifactId>
 		<groupId>fr.proline</groupId>
-		<version>0.4.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
+		<version>0.4.0</version> <!-- Snapshot Trunk version -->
 	</parent>
 
 	<artifactId>Proline-Admin-GUI</artifactId>
@@ -22,7 +22,7 @@
 		<version.path>${basedir}/src/main/scala/fr/proline/admin/gui</version.path>
 	</properties>
 	<scm>
-		<connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-Admin-GUI/trunk</connection>
+		<connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-Admin-GUI/branches/0.7.0.b.RemPS</connection>
 	</scm>
 
 	<dependencies>
@@ -72,7 +72,7 @@
 		<dependency>
 			<groupId>fr.proline.util</groupId>
 			<artifactId>ProFI-Commons-Scala</artifactId>
-			<version>0.8.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
+			<version>0.7.0</version> <!-- Snapshot Trunk version -->
 		</dependency>
 
 		<dependency>

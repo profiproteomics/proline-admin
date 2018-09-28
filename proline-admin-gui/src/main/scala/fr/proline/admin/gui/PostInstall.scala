@@ -22,8 +22,8 @@ import scala.util.matching.Regex
 import fr.proline.admin.gui.wizard.component.panel.bottom.InstallButtons
 import fr.proline.admin.gui.wizard.service.PostInstallPanel
 import fr.proline.admin.gui.wizard.component.items.Item
-import fr.proline.admin.gui.wizard.util.Module
 import fr.proline.admin.gui.wizard.util.ItemName._
+import fr.proline.admin.gui.wizard.util.Module
 import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.StringUtils
 

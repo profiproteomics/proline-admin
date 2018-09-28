@@ -16,15 +16,15 @@ import scalafx.scene.Node
 import scalafx.geometry.Pos
 import scalafx.stage.Stage
 
-import scala.collection.mutable.LinkedHashMap
 import fr.proline.admin.gui.wizard.component.panel.main.InstallPane
 import fr.proline.admin.gui.wizard.component.panel.bottom.InstallButtons
 import fr.proline.admin.gui.wizard.component.items.Item
-import fr.proline.admin.gui.util.FxUtils
+
 import fr.proline.admin.gui.wizard.util.ItemName._
-import fr.proline.admin.gui.wizard.util.Module
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.wizard.util.WindowSize
+import fr.proline.admin.gui.wizard.util.Module
+import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.StringUtils
 import scala.util.matching.Regex
 import java.io.File
@@ -91,20 +91,14 @@ object Wizard extends LazyLogging {
 class Wizard extends Application {
 
   def start(stage: javafx.stage.Stage): Unit = {
-
     /* Locate Proline Admin 'config' folder */
-
     val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
     Wizard.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
     val configPath = Wizard.targetPath + """/config/"""
-
     // Locate application.CONF file and update Proline config in consequence 
-
     val _appConfPath = configPath + "application.conf"
     Wizard.adminConfPath = _appConfPath
-
     // locate application .CONF file of proline server 
-
     require(Wizard.stage == null, "stage is already instantiated")
     Wizard.configItemsPanel = InstallPane
     Wizard.buttonsPanel = InstallButtons
@@ -122,5 +116,6 @@ class Wizard extends Application {
   }
   override def stop() {
     super.stop()
+    if (UdsRepository.getUdsDbContext() != null) UdsRepository.getUdsDbContext().close
   }
 }
