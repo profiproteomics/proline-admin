@@ -1,9 +1,7 @@
 package fr.proline.admin.gui.process
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scala.collection.JavaConverters._
-
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.context.DatabaseConnectionContext
@@ -19,6 +17,7 @@ import fr.proline.repository.ProlineDatabaseType
 import fr.proline.repository.ProlineDatabaseType.MSI
 import fr.proline.repository.ProlineDatabaseType.LCMS
 import fr.proline.core.dal.DoJDBCWork
+import javax.persistence.Query
 
 /**
  * Some utilities relative to UDS database connection
@@ -129,13 +128,17 @@ object UdsRepository extends LazyLogging {
 
       /** Additionnal check for file-based databases (SQLite) */
       udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
-      udsDbCtx.getEntityManager().find(classOf[ExternalDb], 1L)
+//      udsDbCtx.getEntityManager().find(classOf[ExternalDb], 1L)
+      val q : Query = udsDbCtx.getEntityManager().createNativeQuery("select * from schema_version")
+      val result=q.getResultList 
+      require(!result.isEmpty(),"No schame versin : Proline is not set up !")
       logger.debug("Proline is already set up !")
       true
 
     } catch {
       case t: Throwable => {
-
+        logger.info(" THROWABLE ! "+t.getMessage)
+        t.printStackTrace()
         System.err.println("WARN - Proline is not set up !")
         //if (verbose) System.err.println(t.getMessage())
         logger.trace("Proline is not set up : ", t)
@@ -314,8 +317,8 @@ class DynamicDataStoreConnectorFactory(
   private lazy val udsEM = udsDbConnector.createEntityManager()
   private var pdiInitialized = false
   private lazy val pdiDbConnector = _dbTypeToConnector(ProlineDatabaseType.PDI)
-  private var psInitialized = false
-  //private lazy val psDbConnector = _dbTypeToConnector(ProlineDatabaseType.PS)
+//  private var psInitialized = false
+//  private lazy val psDbConnector = _dbTypeToConnector(ProlineDatabaseType.PS)
 
   override def isInitialized() = {
     true

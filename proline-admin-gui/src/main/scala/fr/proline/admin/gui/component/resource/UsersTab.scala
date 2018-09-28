@@ -334,9 +334,8 @@ class NewUserPanel() extends INewEntryPanel with LazyLogging {
         /* Create user */
 
         val pswd = if (pswdOpt.isDefined) pswdOpt.get else "proline" //TODO: define in config!
-        val encryptedPswd = sha256Hex(pswd)
-        if (isAdmin.isSelected) { userCreator = new CreateUser(udsDbContext, _login, encryptedPswd, false) }
-        else { userCreator = new CreateUser(udsDbContext, _login, encryptedPswd, true) }
+        if (isAdmin.isSelected) { userCreator = new CreateUser(udsDbContext, _login, pswd, false) }
+        else { userCreator = new CreateUser(udsDbContext, _login, pswd, true) }
         if (userCreator != null) {
           userCreator.run()
           warningCreatedUser()
