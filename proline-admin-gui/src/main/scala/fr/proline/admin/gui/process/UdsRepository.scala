@@ -315,7 +315,7 @@ class DynamicDataStoreConnectorFactory(
   private var pdiInitialized = false
   private lazy val pdiDbConnector = _dbTypeToConnector(ProlineDatabaseType.PDI)
   private var psInitialized = false
-  private lazy val psDbConnector = _dbTypeToConnector(ProlineDatabaseType.PS)
+  //private lazy val psDbConnector = _dbTypeToConnector(ProlineDatabaseType.PS)
 
   override def isInitialized() = {
     true
@@ -330,10 +330,10 @@ class DynamicDataStoreConnectorFactory(
     pdiDbConnector
   }
 
-  override def getPsDbConnector() = {
-    psInitialized = true
-    psDbConnector
-  }
+//  override def getPsDbConnector() = {
+//    psInitialized = true
+//    psDbConnector
+//  }
 
   /**
    * Return the same MSI Db for all projectId.
@@ -382,9 +382,9 @@ class DynamicDataStoreConnectorFactory(
         pdiDbConnector.close()
       }
 
-      if (psInitialized) {
-        psDbConnector.close()
-      }
+//      if (psInitialized) {
+//        psDbConnector.close()
+//      }
 
       try {
         udsEM.close()
