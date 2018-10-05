@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>Proline-Admin-GUI</artifactId>
-	<version>=0.8.0-SNAPSHOT</version>
+	<version>0.8.0-SNAPSHOT</version>
 
 	<name>${project.artifactId}</name>
 	<description>A GUI for Proline Administration</description>
@@ -18,7 +18,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<core.version>2.1.0-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
-		<admin.version>0.9.0-SNAPSHOT</admin.version> <!-- Snapshot Trunk version -->
+		<admin.version>0.8.0-SNAPSHOT</admin.version> <!-- Snapshot Trunk version -->
 		<version.path>${basedir}/src/main/scala/fr/proline/admin/gui</version.path>
 	</properties>
 	<scm>
