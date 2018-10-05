@@ -50,17 +50,14 @@ class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseC
         udsDbConnector.close()
       }
     }
-
-
-    logger.info("Proline has been successfully set up !")
   }
-  // create default user Admin
+  // create default admin user
   private def createDefaultAdmin(udsEM: EntityManager) {
     try {
-      val query = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
-      val listUsers = query.getResultList()
-      if (listUsers.isEmpty) {
-        logger.info("Creating default admin user")
+      val defaultAdminQuery = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
+      val defaultAdmin = defaultAdminQuery.getResultList()
+      if (defaultAdmin.isEmpty) {
+        logger.info("Creating default admin user...")
         val udsUser = new UdsUser()
         udsUser.setLogin("admin")
         udsUser.setPasswordHash(sha256Hex("proline"))
@@ -69,10 +66,10 @@ class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseC
         serializedPropertiesMap.put("user_group", UdsUser.UserGroupType.ADMIN.name())
         udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap)
         udsEM.persist(udsUser)
-        logger.info("Default admin user has been created successfully!")
+        if(udsUser.getId > 0L) logger.info("Default admin user has been created successfully!")
       }
     } catch {
-      case t: Throwable => logger.error("error while trying to create default admin user", t)
+      case t: Throwable => logger.error("Error while trying to create default admin user ", t.getMessage)
     }
   }
 

@@ -45,7 +45,8 @@ class DeleteObsoleteDbs(
           isSuccess = true
         } catch {
           case t: Throwable => {
-            logger.error("Error while trying to obsolete databases: ", t.printStackTrace())
+            isSuccess = false
+            logger.error("Error while trying to drop obsolete databases: ", t.printStackTrace())
           }
         }
       }
@@ -72,12 +73,12 @@ object DeleteObsoleteDbs extends LazyLogging {
       val deleteObsoleteDbs = new DeleteObsoleteDbs(dsConnectorFactory)
       deleteObsoleteDbs.run()
       isSuccess = deleteObsoleteDbs.isSuccess
-      logger.info("Deleting obsolete proline databases have been finished successfully!")
     } catch {
       case t: Throwable => {
-        logger.error("Deleting obsolete proline databases have been failed: ", t.printStackTrace())
+        logger.error("Deleting obsolete proline databases have been failed!", t.printStackTrace())
       }
     }
+    if (isSuccess) logger.info("Deleting obsolete proline databases have been finished successfully!")
     isSuccess
   }
 }
@@ -103,20 +104,20 @@ object DbsVersionChecker extends LazyLogging {
             val udsEM = udsDbCtx.getEntityManager
             val udsDbVersionOpt = Try(Some(udsDbVersion.toDouble)).getOrElse(None)
             val isUdsDbUpdated = udsDbVersionOpt.isDefined && udsDbVersionOpt.get >= 0.8
-            require(isUdsDbUpdated, "uds database is not upgraded! Please upgrade your databases before to delete obsolete databases!")
+            require(isUdsDbUpdated, "UDS database is not upgraded! Please upgrade your databases before to delete obsolete databases!")
 
             //Check that all MSI Dbs are upgraded and their versions are above 1.0
             val udsExternalDbClass = classOf[ExternalDb]
             val externalDbsMsiQuery = udsEM.createNamedQuery("findExternalDbByType", udsExternalDbClass).setParameter("type", ProlineDatabaseType.MSI).getResultList()
             val externalDbMsiVersionOpt = externalDbsMsiQuery.asScala.toList.map { extDb => Try(Some(extDb.getDbVersion.toDouble)).getOrElse(None) }
-            val isAllMsiDbsUpdated = externalDbMsiVersionOpt.forall { extDbVersion => extDbVersion.isDefined && extDbVersion.get >= 0.9 }
+            val isAllMsiDbsUpdated = externalDbMsiVersionOpt.forall { extDbVersion => extDbVersion.isDefined && extDbVersion.get >= 0.10 }
 
             //Check that all LCMS Dbs are upgraded and their versions are above 0.7
             val externalDbsLcmsQuery = udsEM.createNamedQuery("findExternalDbByType", udsExternalDbClass).setParameter("type", ProlineDatabaseType.LCMS).getResultList()
-            val externalDbsLcmsVersionOpt = externalDbsMsiQuery.asScala.toList.map { extDb => Try(Some(extDb.getDbVersion.toDouble)).getOrElse(None) }
+            val externalDbsLcmsVersionOpt = externalDbsLcmsQuery.asScala.toList.map { extDb => Try(Some(extDb.getDbVersion.toDouble)).getOrElse(None) }
             val isAllLcmsDbsUpdated = externalDbsLcmsVersionOpt.forall { extDbVersion => extDbVersion.isDefined && extDbVersion.get >= 0.7 }
 
-            require(isAllMsiDbsUpdated && isAllLcmsDbsUpdated, "msi and lcms databases are not upgraded! Please upgrade your databases before to delete obsolete databases!")
+            require(isAllMsiDbsUpdated && isAllLcmsDbsUpdated, "MSI and LCMS databases are not upgraded! Please upgrade your databases before to delete obsolete databases!")
             isDbsUpgraded = Seq(isUdsDbUpdated, isAllMsiDbsUpdated, isAllLcmsDbsUpdated).forall(_.==(true))
           }
         } else {
