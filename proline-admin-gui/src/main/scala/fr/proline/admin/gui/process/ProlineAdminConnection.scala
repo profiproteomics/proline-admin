@@ -115,11 +115,6 @@ object ProlineAdminConnection extends LazyLogging {
         _isConfigValid = true
 
       } catch {
-
-        case fxt: IllegalStateException => {
-          if (verbose) logger.warn(fxt.getLocalizedMessage()) //useful?
-        }
-
         case t: Throwable => {
           synchronized {
             logger.warn("Can't load Proline configuration: ", t)
@@ -129,6 +124,7 @@ object ProlineAdminConnection extends LazyLogging {
 
             println(s"[ $actionString : finished with <b>error</b> ]")
           }
+          _isConfigValid = false
         }
       }
     }
