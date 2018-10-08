@@ -45,7 +45,7 @@ object UpgradeDatabases extends LazyLogging {
               isCompleted = true
             }
             case Failure(t) => {
-              logger.error("--- Error occured while trying to upgrade Proline databases : ", t.getMessage())
+              logger.error("Error occured while trying to upgrade Proline databases : ", t.getMessage())
             }
           }
           isCompleted
