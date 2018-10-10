@@ -26,9 +26,9 @@ object PostgresConfigOptimizer {
   val sharedBuffersOptimizedValue = math.min( physicalMemorySize / 4, 4 GB)
   val sharedBuffersMaxValue = physicalMemorySize / 2
   
-  val checkpointSegmentsOptimizedValue = sharedBuffersOptimizedValue / (16 MB)
+  //val checkpointSegmentsOptimizedValue = sharedBuffersOptimizedValue / (16 MB)
   //val checkpointSegmentsOptimizedValue = sharedBuffersOptimizedValue / 16
-  val checkpointSegmentsMaxValue = 2 * checkpointSegmentsOptimizedValue
+  //val checkpointSegmentsMaxValue = 2 * checkpointSegmentsOptimizedValue
   
   val tempBuffersOptimizedValue = physicalMemorySize / 32
   val tempBuffersMaxValue = tempBuffersOptimizedValue * 4
