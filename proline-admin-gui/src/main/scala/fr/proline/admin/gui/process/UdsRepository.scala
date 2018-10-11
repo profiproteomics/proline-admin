@@ -109,31 +109,26 @@ object UdsRepository extends LazyLogging {
    *  Test connection with database
    */
   def isUdsDbReachable(verbose: Boolean = true): Boolean = {
-
     val udsDbConnector = getUdsDbConnector()
-
     var udsDbCtx: DatabaseConnectionContext = null //especially created for SQLite test, needs to be closed in this method
-
+    var isSetup = false
     try {
-
       /** Check to retrieve DB connection */
       logger.debug("Checking connection to UDSdb. Please wait ...")
-
       udsDbConnector.getDataSource().getConnection()
-
-      /** Additionnal check for file-based databases (SQLite) */
-      udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
-      udsDbCtx.getEntityManager().find(classOf[ExternalDb], 1L)
-      logger.debug("INFO - Proline is already set up !")
-      true
+      val catalogsRs = udsDbConnector.getDataSource().getConnection().getMetaData().getCatalogs()
+      while (catalogsRs.next()) {
+        if (catalogsRs.getString(1) == "uds_db")
+          isSetup = true
+      }
     } catch {
       case t: Throwable => {
-        System.err.println("WARN - Proline is not set up !")
-        false
+        logger.debug("Error while trying to check UDSDb")
       }
     } finally {
       if (udsDbCtx != null) udsDbCtx.close()
     }
+    isSetup
   }
   /**
    *  Get the exhaustive list of UserAccount instances in database as a map of type "login ->  id"
@@ -185,7 +180,7 @@ object UdsRepository extends LazyLogging {
     }
     projects
   }
-  
+
   /**
    *  @return An array of external_db
    *

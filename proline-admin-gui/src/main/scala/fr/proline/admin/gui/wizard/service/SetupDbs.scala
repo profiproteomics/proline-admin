@@ -25,14 +25,13 @@ class SetupDbs(stage: Stage) extends Service(new jfxc.Service[Boolean]() {
     protected def call(): Boolean =
       {
         if (ProlineAdminConnection.loadProlineInstallConfig(Wizard.adminConfPath, verbose = false)) {
-          var isUpToDate = false
-          var isSetup = UdsRepository.isUdsDbReachable(false)
-          if (!isSetup) {
+          val isUdsReachable = UdsRepository.isUdsDbReachable(false)
+          isCompleted = if (isUdsReachable == false) {
             //setup
-            isSetup = try {
-              logger.info("INFO - Start to set up proline Databases...")
+            val isSetup = try {
+              logger.info("Start to set up proline Databases...")
               synchronized {
-                new SetupProline(SetupProline.getUpdatedConfig()).run()
+                new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run()
                 true
               }
             } catch {
@@ -40,22 +39,20 @@ class SetupDbs(stage: Stage) extends Service(new jfxc.Service[Boolean]() {
                 logger.error("Error while trying to setup Proline databases", t.getMessage)
                 false
             }
-          }
-          //upgrade 
-          if (isSetup) {
-            isUpToDate = try {
-              logger.info("INFO - Start to upgrade proline Databases...")
-              synchronized {
-                new UpgradeAllDatabases(UdsRepository.getDataStoreConnFactory()).doWork()
-              }
+            isSetup
+          } else {
+            val isUpToDate = try {
+              logger.info("Start to upgrade proline Databases...")
+              new UpgradeAllDatabases(UdsRepository.getDataStoreConnFactory()).doWork()
+              logger.info("All Databases successfully upgraded !")
               true
             } catch {
               case t: Throwable =>
-                logger.error("Error while trying to setup Proline databases", t.getMessage)
+                logger.error("Error while trying to upgrade Proline databases", t.getMessage)
                 false
             }
+            isUpToDate
           }
-          isCompleted = isSetup && isUpToDate
         }
         isCompleted
       }

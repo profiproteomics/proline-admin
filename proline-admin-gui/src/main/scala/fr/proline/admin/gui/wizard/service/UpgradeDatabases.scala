@@ -28,25 +28,18 @@ object UpgradeDatabases extends LazyLogging {
     protected def createTask(): jfxc.Task[Boolean] = new jfxc.Task[Boolean] {
       protected def call(): Boolean =
         {
-          val upgradeDbs = Try {
-            ProlineAdminConnection.loadProlineInstallConfig(Monitor.adminConfPath, verbose = false)
-          } flatMap
-            { udsDbConfig =>
-              Try {
-                val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
-                synchronized {
-                  new UpgradeAllDatabases(dsConnectorFactory).doWork()
-                }
+          val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
+          /* Logback */
+          try {
+            new UpgradeAllDatabases(dsConnectorFactory).doWork()
+            logger.info("All Databases successfully upgraded !")
+            isCompleted = true
+          } catch {
+            case e: Exception =>
+              {
+                logger.error("All Databases upgrade failed", e)
               }
-            }
-          upgradeDbs match {
-            case Success(s) => {
-              logger.info("Upgrading Proline databases has been finished successfully.")
-              isCompleted = true
-            }
-            case Failure(t) => {
-              logger.error("Error occured while trying to upgrade Proline databases : ", t.getMessage())
-            }
+              isCompleted = false
           }
           isCompleted
         }
@@ -60,7 +53,6 @@ object UpgradeDatabases extends LazyLogging {
         MainPanel.disable = false
         MonitorBottomsPanel.exitButton.disable = false
         MonitorBottomsPanel.progressBarPanel.visible = false
-
         Monitor.stage.getScene().setCursor(Cursor.DEFAULT)
         if (isCompleted) {
           HelpPopup("Upgrade databases", s"All databases have been upgraded successfully.\n" +
