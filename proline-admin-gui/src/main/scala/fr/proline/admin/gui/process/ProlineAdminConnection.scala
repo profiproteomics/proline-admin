@@ -107,7 +107,7 @@ object ProlineAdminConnection extends LazyLogging {
         //Test connection to database
         val adminConfigOpt = new AdminConfigFile(confPath).read()
         require(adminConfigOpt.isDefined, "Can't load new admin config: undefined.")
-        val connectionEstablished = DatabaseConnection.testDbConnection(adminConfigOpt.get, showSuccessPopup = false, showFailurePopup = true)
+        val connectionEstablished = DatabaseConnection.testDbConnection(adminConfigOpt.get, showSuccessPopup = false, showFailurePopup = false)
         require(connectionEstablished, "Can't load new admin config: database is unreachable.")
 
         logger.info(s"Action '$actionString' finished with success.")

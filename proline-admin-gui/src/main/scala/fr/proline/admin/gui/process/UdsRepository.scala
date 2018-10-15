@@ -116,23 +116,19 @@ object UdsRepository extends LazyLogging {
     var isSetup = false
     try {
       /** Check to retrieve DB connection */
-      logger.info("Checking if UDSDb is set up. Please wait...")
       logger.debug("Redirecting Output Error Stream from the Standard Out Stream.")
       var ps = new PrintStream(stream)
       System.setErr(ps)
       udsDbConnector.getDataSource().getConnection()
-      val catalogsRs = udsDbConnector.getDataSource().getConnection().getMetaData().getCatalogs()
-      while (catalogsRs.next()) {
-        if (catalogsRs.getString(1) == "uds_db")
-          isSetup = true
-      }
-      isSetup
+      /** Additionnal check for file-based databases (SQLite) */
+      udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
+      isSetup = udsDbCtx.getEntityManager().find(classOf[ExternalDb], 1L) != null
     } catch {
       case t: Throwable => {
         logger.error("Error while trying to check if UDSDb is set up!")
       }
     } finally {
-      logger.debug("Reset the default seeting for Output Error Stream.")
+      logger.debug("Reset the default setting for Output Error Stream.")
       stream.reset()
       System.setErr(System.out)
       logger.debug("close udsDb Context.")

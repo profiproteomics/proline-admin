@@ -90,11 +90,11 @@ class Monitor extends Application with LazyLogging {
     Monitor.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Monitor.stage.scene.value.getStylesheets.add("/css/Style.css")
     Monitor.stage.show()
-    /* initial configurations */
+    /* load initial configurations */
     try {
-      ProlineAdminConnection._setNewProlineConfigs(Monitor.adminConfPath)
+      ProlineAdminConnection.loadProlineInstallConfig(Monitor.adminConfPath)
     } catch {
-      case t: Throwable => logger.error("Error while trying to get Proline-admin initial configurations.", t.getMessage)
+      case t: Throwable => logger.error("Error while trying to load initial configurations", t.getMessage)
     }
   }
 

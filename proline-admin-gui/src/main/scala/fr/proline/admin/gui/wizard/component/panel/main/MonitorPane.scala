@@ -30,12 +30,11 @@ import java.io.File
 
 object MonitorPane extends VBox with LazyLogging {
 
-  // get Proline-Admin initial settings  
+  // get Proline-Admin GUI initial settings  
   val adminConfigOpt = getAdminConfigOpt()
   require(adminConfigOpt.isDefined, "Proline Admin-config must not be empty or null.")
   val adminConfig = adminConfigOpt.get
   val nodeConfigOpt = getNodeConfigOpt()
-
   // proline error and warning labels 
   val adminConfigErrorLabel = new Label {
     text = "The Proline-Admin configuration file not found. Make sure that you have already setup Proline."
