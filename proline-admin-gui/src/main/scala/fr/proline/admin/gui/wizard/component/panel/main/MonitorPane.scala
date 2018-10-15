@@ -298,14 +298,15 @@ object MonitorPane extends VBox with LazyLogging {
     case adminConfigValue @ AdminConfig(filePath, serverConfigFilePath, pwx, pgsqlDataDir, seqRepoConfigFilePath, _, _, _, _, _, _) => {
       logger.debug("Checking Proline initial configuartions. Please wait ...")
       println("INFO - Checking Proline initial configuartions. Please wait ...")
-      udsDbErrorLabel.visible = !UdsRepository.isUdsDbReachable()
-      var isConnectionEstablished = DatabaseConnection.testDbConnection(adminConfigValue, showSuccessPopup = false, showFailurePopup = false)
+      val isUdsDbReachable = UdsRepository.isUdsDbReachable()
+      udsDbErrorLabel.visible = !isUdsDbReachable
+      val isConnectionEstablished = DatabaseConnection.testDbConnection(adminConfigValue, showSuccessPopup = false, showFailurePopup = false)
       connectionErrorLabel.visible = !isConnectionEstablished
       adminConfigErrorLabel.visible = !(new File(filePath).exists)
       serverConfigWarningLabel.visible = !serverConfigFilePath.isDefined || !(new File(serverConfigFilePath.get).exists)
       pgsqlDataDirWarningLabel.visible = !pgsqlDataDir.isDefined || !(new File(pgsqlDataDir.get).exists)
       seqReposWarningLabel.visible = !seqRepoConfigFilePath.isDefined || !(new File(seqRepoConfigFilePath.get).exists)
-      Seq(UdsRepository.isUdsDbReachable(),
+      Seq(isUdsDbReachable,
         isConnectionEstablished,
         (new File(filePath).exists))
     }

@@ -125,9 +125,7 @@ object UdsRepository extends LazyLogging {
       udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
       isSetup = udsDbCtx.getEntityManager().find(classOf[UserAccount], 1L) != null
     } catch {
-      case t: Throwable => {
-        logger.error("Error while trying to check if UDSDb is set up!")
-      }
+      case t: Throwable => logger.error("Error while trying to check if UDSDb is set up!")
     } finally {
       logger.debug("Reset the default setting for Output Error Stream.")
       stream.reset()
