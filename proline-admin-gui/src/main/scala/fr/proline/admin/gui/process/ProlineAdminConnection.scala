@@ -136,7 +136,7 @@ object ProlineAdminConnection extends LazyLogging {
    *  file changes
    */
 
-  private def _setNewProlineInstallConfig(confPath: String) {
+   def _setNewProlineInstallConfig(confPath: String) {
 
     /** Reload CONF file */
     val newConfigFile = ConfigFactory.parseFile(new File(confPath))

@@ -70,6 +70,7 @@ class Monitor extends Application with LazyLogging {
     /* Usual case : default conf file exists */
     require(new File(_appConfPath).exists(), "The configuration file application.conf does not exists!")
     Monitor.adminConfPath = _appConfPath
+
   }
 
   def start(stage: javafx.stage.Stage): Unit = {
@@ -85,17 +86,12 @@ class Monitor extends Application with LazyLogging {
       scene = new Scene(Monitor.root)
       title = s"${Module.name} ${Module.version}"
     }
-
     /* Build and show stage */
     Monitor.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Monitor.stage.scene.value.getStylesheets.add("/css/Style.css")
     Monitor.stage.show()
     /* load initial configurations */
-    try {
-      ProlineAdminConnection.loadProlineInstallConfig(Monitor.adminConfPath)
-    } catch {
-      case t: Throwable => logger.error("Error while trying to load initial configurations", t.getMessage)
-    }
+
   }
 
   /** Close UDSdb context on application close **/
