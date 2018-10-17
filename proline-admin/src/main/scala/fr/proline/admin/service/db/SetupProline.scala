@@ -51,7 +51,7 @@ class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseC
       }
     }
   }
-  // create default admin user
+  /** create default admin user */
   private def createDefaultAdmin(udsEM: EntityManager) {
     try {
       val defaultAdminQuery = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
