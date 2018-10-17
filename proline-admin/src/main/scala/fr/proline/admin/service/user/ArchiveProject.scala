@@ -298,10 +298,10 @@ class ArchiveProject(
     createFiles(archiveDirPath, binDirPath, msiDb, lcmsDb).flatMap {
       case (pgDumpPath, msiBackUpFile, lcmsBackUpFile) => Try {
         logger.info("Start to pg_dump database # " + msiDb)
-        var cmd = Seq(pgDumpPath, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", msiBackUpFile.getPath(), msiDb)
+        var cmd = Seq(pgDumpPath, "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", msiBackUpFile.getPath(), msiDb)
         val dumpMsiExitCode = execute(cmd)
         logger.info("Start to pg_dump database # " + lcmsDb)
-        cmd = Seq(pgDumpPath, "-i", "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", lcmsBackUpFile.getPath(), lcmsDb)
+        cmd = Seq(pgDumpPath,"-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", lcmsBackUpFile.getPath(), lcmsDb)
         val dumpLcmsExitCode = execute(cmd)
         Seq(dumpMsiExitCode,
           dumpLcmsExitCode).forall(_ == 0)
