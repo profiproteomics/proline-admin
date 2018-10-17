@@ -127,8 +127,8 @@ class UpgradeAllDatabases(
         serializedPropertiesMap.put("user_group", UdsUser.UserGroupType.ADMIN.name())
         udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap)
         udsEM.persist(udsUser)
-        if (udsUser.getId > 0L) logger.info("Default admin user has been created successfully!")
         udsTx.commit()
+        if (udsUser.getId > 0L) logger.info("Default admin user has been created successfully!")
       }
     } catch {
       case t: Throwable => logger.error("Error while trying to create default admin user ", t.getMessage)
