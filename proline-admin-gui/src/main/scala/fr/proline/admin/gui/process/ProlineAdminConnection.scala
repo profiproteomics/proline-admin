@@ -46,12 +46,12 @@ object ProlineAdminConnection extends LazyLogging {
     //BLOCKING! otherwise update config before (conf file changes || user's choice) (are||is) effective
     //FIXME: freezing
 
-    val actionString = "<b>>> Loading Proline configuration...</b>"
+    val actionString = "INFO - Loading Proline configuration..."
     var _isConfigValid = false
 
     synchronized {
       Main.stage.scene().setCursor(Cursor.WAIT)
-      println("<br>" + actionString)
+      println("" + actionString)
       try {
         // Parse configuration
         this._setNewProlineConfig()
@@ -63,7 +63,7 @@ object ProlineAdminConnection extends LazyLogging {
         require(connectionEstablished, "Can't load new admin config: database is unreachable.")
 
         logger.info(s"Action '$actionString' finished with success.")
-        if (verbose) println(s"""<br/>[ $actionString : <b>success</b> ]""")
+        if (verbose) println(s""" $actionString : success """)
         _isConfigValid = true
 
       } catch {
@@ -74,14 +74,11 @@ object ProlineAdminConnection extends LazyLogging {
 
         case t: Throwable => {
           synchronized {
-
             logger.warn("Can't load Proline configuration: ", t)
-
             // Note: Logs are redirected => we thus print the error to be sure it is displayed in the console
             System.err.println("ERROR - Can't load Proline configuration :")
             if (verbose) System.err.println(t.getMessage())
-
-            println(s"[ $actionString : finished with <b>error</b> ]")
+            println(s"INFO - $actionString : finished withberror")
           }
           // if re-thrown, system stops
         }
@@ -97,10 +94,10 @@ object ProlineAdminConnection extends LazyLogging {
 
   def loadProlineInstallConfig(confPath: String, verbose: Boolean = false): Boolean = {
 
-    val actionString = "<b>>> Loading Proline configuration...</b>"
+    val actionString = "INFO - Loading Proline configuration..."
     var _isConfigValid = false
     synchronized {
-      println("<br>" + actionString)
+      println(actionString)
       try {
         // Parse configuration
         this._setNewProlineInstallConfig(confPath)
@@ -109,9 +106,7 @@ object ProlineAdminConnection extends LazyLogging {
         require(adminConfigOpt.isDefined, "Can't load new admin config: undefined.")
         val connectionEstablished = DatabaseConnection.testDbConnection(adminConfigOpt.get, showSuccessPopup = false, showFailurePopup = false)
         require(connectionEstablished, "Can't load new admin config: database is unreachable.")
-
-        logger.info(s"Action '$actionString' finished with success.")
-        if (verbose) println(s"""<br/>[ $actionString : <b>success</b> ]""")
+        logger.info(s"INFO - Action '$actionString' finished with success.")
         _isConfigValid = true
 
       } catch {
@@ -122,7 +117,7 @@ object ProlineAdminConnection extends LazyLogging {
             System.err.println("ERROR - Can't load Proline configuration :")
             if (verbose) System.err.println(t.getMessage())
 
-            println(s"[ $actionString : finished with <b>error</b> ]")
+            println(s"INFO - $actionString : finished with error")
           }
           _isConfigValid = false
         }
@@ -136,7 +131,7 @@ object ProlineAdminConnection extends LazyLogging {
    *  file changes
    */
 
-   def _setNewProlineInstallConfig(confPath: String) {
+  def _setNewProlineInstallConfig(confPath: String) {
 
     /** Reload CONF file */
     val newConfigFile = ConfigFactory.parseFile(new File(confPath))

@@ -46,7 +46,7 @@ object MonitorPane extends VBox with LazyLogging {
     managed <== visible
   }
   val udsDbErrorLabel = new Label {
-    text = "Error can not reach UDS database. Make sure that you have already installed initial Proline database."
+    text = "Error can not reach UDS database. Make sure that you have already setup Proline."
     graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
     style = TextStyle.RED_ITALIC
     managed <== visible
@@ -296,8 +296,8 @@ object MonitorPane extends VBox with LazyLogging {
   /** check Proline-Admin configurations and show warning and error labels */
   def isAdminConfigsOk(adminConfig: AdminConfig): Seq[Boolean] = adminConfig match {
     case adminConfigValue @ AdminConfig(filePath, serverConfigFilePath, pwx, pgsqlDataDir, seqRepoConfigFilePath, _, _, _, _, _, _) => {
-      logger.debug("Checking Proline initial configuartions. Please wait ...")
-      println("INFO - Checking Proline initial configuartions. Please wait ...")
+      logger.debug("Loading and checking Proline configurations. Please wait ...")
+      System.out.println("INFO - Loading and checking Proline configurations. Please wait ...")
       val isUdsDbReachable = UdsRepository.isUdsDbReachable()
       udsDbErrorLabel.visible = !isUdsDbReachable
       val isConnectionEstablished = DatabaseConnection.testDbConnection(adminConfigValue, showSuccessPopup = false, showFailurePopup = false)

@@ -19,42 +19,40 @@ import com.typesafe.scalalogging.LazyLogging
  *
  */
 
-class SetupDbs(stage: Stage) extends Service(new jfxc.Service[Boolean]() {
-  var isCompleted = false
-  protected def createTask(): jfxc.Task[Boolean] = new jfxc.Task[Boolean] with LazyLogging {
-    protected def call(): Boolean =
+class SetupDbs(stage: Stage) extends Service(new jfxc.Service[TaskState]() {
+  protected def createTask(): jfxc.Task[TaskState] = new jfxc.Task[TaskState] with LazyLogging {
+    protected def call(): TaskState =
       {
-        if (ProlineAdminConnection.loadProlineInstallConfig(Wizard.adminConfPath, verbose = false)) {
-          val isUdsReachable = UdsRepository.isUdsDbReachable(false)
-          isCompleted = if (isUdsReachable == false) {
-            //setup
-            val isSetup = try {
-              logger.info("Start to set up proline Databases...")
-              synchronized {
-                new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run()
-                true
-              }
-            } catch {
-              case t: Throwable =>
-                logger.error("Error while trying to setup Proline databases", t.getMessage)
-                false
+        ProlineAdminConnection.loadProlineInstallConfig(Wizard.adminConfPath, verbose = false)
+        val isUdsReachable = UdsRepository.isUdsDbReachable(false)
+        val setupUpgradeDbsTaskState = if (!isUdsReachable) {
+          //setup
+          val setUpTaskState = try {
+            logger.info("Start to set up Proline databases. Please wait...")
+            synchronized {
+              new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run()
+              TaskState(true, "Proline has been successfully setup!")
             }
-            isSetup
-          } else {
-            val isUpToDate = try {
-              logger.info("Start to upgrade proline Databases...")
-              new UpgradeAllDatabases(UdsRepository.getDataStoreConnFactory()).doWork()
-              logger.info("All Databases successfully upgraded !")
-              true
-            } catch {
-              case t: Throwable =>
-                logger.error("Error while trying to upgrade Proline databases", t.getMessage)
-                false
-            }
-            isUpToDate
+          } catch {
+            case e: Exception =>
+              logger.error("Error while trying to set up Proline!", e.getMessage)
+              TaskState(false, s"Error while trying to set up Proline:\n ${e.getMessage()}")
           }
+          setUpTaskState
+        } else {
+          val upgradeDbsTaskState = try {
+            logger.info("Start to upgrade all Proline databases. Please wait...")
+            new UpgradeAllDatabases(UdsRepository.getDataStoreConnFactory()).doWork()
+            TaskState(true, "All Proline databases have been upgraded successfully!")
+          } catch {
+            case e: Exception =>
+              logger.error("Error while trying to upgrade Proline databases", e.getMessage)
+              TaskState(false, s"Error while trying to upgrade Proline databases:\n ${e.getMessage()}")
+          }
+          upgradeDbsTaskState
         }
-        isCompleted
+
+        setupUpgradeDbsTaskState
       }
     override def running(): Unit = {
       InstallNavButtons.progressPanel.visible_=(true)
@@ -73,13 +71,11 @@ class SetupDbs(stage: Stage) extends Service(new jfxc.Service[Boolean]() {
 
       Wizard.configItemsPanel.disable = false
       Wizard.stage.getScene().setCursor(Cursor.DEFAULT)
-      if (isCompleted) {
-        HelpPopup("Setup Proline", s"Proline has been setup successfully.\n" +
-          "See proline_admin_gui_log for more details.", Some(stage), false)
-      } else {
-        HelpPopup("Setup Proline", s"Error while trying to setup Proline.\n" +
-          "See proline_admin_gui_log for more details.", Some(stage), false)
+      val message = this.get.isSucceeded match {
+        case true => s"${this.get.message}"
+        case _ => s"${this.get.message}\nSee proline_admin_gui_log for more details."
       }
+      HelpPopup("Setup Proline", message, Some(stage), false)
     }
   }
 })

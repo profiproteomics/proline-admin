@@ -23,25 +23,24 @@ import fr.proline.admin.gui.wizard.monitor.component.MainPanel
  */
 
 object UpgradeDatabases extends LazyLogging {
-  object Worker extends Service(new jfxc.Service[Boolean]() {
-    var isCompleted = false
-    protected def createTask(): jfxc.Task[Boolean] = new jfxc.Task[Boolean] {
-      protected def call(): Boolean =
+  object Worker extends Service(new jfxc.Service[TaskState]() {
+    protected def createTask(): jfxc.Task[TaskState] = new jfxc.Task[TaskState] {
+      protected def call(): TaskState =
         {
-          val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
-          /* Logback */
-          try {
-            new UpgradeAllDatabases(dsConnectorFactory).doWork()
-            logger.info("All Databases successfully upgraded !")
-            isCompleted = true
+          val taskState = try {
+            logger.info("Start to upgrade all Proline databases. Please wait...")
+            val upgradeProlineDbs = new UpgradeAllDatabases(UdsRepository.getDataStoreConnFactory())
+            upgradeProlineDbs.doWork()
+            logger.info("All Proline databases have been upgraded successfully!.")
+            TaskState(true, "All Proline databases have been upgraded successfully!")
           } catch {
             case e: Exception =>
               {
-                logger.error("All Databases upgrade failed", e)
+                logger.error("Error while trying to upgrade Proline databases!", e.getMessage())
+                TaskState(false, s"Error while trying to upgrade Proline databases:\n ${e.getMessage()}")
               }
-              isCompleted = false
           }
-          isCompleted
+          taskState
         }
       override def running(): Unit = {
         MainPanel.disable = true
@@ -54,13 +53,11 @@ object UpgradeDatabases extends LazyLogging {
         MonitorBottomsPanel.exitButton.disable = false
         MonitorBottomsPanel.progressBarPanel.visible = false
         Monitor.stage.getScene().setCursor(Cursor.DEFAULT)
-        if (isCompleted) {
-          HelpPopup("Upgrade databases", s"All databases have been upgraded successfully.\n" +
-            "See proline_admin_gui_log for more details.", Some(Monitor.stage), false)
-        } else {
-          HelpPopup("Upgrade databases", s"Error while trying to upgrade all databases.\n" +
-            "See proline_admin_gui_log for more details.", Some(Monitor.stage), false)
+        val message = this.get.isSucceeded match {
+          case true => s"${this.get.message}\nSee proline_admin_gui_log for more details."
+          case _ => s"${this.get.message}\nSee proline_admin_gui_log for more details."
         }
+        HelpPopup("Upgrade databases", message, Some(Monitor.stage), false)
       }
     }
   })

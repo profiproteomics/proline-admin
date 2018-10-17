@@ -117,6 +117,7 @@ object UdsRepository extends LazyLogging {
     try {
       /** Check to retrieve DB connection */
       logger.debug("Checking if UDS database is reachable. Please wait ...")
+      System.out.println("INFO - Checking if UDS database is reachable. Please wait ...")
       logger.debug("Redirecting Output Error Stream from the Standard Out Stream.")
       var ps = new PrintStream(stream)
       System.setErr(ps)
