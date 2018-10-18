@@ -109,7 +109,8 @@ class RestoreProject(
             }
             udsProject.setDescription((jsValuesMap("project").as[JsObject] \ "description").as[String])
             udsProject.setCreationTimestamp(java.sql.Timestamp.valueOf((jsValuesMap("project").as[JsObject] \ "creation_timestamp").as[String]))
-            udsProject.setSerializedProperties((jsValuesMap("project").as[JsObject] \ "serialized_properties").as[String])
+            if (isValidatedProperty((jsValuesMap("project").as[JsObject] \ "serialized_properties").asOpt[String])) 
+              udsProject.setSerializedProperties((jsValuesMap("project").as[JsObject] \ "serialized_properties").asOpt[String].get)
             udsEM.persist(udsProject)
             newProjectId = udsProject.getId()
             val properties = udsProject.getSerializedProperties()
@@ -402,9 +403,9 @@ class RestoreProject(
     Try {
       val projectPath = new File(archivedProjectDirPath)
       val pgRestorePath = new File(binDirPath + File.separator + "pg_restore").getCanonicalPath()
-      var cmd = Seq(pgRestorePath, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "msi_db_project_" + newProjectId, "-v", projectPath + File.separator + "msi_db_project_" + projectId + ".bak")
+      var cmd = Seq(pgRestorePath, "-h", host, "-p", port.toString, "-U", user, "-d", "msi_db_project_" + newProjectId, "-v", projectPath + File.separator + "msi_db_project_" + projectId + ".bak")
       val restoreMsiExitCode = execute(cmd)
-      cmd = Seq(pgRestorePath, "-i", "-h", host, "-p", port.toString, "-U", user, "-d", "lcms_db_project_" + newProjectId, "-v", projectPath + File.separator + "lcms_db_project_" + projectId + ".bak")
+      cmd = Seq(pgRestorePath, "-h", host, "-p", port.toString, "-U", user, "-d", "lcms_db_project_" + newProjectId, "-v", projectPath + File.separator + "lcms_db_project_" + projectId + ".bak")
       val restoreLcmsExitCode = execute(cmd)
       Seq(restoreMsiExitCode, restoreLcmsExitCode).forall(_.==(0))
     }
