@@ -57,6 +57,7 @@ class RestoreProject(
     var isUdsTxOk: Boolean = false
     var isCreationDbsOk: Boolean = false
     try {
+      logger.debug("Check the input parameters of restore_project.")
       /* 1.0- Check the input parameters */
       val projFilesAsMap = getProjectFilesAsMap(archivedProjDirPath)
       require(isDefinedBinDir(binDirPath).isDefined && isReadableArchiveProjDir(archivedProjDirPath), s"Invalid parameters. Make sure that the bin directory has pg_restore.exe file and you are allowed to read from the project directory.")
@@ -66,6 +67,7 @@ class RestoreProject(
         localUdsTransaction = udsEM.getTransaction()
         localUdsTransaction.begin()
       }
+      logger.debug("restore a project for an existing owner.")
       /* 1.1- Restore the project for an existing user */
       val userOpt = Option(udsEM.find(classOf[UserAccount], ownerId))
       require(userOpt.isDefined, s"Undefined user with id= #$ownerId. Please restore the project with an existing user account.")
@@ -73,7 +75,7 @@ class RestoreProject(
       projectName.foreach { name =>
         require(isDefinedProject(udsEM, ownerId, name), s"The project name= #$name already defined for the owner with id= #$ownerId. Please rename your project.")
       }
-
+      logger.debug("restore a project for an existing owner.")
       /* 2.0- Read project_properties file and get Json object in a Map */
       val projPropFile = projFilesAsMap("projPropFile").get
       val jsValuesMap = readJsonFile(projPropFile.getAbsolutePath)
@@ -109,14 +111,14 @@ class RestoreProject(
             }
             udsProject.setDescription((jsValuesMap("project").as[JsObject] \ "description").as[String])
             udsProject.setCreationTimestamp(java.sql.Timestamp.valueOf((jsValuesMap("project").as[JsObject] \ "creation_timestamp").as[String]))
-            if (isValidatedProperty((jsValuesMap("project").as[JsObject] \ "serialized_properties").asOpt[String])) 
-              udsProject.setSerializedProperties((jsValuesMap("project").as[JsObject] \ "serialized_properties").asOpt[String].get)
+            (jsValuesMap("project").as[JsObject] \ "serialized_properties").asOpt[String].foreach(udsProject.setSerializedProperties(_))
             udsEM.persist(udsProject)
             newProjectId = udsProject.getId()
             val properties = udsProject.getSerializedProperties()
             array = Try { parser.parse(properties).getAsJsonObject() } getOrElse { parser.parse("{}").getAsJsonObject() }
             /* 3.1- load the project properties ... */
             logger.info("Importing project properties from project_properties.json file...")
+            logger.debug("import external_db rows.")
             //import  externalDb data 
             for (externaldb <- jsValuesMap("external_db").as[List[JsObject]]) {
               val udsExternalDb = new ExternalDb()
@@ -141,6 +143,7 @@ class RestoreProject(
               udsEM.persist(udsExternalDb)
               udsProject.addExternalDatabase(udsExternalDb)
             }
+            logger.debug("import data_set rows.")
             // import dataSet data
             for (dataSet <- jsValuesMap("data_set").as[List[JsObject]]) {
               val aggregation = udsEM.find(classOf[Aggregation], (dataSet \ "aggregation_id").as[Long])
@@ -198,9 +201,11 @@ class RestoreProject(
               }
             }
           }
+
         restoreProjProps match {
           case Success(s) => {
             if (localUdsTransaction != null) {
+              logger.debug("commit transaction and save project properties.")
               localUdsTransaction.commit()
               isUdsTxOk = true
               logger.info("Project properties have been imported successfully.")
@@ -224,7 +229,7 @@ class RestoreProject(
         if (isUdsTxOk) {
           val createDatabases =
             Try {
-              logger.info("Creating msi and lcms databases... ")
+              logger.info(s"Creating msi_db_project_$newProjectId and lcms_db_project_$newProjectId ... ")
               DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
                 ezDBC.execute(s"CREATE DATABASE msi_db_project_$newProjectId")
                 ezDBC.execute(s"CREATE DATABASE lcms_db_project_$newProjectId")
@@ -240,7 +245,7 @@ class RestoreProject(
             }
           /* 5.0- execute pg restore commands to back up databases */
           if (isCreationDbsOk) {
-            logger.info("Restoring msi_db_project and lcms_db_project databases ...")
+            logger.info("Execute pg_restore commands to restore msi_db and lcms_db. Please wait ...")
             val isRestoredDatabases = restoreDatabases(JsHost, JsPort, pgUserName, JsMsiDbName, pgUserName, archivedProjDirPath, binDirPath, projectId, newProjectId)
             isRestoredDatabases match {
               case Success(s) => {
@@ -251,7 +256,6 @@ class RestoreProject(
                   udsEM.merge(udsProject)
                 }
                 newProjId = newProjectId
-
                 logger.info(s"The Project with id #$projectId has been restored with a new project id #$newProjectId .")
               }
               case Failure(t) => {
