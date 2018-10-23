@@ -197,6 +197,7 @@ class ArchiveProject(
     var projectUserMapList = new ListBuffer[JsObject]()
     DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
       //data_set
+      logger.info("Start to retrieve data_set rows ...")
       ezDBC.selectAndProcess(s" SELECT id, number, name, description, type, keywords, creation_timestamp, modification_log, child_count, serialized_properties, result_set_id ,result_summary_id, aggregation_id, fractionation_id, quant_method_id, parent_dataset_id, project_id FROM data_set WHERE project_id=$projectId  order by id asc") {
         record =>
           if (record.getLong("id") > 0 && record.getInt("number") >= 0 && record.getString("name") != null && record.getString("type") != null && record.getLong("project_id") > 0) {
@@ -218,6 +219,7 @@ class ArchiveProject(
               "parent_dataset_id" -> record.getLong("parent_dataset_id"))
           }
       }
+      logger.info("Start to retrieve run_identification rows ...")
       //run_identification
       ezDBC.selectAndProcess(s" SELECT id,serialized_properties,run_id,raw_file_identifier FROM run_identification WHERE id in (SELECT id FROM data_set WHERE project_id=$projectId)") { record =>
         if (record.getLong("id") > 0) {
@@ -228,6 +230,7 @@ class ArchiveProject(
             "raw_file_identifier" -> record.getString("raw_file_identifier"))
         }
       }
+      logger.info("Start to retrieve project_user_account_map rows ...")
       //project_user_account_map
       ezDBC.selectAndProcess(s" SELECT project_id,user_account_id,serialized_properties,write_permission FROM project_user_account_map WHERE project_id=$projectId") { record =>
         if ((record.getLong("project_id") > 0) && (record.getLong("user_account_id") > 0) && (record.getString("write_permission") != null)) {
@@ -237,11 +240,13 @@ class ArchiveProject(
             "write_permission" -> record.getBoolean("write_permission"))
         }
       }
+      logger.info("Start to retrieve Proline UDS database version.")
       ezDBC.selectAndProcess("SELECT MAX(version_rank) AS version, MAX(installed_rank) AS rank  FROM schema_version") { record =>
         schemaVersion = Some(Json.obj("version" -> record.getInt("version"),
           "installed_rank" -> record.getInt("rank")))
       }
     }
+    logger.debug("Start to save project properties as Json object.")
     //project properties as Json object 
     val projectPropertiesAsJson = Json.obj(
       "schema_version" -> schemaVersion.get,
@@ -278,6 +283,7 @@ class ArchiveProject(
       "data_set" -> Json.toJson(dataSetList),
       "run_identification" -> Json.toJson(runIdentificationList),
       "project_user_account_map" -> Json.toJson(projectUserMapList))
+    logger.info("Start to write project properties in project_properties file.")
     writeJsonData(projectPropFile, projectPropertiesAsJson)
   }
 
@@ -301,7 +307,7 @@ class ArchiveProject(
         var cmd = Seq(pgDumpPath, "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", msiBackUpFile.getPath(), msiDb)
         val dumpMsiExitCode = execute(cmd)
         logger.info("Start to pg_dump database # " + lcmsDb)
-        cmd = Seq(pgDumpPath,"-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", lcmsBackUpFile.getPath(), lcmsDb)
+        cmd = Seq(pgDumpPath, "-h", host, "-p", port.toString, "-U", user, "-w", "-F", "c", "-b", "-v", "-f", lcmsBackUpFile.getPath(), lcmsDb)
         val dumpLcmsExitCode = execute(cmd)
         Seq(dumpMsiExitCode,
           dumpLcmsExitCode).forall(_ == 0)

@@ -19,7 +19,7 @@ import fr.proline.core.dal.context._
 import fr.proline.repository._
 import fr.proline.core.dal.DoJDBCWork
 import fr.proline.core.dal.DoJDBCReturningWork
-import javax.persistence.{ EntityManager, EntityTransaction, FlushModeType }
+import javax.persistence.{ EntityManager, FlushModeType }
 import scala.util.{ Try, Success, Failure }
 import scala.collection.mutable.Map
 import scala.sys.process.{ Process, ProcessLogger }
@@ -48,227 +48,121 @@ class RestoreProject(
     ownerId: Long,
     binDirPath: String,
     archivedProjDirPath: String,
-    projectName: Option[String]) extends ICommandWork with LazyLogging {
+    projectName: Option[String] = None) extends ICommandWork with LazyLogging {
   var projectId: Long = -1L
   var newProjId: Long = -1L
   def doWork() {
     val udsEM = udsDbCtx.getEntityManager
-    var localUdsTransaction: EntityTransaction = null
-    var isUdsTxOk: Boolean = false
-    var isCreationDbsOk: Boolean = false
-    try {
-      logger.debug("Check the input parameters of restore_project.")
-      /* 1.0- Check the input parameters */
-      val projFilesAsMap = getProjectFilesAsMap(archivedProjDirPath)
-      require(isDefinedBinDir(binDirPath).isDefined && isReadableArchiveProjDir(archivedProjDirPath), s"Invalid parameters. Make sure that the bin directory has pg_restore.exe file and you are allowed to read from the project directory.")
-      require(isDefinedProjectDir(projFilesAsMap), "The project directory must contain the SQL backup files and the project_properties.json file.")
-      udsEM.setFlushMode(FlushModeType.COMMIT)
-      if (!udsDbCtx.isInTransaction) {
-        localUdsTransaction = udsEM.getTransaction()
-        localUdsTransaction.begin()
-      }
-      logger.debug("restore a project for an existing owner.")
-      /* 1.1- Restore the project for an existing user */
-      val userOpt = Option(udsEM.find(classOf[UserAccount], ownerId))
-      require(userOpt.isDefined, s"Undefined user with id= #$ownerId. Please restore the project with an existing user account.")
-      /* 1.2- Rename the project,the new name must not be defined twice for the same owner Id(project_name_owner_idx) */
-      projectName.foreach { name =>
-        require(isDefinedProject(udsEM, ownerId, name), s"The project name= #$name already defined for the owner with id= #$ownerId. Please rename your project.")
-      }
-      logger.debug("restore a project for an existing owner.")
-      /* 2.0- Read project_properties file and get Json object in a Map */
-      val projPropFile = projFilesAsMap("projPropFile").get
-      val jsValuesMap = readJsonFile(projPropFile.getAbsolutePath)
-      require(!jsValuesMap.isEmpty, "The json values must not be empty.")
-      try {
-        logger.info("Start to restore your project. Please wait until the project will be restored...")
-        var parser = new JsonParser()
-        var array: JsonObject = null
-        projectId = (jsValuesMap("project").as[JsObject] \ "id").as[Long]
-        val jsDbVersion = (jsValuesMap("schema_version").as[JsObject] \ "version").as[Int]
-        var JsHost, JsMsiDbName, JsLcmsDbName = ""
-        var JsPort, dbVersion = 0
-        var newProjectId = 0L
-        var udsDataset: Option[Dataset] = None
-        var dataSetIdMap: Map[Long, Dataset] = Map()
-        var dataSetParentIdMap: Map[Dataset, Long] = Map()
-        DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
-          ezDBC.selectAndProcess(s"SELECT MAX(version_rank) AS version FROM schema_version") { record =>
-            dbVersion = record.getInt("version")
-          }
-        }
-        /* 2.1- Check the schema version */
-        require((jsDbVersion == dbVersion) && (jsDbVersion >= 8), "The schema version of the databases are different. Make sure that your databases are updated.")
-        /* 3.0- Get project properties */
-        val udsProject = new Project(userOpt.get)
-        val restoreProjProps =
-          Try {
-            if (projectName.isDefined && !projectName.get.trim.isEmpty) { udsProject.setName(projectName.get) }
-            else {
-              val jsProjectName = (jsValuesMap("project").as[JsObject] \ "name").as[String]
-              require(isDefinedProject(udsEM, ownerId, jsProjectName), s"The project name= #$jsProjectName from json file is already defined for the owner with id= #$ownerId. Please rename your project!")
-              udsProject.setName((jsValuesMap("project").as[JsObject] \ "name").as[String])
-            }
-            udsProject.setDescription((jsValuesMap("project").as[JsObject] \ "description").as[String])
-            udsProject.setCreationTimestamp(java.sql.Timestamp.valueOf((jsValuesMap("project").as[JsObject] \ "creation_timestamp").as[String]))
-            (jsValuesMap("project").as[JsObject] \ "serialized_properties").asOpt[String].foreach(udsProject.setSerializedProperties(_))
-            udsEM.persist(udsProject)
-            newProjectId = udsProject.getId()
-            val properties = udsProject.getSerializedProperties()
-            array = Try { parser.parse(properties).getAsJsonObject() } getOrElse { parser.parse("{}").getAsJsonObject() }
-            /* 3.1- load the project properties ... */
-            logger.info("Importing project properties from project_properties.json file...")
-            logger.debug("import external_db rows.")
-            //import  externalDb data 
-            for (externaldb <- jsValuesMap("external_db").as[List[JsObject]]) {
-              val udsExternalDb = new ExternalDb()
-              if ((externaldb \ "name").as[String] contains "msi_db_project_") {
-                udsExternalDb.setDbName(s"msi_db_project_$newProjectId")
-                JsMsiDbName = (externaldb \ "name").as[String]
-              } else {
-                udsExternalDb.setDbName(s"lcms_db_project_$newProjectId")
-                JsLcmsDbName = (externaldb \ "name").as[String]
-              }
-              udsExternalDb.setDbVersion((externaldb \ "version").as[String])
-              udsExternalDb.setHost((externaldb \ "host").as[String])
-              JsHost = (externaldb \ "host").as[String]
-              udsExternalDb.setPort((externaldb \ "port").as[Int])
-              JsPort = (externaldb \ "port").as[Int]
-              udsExternalDb.setIsBusy((externaldb \ "is_busy").as[Boolean])
-              udsExternalDb.setSerializedProperties((externaldb \ "serialized_properties").as[String])
-              udsExternalDb.setType(ProlineDatabaseType.valueOf((externaldb \ "type").as[String]))
-              udsExternalDb.setConnectionMode(ConnectionMode.valueOf((externaldb \ "connection_mode").as[String]))
-              udsExternalDb.setDriverType(DriverType.POSTGRESQL)
-              udsExternalDb.addProject(udsProject)
-              udsEM.persist(udsExternalDb)
-              udsProject.addExternalDatabase(udsExternalDb)
-            }
-            logger.debug("import data_set rows.")
-            // import dataSet data
-            for (dataSet <- jsValuesMap("data_set").as[List[JsObject]]) {
-              val aggregation = udsEM.find(classOf[Aggregation], (dataSet \ "aggregation_id").as[Long])
-              val fraction = udsEM.find(classOf[Fractionation], (dataSet \ "fractionation_id").as[Long])
-              val quantitationMethod = udsEM.find(classOf[QuantitationMethod], (dataSet \ "quant_method_id").as[Long])
-              if (Dataset.DatasetType.valueOf((dataSet \ "type").as[String]) == Dataset.DatasetType.IDENTIFICATION) {
-                udsDataset = Some(new IdentificationDataset())
-                udsDataset.get.setType(Dataset.DatasetType.IDENTIFICATION)
-              } else {
-                udsDataset = Some(new Dataset(udsProject))
-                udsDataset.get.setType(Dataset.DatasetType.valueOf((dataSet \ "type").as[String]))
-              }
-              udsDataset.get.setChildrenCount((dataSet \ "child_count").as[Int])
-              udsDataset.get.setCreationTimestamp(java.sql.Timestamp.valueOf((dataSet \ "creation_timestamp").as[String]))
-              if (isValidatedProperty((dataSet \ "description").asOpt[String])) {
-                udsDataset.get.setDescription((dataSet \ "description").asOpt[String].get)
-              } else {
-                udsDataset.get.setDescription(null)
-              }
-              if ((dataSet \ "result_set_id").as[Long] > 0) udsDataset.get.setResultSetId((dataSet \ "result_set_id").as[Long]) else udsDataset.get.setResultSetId(null)
-              if ((dataSet \ "result_summary_id").as[Long] > 0) udsDataset.get.setResultSummaryId((dataSet \ "result_summary_id").as[Long]) else udsDataset.get.setResultSummaryId(null)
-              if (isValidatedProperty((dataSet \ "keywords").asOpt[String])) {
-                udsDataset.get.setKeywords((dataSet \ "keywords").asOpt[String].get)
-              } else {
-                udsDataset.get.setKeywords(null)
-              }
-              if (isValidatedProperty((dataSet \ "modification_log").asOpt[String])) {
-                udsDataset.get.setModificationLog((dataSet \ "modification_log").asOpt[String].get)
-              } else {
-                udsDataset.get.setModificationLog(null)
-              }
-              udsDataset.get.setName((dataSet \ "name").as[String])
-              udsDataset.get.setNumber((dataSet \ "number").as[Int])
-              if (isValidatedProperty((dataSet \ "serialized_properties").asOpt[String])) {
-                udsDataset.get.setSerializedProperties((dataSet \ "serialized_properties").asOpt[String].get)
-              } else {
-                udsDataset.get.setSerializedProperties(null)
-              }
-              udsDataset.get.setProject(udsProject)
-              udsDataset.get.setFractionation(fraction)
-              udsDataset.get.setAggregation(aggregation)
-              udsDataset.get.setMethod(quantitationMethod)
-              if ((dataSet \ "parent_dataset_id").as[Long] > 0) {
-                dataSetParentIdMap += (udsDataset.get -> (dataSet \ "parent_dataset_id").as[Long])
-              } else {
-                //udsDatset are trash or root
-                udsDataset.get.setParentDataset(null)
-              }
-              dataSetIdMap += ((dataSet \ "id").as[Long] -> udsDataset.get)
-              udsEM.persist(udsDataset.get)
-            }
-            if (!dataSetParentIdMap.isEmpty) {
-              for ((ds, parentId) <- dataSetParentIdMap) {
-                ds.asInstanceOf[Dataset].setParentDataset(dataSetIdMap.get(parentId).get)
-              }
-            }
-          }
+    // check that the input parameters are valiadted 
+    logger.info(s"Checking input parameters to restore the project ...")
+    // check that bin directory pg_restore file exists and right to read from archive project directory
+    require(isDefinedBinDir(binDirPath).isDefined, s"Invalid parameters. Make sure that the bin directory has pg_restore.exe file.")
+    require(isReadableArchiveProjDir(archivedProjDirPath), "Make sure that you are allowed to read from the archived project directory.")
 
-        restoreProjProps match {
-          case Success(s) => {
-            if (localUdsTransaction != null) {
-              logger.debug("commit transaction and save project properties.")
-              localUdsTransaction.commit()
-              isUdsTxOk = true
-              logger.info("Project properties have been imported successfully.")
-            }
+    // check that the archive project directory has the required file to restore a project
+    val projFilesAsMap = getProjectFilesAsMap(archivedProjDirPath)
+    require(isValidatedProjectDir(projFilesAsMap), "The project directory must contain the SQL backup files and the project_properties.json file!")
+
+    // restore the project for an existing user   
+    logger.info(s"The project will be restored for the owner with id =#$ownerId.")
+    val userOpt = Option(udsEM.find(classOf[UserAccount], ownerId))
+    require(userOpt.isDefined, s"Undefined user with id= #$ownerId. Please restore the project with an existing user account!")
+
+    // rename the project,the new name must not be defined twice for the same owner Id(project_name_owner_idx) 
+    projectName.foreach { name =>
+      logger.info(s"The project name will be specified by the user.")
+      require(isTakenProjectName(udsEM, ownerId, name), s"The project name =$name is already taken for the owner with id= #$ownerId !Please rename your project.")
+    }
+
+    // get project_properties file and get Json objects in a Map 
+    logger.debug("Start to retrieve project properties from the project_properties.json file ...")
+    val projPropFile = projFilesAsMap("projPropFile").get
+    val jsValuesMap = readJsonFile(projPropFile.getAbsolutePath)
+    require(!jsValuesMap.isEmpty, "The json values must not be empty.")
+    var parser = new JsonParser()
+    var array: JsonObject = null
+    var udsProject: Project = null
+    projectId = (jsValuesMap("project").as[JsObject] \ "id").as[Long]
+    val jsDbVersion = (jsValuesMap("schema_version").as[JsObject] \ "version").as[Int]
+    var JsHost, JsMsiDbName, JsLcmsDbName = ""
+    var JsPort, dbVersion = 0
+    var newProjectId = 0L
+    logger.warn("**The version of Proline database UDS that used to archive and restore project must be the same or above 8")
+    DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
+      ezDBC.selectAndProcess(s"SELECT MAX(version_rank) AS version FROM schema_version") { record =>
+        dbVersion = record.getInt("version")
+      }
+    }
+
+    // check the schema version 
+    logger.info(s"The version of your Proline database UDS is =#$dbVersion and the version used to archive the project is =#$jsDbVersion")
+    require((jsDbVersion == dbVersion && jsDbVersion >= 8), "The Proline version that used to archive and to restore a project are different. Make sure that your databases are updated.")
+    val isTxOk = udsDbCtx.tryInTransaction {
+
+      // load project properties 
+      logger.info("Loading project properties from project_properties.json file ...")
+      val udsProjectOpt = loadProjectData(userOpt, projectName, jsValuesMap, udsEM)
+      require(udsProjectOpt.isDefined, "Failed to restore the Proline project!")
+      udsProject = udsProjectOpt.get
+      udsEM.persist(udsProject)
+      newProjectId = udsProject.getId()
+      val properties = udsProject.getSerializedProperties()
+      array = Try { parser.parse(properties).getAsJsonObject() } getOrElse { parser.parse("{}").getAsJsonObject() }
+
+      // load external_db properties 
+      logger.info("Loading external_db rows from project_properties.json file ....")
+      val externalDbsAsMap = loadExetrnalDbData(jsValuesMap, udsProject)
+      require(externalDbsAsMap.values.forall(_.!=(null)), "Error could not create external db!")
+      externalDbsAsMap.values.foreach { extDb => { udsEM.persist(extDb); udsProject.addExternalDatabase(extDb) } }
+      JsMsiDbName = externalDbsAsMap("MSI").asInstanceOf[ExternalDb] getDbName ()
+      JsLcmsDbName = externalDbsAsMap("LCMS").asInstanceOf[ExternalDb].getDbName()
+      JsHost = externalDbsAsMap("MSI").asInstanceOf[ExternalDb].getHost()
+      JsPort = externalDbsAsMap("MSI").asInstanceOf[ExternalDb].getPort()
+      logger.info("Loading data_set rows from project_properties.json file ...")
+      // load data_set properties */
+      loadDataSets(jsValuesMap, udsProject, udsEM)
+    }
+    // create external_db databases */
+    if (isTxOk) {
+      val isExtDbsCreated =
+        try {
+          logger.info(s"Creating msi_db_project_$newProjectId and lcms_db_project_$newProjectId ... ")
+          DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
+            ezDBC.execute(s"CREATE DATABASE msi_db_project_$newProjectId")
+            ezDBC.execute(s"CREATE DATABASE lcms_db_project_$newProjectId")
           }
-          case Failure(t) =>
+          true
+        } catch {
+          case t: Throwable =>
             {
-              if ((localUdsTransaction != null) && !isUdsTxOk && udsDbCtx.getDriverType() != DriverType.SQLITE) {
-                logger.info("Rollbacking current UDS Db Transaction: ", t.printStackTrace())
-                try {
-                  localUdsTransaction.rollback()
-                } catch {
-                  case ex: Exception => logger.error("Error rollbacking UDS Db Transaction", ex)
-                }
-              }
-              logger.error("Error while trying to restore your project.")
+              udsDbCtx.rollbackTransaction()
+              logger.error("Error while trying to create the project MSI and LCMS databases", t)
+              false
             }
         }
-
-        /* 4.0- create externalDb */
-        if (isUdsTxOk) {
-          val createDatabases =
-            Try {
-              logger.info(s"Creating msi_db_project_$newProjectId and lcms_db_project_$newProjectId ... ")
-              DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
-                ezDBC.execute(s"CREATE DATABASE msi_db_project_$newProjectId")
-                ezDBC.execute(s"CREATE DATABASE lcms_db_project_$newProjectId")
-              }
-              isCreationDbsOk = true
-            } recover {
-              case t: Throwable =>
-                {
-                  udsDbCtx.rollbackTransaction()
-                  logger.error("Error while trying to create the project databases: ", t.printStackTrace())
-                  isCreationDbsOk = false
-                }
+      // execute pg_restore commands to back up databases 
+      if (isExtDbsCreated) {
+        logger.info("The MSI and LCMS databases have been created successfully.")
+        logger.info("Start to execute pg_restore commands to restore MSI and LCMS databases. It could take a while, please wait ...")
+        val isRestoredDatabases = restoreDatabases(JsHost, JsPort, pgUserName, JsMsiDbName, pgUserName, archivedProjDirPath, binDirPath, projectId, newProjectId)
+        isRestoredDatabases match {
+          case Success(s) => {
+            // update project serialized properties when it's restored
+            udsDbCtx.tryInTransaction {
+              addProperties(array)
+              udsProject.setSerializedProperties(array.toString())
+              udsEM.merge(udsProject)
             }
-          /* 5.0- execute pg restore commands to back up databases */
-          if (isCreationDbsOk) {
-            logger.info("Execute pg_restore commands to restore msi_db and lcms_db. Please wait ...")
-            val isRestoredDatabases = restoreDatabases(JsHost, JsPort, pgUserName, JsMsiDbName, pgUserName, archivedProjDirPath, binDirPath, projectId, newProjectId)
-            isRestoredDatabases match {
-              case Success(s) => {
-                /* 6.0- update project serialized properties */
-                udsDbCtx.tryInTransaction {
-                  addProperties(array)
-                  udsProject.setSerializedProperties(array.toString())
-                  udsEM.merge(udsProject)
-                }
-                newProjId = newProjectId
-                logger.info(s"The Project with id #$projectId has been restored with a new project id #$newProjectId .")
-              }
-              case Failure(t) => {
-                logger.error("Error while trying to restore msi_db_project and lcms_db_project databases!", t.printStackTrace)
-              }
-            }
+            newProjId = newProjectId
+            logger.info(s"The Project with id= #$projectId has been restored with a new project id= #$newProjectId.")
+          }
+          case Failure(t) => {
+            logger.error("Error while trying to restore MSI and LCMS databases!", t)
           }
         }
-      } catch {
-        case t: Throwable => logger.error("Error while trying to restore the project.", t.printStackTrace)
       }
-    } finally {
-      udsEM.setFlushMode(FlushModeType.AUTO)
+    } else {
+      logger.error("An error occured while trying to import project properties in UDS database!")
     }
   }
 
@@ -287,11 +181,11 @@ class RestoreProject(
   val isReadableArchiveProjDir: String => Boolean = (filePath: String) => (new File(filePath).canRead())
 
   /**
-   * Check if it's a validated and defined project directory.
+   * Check that's a validated project directory.
    * @param projectDirFiles  a map of eventual files from  the project directory.
    * @return <code>true</code> if it's validated archived project directory otherwise false.
    */
-  val isDefinedProjectDir: Map[String, Option[File]] => Boolean = projectDirFilesasMap => {
+  val isValidatedProjectDir: Map[String, Option[File]] => Boolean = projectDirFilesasMap => {
     projectDirFilesasMap.values.forall(_.isDefined)
   }
 
@@ -321,13 +215,118 @@ class RestoreProject(
    * @param name The project name.
    * @param <code>true</code> If the project name already defined for the owner with id ownerId
    */
-  val isDefinedProject = (udsEM: EntityManager, ownerId: Long, name: String) => {
-    val PROJECT_BY_OWNER_AND_NAME = "Select p from Project p where p.owner.id=:id and p.name=:name"
-    udsEM.createQuery(PROJECT_BY_OWNER_AND_NAME)
+  def isTakenProjectName(udsEM: EntityManager, ownerId: Long, name: String): Boolean = {
+    logger.info(s"Checking that the project name =#$name is not taken for the user with id=#$ownerId .")
+    val PROJECT_NAME_BY_OWNER = "Select p from Project p where p.owner.id=:id and p.name=:name"
+    udsEM.createQuery(PROJECT_NAME_BY_OWNER)
       .setParameter("id", ownerId)
-      .setParameter("name", name).getResultList.isEmpty()
+      .setParameter("name", name).getResultList.isEmpty
   }
 
+  /**load project data*/
+  def loadProjectData(userOpt: Option[UserAccount], projectName: Option[String], jsValuesMap: Map[String, JsValue], udsEM: EntityManager): Option[Project] = {
+    val udsProject = new Project(userOpt.get)
+    if (projectName.isDefined && !projectName.get.trim.isEmpty) { udsProject.setName(projectName.get) }
+    else {
+      val jsProjectName = (jsValuesMap("project").as[JsObject] \ "name").as[String]
+      logger.info(s"The project name will be loaded from the project_properties.json file with value = #$jsProjectName.")
+      require(isTakenProjectName(udsEM, ownerId, jsProjectName), s"The project name= #$jsProjectName is already taken for the owner with id= #$ownerId! Please rename your project.")
+      udsProject.setName((jsValuesMap("project").as[JsObject] \ "name").as[String])
+    }
+    udsProject.setDescription((jsValuesMap("project").as[JsObject] \ "description").as[String])
+    udsProject.setCreationTimestamp(java.sql.Timestamp.valueOf((jsValuesMap("project").as[JsObject] \ "creation_timestamp").as[String]))
+    (jsValuesMap("project").as[JsObject] \ "serialized_properties").asOpt[String].foreach(udsProject.setSerializedProperties(_))
+    Option(udsProject)
+
+  }
+
+  /** Load external_db data */
+  def loadExetrnalDbData(jsValuesMap: Map[String, JsValue], udsProject: Project): Map[String, ExternalDb] = {
+    var extDbsAsMap = Map[String, ExternalDb]()
+    for (externaldb <- jsValuesMap("external_db").as[List[JsObject]]) {
+      val udsExternalDb = new ExternalDb()
+      udsExternalDb.setDbVersion((externaldb \ "version").as[String])
+      udsExternalDb.setHost((externaldb \ "host").as[String])
+      udsExternalDb.setPort((externaldb \ "port").as[Int])
+      udsExternalDb.setIsBusy((externaldb \ "is_busy").as[Boolean])
+      udsExternalDb.setSerializedProperties((externaldb \ "serialized_properties").as[String])
+      udsExternalDb.setType(ProlineDatabaseType.valueOf((externaldb \ "type").as[String]))
+      udsExternalDb.setConnectionMode(ConnectionMode.valueOf((externaldb \ "connection_mode").as[String]))
+      udsExternalDb.setDriverType(DriverType.POSTGRESQL)
+      udsExternalDb.addProject(udsProject)
+      if ((externaldb \ "name").as[String] contains "msi_db_project_") {
+        udsExternalDb.setDbName(s"msi_db_project_${udsProject.getId}")
+        extDbsAsMap += ("MSI" -> udsExternalDb)
+      } else {
+        udsExternalDb.setDbName(s"lcms_db_project_${udsProject.getId}")
+        extDbsAsMap += ("LCMS" -> udsExternalDb)
+      }
+    }
+    extDbsAsMap
+  }
+
+  /** Load and restore datasets */
+  def loadDataSets(jsValuesMap: Map[String, JsValue], udsProject: Project, udsEM: EntityManager) {
+    var udsDataset: Option[Dataset] = None
+    var dataSetIdMap: Map[Long, Dataset] = Map()
+    var dataSetParentIdMap: Map[Dataset, Long] = Map()
+    for (dataSet <- jsValuesMap("data_set").as[List[JsObject]]) {
+      val aggregation = udsEM.find(classOf[Aggregation], (dataSet \ "aggregation_id").as[Long])
+      val fraction = udsEM.find(classOf[Fractionation], (dataSet \ "fractionation_id").as[Long])
+      val quantitationMethod = udsEM.find(classOf[QuantitationMethod], (dataSet \ "quant_method_id").as[Long])
+      if (Dataset.DatasetType.valueOf((dataSet \ "type").as[String]) == Dataset.DatasetType.IDENTIFICATION) {
+        udsDataset = Some(new IdentificationDataset())
+        udsDataset.get.setType(Dataset.DatasetType.IDENTIFICATION)
+      } else {
+        udsDataset = Some(new Dataset(udsProject))
+        udsDataset.get.setType(Dataset.DatasetType.valueOf((dataSet \ "type").as[String]))
+      }
+      udsDataset.get.setChildrenCount((dataSet \ "child_count").as[Int])
+      udsDataset.get.setCreationTimestamp(java.sql.Timestamp.valueOf((dataSet \ "creation_timestamp").as[String]))
+      if (isValidatedProperty((dataSet \ "description").asOpt[String])) {
+        udsDataset.get.setDescription((dataSet \ "description").asOpt[String].get)
+      } else {
+        udsDataset.get.setDescription(null)
+      }
+      if ((dataSet \ "result_set_id").as[Long] > 0) udsDataset.get.setResultSetId((dataSet \ "result_set_id").as[Long]) else udsDataset.get.setResultSetId(null)
+      if ((dataSet \ "result_summary_id").as[Long] > 0) udsDataset.get.setResultSummaryId((dataSet \ "result_summary_id").as[Long]) else udsDataset.get.setResultSummaryId(null)
+      if (isValidatedProperty((dataSet \ "keywords").asOpt[String])) {
+        udsDataset.get.setKeywords((dataSet \ "keywords").asOpt[String].get)
+      } else {
+        udsDataset.get.setKeywords(null)
+      }
+      if (isValidatedProperty((dataSet \ "modification_log").asOpt[String])) {
+        udsDataset.get.setModificationLog((dataSet \ "modification_log").asOpt[String].get)
+      } else {
+        udsDataset.get.setModificationLog(null)
+      }
+      udsDataset.get.setName((dataSet \ "name").as[String])
+      udsDataset.get.setNumber((dataSet \ "number").as[Int])
+      if (isValidatedProperty((dataSet \ "serialized_properties").asOpt[String])) {
+        udsDataset.get.setSerializedProperties((dataSet \ "serialized_properties").asOpt[String].get)
+      } else {
+        udsDataset.get.setSerializedProperties(null)
+      }
+      udsDataset.get.setProject(udsProject)
+      udsDataset.get.setFractionation(fraction)
+      udsDataset.get.setAggregation(aggregation)
+      udsDataset.get.setMethod(quantitationMethod)
+      if ((dataSet \ "parent_dataset_id").as[Long] > 0) {
+        dataSetParentIdMap += (udsDataset.get -> (dataSet \ "parent_dataset_id").as[Long])
+      } else {
+        //uds data_set are trash or root
+        logger.debug("Loading the data_set: trash or root")
+        udsDataset.get.setParentDataset(null)
+      }
+      dataSetIdMap += ((dataSet \ "id").as[Long] -> udsDataset.get)
+      udsEM.persist(udsDataset.get)
+    }
+    if (!dataSetParentIdMap.isEmpty) {
+      for ((ds, parentId) <- dataSetParentIdMap) {
+        ds.asInstanceOf[Dataset].setParentDataset(dataSetIdMap.get(parentId).get)
+      }
+    }
+  }
   /**
    *  Read the Json file.
    *  @param file The file path.
@@ -347,7 +346,7 @@ class RestoreProject(
       JsValueMap += ("run_identification" -> json("run_identification"))
       JsValueMap += ("project_user_account_map" -> json("project_user_account_map"))
     } catch {
-      case t: Throwable => logger.error("Error while trying to read project_properties.json file!")
+      case t: Throwable => logger.error("Error while trying to read project_properties.json file!", t)
     } finally {
       if (stream.isDefined) stream.get.close()
     }
