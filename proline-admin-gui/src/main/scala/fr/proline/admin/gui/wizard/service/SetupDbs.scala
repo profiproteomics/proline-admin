@@ -31,6 +31,7 @@ class SetupDbs(stage: Stage) extends Service(new jfxc.Service[TaskState]() {
             logger.info("Start to set up Proline databases. Please wait...")
             synchronized {
               new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run()
+              logger.info("set up Proline databases has finished.")
               TaskState(true, "Proline has been successfully setup!")
             }
           } catch {
@@ -43,6 +44,7 @@ class SetupDbs(stage: Stage) extends Service(new jfxc.Service[TaskState]() {
           val upgradeDbsTaskState = try {
             logger.info("Start to upgrade all Proline databases. Please wait...")
             new UpgradeAllDatabases(UdsRepository.getDataStoreConnFactory()).doWork()
+            logger.info("upgrade all Proline databases has finished.")
             TaskState(true, "All Proline databases have been upgraded successfully!")
           } catch {
             case e: Exception =>
@@ -51,7 +53,6 @@ class SetupDbs(stage: Stage) extends Service(new jfxc.Service[TaskState]() {
           }
           upgradeDbsTaskState
         }
-
         setupUpgradeDbsTaskState
       }
     override def running(): Unit = {

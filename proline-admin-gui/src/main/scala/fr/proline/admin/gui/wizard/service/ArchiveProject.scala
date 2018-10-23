@@ -48,7 +48,7 @@ class ArchiveProject(projectId: Long, binDirPath: String, archiveProjectDirPath:
       isArchProjOk match {
         case Success(isArchProjOk) if (isArchProjOk) => {
           dialog.informationLabel.setStyle(TextStyle.GREEN_ITALIC)
-          dialog.informationLabel.setText(s"The project with id $projectId has been archived successfully!")
+          dialog.informationLabel.setText(s"The project with id= #$projectId has been archived successfully!")
           dialog.informationLabel.setStyle(TextStyle.GREEN_ITALIC)
           dialog.progressBar.progress_=(100)
           dialog.loadProjectPanel.disable_=(false)
