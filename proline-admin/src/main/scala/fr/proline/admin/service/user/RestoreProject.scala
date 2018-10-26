@@ -19,7 +19,7 @@ import fr.proline.core.dal.context._
 import fr.proline.repository._
 import fr.proline.core.dal.DoJDBCWork
 import fr.proline.core.dal.DoJDBCReturningWork
-import javax.persistence.{ EntityManager, FlushModeType }
+import javax.persistence.EntityManager
 import scala.util.{ Try, Success, Failure }
 import scala.collection.mutable.Map
 import scala.sys.process.{ Process, ProcessLogger }
@@ -52,117 +52,121 @@ class RestoreProject(
   var projectId: Long = -1L
   var newProjId: Long = -1L
   def doWork() {
-    val udsEM = udsDbCtx.getEntityManager
-    // check that the input parameters are valiadted 
-    logger.info(s"Checking input parameters to restore the project ...")
-    // check that bin directory pg_restore file exists and right to read from archive project directory
-    require(isDefinedBinDir(binDirPath).isDefined, s"Invalid parameters. Make sure that the bin directory has pg_restore.exe file.")
-    require(isReadableArchiveProjDir(archivedProjDirPath), "Make sure that you are allowed to read from the archived project directory.")
+    try {
+      val udsEM = udsDbCtx.getEntityManager
+      // check that the input parameters are valiadted 
+      logger.info(s"Checking input parameters to restore the project ...")
+      // check that bin directory pg_restore file exists and right to read from archive project directory
+      require(isDefinedBinDir(binDirPath).isDefined, s"Invalid parameters. Make sure that the bin directory has pg_restore.exe file.")
+      require(isReadableArchiveProjDir(archivedProjDirPath), "Make sure that you are allowed to read from the archived project directory.")
 
-    // check that the archive project directory has the required file to restore a project
-    val projFilesAsMap = getProjectFilesAsMap(archivedProjDirPath)
-    require(isValidatedProjectDir(projFilesAsMap), "The project directory must contain the SQL backup files and the project_properties.json file!")
+      // check that the archive project directory has the required file to restore a project
+      val projFilesAsMap = getProjectFilesAsMap(archivedProjDirPath)
+      require(isValidatedProjectDir(projFilesAsMap), "The project directory must contain the SQL backup files and the project_properties.json file!")
 
-    // restore the project for an existing user   
-    logger.info(s"The project will be restored for the owner with id =#$ownerId.")
-    val userOpt = Option(udsEM.find(classOf[UserAccount], ownerId))
-    require(userOpt.isDefined, s"Undefined user with id= #$ownerId. Please restore the project with an existing user account!")
+      // restore the project for an existing user   
+      logger.info(s"The project will be restored for the owner with id =#$ownerId.")
+      val userOpt = Option(udsEM.find(classOf[UserAccount], ownerId))
+      require(userOpt.isDefined, s"Undefined user with id= #$ownerId. Please restore the project with an existing user account!")
 
-    // rename the project,the new name must not be defined twice for the same owner Id(project_name_owner_idx) 
-    projectName.foreach { name =>
-      logger.info(s"The project name will be specified by the user.")
-      require(isTakenProjectName(udsEM, ownerId, name), s"The project name =$name is already taken for the owner with id= #$ownerId !Please rename your project.")
-    }
-
-    // get project_properties file and get Json objects in a Map 
-    logger.debug("Start to retrieve project properties from the project_properties.json file ...")
-    val projPropFile = projFilesAsMap("projPropFile").get
-    val jsValuesMap = readJsonFile(projPropFile.getAbsolutePath)
-    require(!jsValuesMap.isEmpty, "The json values must not be empty.")
-    var parser = new JsonParser()
-    var array: JsonObject = null
-    var udsProject: Project = null
-    projectId = (jsValuesMap("project").as[JsObject] \ "id").as[Long]
-    val jsDbVersion = (jsValuesMap("schema_version").as[JsObject] \ "version").as[Int]
-    var JsHost, JsMsiDbName, JsLcmsDbName = ""
-    var JsPort, dbVersion = 0
-    var newProjectId = 0L
-    logger.warn("**The version of Proline database UDS that used to archive and restore project must be the same or above 8")
-    DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
-      ezDBC.selectAndProcess(s"SELECT MAX(version_rank) AS version FROM schema_version") { record =>
-        dbVersion = record.getInt("version")
+      // rename the project,the new name must not be defined twice for the same owner Id(project_name_owner_idx) 
+      projectName.foreach { name =>
+        logger.info(s"The project name will be specified by the user.")
+        require(isTakenProjectName(udsEM, ownerId, name), s"The project name =$name is already taken for the owner with id= #$ownerId !Please rename your project.")
       }
-    }
 
-    // check the schema version 
-    logger.info(s"The version of your Proline database UDS is =#$dbVersion and the version used to archive the project is =#$jsDbVersion")
-    require((jsDbVersion == dbVersion && jsDbVersion >= 8), "The Proline version that used to archive and to restore a project are different. Make sure that your databases are updated.")
-    val isTxOk = udsDbCtx.tryInTransaction {
-
-      // load project properties 
-      logger.info("Loading project properties from project_properties.json file ...")
-      val udsProjectOpt = loadProjectData(userOpt, projectName, jsValuesMap, udsEM)
-      require(udsProjectOpt.isDefined, "Failed to restore the Proline project!")
-      udsProject = udsProjectOpt.get
-      udsEM.persist(udsProject)
-      newProjectId = udsProject.getId()
-      val properties = udsProject.getSerializedProperties()
-      array = Try { parser.parse(properties).getAsJsonObject() } getOrElse { parser.parse("{}").getAsJsonObject() }
-
-      // load external_db properties 
-      logger.info("Loading external_db rows from project_properties.json file ....")
-      val externalDbsAsMap = loadExetrnalDbData(jsValuesMap, udsProject)
-      require(externalDbsAsMap.values.forall(_.!=(null)), "Error could not create external db!")
-      externalDbsAsMap.values.foreach { extDb => { udsEM.persist(extDb); udsProject.addExternalDatabase(extDb) } }
-      JsMsiDbName = externalDbsAsMap("MSI").asInstanceOf[ExternalDb] getDbName ()
-      JsLcmsDbName = externalDbsAsMap("LCMS").asInstanceOf[ExternalDb].getDbName()
-      JsHost = externalDbsAsMap("MSI").asInstanceOf[ExternalDb].getHost()
-      JsPort = externalDbsAsMap("MSI").asInstanceOf[ExternalDb].getPort()
-      logger.info("Loading data_set rows from project_properties.json file ...")
-      // load data_set properties */
-      loadDataSets(jsValuesMap, udsProject, udsEM)
-    }
-    // create external_db databases */
-    if (isTxOk) {
-      val isExtDbsCreated =
-        try {
-          logger.info(s"Creating msi_db_project_$newProjectId and lcms_db_project_$newProjectId ... ")
-          DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
-            ezDBC.execute(s"CREATE DATABASE msi_db_project_$newProjectId")
-            ezDBC.execute(s"CREATE DATABASE lcms_db_project_$newProjectId")
-          }
-          true
-        } catch {
-          case t: Throwable =>
-            {
-              udsDbCtx.rollbackTransaction()
-              logger.error("Error while trying to create the project MSI and LCMS databases", t)
-              false
-            }
-        }
-      // execute pg_restore commands to back up databases 
-      if (isExtDbsCreated) {
-        logger.info("The MSI and LCMS databases have been created successfully.")
-        logger.info("Start to execute pg_restore commands to restore MSI and LCMS databases. It could take a while, please wait ...")
-        val isRestoredDatabases = restoreDatabases(JsHost, JsPort, pgUserName, JsMsiDbName, pgUserName, archivedProjDirPath, binDirPath, projectId, newProjectId)
-        isRestoredDatabases match {
-          case Success(s) => {
-            // update project serialized properties when it's restored
-            udsDbCtx.tryInTransaction {
-              addProperties(array)
-              udsProject.setSerializedProperties(array.toString())
-              udsEM.merge(udsProject)
-            }
-            newProjId = newProjectId
-            logger.info(s"The Project with id= #$projectId has been restored with a new project id= #$newProjectId.")
-          }
-          case Failure(t) => {
-            logger.error("Error while trying to restore MSI and LCMS databases!", t)
-          }
+      // get project_properties file and get Json objects in a Map 
+      logger.debug("Start to retrieve project properties from the project_properties.json file ...")
+      val projPropFile = projFilesAsMap("projPropFile").get
+      val jsValuesMap = readJsonFile(projPropFile.getAbsolutePath)
+      require(!jsValuesMap.isEmpty, "The json values must not be empty.")
+      var parser = new JsonParser()
+      var array: JsonObject = null
+      var udsProject: Project = null
+      projectId = (jsValuesMap("project").as[JsObject] \ "id").as[Long]
+      val jsDbVersion = (jsValuesMap("schema_version").as[JsObject] \ "version").as[Int]
+      var JsHost, JsMsiDbName, JsLcmsDbName = ""
+      var JsPort, dbVersion = 0
+      var newProjectId = 0L
+      logger.warn("**The version of Proline database UDS that used to archive and restore project must be the same or above 8")
+      DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
+        ezDBC.selectAndProcess(s"SELECT MAX(version_rank) AS version FROM schema_version") { record =>
+          dbVersion = record.getInt("version")
         }
       }
-    } else {
-      logger.error("An error occured while trying to import project properties in UDS database!")
+
+      // check the schema version 
+      logger.info(s"The version of your Proline database UDS is =#$dbVersion and the version used to archive the project is =#$jsDbVersion")
+      require((jsDbVersion == dbVersion && jsDbVersion >= 8), "The Proline version that used to archive and to restore a project are different. Make sure that your databases are updated.")
+      val isTxOk = udsDbCtx.tryInTransaction {
+
+        // load project properties 
+        logger.info("Loading project properties from project_properties.json file ...")
+        val udsProjectOpt = loadProjectData(userOpt, projectName, jsValuesMap, udsEM)
+        require(udsProjectOpt.isDefined, "Failed to restore the Proline project!")
+        udsProject = udsProjectOpt.get
+        udsEM.persist(udsProject)
+        newProjectId = udsProject.getId()
+        val properties = udsProject.getSerializedProperties()
+        array = Try { parser.parse(properties).getAsJsonObject() } getOrElse { parser.parse("{}").getAsJsonObject() }
+
+        // load external_db properties 
+        logger.info("Loading external_db rows from project_properties.json file ....")
+        val externalDbsAsMap = loadExetrnalDbData(jsValuesMap, udsProject)
+        require(externalDbsAsMap.values.forall(_.!=(null)), "Error could not create external db!")
+        externalDbsAsMap.values.foreach { extDb => { udsEM.persist(extDb); udsProject.addExternalDatabase(extDb) } }
+        JsMsiDbName = externalDbsAsMap("MSI").asInstanceOf[ExternalDb] getDbName ()
+        JsLcmsDbName = externalDbsAsMap("LCMS").asInstanceOf[ExternalDb].getDbName()
+        JsHost = externalDbsAsMap("MSI").asInstanceOf[ExternalDb].getHost()
+        JsPort = externalDbsAsMap("MSI").asInstanceOf[ExternalDb].getPort()
+        logger.info("Loading data_set rows from project_properties.json file ...")
+        // load data_set properties */
+        loadDataSets(jsValuesMap, udsProject, udsEM)
+      }
+      // create external_db databases */
+      if (isTxOk) {
+        val isExtDbsCreated =
+          try {
+            logger.info(s"Creating msi_db_project_$newProjectId and lcms_db_project_$newProjectId ... ")
+            DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
+              ezDBC.execute(s"CREATE DATABASE msi_db_project_$newProjectId")
+              ezDBC.execute(s"CREATE DATABASE lcms_db_project_$newProjectId")
+            }
+            true
+          } catch {
+            case t: Throwable =>
+              {
+                udsDbCtx.rollbackTransaction()
+                logger.error("Error while trying to create the project MSI and LCMS databases", t)
+                false
+              }
+          }
+        // execute pg_restore commands to back up databases 
+        if (isExtDbsCreated) {
+          logger.info("The MSI and LCMS databases have been created successfully.")
+          logger.info("Start to execute pg_restore commands to restore MSI and LCMS databases. It could take a while, please wait ...")
+          val isRestoredDatabases = restoreDatabases(JsHost, JsPort, pgUserName, JsMsiDbName, pgUserName, archivedProjDirPath, binDirPath, projectId, newProjectId)
+          isRestoredDatabases match {
+            case Success(s) => {
+              // update project serialized properties when it's restored
+              udsDbCtx.tryInTransaction {
+                addProperties(array)
+                udsProject.setSerializedProperties(array.toString())
+                udsEM.merge(udsProject)
+              }
+              newProjId = newProjectId
+              logger.info(s"The Project with id= #$projectId has been restored with a new project id= #$newProjectId.")
+            }
+            case Failure(t) => {
+              logger.error("Error while trying to restore MSI and LCMS databases!", t)
+            }
+          }
+        }
+      } else {
+        logger.error("An error occured while trying to import project properties in UDS database!")
+      }
+    } catch {
+      case e: Exception => throw new Exception(e.getMessage)
     }
   }
 
@@ -171,21 +175,21 @@ class RestoreProject(
    * @param binDirPath The path of the bin directory.
    * @return <code>Some(File)</code> if it's validated bin directory otherwise None.
    */
-  val isDefinedBinDir: String => Option[File] = binDirPath => { if (new File(binDirPath).exists) new File(binDirPath).listFiles().find(file => file.getName.matches("^pg_restore.exe$") && file.canExecute()) else None }
+  private val isDefinedBinDir: String => Option[File] = binDirPath => { if (new File(binDirPath).exists) new File(binDirPath).listFiles().find(file => file.getName.matches("^pg_restore.exe$") && file.canExecute()) else None }
 
   /**
    * Check if user can read from the archive directory.
    * @param filePath The path of the archive directory.
    * @return <code>true</code> if it's validated archived project directory otherwise false.
    */
-  val isReadableArchiveProjDir: String => Boolean = (filePath: String) => (new File(filePath).canRead())
+  private val isReadableArchiveProjDir: String => Boolean = (filePath: String) => (new File(filePath).canRead())
 
   /**
    * Check that's a validated project directory.
    * @param projectDirFiles  a map of eventual files from  the project directory.
    * @return <code>true</code> if it's validated archived project directory otherwise false.
    */
-  val isValidatedProjectDir: Map[String, Option[File]] => Boolean = projectDirFilesasMap => {
+  private val isValidatedProjectDir: Map[String, Option[File]] => Boolean = projectDirFilesasMap => {
     projectDirFilesasMap.values.forall(_.isDefined)
   }
 
@@ -194,7 +198,7 @@ class RestoreProject(
    * @param filePath The path of the archive project directory.
    * @return <code>Map[String,Option[File]]</code> if it's validated archived project directory.
    */
-  val getProjectFilesAsMap: String => Map[String, Option[File]] = archivedProjPath => {
+  private val getProjectFilesAsMap: String => Map[String, Option[File]] = archivedProjPath => {
     val lcmsDbBackup = getFile(archivedProjPath, "^lcms_db_project_[0-9]+.bak$")
     val msiDbBackup = getFile(archivedProjPath, "^msi_db_project_[0-9]+.bak$")
     val projectProperties = getFile(archivedProjPath, "^project_properties.json$")
@@ -206,7 +210,7 @@ class RestoreProject(
    * @param archivedProjPath The project directory path
    * @param pattern The pattern name of file
    */
-  val getFile: (String, String) => Option[File] = (archivedProjPath, pattern) => new File(archivedProjPath).listFiles().find(_.getName.matches(pattern))
+  private val getFile: (String, String) => Option[File] = (archivedProjPath, pattern) => new File(archivedProjPath).listFiles().find(_.getName.matches(pattern))
 
   /**
    * Check if the project name is already defined  for a user
@@ -215,7 +219,7 @@ class RestoreProject(
    * @param name The project name.
    * @param <code>true</code> If the project name already defined for the owner with id ownerId
    */
-  def isTakenProjectName(udsEM: EntityManager, ownerId: Long, name: String): Boolean = {
+  private def isTakenProjectName(udsEM: EntityManager, ownerId: Long, name: String): Boolean = {
     logger.info(s"Checking that the project name =#$name is not taken for the user with id=#$ownerId .")
     val PROJECT_NAME_BY_OWNER = "Select p from Project p where p.owner.id=:id and p.name=:name"
     udsEM.createQuery(PROJECT_NAME_BY_OWNER)
@@ -224,7 +228,7 @@ class RestoreProject(
   }
 
   /**load project data*/
-  def loadProjectData(userOpt: Option[UserAccount], projectName: Option[String], jsValuesMap: Map[String, JsValue], udsEM: EntityManager): Option[Project] = {
+  private def loadProjectData(userOpt: Option[UserAccount], projectName: Option[String], jsValuesMap: Map[String, JsValue], udsEM: EntityManager): Option[Project] = {
     val udsProject = new Project(userOpt.get)
     if (projectName.isDefined && !projectName.get.trim.isEmpty) { udsProject.setName(projectName.get) }
     else {
@@ -241,7 +245,7 @@ class RestoreProject(
   }
 
   /** Load external_db data */
-  def loadExetrnalDbData(jsValuesMap: Map[String, JsValue], udsProject: Project): Map[String, ExternalDb] = {
+  private def loadExetrnalDbData(jsValuesMap: Map[String, JsValue], udsProject: Project): Map[String, ExternalDb] = {
     var extDbsAsMap = Map[String, ExternalDb]()
     for (externaldb <- jsValuesMap("external_db").as[List[JsObject]]) {
       val udsExternalDb = new ExternalDb()
@@ -266,7 +270,7 @@ class RestoreProject(
   }
 
   /** Load and restore datasets */
-  def loadDataSets(jsValuesMap: Map[String, JsValue], udsProject: Project, udsEM: EntityManager) {
+  private def loadDataSets(jsValuesMap: Map[String, JsValue], udsProject: Project, udsEM: EntityManager) {
     var udsDataset: Option[Dataset] = None
     var dataSetIdMap: Map[Long, Dataset] = Map()
     var dataSetParentIdMap: Map[Dataset, Long] = Map()
@@ -332,7 +336,7 @@ class RestoreProject(
    *  @param file The file path.
    *  return <code>Map[String, JsValue]</code> of JsValue contained in this file.
    */
-  def readJsonFile(file: String): Map[String, JsValue] = {
+  private def readJsonFile(file: String): Map[String, JsValue] = {
     var stream: Option[FileInputStream] = None
     var JsValueMap = Map[String, JsValue]()
     try {
@@ -358,7 +362,7 @@ class RestoreProject(
    * @param property
    * @return <code> true</code> if it's a validated property
    */
-  def isValidatedProperty(property: Any): Boolean = property match {
+  private def isValidatedProperty(property: Any): Boolean = property match {
     case Some(property) => true
     case _ => false
   }
@@ -369,7 +373,7 @@ class RestoreProject(
    * @return <code>0</code> if the sequence executed successfully.
    *
    */
-  def execute(command: => Seq[String]): Int = {
+  private def execute(command: => Seq[String]): Int = {
     var process: Option[Process] = None
     var exitCode: Int = 1
     try {
@@ -402,7 +406,7 @@ class RestoreProject(
    * @return <code>Success(0)</code> if pg_restore of msi_db and lcms_db databases succeeded.
    */
 
-  def restoreDatabases(host: String, port: Integer, user: String, msiDb: String, lcmsDb: String, archivedProjectDirPath: String, binDirPath: String, projectId: Long, newProjectId: Long): Try[Boolean] =
+  private def restoreDatabases(host: String, port: Integer, user: String, msiDb: String, lcmsDb: String, archivedProjectDirPath: String, binDirPath: String, projectId: Long, newProjectId: Long): Try[Boolean] =
     Try {
       val projectPath = new File(archivedProjectDirPath)
       val pgRestorePath = new File(binDirPath + File.separator + "pg_restore").getCanonicalPath()
@@ -418,7 +422,7 @@ class RestoreProject(
    * @param array JsonObject
    *
    */
-  def addProperties(array: JsonObject) {
+  private def addProperties(array: JsonObject) {
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     array.addProperty("restore_date", sdf.format(new Date()).toString())
     array.addProperty("is_active", true)
@@ -428,7 +432,7 @@ class RestoreProject(
    * logger debug
    * @param err
    */
-  def stdout(out: String) {
+  private def stdout(out: String) {
     logger.debug(out)
   }
 
