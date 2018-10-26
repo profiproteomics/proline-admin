@@ -1,15 +1,15 @@
 package fr.proline.admin.service.db.migration
 
-import javax.persistence.EntityManager
 
 import com.typesafe.scalalogging.StrictLogging
+import javax.persistence.{ EntityManager, EntityTransaction }
 import fr.profi.util.security._
 import fr.proline.admin.service.ICommandWork
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.ProlineEzDBC
 import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.core.orm.uds.repository.ProjectRepository
-import fr.proline.core.orm.uds.{UserAccount => UdsUser}
+import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
 import fr.proline.repository._
 
 import scala.collection.JavaConversions._
@@ -22,7 +22,7 @@ import scala.collection.JavaConversions._
  *            Must be a valid initialized DataStoreConnectorFactory instance.
  */
 class UpgradeAllDatabases(
-  val dsConnectorFactory: IDataStoreConnectorFactory) extends ICommandWork with StrictLogging {
+    val dsConnectorFactory: IDataStoreConnectorFactory) extends ICommandWork with StrictLogging {
 
   def doWork(): Unit = {
 
@@ -82,7 +82,7 @@ class UpgradeAllDatabases(
       udsTx.commit()
       udsEM.getTransaction()
       udsTx.begin()
-      
+
       /* Upgrade UDS Db */
       // Note: was moved after MSI/LCMS databases to handle migration of core V2
       UpgradeDatabase(udsDbConnector, "UDSdb", closeConnector = false, upgradeCallback = { udsDbVersion =>
@@ -92,28 +92,8 @@ class UpgradeAllDatabases(
 
       udsEM.flush()
       udsTx.commit()
-      
       //create default user admin  when it does not exist
-      try {
-        val query = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
-        val listUsers = query.getResultList()
-        if (listUsers.isEmpty) {
-          udsEM.getTransaction()
-          udsTx.begin()
-          logger.info("Creating default admin user")
-          val udsUser = new UdsUser()
-          udsUser.setLogin("admin")
-          udsUser.setPasswordHash(sha256Hex("proline"))
-          udsUser.setCreationMode("MANUAL")
-          val serializedPropertiesMap = new java.util.HashMap[String, Object]
-          serializedPropertiesMap.put("user_group", UdsUser.UserGroupType.ADMIN.name())
-          udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap)
-          udsEM.persist(udsUser)
-          udsTx.commit()
-        }
-      } catch {
-        case t: Throwable => logger.error("error while creating default admin user", t)
-      }
+      createDefaultAdmin(udsEM, udsTx)
 
     } finally {
 
@@ -129,6 +109,30 @@ class UpgradeAllDatabases(
       */
     }
     ()
+  }
+  /** Create default Admin user */
+  private def createDefaultAdmin(udsEM: EntityManager, udsTx: EntityTransaction) {
+    try {
+      val defaultAdminQuery = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
+      val defaultAdmin = defaultAdminQuery.getResultList()
+      if (defaultAdmin.isEmpty) {
+        udsEM.getTransaction()
+        udsTx.begin()
+        logger.info("Creating default admin user")
+        val udsUser = new UdsUser()
+        udsUser.setLogin("admin")
+        udsUser.setPasswordHash(sha256Hex("proline"))
+        udsUser.setCreationMode("AUTO")
+        val serializedPropertiesMap = new java.util.HashMap[String, Object]
+        serializedPropertiesMap.put("user_group", UdsUser.UserGroupType.ADMIN.name())
+        udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap)
+        udsEM.persist(udsUser)
+        udsTx.commit()
+        if (udsUser.getId > 0L) logger.info("Default admin user has been created successfully!")
+      }
+    } catch {
+      case t: Throwable => logger.error("Error while trying to create default admin user ", t.getMessage)
+    }
   }
 
   private def _updateExternalDbVersion(newVersion: String, udsEM: EntityManager, dbType: ProlineDatabaseType, projectId: Option[Long] = None) {
@@ -147,14 +151,13 @@ class UpgradeAllDatabases(
 }
 
 object UpgradeDatabase extends StrictLogging {
-  
+
   def apply(
     dbConnector: IDatabaseConnector,
     dbShortName: String,
     closeConnector: Boolean = true,
     repairChecksum: Boolean = true, // TODO: add this param to GUI
-    upgradeCallback: String => Unit = null
-  ): IDatabaseConnector = {
+    upgradeCallback: String => Unit = null): IDatabaseConnector = {
 
     if (dbConnector == null) {
       logger.warn(s"DataStoreConnectorFactory has no valid connector to $dbShortName")

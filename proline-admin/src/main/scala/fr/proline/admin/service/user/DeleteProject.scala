@@ -61,7 +61,7 @@ class DeleteProject(
                 true
               } catch {
                 case t: Throwable => {
-                  logger.error("Error while trying to drop MSI and LCMS databases of the project(s).", t.printStackTrace())
+                  logger.error("Error while trying to drop MSI and LCMS databases.", t.printStackTrace())
                   false
                 }
               }
@@ -70,7 +70,7 @@ class DeleteProject(
         dropDbs match {
           case Success(isDbsDropped) if (isDbsDropped) => {
             isSuccess = true
-            logger.info(s"The project(s) with id(s)= #${projectIdSet.mkString(",")} has been deleted successfully.")
+            logger.info(s"The project(s) with id(s)= #${projectIdSet.mkString(",")} have been deleted successfully.")
           }
           case Failure(t) => {
             isSuccess = false
@@ -78,7 +78,7 @@ class DeleteProject(
           }
         }
       } else {
-        logger.info(s"can't delete the The project(s) with id(s)= #${projectIdSet.mkString(",")} !")
+        logger.info(s"Can't delete the the project(s) with id(s)= #${projectIdSet.mkString(",")} !")
       }
     } else {
       // this action will disable the set of project(s) 
@@ -104,7 +104,7 @@ class DeleteProject(
       if (isTxOk) {
         logger.info(s"The project(s) with id(s)= #${projectIdSet.mkString(",")} has been deleted successfully.")
       } else {
-        logger.info(s"can't disable the The project(s) with id(s)= #${projectIdSet.mkString(",")} !")
+        logger.info(s"Can't disable the the project(s) with id(s)= #${projectIdSet.mkString(",")} !")
       }
     }
   }

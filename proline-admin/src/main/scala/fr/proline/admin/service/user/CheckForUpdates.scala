@@ -97,7 +97,7 @@ object CheckDbUpdates extends StrictLogging {
             undoneMigrationsAsMap.foreach {
               case (script, state) => {
                 undoneMigrations += (script -> state.toString)
-                logger.warn(s"The script $script is $state. To apply undone migrations, please upgrade your databases.")
+                logger.warn(s"The script $script is $state. To apply undone migrations, please upgrade Proline databases.")
               }
             }
           }
