@@ -31,7 +31,7 @@ object UpgradeDatabases extends LazyLogging {
             logger.info("Start to upgrade all Proline databases. Please wait...")
             val upgradeProlineDbs = new UpgradeAllDatabases(UdsRepository.getDataStoreConnFactory())
             upgradeProlineDbs.doWork()
-            logger.info("All Proline databases have been upgraded successfully!.")
+            logger.info("All Proline databases have been upgraded successfully!")
             TaskState(true, "All Proline databases have been upgraded successfully!")
           } catch {
             case e: Exception =>
