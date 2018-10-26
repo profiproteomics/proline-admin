@@ -49,7 +49,7 @@ class RestoreProjectDialog(
   initModality(Modality.WINDOW_MODAL)
   if (wParent.isDefined) initOwner(wParent.get)
   archiveProjectPane.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
-  // Component
+  //Component
   //warning labels
   val warningBinPathLabel = new Label {
     text = "Select a validated PostgreSQL bin directory.It must contain pg_restore.exe file."
@@ -262,25 +262,28 @@ class RestoreProjectDialog(
   }
 
   /** check if project name is already defined */
-  def isDefinedProjName(projectName: Option[String], projectOwnerId: Long): Boolean = {
-    var isvalidProjName: Boolean = true
+  def isDefinedProjName(projectName: Option[String] = None, projectOwnerId: Long): Boolean = {
+    var isExistedProjName = false
     projectName.foreach(name => if (UdsRepository.findProjectsByOwnerId(projectOwnerId).find(_.getName == (name)).isDefined) {
       warningDefinedProjectLabel.setVisible(true)
-      isvalidProjName = false
+      isExistedProjName = false
     } else {
       warningDefinedProjectLabel.setVisible(false)
-      isvalidProjName = true
+      isExistedProjName = true
     })
-    isvalidProjName
+    isExistedProjName
   }
 
-  /** check  list of files in project folder */
-  def isValidProjectDir(projectPath: File): Boolean = {
-    projectPath.listFiles().toList.forall(_.getName.matches("(lcms_db_project_[0-9]+.bak){1}|(msi_db_project_[0-9]+.bak){1}|(uds_db_schema.bak){1}|(project_properties.json){1}"))
+  /** Check  that's a validated archive folder directory */
+  def isValidatedProjectDir(projectPath: File): Boolean = {
+    val projectFiles = projectPath.listFiles.toList
+    Map("UDS" -> projectFiles.find(_.getName.matches("(project_properties.json){1}")),
+      "MSI" -> projectFiles.find(_.getName.matches("(msi_db_project_[0-9]+.bak){1}")),
+      "LCMS" -> projectFiles.find(_.getName.matches("(lcms_db_project_[0-9]+.bak){1}"))).values.forall(_.isDefined)
   }
 
-  /** check postgreSQL bin directory is valid */
-  def isValidBinDir(BinPath: String): Boolean = {
+  /** Check that postgreSQL bin directory is valid */
+  def isValidatedBinDir(BinPath: String): Boolean = {
     try {
       new File(new File(BinPath), "pg_restore.exe").exists
     } catch {
@@ -290,14 +293,14 @@ class RestoreProjectDialog(
     }
   }
 
-  /** check fields and show the warning labels */
+  /** check fields and show the warning/error messages */
   def checkFields(): Boolean = {
-    if (!projectBinDirTextField.getText.isEmpty && isValidBinDir(projectBinDirTextField.getText)) {
+    if (!projectBinDirTextField.getText.isEmpty && isValidatedBinDir(projectBinDirTextField.getText)) {
       warningBinPathLabel.visible_=(false)
     } else {
       warningBinPathLabel.visible_=(true)
     }
-    if (!projectPathTextField.getText.isEmpty && isValidProjectDir(new File(projectPathTextField.getText))) {
+    if ((new File(projectPathTextField.getText).exists) && isValidatedProjectDir(new File(projectPathTextField.getText))) {
       warningPathLabel.visible_=(false)
     } else {
       warningPathLabel.visible_=(true)
@@ -308,19 +311,28 @@ class RestoreProjectDialog(
       warningOwnerLabel.visible_=(true)
     }
     //isRestoreProject is true only when all fields are valid 
-    Seq(!projectBinDirTextField.getText.isEmpty && isValidBinDir(projectBinDirTextField.getText),
-      !projectPathTextField.getText.isEmpty && isValidProjectDir(new File(projectPathTextField.getText)),
+    Seq(!projectBinDirTextField.getText.isEmpty && isValidatedBinDir(projectBinDirTextField.getText),
+      new File(projectPathTextField.getText).exists && isValidatedProjectDir(new File(projectPathTextField.getText)),
       !ownerList.selectionModel.get.isEmpty).forall(_ == (true))
   }
 
-  /** create restore task */
+  /** Validate and create restore project task */
   def validate(): Unit = {
     if (checkFields()) {
       var binDirPath = projectBinDirTextField.getText
       var projectOwner = ownerList.getValue.getId
       var projectDirPath = projectPathTextField.getText
-      var projectName: Option[String] = Option(projecNameTextField.getText)
-      if (isDefinedProjName(projectName, projectOwner)) RestoreProject(projectOwner, projectDirPath, binDirPath, projectName, archiveProjectPane).restart()
+      //project name must not be empty 
+      var projectName: Option[String] = if (projecNameTextField.getText.isEmpty) None else Some(projecNameTextField.getText)
+      if (projectName.isDefined) {
+        //the project name is defined from the dialog 
+        logger.debug(s"The project name used is =#$projectName ")
+        if (isDefinedProjName(projectName, projectOwner)) RestoreProject(projectOwner, projectDirPath, binDirPath, projectName, archiveProjectPane).restart()
+      } else {
+        // the project name will be imported from project_properties.json file 
+        logger.debug(s"The project name will be imported from the json file.")
+        RestoreProject(projectOwner, projectDirPath, binDirPath, projectName, archiveProjectPane).restart()
+      }
     }
   }
 

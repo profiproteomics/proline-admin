@@ -27,13 +27,13 @@ object MonitorBottomsPanel extends VBox with IButtons with LazyLogging {
     goButton.visible = false
   }
 
-  /** Exit and close Proline-admin GUI monitor*/
+  /** exit and close Proline-admin GUI monitor*/
   def exit() {
     ExitPopup("Exit Setup", "Are you sure that you want to exit Proline-Admin Monitor ?", Some(Monitor.stage), false)
   }
 
   /** check the initial settings of Proline-Admin */
-  def isInitialSettingsOk: Boolean = {
+  def isInitialSettingsOk(): Boolean = {
     try {
       MonitorPane.getAdminConfigOpt().map(adminConfig => MonitorPane.isAdminConfigsOk(adminConfig).forall { _.==(true) }).getOrElse(false)
     } catch {
@@ -42,9 +42,8 @@ object MonitorBottomsPanel extends VBox with IButtons with LazyLogging {
         false
     }
   }
-
   //disable go button when there is a problem of connectivity.
-  goButton.disable = !isInitialSettingsOk
+  goButton.disable = !isInitialSettingsOk()
   //components
   children = component
 }

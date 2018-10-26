@@ -35,7 +35,7 @@ import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 class ArchiveProjDialog(
     wTitle: String,
     wParent: Option[Stage],
-    isResizable: Boolean = false) extends Stage with IMonitorForm with LazyLogging {
+    isResizable: Boolean = true) extends Stage with IMonitorForm with LazyLogging {
   val archiveProjectPane = this
   title = wTitle
   width_=(600)
@@ -52,13 +52,13 @@ class ArchiveProjDialog(
     managed <== visible
   }
   val warningBinPathLabel = new Label {
-    text = "Select a validated PostgreSQL bin directory.It must contain pg_dump.exe file."
+    text = "Select a validated PostgreSQL bin directory. It must contain pg_dump.exe file."
     style = TextStyle.RED_ITALIC
     visible = false
     managed <== visible
   }
   val warningLocationPathLabel = new Label {
-    text = "Select a validated archive location.It must not be empty."
+    text = "Select a validated archive location. It must not be empty."
     style = TextStyle.RED_ITALIC
     visible = false
     managed <== visible
@@ -68,7 +68,7 @@ class ArchiveProjDialog(
     children = Seq(warningSelectdProjectLabel, warningBinPathLabel, warningLocationPathLabel)
   }
 
-  //component 
+  //components 
   val projectBinDirLabel = new Label("Select a PostgreSQL bin directory")
   val projectBinDirTextField = new TextField {
     if (ArchiveProjDialog.iniBinDirPath.isDefined) text = ArchiveProjDialog.iniBinDirPath.get
@@ -211,7 +211,7 @@ class ArchiveProjDialog(
   }
 
   /**
-   *  check postgreSQL bin directory
+   *  Check postgreSQL bin directory
    *  @param BinPath the bin directory path.
    */
   def isValidBinDir(BinPath: String): Boolean = {
@@ -224,7 +224,7 @@ class ArchiveProjDialog(
     }
   }
 
-  /** check all required fields and show warning labels */
+  /** Check all required fields and show warning/error labels */
   def checkFields(): Boolean = {
     if (!projectBinDirTextField.getText.isEmpty && isValidBinDir(projectBinDirTextField.getText)) {
       warningBinPathLabel.visible_=(false)
@@ -246,7 +246,7 @@ class ArchiveProjDialog(
       ProjectPane.selectedProject.isDefined).forall(_.==(true))
   }
 
-  /** create new archive project task   */
+  /** Create new archive project task   */
   def validate(): Unit = {
     try {
       if (checkFields()) {
@@ -265,7 +265,7 @@ class ArchiveProjDialog(
   }
 
   /**
-   *  exit and close the dialog
+   *  Exit and close the dialog
    */
   def exit(): Unit = {
     archiveProjectPane.close()

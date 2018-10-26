@@ -276,7 +276,7 @@ object ProjectPane extends StackPane with LazyLogging {
 
   /** restore a project */
   private def restoreProject() {
-    RestoreProjectDialog("Restore Project", Some(Monitor.stage), false)
+    RestoreProjectDialog("Restore Project", Some(Monitor.stage), true)
   }
 
   /**show more columns */

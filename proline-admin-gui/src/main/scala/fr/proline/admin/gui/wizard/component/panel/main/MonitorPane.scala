@@ -14,6 +14,7 @@ import fr.proline.admin.gui.wizard.process.config.{ NodeConfigFile, ParsingRules
 import fr.proline.admin.gui.Monitor
 
 import fr.proline.admin.gui.process.DatabaseConnection
+import fr.proline.admin.gui.process.{ UdsRepository, ProlineAdminConnection }
 import fr.proline.admin.gui.wizard.util.UserGuide
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.util.WindowSize
@@ -30,12 +31,13 @@ import java.io.File
 
 object MonitorPane extends VBox with LazyLogging {
 
-  // get Proline-Admin initial settings  
+  // get Proline-Admin GUI initial settings  
   val adminConfigOpt = getAdminConfigOpt()
   require(adminConfigOpt.isDefined, "Proline Admin-config must not be empty or null.")
   val adminConfig = adminConfigOpt.get
   val nodeConfigOpt = getNodeConfigOpt()
-
+  //load initial proline configyurations 
+  setInitialConfig()
   // proline error and warning labels 
   val adminConfigErrorLabel = new Label {
     text = "The Proline-Admin configuration file not found. Make sure that you have already setup Proline."
@@ -43,8 +45,14 @@ object MonitorPane extends VBox with LazyLogging {
     style = TextStyle.RED_ITALIC
     managed <== visible
   }
+  val udsDbErrorLabel = new Label {
+    text = "Error can not reach UDS database. Make sure that you have already setup Proline."
+    graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
+    style = TextStyle.RED_ITALIC
+    managed <== visible
+  }
   val connectionErrorLabel = new Label {
-    text = "Error establishing a database connection. Please check the database config settings. Make sure that you have already setup Proline."
+    text = "Error establishing a database connection. Please check the database connection configurations."
     graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
     style = TextStyle.RED_ITALIC
     managed <== visible
@@ -224,6 +232,7 @@ object MonitorPane extends VBox with LazyLogging {
     new VBox {
       spacing = V_SPACING
       children = List(
+        udsDbErrorLabel,
         adminConfigErrorLabel,
         connectionErrorLabel,
         serverConfigWarningLabel,
@@ -276,19 +285,32 @@ object MonitorPane extends VBox with LazyLogging {
     }
   }
 
+  /** set initial configurations */
+  def setInitialConfig() {
+    try {
+      ProlineAdminConnection._setNewProlineInstallConfig(Monitor.adminConfPath)
+    } catch {
+      case t: Throwable => logger.error("Error while trying to set the new configurations", t)
+    }
+  }
   /** check Proline-Admin configurations and show warning and error labels */
   def isAdminConfigsOk(adminConfig: AdminConfig): Seq[Boolean] = adminConfig match {
     case adminConfigValue @ AdminConfig(filePath, serverConfigFilePath, pwx, pgsqlDataDir, seqRepoConfigFilePath, _, _, _, _, _, _) => {
-      var isConnectionEstablished = DatabaseConnection.testDbConnection(adminConfigValue, showSuccessPopup = false, showFailurePopup = false)
+      logger.debug("Loading and checking Proline configurations. Please wait ...")
+      System.out.println("INFO - Loading and checking Proline configurations. Please wait ...")
+      val isUdsDbReachable = UdsRepository.isUdsDbReachable()
+      udsDbErrorLabel.visible = !isUdsDbReachable
+      val isConnectionEstablished = DatabaseConnection.testDbConnection(adminConfigValue, showSuccessPopup = false, showFailurePopup = false)
       connectionErrorLabel.visible = !isConnectionEstablished
       adminConfigErrorLabel.visible = !(new File(filePath).exists)
       serverConfigWarningLabel.visible = !serverConfigFilePath.isDefined || !(new File(serverConfigFilePath.get).exists)
       pgsqlDataDirWarningLabel.visible = !pgsqlDataDir.isDefined || !(new File(pgsqlDataDir.get).exists)
       seqReposWarningLabel.visible = !seqRepoConfigFilePath.isDefined || !(new File(seqRepoConfigFilePath.get).exists)
-      Seq(isConnectionEstablished,
+      Seq(isUdsDbReachable,
+        isConnectionEstablished,
         (new File(filePath).exists))
     }
-    case _ => logger.error("Error could not extract values from AdminConfig!"); Seq.empty
+    case _ => logger.error("Error while trying to check initial Proline configurations!"); Seq.empty
   }
 
 }

@@ -36,24 +36,25 @@ class ArchiveProject(projectId: Long, binDirPath: String, archiveProjectDirPath:
       dialog.loadProjectPanel.disable_=(true)
     }
     override def running(): Unit = {
+
       dialog.informationLabel.setStyle(TextStyle.BLUE_ITALIC)
       dialog.informationLabel.setText(s"Archiving project with id= #$projectId in progress, please wait...")
       dialog.progressBar.progress_=(this.getProgress)
-      dialog.loadProjectPanel.disable_=(false)
-      dialog.archiveButton.disable_=(false)
-      dialog.exitButton.disable_=(false)
+      Seq(dialog.loadProjectPanel,
+        dialog.archiveButton,
+        dialog.exitButton) foreach (_.disable = (true))
     }
     override def succeeded(): Unit = {
       val isArchProjOk = this.get
       isArchProjOk match {
         case Success(isArchProjOk) if (isArchProjOk) => {
           dialog.informationLabel.setStyle(TextStyle.GREEN_ITALIC)
-          dialog.informationLabel.setText(s"The project with id $projectId has been archived successfully!")
+          dialog.informationLabel.setText(s"The project with id= #$projectId has been archived successfully!")
           dialog.informationLabel.setStyle(TextStyle.GREEN_ITALIC)
           dialog.progressBar.progress_=(100)
-          dialog.loadProjectPanel.disable_=(false)
-          dialog.archiveButton.disable_=(false)
-          dialog.exitButton.disable_=(false)
+          Seq(dialog.loadProjectPanel,
+            dialog.archiveButton,
+            dialog.exitButton) foreach (_.disable = (false))
           ProjectPane.refreshTableView()
         }
         case _ => {

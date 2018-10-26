@@ -112,30 +112,30 @@ See: http://fr.slideshare.net/xzilla/the-essentialpostgresconf
 See: https://bioproj.extra.cea.fr/docs/proline/doku.php?id=setupguide:postgresqloptimization"""
     ),
 
-    CHECKPOINT_SEGMENTS -> PostgreSqlLineFormat(
-      formatter = longToStringFormatter,
-      parser = stringToBigDecimalParser,
-      unitString = "segments",
-      paramType = INTEGER,
-      toolTipText = """Every time checkpoint_segments worth of these files have been written, a checkpoint occurs:
-
-As you generate transactions, Postgres puts data into the write-ahead log (WAL).
-The WAL is organized into segments that are typically 16MB each.
-Periodically, after the system finishes a checkpoint, the WAL data up to a certain point
-is guaranteed to have been applied to the database. At that point the old WAL files aren't
-needed anymore and can be reused. Checkpoints are generally caused by one of two things happening:
-* checkpoint_segments worth of WAL files have been written
-* more than checkpoint_timeout seconds have passed since the last checkpoint
-
-Default is 3;
-shared_buffers / 16 can be used is optimized;
-use at max. 64 or 256 for write-heavy bulk loading.
-
-
-See: https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server
-See: http://fr.slideshare.net/xzilla/the-essentialpostgresconf
-See: https://bioproj.extra.cea.fr/docs/proline/doku.php?id=setupguide:postgresqloptimization"""
-    ),
+//    CHECKPOINT_SEGMENTS -> PostgreSqlLineFormat(
+//      formatter = longToStringFormatter,
+//      parser = stringToBigDecimalParser,
+//      unitString = "segments",
+//      paramType = INTEGER,
+//      toolTipText = """Every time checkpoint_segments worth of these files have been written, a checkpoint occurs:
+//
+//As you generate transactions, Postgres puts data into the write-ahead log (WAL).
+//The WAL is organized into segments that are typically 16MB each.
+//Periodically, after the system finishes a checkpoint, the WAL data up to a certain point
+//is guaranteed to have been applied to the database. At that point the old WAL files aren't
+//needed anymore and can be reused. Checkpoints are generally caused by one of two things happening:
+//* checkpoint_segments worth of WAL files have been written
+//* more than checkpoint_timeout seconds have passed since the last checkpoint
+//
+//Default is 3;
+//shared_buffers / 16 can be used is optimized;
+//use at max. 64 or 256 for write-heavy bulk loading.
+//
+//
+//See: https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server
+//See: http://fr.slideshare.net/xzilla/the-essentialpostgresconf
+//See: https://bioproj.extra.cea.fr/docs/proline/doku.php?id=setupguide:postgresqloptimization"""
+//    ),
 
     CHECKPOINT_COMPLETION_TARGET -> PostgreSqlLineFormat(
       formatter = floatToStringFormatter,
@@ -260,7 +260,7 @@ object PostgresConfigV9_4 extends IPostgresConfig {
     //TODO: quarterOfPhysicalMem / totalPhysicalMem, to String, use it
 
     /* Checkpoint segments */
-    CHECKPOINT_SEGMENTS -> ConfigParamValueRange(1, 3, checkpointSegmentsOptimizedValue, checkpointSegmentsMaxValue),
+    //CHECKPOINT_SEGMENTS -> ConfigParamValueRange(1, 3, checkpointSegmentsOptimizedValue, checkpointSegmentsMaxValue),
     // Use (shared_buffers / 16) ; max. 64 or 256 for write-heavy bulk loading.
     // Default value 3  → 128
 

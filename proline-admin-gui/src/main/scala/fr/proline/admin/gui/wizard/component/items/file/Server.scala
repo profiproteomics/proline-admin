@@ -29,6 +29,11 @@ import fr.proline.repository.DriverType
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
+import java.io.File
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigRenderOptions
+import fr.profi.util.scala.TypesafeConfigWrapper._
 /**
  * build a scroll panel
  * @param path The path of server file configuration
@@ -63,22 +68,24 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
   private val adminConfigOpt = adminConfigFile.read()
   require(adminConfigOpt.isDefined, "Admin config is undefined. Make sure that proline configuration files exists.")
   private val adminConfig = adminConfigOpt.get
-
+  private val serverCfgOpt: Option[Config] = getServerProperties
+  require(serverCfgOpt.isDefined, "Proline server configuration file must not be empty!")
+  private val serverCfg = serverCfgOpt.get
   def isPrompt(str: String): Boolean = str matches """<.*>"""
 
-  val dbUserName = adminConfig.dbUserName.get
+  val dbUserName = serverCfg.getStringOpt("auth-config.user").getOrElse("postgres")
   if (isPrompt(dbUserName)) Wizard.userName = dbUserName
   else Wizard.userName = dbUserName
 
-  val dbPassword = adminConfig.dbPassword.get
+  val dbPassword = serverCfg.getStringOpt("auth-config.password").getOrElse("postgres")
   if (isPrompt(dbPassword)) Wizard.passWord = dbPassword
   else Wizard.passWord = dbPassword
 
-  val dbHost = adminConfig.dbHost.get
+  val dbHost = serverCfg.getStringOpt("host-config.host").getOrElse("localhost")
   if (isPrompt(dbHost)) Wizard.hostName = dbHost
   else Wizard.hostName = dbHost
 
-  val dbPort = adminConfig.dbPort.get
+  val dbPort = serverCfg.getIntOpt("host-config.port").getOrElse(5432)
   Wizard.port = dbPort
 
   //host 
@@ -229,6 +236,7 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
     }
     isValidatedFields
   }
+  
   /** get GUI information to create a new Proline Admin Config Object **/
   private def _toAdminConfig() = AdminConfig(
     filePath = Wizard.adminConfPath,
@@ -243,6 +251,17 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
     dbHost = Some(Wizard.hostName),
     dbPort = Some(Wizard.port) //FIXME
     )
+    
+  /** get initial server properties */
+  def getServerProperties: Option[Config] = {
+    try {
+      Some(ConfigFactory.parseFile(new File(Wizard.serverConfPath)))
+    } catch {
+      case t: Throwable =>
+        logger.error("Error while trying to read Proline server configuration file", t.getMessage())
+        None
+    }
+  }
   /** test connection to database server */
   def _testDbConnection(
     showSuccessPopup: Boolean = false,

@@ -22,15 +22,17 @@ import fr.proline.admin.gui.wizard.monitor.component.ProjectPane
  *
  */
 
-class RestoreProject(ownerId: Long, projectDirPath: String, binDirPath: String, projectName: Option[String], restoreProjDialog: RestoreProjectDialog) extends Service(new jfxc.Service[Try[Long]]() {
-  protected def createTask(): jfxc.Task[Try[Long]] = new jfxc.Task[Try[Long]] {
-    protected def call(): Try[Long] = {
-      Try {
+class RestoreProject(ownerId: Long, projectDirPath: String, binDirPath: String, projectName: Option[String] = None, restoreProjDialog: RestoreProjectDialog) extends Service(new jfxc.Service[TaskState]() {
+  protected def createTask(): jfxc.Task[TaskState] = new jfxc.Task[TaskState] {
+    protected def call(): TaskState = {
+      try {
         val udsDbContext = UdsRepository.getUdsDbContext()
         val userName = UdsRepository.getUdsDbConfig().userName
         val restoreProject = new RestoreUserProject(udsDbContext, userName, ownerId, binDirPath, projectDirPath, projectName)
         restoreProject.doWork()
-        restoreProject.newProjId
+        TaskState(true, s"The project for the owner with id=#$ownerId has been restored successfully with new id =#${restoreProject.newProjId}!")
+      } catch {
+        case e: Exception => TaskState(false, s"Error while trying to restore project.\n${e.getMessage}")
       }
     }
     override def scheduled(): Unit = {
@@ -49,11 +51,11 @@ class RestoreProject(ownerId: Long, projectDirPath: String, binDirPath: String, 
       restoreProjDialog.exitButton.disable_=(true)
     }
     override def succeeded(): Unit = {
-      val isRestProjOk = this.get
+      val isRestProjOk = this.get.isSucceeded
       isRestProjOk match {
-        case Success(isRestProjOk) if (isRestProjOk > 0) => {
+        case true => {
           restoreProjDialog.informationLabel.setStyle(TextStyle.GREEN_ITALIC)
-          restoreProjDialog.informationLabel.setText(s"The project with id $ownerId has been restored successfully!")
+          restoreProjDialog.informationLabel.setText(this.get.message)
           restoreProjDialog.progressBar.progress_=(100)
           restoreProjDialog.loadProjectPanel.disable_=(false)
           restoreProjDialog.restoreButton.disable_=(false)
@@ -62,7 +64,7 @@ class RestoreProject(ownerId: Long, projectDirPath: String, binDirPath: String, 
         }
         case _ => {
           restoreProjDialog.informationLabel.setStyle(TextStyle.RED_ITALIC)
-          restoreProjDialog.informationLabel.setText("Error while trying to restore project!\n")
+          restoreProjDialog.informationLabel.setText(this.get.message)
           restoreProjDialog.informationLabel.visible_=(true)
           restoreProjDialog.progressBar.visible_=(false)
           restoreProjDialog.loadProjectPanel.disable_=(false)

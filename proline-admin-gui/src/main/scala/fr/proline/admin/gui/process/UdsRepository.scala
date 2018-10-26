@@ -18,6 +18,7 @@ import fr.proline.repository.ProlineDatabaseType.MSI
 import fr.proline.repository.ProlineDatabaseType.LCMS
 import fr.proline.core.dal.DoJDBCWork
 import scala.util.Try
+import java.io.{ ByteArrayOutputStream, PrintStream }
 
 /**
  * Some utilities relative to UDS database connection
@@ -109,32 +110,31 @@ object UdsRepository extends LazyLogging {
    *  Test connection with database
    */
   def isUdsDbReachable(verbose: Boolean = true): Boolean = {
-
     val udsDbConnector = getUdsDbConnector()
-
     var udsDbCtx: DatabaseConnectionContext = null //especially created for SQLite test, needs to be closed in this method
-
+    var stream = new ByteArrayOutputStream()
+    var isSetup = false
     try {
-
       /** Check to retrieve DB connection */
-      logger.debug("Checking connection to UDSdb. Please wait ...")
-
+      logger.debug("Checking if UDS database is reachable. Please wait ...")
+      System.out.println("INFO - Checking if UDS database is reachable. Please wait ...")
+      logger.debug("Redirecting Output Error Stream from the Standard Out Stream.")
+      var ps = new PrintStream(stream)
+      System.setErr(ps)
       udsDbConnector.getDataSource().getConnection()
-
       /** Additionnal check for file-based databases (SQLite) */
       udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
-      udsDbCtx.getEntityManager().find(classOf[ExternalDb], 1L)
-      logger.debug("Proline is already set up !")
-      true
+      isSetup = udsDbCtx.getEntityManager().find(classOf[UserAccount], 1L) != null
     } catch {
-      case t: Throwable => {
-        System.err.println("WARN - Proline is not set up !")
-        logger.trace("Proline is not set up : ", t)
-        false
-      }
+      case t: Throwable => logger.error("Error while trying to check if UDSDb is set up!")
     } finally {
+      logger.debug("Reset the default setting for Output Error Stream.")
+      stream.reset()
+      System.setErr(System.out)
+      logger.debug("close udsDb Context.")
       if (udsDbCtx != null) udsDbCtx.close()
     }
+    isSetup
   }
   /**
    *  Get the exhaustive list of UserAccount instances in database as a map of type "login ->  id"
@@ -182,7 +182,6 @@ object UdsRepository extends LazyLogging {
           System.err.println(t.getMessage())
           throw t
         }
-
       }
     }
     projects
