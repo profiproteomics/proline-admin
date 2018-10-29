@@ -296,12 +296,15 @@ object MonitorPane extends VBox with LazyLogging {
   /** check Proline-Admin configurations and show warning and error labels */
   def isAdminConfigsOk(adminConfig: AdminConfig): Seq[Boolean] = adminConfig match {
     case adminConfigValue @ AdminConfig(filePath, serverConfigFilePath, pwx, pgsqlDataDir, seqRepoConfigFilePath, _, _, _, _, _, _) => {
-      logger.debug("Loading and checking Proline configurations. Please wait ...")
-      System.out.println("INFO - Loading and checking Proline configurations. Please wait ...")
+      logger.debug("Loading Proline configurations. Please wait ...")
+      System.out.println("INFO - Loading Proline configurations. Please wait ...")
+      //check that uds is installed 
       val isUdsDbReachable = UdsRepository.isUdsDbReachable()
       udsDbErrorLabel.visible = !isUdsDbReachable
+      //check that the connection is established 
       val isConnectionEstablished = DatabaseConnection.testDbConnection(adminConfigValue, showSuccessPopup = false, showFailurePopup = false)
       connectionErrorLabel.visible = !isConnectionEstablished
+      //check AdminCinfi with warning messgaes
       adminConfigErrorLabel.visible = !(new File(filePath).exists)
       serverConfigWarningLabel.visible = !serverConfigFilePath.isDefined || !(new File(serverConfigFilePath.get).exists)
       pgsqlDataDirWarningLabel.visible = !pgsqlDataDir.isDefined || !(new File(pgsqlDataDir.get).exists)
@@ -310,7 +313,7 @@ object MonitorPane extends VBox with LazyLogging {
         isConnectionEstablished,
         (new File(filePath).exists))
     }
-    case _ => logger.error("Error while trying to check initial Proline configurations!"); Seq.empty
+    case _ => logger.error("Error while trying to load initial Proline configurations!"); Seq.empty
   }
 
 }

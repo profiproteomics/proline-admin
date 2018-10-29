@@ -116,8 +116,8 @@ object UdsRepository extends LazyLogging {
     var isSetup = false
     try {
       /** Check to retrieve DB connection */
-      logger.debug("Checking if UDS database is reachable. Please wait ...")
-      System.out.println("INFO - Checking if UDS database is reachable. Please wait ...")
+      logger.debug("Checking that UDS database is reachable. Please wait ...")
+      System.out.println("INFO - Checking that UDS database is reachable. Please wait ...")
       logger.debug("Redirecting Output Error Stream from the Standard Out Stream.")
       var ps = new PrintStream(stream)
       System.setErr(ps)
@@ -126,7 +126,7 @@ object UdsRepository extends LazyLogging {
       udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
       isSetup = udsDbCtx.getEntityManager().find(classOf[UserAccount], 1L) != null
     } catch {
-      case t: Throwable => logger.error("Error while trying to check if UDSDb is set up!")
+      case t: Throwable => logger.error("Error while trying to check that UDSDb is set up", t.getMessage)
     } finally {
       logger.debug("Reset the default setting for Output Error Stream.")
       stream.reset()
