@@ -20,7 +20,7 @@ import fr.proline.repository._
 import fr.proline.core.dal.DoJDBCWork
 import fr.proline.core.dal.DoJDBCReturningWork
 import javax.persistence.EntityManager
-import scala.util.{ Try, Success, Failure }
+import scala.util.Try
 import scala.collection.mutable.Map
 import scala.sys.process.{ Process, ProcessLogger }
 
@@ -79,7 +79,7 @@ class RestoreProject(
       logger.debug("Start to retrieve project properties from the project_properties.json file ...")
       val projPropFile = projFilesAsMap("projPropFile").get
       val jsValuesMap = readJsonFile(projPropFile.getAbsolutePath)
-      require(!jsValuesMap.isEmpty, "The json values must not be empty.")
+      require(!jsValuesMap.isEmpty, "The json values must not be empty!")
       var parser = new JsonParser()
       var array: JsonObject = null
       var udsProject: Project = null
@@ -88,7 +88,7 @@ class RestoreProject(
       var JsHost, JsMsiDbName, JsLcmsDbName = ""
       var JsPort, dbVersion = 0
       var newProjectId = 0L
-      logger.warn("**The version of Proline database UDS that used to archive and restore project must be the same or above 8")
+      logger.warn("**The version of Proline database UDS that used to archive and restore project must be the same or above 8!")
       DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
         ezDBC.selectAndProcess(s"SELECT MAX(version_rank) AS version FROM schema_version") { record =>
           dbVersion = record.getInt("version")
@@ -97,7 +97,7 @@ class RestoreProject(
 
       // check the schema version 
       logger.info(s"The version of your Proline database UDS is =#$dbVersion and the version used to archive the project is =#$jsDbVersion")
-      require((jsDbVersion == dbVersion && jsDbVersion >= 8), "The Proline version that used to archive and to restore a project are different. Make sure that your databases are updated.")
+      require((jsDbVersion == dbVersion && jsDbVersion >= 8), "The Proline version that used to archive and to restore a project are different. Make sure that your databases are upgarded.")
       val isTxOk = udsDbCtx.tryInTransaction {
 
         // load project properties 
@@ -137,7 +137,7 @@ class RestoreProject(
             case t: Throwable =>
               {
                 udsDbCtx.rollbackTransaction()
-                logger.error("Error while trying to create the project MSI and LCMS databases", t)
+                logger.error("Can't create MSI and LCMS databases", t)
                 false
               }
           }
@@ -146,19 +146,16 @@ class RestoreProject(
           logger.info("The MSI and LCMS databases have been created successfully.")
           logger.info("Start to execute pg_restore commands to restore MSI and LCMS databases. It could take a while, please wait ...")
           val isRestoredDatabases = restoreDatabases(JsHost, JsPort, pgUserName, JsMsiDbName, pgUserName, archivedProjDirPath, binDirPath, projectId, newProjectId)
-          isRestoredDatabases match {
-            case Success(s) => {
-              // update project serialized properties when it's restored
-              udsDbCtx.tryInTransaction {
-                addProperties(array)
-                udsProject.setSerializedProperties(array.toString())
-                udsEM.merge(udsProject)
-              }
+          if (isRestoredDatabases) {
+            // update project's serialized properties 
+            val updateProjSerProps = udsDbCtx.tryInTransaction {
+              addProperties(array)
+              udsProject.setSerializedProperties(array.toString())
+              udsEM.merge(udsProject)
+            }
+            if (updateProjSerProps) {
               newProjId = newProjectId
               logger.info(s"The Project with id= #$projectId has been restored with a new project id= #$newProjectId.")
-            }
-            case Failure(t) => {
-              logger.error("Error while trying to restore MSI and LCMS databases!", t)
             }
           }
         }
@@ -247,26 +244,32 @@ class RestoreProject(
   /** Load external_db data */
   private def loadExetrnalDbData(jsValuesMap: Map[String, JsValue], udsProject: Project): Map[String, ExternalDb] = {
     var extDbsAsMap = Map[String, ExternalDb]()
-    for (externaldb <- jsValuesMap("external_db").as[List[JsObject]]) {
-      val udsExternalDb = new ExternalDb()
-      udsExternalDb.setDbVersion((externaldb \ "version").as[String])
-      udsExternalDb.setHost((externaldb \ "host").as[String])
-      udsExternalDb.setPort((externaldb \ "port").as[Int])
-      udsExternalDb.setIsBusy((externaldb \ "is_busy").as[Boolean])
-      udsExternalDb.setSerializedProperties((externaldb \ "serialized_properties").as[String])
-      udsExternalDb.setType(ProlineDatabaseType.valueOf((externaldb \ "type").as[String]))
-      udsExternalDb.setConnectionMode(ConnectionMode.valueOf((externaldb \ "connection_mode").as[String]))
-      udsExternalDb.setDriverType(DriverType.POSTGRESQL)
-      udsExternalDb.addProject(udsProject)
-      if ((externaldb \ "name").as[String] contains "msi_db_project_") {
-        udsExternalDb.setDbName(s"msi_db_project_${udsProject.getId}")
-        extDbsAsMap += ("MSI" -> udsExternalDb)
-      } else {
-        udsExternalDb.setDbName(s"lcms_db_project_${udsProject.getId}")
-        extDbsAsMap += ("LCMS" -> udsExternalDb)
+    try {
+      for (externaldb <- jsValuesMap("external_db").as[List[JsObject]]) {
+        val udsExternalDb = new ExternalDb()
+        udsExternalDb.setDbVersion((externaldb \ "version").as[String])
+        udsExternalDb.setHost((externaldb \ "host").as[String])
+        udsExternalDb.setPort((externaldb \ "port").as[Int])
+        udsExternalDb.setIsBusy((externaldb \ "is_busy").as[Boolean])
+        udsExternalDb.setSerializedProperties((externaldb \ "serialized_properties").as[String])
+        udsExternalDb.setType(ProlineDatabaseType.valueOf((externaldb \ "type").as[String]))
+        udsExternalDb.setConnectionMode(ConnectionMode.valueOf((externaldb \ "connection_mode").as[String]))
+        udsExternalDb.setDriverType(DriverType.POSTGRESQL)
+        udsExternalDb.addProject(udsProject)
+        if ((externaldb \ "name").as[String] contains "msi_db_project_") {
+          udsExternalDb.setDbName(s"msi_db_project_${udsProject.getId}")
+          extDbsAsMap += ("MSI" -> udsExternalDb)
+        } else {
+          udsExternalDb.setDbName(s"lcms_db_project_${udsProject.getId}")
+          extDbsAsMap += ("LCMS" -> udsExternalDb)
+        }
       }
+      extDbsAsMap
+    } catch {
+      case t: Throwable =>
+        logger.error("Error occured while trying to create external_db", t)
+        extDbsAsMap
     }
-    extDbsAsMap
   }
 
   /** Load and restore datasets */
@@ -350,7 +353,7 @@ class RestoreProject(
       JsValueMap += ("run_identification" -> json("run_identification"))
       JsValueMap += ("project_user_account_map" -> json("project_user_account_map"))
     } catch {
-      case t: Throwable => logger.error("Error while trying to read project_properties.json file!", t)
+      case t: Throwable => logger.error("Error occured while trying to read project_properties.json file!", t)
     } finally {
       if (stream.isDefined) stream.get.close()
     }
@@ -406,8 +409,8 @@ class RestoreProject(
    * @return <code>Success(0)</code> if pg_restore of msi_db and lcms_db databases succeeded.
    */
 
-  private def restoreDatabases(host: String, port: Integer, user: String, msiDb: String, lcmsDb: String, archivedProjectDirPath: String, binDirPath: String, projectId: Long, newProjectId: Long): Try[Boolean] =
-    Try {
+  private def restoreDatabases(host: String, port: Integer, user: String, msiDb: String, lcmsDb: String, archivedProjectDirPath: String, binDirPath: String, projectId: Long, newProjectId: Long): Boolean =
+    try {
       val projectPath = new File(archivedProjectDirPath)
       val pgRestorePath = new File(binDirPath + File.separator + "pg_restore").getCanonicalPath()
       var cmd = Seq(pgRestorePath, "-h", host, "-p", port.toString, "-U", user, "-d", "msi_db_project_" + newProjectId, "-v", projectPath + File.separator + "msi_db_project_" + projectId + ".bak")
@@ -415,6 +418,8 @@ class RestoreProject(
       cmd = Seq(pgRestorePath, "-h", host, "-p", port.toString, "-U", user, "-d", "lcms_db_project_" + newProjectId, "-v", projectPath + File.separator + "lcms_db_project_" + projectId + ".bak")
       val restoreLcmsExitCode = execute(cmd)
       Seq(restoreMsiExitCode, restoreLcmsExitCode).forall(_.==(0))
+    } catch {
+      case e: Exception => throw new Exception(s"Error occured while trying to pg_restore MSI and LCMS databases $e"); false
     }
 
   /**
