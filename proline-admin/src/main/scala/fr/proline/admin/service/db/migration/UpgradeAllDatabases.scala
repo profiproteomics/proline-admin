@@ -1,6 +1,5 @@
 package fr.proline.admin.service.db.migration
 
-
 import com.typesafe.scalalogging.StrictLogging
 import javax.persistence.{ EntityManager, EntityTransaction }
 import fr.profi.util.security._
@@ -11,9 +10,9 @@ import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
 import fr.proline.repository._
-
+import java.sql.Connection
 import scala.collection.JavaConversions._
-
+import java.io.{ ByteArrayOutputStream, PrintStream }
 /**
  *
  * Upgrades all Proline Databases (UDS and all projects MSI and LCMS Dbs).
@@ -40,7 +39,8 @@ class UpgradeAllDatabases(
       udsTx.begin()
 
       /* Upgrade all Projects (MSI and LCMS) Dbs */
-      val projectIds = ProjectRepository.findAllActiveProjectIds(udsEM)
+      /* find all project (active/disabled) */
+      val projectIds = ProjectRepository.findAllProjectIds(udsEM)
 
       if ((projectIds != null) && !projectIds.isEmpty) {
 
@@ -131,7 +131,7 @@ class UpgradeAllDatabases(
         if (udsUser.getId > 0L) logger.info("Default admin user has been created successfully!")
       }
     } catch {
-      case t: Throwable => logger.error("Error while trying to create default admin user ", t.getMessage)
+      case t: Throwable => logger.error("Error while trying to create default admin user", t.getMessage)
     }
   }
 
@@ -152,6 +152,27 @@ class UpgradeAllDatabases(
 
 object UpgradeDatabase extends StrictLogging {
 
+  private def testDbConnection(dbConnector: IDatabaseConnector): Boolean = {
+    var dbConn: Option[Connection] = None
+    var stream = new ByteArrayOutputStream()
+    val isDbConnected = try {
+      logger.info("Checking database connection. Please wait ...")
+      var ps = new PrintStream(stream)
+      System.setErr(ps)
+      dbConn = Option { dbConnector.getDataSource().getConnection() }
+      true
+    } catch {
+      case e: Exception =>
+        logger.error(s"Unable to connect to the database: ${e.getMessage} !")
+        false
+    } finally {
+      stream.close()
+      System.setErr(System.out)
+      if (dbConn.isDefined && !dbConn.get.isClosed()) dbConn.get.close()
+    }
+    isDbConnected
+  }
+
   def apply(
     dbConnector: IDatabaseConnector,
     dbShortName: String,
@@ -162,38 +183,34 @@ object UpgradeDatabase extends StrictLogging {
     if (dbConnector == null) {
       logger.warn(s"DataStoreConnectorFactory has no valid connector to $dbShortName")
     } else {
-
       try {
-        val dbMigrationCount = DatabaseUpgrader.upgradeDatabase(dbConnector, repairChecksum)
-
-        if (dbMigrationCount < 0) {
-          throw new Exception(s"Unable to upgrade $dbShortName")
-        } else {
-          logger.info(s"$dbShortName: $dbMigrationCount migration(s) done.")
-        }
-
-        val driverType = dbConnector.getDriverType
-
-        // TODO: find a way to migrate SQLite databases using flyway
-        val version = if (driverType == DriverType.SQLITE) "no.version"
-        else {
-          // Try to retrieve the version reached after the applied migration
-          val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)
-          ezDBC.selectHead("""SELECT "version" FROM "schema_version" ORDER BY "version_rank" DESC LIMIT 1""") { r =>
-            r.nextString
+        if (testDbConnection(dbConnector)) {
+          val dbMigrationCount = DatabaseUpgrader.upgradeDatabase(dbConnector, repairChecksum)
+          if (dbMigrationCount < 0) {
+            throw new Exception(s"Unable to upgrade $dbShortName")
+          } else {
+            logger.info(s"$dbShortName: $dbMigrationCount migration(s) done.")
           }
-        }
+          val driverType = dbConnector.getDriverType
 
-        if (upgradeCallback != null)
-          upgradeCallback(version)
+          // TODO: find a way to migrate SQLite databases using flyway
+          val version = if (driverType == DriverType.SQLITE) "no.version"
+          else {
+            // Try to retrieve the version reached after the applied migration
+            val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)
+            ezDBC.selectHead("""SELECT "version" FROM "schema_version" ORDER BY "version_rank" DESC LIMIT 1""") { r =>
+              r.nextString
+            }
+          }
+          if (upgradeCallback != null)
+            upgradeCallback(version)
+        }
 
       } finally {
-
         if (closeConnector)
           dbConnector.close()
       }
     }
-
     dbConnector
   }
 }
