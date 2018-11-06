@@ -221,7 +221,6 @@ object UpgradeDatabase extends StrictLogging {
             upgradeCallback(version)
         } else {
           failedDbsToMigrate += dbShortName
-          println("failedDbNamesToMigrate:" + failedDbsToMigrate)
         }
 
       } finally {
