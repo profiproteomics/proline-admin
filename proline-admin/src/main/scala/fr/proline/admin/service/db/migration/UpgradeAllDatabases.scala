@@ -11,6 +11,7 @@ import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
 import fr.proline.repository._
 import java.sql.Connection
+import scala.collection.mutable.Set
 import scala.collection.JavaConversions._
 import java.io.{ ByteArrayOutputStream, PrintStream }
 /**
@@ -92,7 +93,13 @@ class UpgradeAllDatabases(
 
       udsEM.flush()
       udsTx.commit()
-      //create default user admin  when it does not exist
+
+      if (UpgradeDatabase.failedDbsToMigrate.isEmpty)
+        logger.info("Proline databases upgrade have finished successfully!")
+      else
+        logger.warn(s"Proline databases upgrade have finished successfully, but some databases= ${UpgradeDatabase.failedDbsToMigrate.mkString(",")} failed to migrate !")
+
+      //Create default user admin
       createDefaultAdmin(udsEM, udsTx)
 
     } finally {
@@ -152,28 +159,33 @@ class UpgradeAllDatabases(
 
 object UpgradeDatabase extends StrictLogging {
 
-  /** Check that the connection to database is established before to upgarde it */
-  private def isDbConnected(dbConnector: IDatabaseConnector): Boolean = {
+  var failedDbsToMigrate: Set[String] = Set.empty
+
+  /** Check that the connection to database is established before to upgrade it */
+  private def isConnectionEstablished(dbConnector: IDatabaseConnector): Boolean = {
     var connection: Option[Connection] = None
-    var isDbConnected: Boolean = false
+    var isConnectionEstablished: Boolean = false
     var stream = new ByteArrayOutputStream()
     try {
       logger.info("Checking database connection. Please wait ...")
       var ps = new PrintStream(stream)
       System.setErr(ps)
-      connection = Option { dbConnector.getDataSource().getConnection() }
-      isDbConnected = connection.isDefined
+      connection = Option { dbConnector.createUnmanagedConnection() }
+      isConnectionEstablished = connection.isDefined
     } catch {
       case ex: Exception =>
-        logger.error(s"Unable to connect to the database: ${ex.getMessage} ")
+        logger.error(s"Cannot get connection : ${ex.getMessage} ")
     } finally {
       stream.close()
       System.setErr(System.out)
       connection.collect {
-        case (dbConn) if (!dbConn.isClosed()) => dbConn.close()
+        case (dbConn) if (!dbConn.isClosed()) => {
+          try { dbConn.close() }
+          catch { case ex: Exception => logger.error(s"Cannot close connection ${ex.getMessage}") }
+        }
       }
     }
-    isDbConnected
+    isConnectionEstablished
   }
 
   def apply(
@@ -187,7 +199,7 @@ object UpgradeDatabase extends StrictLogging {
       logger.warn(s"DataStoreConnectorFactory has no valid connector to $dbShortName")
     } else {
       try {
-        if (isDbConnected(dbConnector)) {
+        if (isConnectionEstablished(dbConnector)) {
           val dbMigrationCount = DatabaseUpgrader.upgradeDatabase(dbConnector, repairChecksum)
           if (dbMigrationCount < 0) {
             throw new Exception(s"Unable to upgrade $dbShortName")
@@ -207,6 +219,9 @@ object UpgradeDatabase extends StrictLogging {
           }
           if (upgradeCallback != null)
             upgradeCallback(version)
+        } else {
+          failedDbsToMigrate += dbShortName
+          println("failedDbNamesToMigrate:" + failedDbsToMigrate)
         }
 
       } finally {
@@ -224,12 +239,10 @@ object UpgradeAllDatabases extends StrictLogging {
 
     try {
       new UpgradeAllDatabases(dsConnectorFactory).doWork()
-      logger.info("Databases successfully upgraded !")
     } catch {
       case t: Throwable =>
         logger.error("Databases upgrade failed !", t)
     }
-
   }
 
 }
