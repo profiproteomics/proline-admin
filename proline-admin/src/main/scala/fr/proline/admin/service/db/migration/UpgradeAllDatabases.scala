@@ -152,23 +152,26 @@ class UpgradeAllDatabases(
 
 object UpgradeDatabase extends StrictLogging {
 
-  private def testDbConnection(dbConnector: IDatabaseConnector): Boolean = {
-    var dbConn: Option[Connection] = None
+  /** Check that the connection to database is established before to upgarde it */
+  private def isDbConnected(dbConnector: IDatabaseConnector): Boolean = {
+    var connection: Option[Connection] = None
+    var isDbConnected: Boolean = false
     var stream = new ByteArrayOutputStream()
-    val isDbConnected = try {
+    try {
       logger.info("Checking database connection. Please wait ...")
       var ps = new PrintStream(stream)
       System.setErr(ps)
-      dbConn = Option { dbConnector.getDataSource().getConnection() }
-      true
+      connection = Option { dbConnector.getDataSource().getConnection() }
+      isDbConnected = connection.isDefined
     } catch {
-      case e: Exception =>
-        logger.error(s"Unable to connect to the database: ${e.getMessage} !")
-        false
+      case ex: Exception =>
+        logger.error(s"Unable to connect to the database: ${ex.getMessage} ")
     } finally {
       stream.close()
       System.setErr(System.out)
-      if (dbConn.isDefined && !dbConn.get.isClosed()) dbConn.get.close()
+      connection.collect {
+        case (dbConn) if (!dbConn.isClosed()) => dbConn.close()
+      }
     }
     isDbConnected
   }
@@ -184,7 +187,7 @@ object UpgradeDatabase extends StrictLogging {
       logger.warn(s"DataStoreConnectorFactory has no valid connector to $dbShortName")
     } else {
       try {
-        if (testDbConnection(dbConnector)) {
+        if (isDbConnected(dbConnector)) {
           val dbMigrationCount = DatabaseUpgrader.upgradeDatabase(dbConnector, repairChecksum)
           if (dbMigrationCount < 0) {
             throw new Exception(s"Unable to upgrade $dbShortName")
@@ -221,7 +224,6 @@ object UpgradeAllDatabases extends StrictLogging {
 
     try {
       new UpgradeAllDatabases(dsConnectorFactory).doWork()
-
       logger.info("Databases successfully upgraded !")
     } catch {
       case t: Throwable =>
