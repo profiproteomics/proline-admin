@@ -160,26 +160,6 @@ class AdminConfigFile(val path: String) extends LazyLogging {
     val out = new FileWriter(adminConfigFile)
     try { out.write(newLines) }
     finally { out.close() }
-
-    //          /* Create new config (merge with old) */
-    //          //val newConfig = ConfigFactory.parseMap(Map("server-config-file" -> newPath))
-    //          //      println("newPath: " + newPath + "**")
-    //          val correctNewPath = newPath.replaceAll("""\\""", """\\\\""")
-    //          //      println("correctNewPath: " + correctNewPath + "**")
-    //          val toParse = s"""server-config-file = "$correctNewPath""""
-    //          //      println("toParse: " + toParse + "**")
-    //          val newConfig = ConfigFactory.parseString(toParse)
-    //          val mergedConfig = newConfig.withFallback(getTypeSafeConfig())
-    //    
-    //          /* Write in file */
-    //          synchronized {
-    //            val renderOptions = ConfigRenderOptions.concise().setComments(true).setFormatted(true).setJson(false)
-    //            val render = mergedConfig.root().render(renderOptions)
-    //            val fileWriter = new FileWriter(adminConfigFile)
-    //            try { fileWriter.write(render) }
-    //            finally { fileWriter.close() }
-    //          }
-    //        }
   }
 
   /** Write config file **/
@@ -356,8 +336,6 @@ class ServerConfigFile(val path: String) extends LazyLogging {
       val rawFilesMp = getMountPoints("raw_files")
       val mzdbFilesMp = getMountPoints("mzdb_files")
       val resultFilesMp = getMountPoints("result_files")
-
-      /* Return AdminConfig */
       Some(
         ServerConfig(
           //serverConfFilePath = path,
@@ -489,12 +467,7 @@ class PwxConfigFile(val path: String) extends LazyLogging {
       val rawFilesMp = getMountPoints("raw_files")
       val mzdbFilesMp = getMountPoints("mzdb_files")
       val resultFilesMp = getMountPoints("result_files")
-      println("test",
-        Some(
-          ServerConfig(
-            rawFilesMountPoints = rawFilesMp,
-            mzdbFilesMountPoints = mzdbFilesMp,
-            resultFilesMountPoints = resultFilesMp)))
+
       /* Return AdminConfig */
       Some(
         ServerConfig(
@@ -511,17 +484,16 @@ class PwxConfigFile(val path: String) extends LazyLogging {
   }
   //return Tuple(host,port) of jms-server and maybe for host-config later 
   def getPwxSimpleConfig(config: Config): (Option[String], Option[Int]) = {
-    (config.getStringOpt("host"), config.getIntOpt("port"))
+    (config.getStringOpt("hostname"), config.getIntOpt("port"))
   }
   /** Read config file **/
   def getPwxJms(): Option[PwxJmsServer] = {
     try {
       /* Create config */
       val config = ConfigFactory.parseFile(pwxConfigFile)
-      val jmsConfig = config.getConfig("jms-server")
-      println("jmsConfig: ", jmsConfig)
+      val jmsConfig = config.getConfig("jms_server")
       Some(
-        PwxJmsServer(jmsConfig.getStringOpt("host"),
+        PwxJmsServer(jmsConfig.getStringOpt("hostname"),
           jmsConfig.getIntOpt("port")))
     } catch {
       case t: Throwable => {
@@ -536,7 +508,6 @@ class PwxConfigFile(val path: String) extends LazyLogging {
 
       // Merge configs
       val currentConfig: Config = ConfigFactory.parseFile(pwxConfigFile)
-
       /*val superMap = Map(
         "mount_points" -> (
           "result_files" -> serverConfig.resultFilesMountPoints,
@@ -547,20 +518,215 @@ class PwxConfigFile(val path: String) extends LazyLogging {
       ShowPopupWindow("superMap:\n" + scala.runtime.ScalaRunTime.stringOf(superMap))
       val newConfig = ConfigFactory.parseMap(superMap)*/
 
-      val newConfig = ConfigFactory.parseString(serverConfig.toTypeSafePwxConfigString())
-      val mergedConfig = newConfig.withFallback(currentConfig)
+      //      val newConfig = ConfigFactory.parseString(serverConfig.toTypeSafePwxConfigString())
+      //      val mergedConfig = newConfig.withFallback(currentConfig).resolve()
+      lazy val pwxConfConfigContent =
+        """
+# This is the main configuration file for the application.
+# ~~~~~
 
+# Secret key
+# ~~~~~~~~~~
+# The secret key is used to secure cryptographics functions.
+# If you deploy your application to several instances be sure to use the same key!
+play.crypto.secret=":cjVy`<DW9=UDd3krrLMOrfhWR:3fJe2drLlQRrq7[X9G<F8DUpdIGV]H;:?H:[i"
+
+# The application languages
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+application.langs="en"
+
+# Global object class
+# ~~~~~~~~~~~~~~~~~~~
+# Define the Global object class for this application.
+# Default to Global in the root package.
+application.global=application.PWX
+
+# Enabled modules
+# ~~~~~~~~~~~~~~~
+# TODO: enable me when PWX code has been be updated to support dependency injection
+#play.modules.enabled += "play.modules.reactivemongo.ReactiveMongoModule"
+
+# Router
+# ~~~~~
+# Define the Router object to use for this application.
+# This router will be looked up first when the application is starting up,
+# so make sure this is the entry point.
+# Furthermore, it's assumed your route file is named properly.
+# So for an application router like `my.application.Router`,
+# you may need to define a router file `conf/my.application.routes`.
+# Default to Routes in the root package (and conf/routes)
+# application.router=my.application.Routes
+# application.context="/PWX"
+
+# MongoDB configuration
+# ~~~~~~~~~~~~~~~~~~~~~~
+mongodb.server = "localhost:27017"
+mongodb.servers = [${mongodb.server}]
+mongodb.db = "pwx_scala"
+
+# MongoDB cache configuration
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cache.mongodb.servers = ["localhost:27017"]
+cache.mongodb.db = "pwx_scala_cache"
+
+# MongoDB evolution configuration
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+mongodb.evolution.enabled = false
+mongodb.evolution.mongoCmd = "mongo_no_warn" ${mongodb.server}"/"${mongodb.db}
+
+# Logger
+# ~~~~~
+# You can also configure logback (http://logback.qos.ch/),
+# by providing an application-logger.xml file in the conf directory.
+
+# Root logger:
+logger.root=ERROR
+
+# Logger used by the framework:
+logger.play=INFO
+
+# Logger provided to your application:
+logger.application=DEBUG
+
+# Default password for auto-created "admin" user
+admin.password = "proline"
+
+# To be used to iterate over external apps views during the PWX startup
+#external_apps = ["mfpaq"]
+
+# JMS server configuration
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+""" + s"""${pwxJmsServer.toTypeSafePwxJms}""" + """
+# MS-Angel configuration
+# ~~~~~~~~~~~~~~~~~~~~~~~
+msangel = {
+
+  # Errors handling for MSI search monitor.
+  errors = {
+
+    # After server shutdown, try to restart interrupted tasks (optional, default = false)
+    enable-error-recovery = false
+
+    # Time interval in milliseconds during which the MSI search monitor will be stopped if at least 'max-count' errors occured.
+    max-time-interval = 25000
+
+    # The max. count of errors allowed in 'max-time-interval' milliseconds.
+    # Optionnal. Default value = contexts.core-pool-size-max + 1
+    #max-count = 1
+  }
+
+  contexts = {
+
+    # There will be as much threads allocated to the workflow-job-operation pool as to the workflow-job-handler pool.
+    # Thus the min/factor/max threads for each one is defined here with 3 common variables.
+    # 1 thread for workflow-job-handler and 1 thread for workflow-job-operation are needed for the execution of one Job.
+
+    # minimum number of threads to cap factor-based core number to
+    core-pool-size-min = 1
+    # No of core threads ... ceil(available processors * factor)
+    core-pool-size-factor = 1.0
+    # maximum number of threads to cap factor-based number to
+    core-pool-size-max = 4
+
+    # Execution contexts used to execute workflow jobs
+
+    workflow-job-handler {
+      executor = "thread-pool-executor"
+      # Configuration for the thread pool
+      thread-pool-executor {
+
+        # minimum number of threads to cap factor-based core number to
+        core-pool-size-min = ${msangel.contexts.core-pool-size-min}
+
+        # No of core threads ... ceil(available processors * factor)
+        core-pool-size-factor = ${msangel.contexts.core-pool-size-factor}
+
+        # maximum number of threads to cap factor-based number to
+        core-pool-size-max = ${msangel.contexts.core-pool-size-max}
+      }
+    }
+
+    workflow-job-operation {
+      executor = "thread-pool-executor"
+      # Configuration for the thread pool
+      thread-pool-executor {
+
+        # minimum number of threads to cap factor-based core number to
+        core-pool-size-min = ${msangel.contexts.core-pool-size-min}
+
+        # No of core threads ... ceil(available processors * factor)
+        core-pool-size-factor = ${msangel.contexts.core-pool-size-factor}
+
+        # maximum number of threads to cap factor-based number to
+        core-pool-size-max =  ${msangel.contexts.core-pool-size-max}
+      }
+    }
+
+    # Execution context used to monitor the creation of files in a given directory (blocking operation)
+    # httpj-request {
+    #   fork-join-executor {
+    #     # Min number of threads to cap factor-based parallelism number to
+    #     parallelism-min = 8
+    #
+    #     # The parallelism factor is used to determine thread pool size using the
+    #     # following formula: ceil(available processors * factor). Resulting size
+    #     # is then bounded by the parallelism-min and parallelism-max values.
+    #     parallelism-factor = 4.0
+    #
+    #     # Max number of threads to cap factor-based parallelism number to
+    #     parallelism-max = 64
+    # 
+    #     # Setting to "FIFO" to use queue like peeking mode which "poll" 
+    #     # or "LIFO" to use stack like peeking mode which "pop".
+    #     task-peeking-mode = "FIFO"
+    #   }
+    # }
+
+    # Execution context used to monitor the creation of files in a given directory (blocking operation)
+    file-watcher {
+      fork-join-executor {
+        # Min number of threads to cap factor-based parallelism number to
+        parallelism-min = 8
+
+        # The parallelism factor is used to determine thread pool size using the
+        # following formula: ceil(available processors * factor). Resulting size
+        # is then bounded by the parallelism-min and parallelism-max values.
+        parallelism-factor = 4.0
+
+        # Max number of threads to cap factor-based parallelism number to
+        parallelism-max = 64
+
+        # Setting to "FIFO" to use queue like peeking mode which "poll" 
+        # or "LIFO" to use stack like peeking mode which "pop".
+        task-peeking-mode = "FIFO"
+      }
+    }
+  }
+}
+
+# DSE configuration
+# ~~~~~~~~~~~~~~~~~
+""" + s"""
+${serverConfig.toTypeSafeConfigString()}
+
+# SpecLight configuration
+# ~~~~~~~~~~~~~~~~~~~~~~~
+
+# Define a gateway to access mzdb files remotely
+# If set, mount_points are not used
+
+speclight = {
+  #	mzdb_gateway = "localhost:9000"
+}
+"""
       synchronized {
-        val renderOptions = ConfigRenderOptions.concise().setComments(true).setFormatted(true).setJson(false)
-        val render = mergedConfig.root().render(renderOptions)
-        val fileWriter = new FileWriter(pwxConfigFile)
-        fileWriter.write(render)
-        fileWriter.close()
-        logger.info("The Pwx configuration file has been updated.")
+        val out = new FileWriter(pwxConfigFile)
+        try { out.write(pwxConfConfigContent) }
+        finally { out.close }
       }
     } catch {
       case e: Exception => {
-        logger.error("Error while trying to save settings in PWX application.conf.");
+        logger.error("Error while trying to write in PWX configuration file.");
         ShowPopupWindow("Can't save settings in PWX application.conf\n\n " + e.getMessage())
       }
     }

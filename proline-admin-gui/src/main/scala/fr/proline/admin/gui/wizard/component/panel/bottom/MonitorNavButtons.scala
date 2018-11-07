@@ -2,7 +2,7 @@ package fr.proline.admin.gui.wizard.component.panel.bottom
 
 import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
-import scalafx.geometry.{Pos,Insets}
+import scalafx.geometry.{ Pos, Insets }
 import scalafx.scene.control.Button
 import scalafx.scene.layout.HBox
 

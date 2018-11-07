@@ -246,7 +246,7 @@ object MonitorPane extends VBox with LazyLogging {
 
   /** open Proline-admin guide file */
   def openAdminGuide() {
-    UserGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
+    UserGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_2.0.pdf")
   }
 
   /** get Proline-Admin confi initial settings  */
@@ -298,13 +298,13 @@ object MonitorPane extends VBox with LazyLogging {
     case adminConfigValue @ AdminConfig(filePath, serverConfigFilePath, pwx, pgsqlDataDir, seqRepoConfigFilePath, _, _, _, _, _, _) => {
       logger.debug("Loading Proline configurations. Please wait ...")
       System.out.println("INFO - Loading Proline configurations. Please wait ...")
-      //check that uds is installed 
+      //check that UDS database is installed 
       val isUdsDbReachable = UdsRepository.isUdsDbReachable()
       udsDbErrorLabel.visible = !isUdsDbReachable
       //check that the connection is established 
       val isConnectionEstablished = DatabaseConnection.testDbConnection(adminConfigValue, showSuccessPopup = false, showFailurePopup = false)
       connectionErrorLabel.visible = !isConnectionEstablished
-      //check AdminCinfi with warning messgaes
+      //check AdminConf and show notifications
       adminConfigErrorLabel.visible = !(new File(filePath).exists)
       serverConfigWarningLabel.visible = !serverConfigFilePath.isDefined || !(new File(serverConfigFilePath.get).exists)
       pgsqlDataDirWarningLabel.visible = !pgsqlDataDir.isDefined || !(new File(pgsqlDataDir.get).exists)

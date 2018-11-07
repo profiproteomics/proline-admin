@@ -293,7 +293,7 @@ object InstallPane extends VBox with INotification with LazyLogging {
   }
 
   def _openUserGuide() {
-    UserGuide.openUrl(Wizard.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
+    UserGuide.openUrl(Wizard.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_2.0.pdf")
   }
 
   /**

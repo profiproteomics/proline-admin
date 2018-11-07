@@ -43,7 +43,7 @@ class RestoreProjectDialog(
     isResizable: Boolean = false) extends Stage with IMonitorForm with LazyLogging {
   val archiveProjectPane = this
   title = wTitle
-  width_=(600)
+  width_=(650)
   height_=(400)
   this.setResizable(isResizable)
   initModality(Modality.WINDOW_MODAL)
