@@ -10,10 +10,10 @@ import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
 import fr.proline.repository._
-import java.sql.Connection
 import scala.collection.mutable.Set
 import scala.collection.JavaConversions._
 import java.io.{ ByteArrayOutputStream, PrintStream }
+import java.sql.Connection
 /**
  *
  * Upgrades all Proline Databases (UDS and all projects MSI and LCMS Dbs).
@@ -95,12 +95,12 @@ class UpgradeAllDatabases(
       udsTx.commit()
 
       if (UpgradeDatabase.failedDbsToMigrate.isEmpty)
-        logger.info("Proline databases upgrade have finished successfully!")
+        logger.info("Proline databases upgrade has finished successfully!")
       else
-        logger.warn(s"Proline databases upgrade have finished successfully, but some databases= ${UpgradeDatabase.failedDbsToMigrate.mkString(",")} failed to migrate !")
+        logger.warn(s"Proline databases upgrade has finished successfully, but some databases = ${UpgradeDatabase.failedDbsToMigrate.mkString(",")} failed to migrate!")
 
       //Create default user admin
-      createDefaultAdmin(udsEM, udsTx)
+      createDefaultAdmin(udsEM, udsDbConnector.getDriverType)
 
     } finally {
 
@@ -113,18 +113,19 @@ class UpgradeAllDatabases(
       // Close UDSdb connector at the end
       if (udsDbConnector != null)
         udsDbConnector.close()
-      */
+					 */
     }
     ()
   }
   /** Create default Admin user */
-  private def createDefaultAdmin(udsEM: EntityManager, udsTx: EntityTransaction) {
+  private def createDefaultAdmin(udsEM: EntityManager, driverType: DriverType) {
+    var localUdsTransaction: EntityTransaction = null
     try {
-      val defaultAdminQuery = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
-      val defaultAdmin = defaultAdminQuery.getResultList()
-      if (defaultAdmin.isEmpty) {
-        udsEM.getTransaction()
-        udsTx.begin()
+      localUdsTransaction = udsEM.getTransaction
+      localUdsTransaction.begin()
+      val createDefaultAdminQuery = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
+      val defaultAdminList = createDefaultAdminQuery.getResultList()
+      if (defaultAdminList.isEmpty) {
         logger.info("Creating default admin user")
         val udsUser = new UdsUser()
         udsUser.setLogin("admin")
@@ -134,11 +135,20 @@ class UpgradeAllDatabases(
         serializedPropertiesMap.put("user_group", UdsUser.UserGroupType.ADMIN.name())
         udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap)
         udsEM.persist(udsUser)
-        udsTx.commit()
+        localUdsTransaction.commit()
         if (udsUser.getId > 0L) logger.info("Default admin user has been created successfully!")
       }
     } catch {
-      case t: Throwable => logger.error("Error while trying to create default admin user", t.getMessage)
+      case ex: Exception => {
+        logger.error("Error while trying to create default admin user ", ex.getMessage)
+        if (localUdsTransaction != null && driverType != DriverType.SQLITE)
+          logger.info("Rollbacking current UDS Db Transaction")
+        try {
+          localUdsTransaction.rollback()
+        } catch {
+          case ex: Exception => logger.error("Error rollbacking UDS Db Transaction", ex.getMessage)
+        }
+      }
     }
   }
 
@@ -178,7 +188,7 @@ object UpgradeDatabase extends StrictLogging {
     } finally {
       stream.close()
       System.setErr(System.out)
-      connection.collect {
+      connection.foreach {
         case (dbConn) if (!dbConn.isClosed()) => {
           try { dbConn.close() }
           catch { case ex: Exception => logger.error(s"Cannot close connection ${ex.getMessage}") }
