@@ -13,7 +13,9 @@ import fr.proline.core.dal.context._
 import javax.persistence.EntityManager
 import scala.util.Try
 import scala.collection.JavaConversions._
-import collection.mutable.Map
+import collection.mutable.{ Map, Set }
+import java.io.{ ByteArrayOutputStream, PrintStream }
+import java.sql.Connection
 /**
  *
  * Check Proline Databases versions (UDS ,MSI and LCMS Dbs) and get the available updates.
@@ -62,6 +64,9 @@ class CheckForUpdates(
           "UDSdb",
           closeConnector = false)
         if (!undoneMigrationsUdsDb.isEmpty) undoneMigrationsByDb += ("UDSdb" -> undoneMigrationsUdsDb)
+        if (CheckDbUpdates.failedConDbNameSet.isEmpty) logger.info("Check for updates has finished successfully!")
+        else
+          logger.warn(s"Check for updates has finished, but it failed for some databases = ${CheckDbUpdates.failedConDbNameSet.mkString(",")}")
       }
     } catch {
       case t: Throwable => logger.error("Error while trying to check for available updates! ", t.printStackTrace())
@@ -76,6 +81,35 @@ class CheckForUpdates(
 
 object CheckDbUpdates extends StrictLogging {
 
+  var failedConDbNameSet: Set[String] = Set.empty
+
+  /** Check that the connection to database is established before to check script's state from Flyway */
+  private def isConnectionEstablished(dbConnector: IDatabaseConnector): Boolean = {
+    var connection: Option[Connection] = None
+    var isConnectionEstablished: Boolean = false
+    var stream = new ByteArrayOutputStream()
+    try {
+      logger.info("Checking database connection. Please wait ...")
+      var ps = new PrintStream(stream)
+      System.setErr(ps)
+      connection = Option { dbConnector.createUnmanagedConnection() }
+      isConnectionEstablished = connection.isDefined
+    } catch {
+      case ex: Exception =>
+        logger.error(s"Cannot get connection : ${ex.getMessage} ")
+    } finally {
+      stream.close()
+      System.setErr(System.out)
+      connection.collect {
+        case (dbConn) if (!dbConn.isClosed()) => {
+          try { dbConn.close() }
+          catch { case ex: Exception => logger.error(s"Cannot close connection ${ex.getMessage}") }
+        }
+      }
+    }
+    isConnectionEstablished
+  }
+
   def apply(
     dbConnector: IDatabaseConnector,
     dbShortName: String,
@@ -85,35 +119,40 @@ object CheckDbUpdates extends StrictLogging {
       logger.warn(s"DataStoreConnectorFactory has no valid connector to $dbShortName")
     } else {
       try {
-        val driverType = dbConnector.getDriverType
-        if (driverType == DriverType.POSTGRESQL || driverType == DriverType.H2) {
+        if (isConnectionEstablished(dbConnector)) {
+          val driverType = dbConnector.getDriverType
+          if (driverType != DriverType.SQLITE) {
 
-          /* get the available/not applied scripts */
-          val undoneMigrationsByDb = DatabaseUpgrader.getUndoneMigrations(dbConnector)
-          val undoneMigrationsAsMap = undoneMigrationsByDb.get(dbConnector.getProlineDatabaseType())
-          if (undoneMigrationsAsMap.isEmpty) {
-            logger.info(s"There are no available scripts to apply for: $dbShortName")
-          } else {
-            undoneMigrationsAsMap.foreach {
-              case (script, state) => {
-                undoneMigrations += (script -> state.toString)
-                logger.warn(s"The script $script is $state. To apply undone migrations, please upgrade Proline databases.")
+            /* get the available/not applied scripts */
+            val undoneMigrationsByDb = DatabaseUpgrader.getUndoneMigrations(dbConnector)
+            val undoneMigrationsAsMap = undoneMigrationsByDb.get(dbConnector.getProlineDatabaseType())
+            if (undoneMigrationsAsMap.isEmpty) {
+              logger.info(s"There are no available scripts to apply for: $dbShortName")
+            } else {
+              undoneMigrationsAsMap.foreach {
+                case (script, state) => {
+                  undoneMigrations += (script -> state.toString)
+                  logger.warn(s"The script $script is $state. To apply undone migrations, please upgrade Proline databases.")
+                }
+              }
+            }
+
+            /* Check Proline udsDb version */
+            if (dbConnector.getProlineDatabaseType() == ProlineDatabaseType.UDS) {
+              val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)
+              // Try to retrieve the current version from uds_db version
+              val udsDbVersion =
+                ezDBC.selectHead("""SELECT "version" FROM "schema_version" ORDER BY "version_rank" DESC LIMIT 1""") { r =>
+                  r.nextString
+                }
+              val udsDbVersionOpt = Option(udsDbVersion.toDouble)
+              udsDbVersionOpt.collect {
+                case (version) if (version < 0.8) => logger.warn("Proline databases are not upgraded! Important updates needed. Please upgrade your databases.")
               }
             }
           }
-
-          /* Check Proline udsDb version */
-          if (dbConnector.getProlineDatabaseType() == ProlineDatabaseType.UDS) {
-            val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)
-            // Try to retrieve the current version from uds_db version
-            val udsDbVersion =
-              ezDBC.selectHead("""SELECT "version" FROM "schema_version" ORDER BY "version_rank" DESC LIMIT 1""") { r =>
-                r.nextString
-              }
-            val udsDbVersionOpt = Try(Some(udsDbVersion.toDouble)).getOrElse(None)
-            val isUdsDbUpdated = udsDbVersionOpt.isDefined && udsDbVersionOpt.get >= 0.8
-            if (!isUdsDbUpdated) logger.warn("Proline databases are not upgraded! Important updates needed. Please upgrade your databases.")
-          }
+        } else {
+          failedConDbNameSet += dbShortName
         }
       } finally {
         if (closeConnector)

@@ -94,10 +94,10 @@ class UpgradeAllDatabases(
       udsEM.flush()
       udsTx.commit()
 
-      if (UpgradeDatabase.failedDbsToMigrate.isEmpty)
+      if (UpgradeDatabase.failedConDbNameSet.isEmpty)
         logger.info("Proline databases upgrade has finished successfully!")
       else
-        logger.warn(s"Proline databases upgrade has finished successfully, but some databases = ${UpgradeDatabase.failedDbsToMigrate.mkString(",")} failed to migrate!")
+        logger.warn(s"Proline databases upgrade has finished, but some databases = ${UpgradeDatabase.failedConDbNameSet.mkString(",")} failed to migrate!")
 
       //Create default user admin
       createDefaultAdmin(udsEM, udsDbConnector.getDriverType)
@@ -169,7 +169,7 @@ class UpgradeAllDatabases(
 
 object UpgradeDatabase extends StrictLogging {
 
-  var failedDbsToMigrate: Set[String] = Set.empty
+  var failedConDbNameSet: Set[String] = Set.empty
 
   /** Check that the connection to database is established before to upgrade it */
   private def isConnectionEstablished(dbConnector: IDatabaseConnector): Boolean = {
@@ -188,7 +188,7 @@ object UpgradeDatabase extends StrictLogging {
     } finally {
       stream.close()
       System.setErr(System.out)
-      connection.foreach {
+      connection.collect {
         case (dbConn) if (!dbConn.isClosed()) => {
           try { dbConn.close() }
           catch { case ex: Exception => logger.error(s"Cannot close connection ${ex.getMessage}") }
@@ -230,7 +230,8 @@ object UpgradeDatabase extends StrictLogging {
           if (upgradeCallback != null)
             upgradeCallback(version)
         } else {
-          failedDbsToMigrate += dbShortName
+          //Set of database names that failed to connect   
+          failedConDbNameSet += dbShortName
         }
 
       } finally {
