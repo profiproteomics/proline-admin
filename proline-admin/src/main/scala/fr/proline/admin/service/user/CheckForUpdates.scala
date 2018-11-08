@@ -11,7 +11,6 @@ import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
 import fr.proline.repository._
 import fr.proline.core.dal.context._
 import javax.persistence.EntityManager
-import scala.util.Try
 import scala.collection.JavaConversions._
 import collection.mutable.{ Map, Set }
 import java.io.{ ByteArrayOutputStream, PrintStream }
