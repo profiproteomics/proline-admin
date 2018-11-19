@@ -167,7 +167,8 @@ class ArchiveProject(
     var exitCode: Int = 1
     try {
       logger.debug("Executing " + command.mkString(" "))
-      process = Some(Process(command).run(ProcessLogger(out => stdout(out), err => stderr(err))))
+      process = Some(Process(command, None, "PGPASSWORD" -> SetupProline.config.udsDBConfig.password).run(ProcessLogger(out => stdout(out), err => stderr(err))))
+
       exitCode = process.get.exitValue
     } finally {
       if (process.isDefined) {
