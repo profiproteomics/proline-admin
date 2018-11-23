@@ -112,7 +112,6 @@ object DatabaseConnection extends LazyLogging {
     password: String,
     host: String,
     port: Int): Try[Connection] = {
-
     //TODO: implement me?
     Failure(UnhandledDriverTypeException(DriverType.H2))
   }

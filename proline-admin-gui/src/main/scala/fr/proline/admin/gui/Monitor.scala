@@ -17,6 +17,9 @@ import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.wizard.util.Module
+import fr.proline.admin.gui.monitor.view.HomePanel
+import fr.proline.admin.gui.monitor.model._
+import fr.proline.admin.gui.task.TaskRunner
 import fr.profi.util.StringUtils
 import java.io.File
 
@@ -30,28 +33,25 @@ import java.io.File
 object Monitor extends LazyLogging {
 
   /* Panels */
-  var itemsPanel: VBox = _
-  var buttonsPanel: VBox = _
+  var mainPanel: VBox = _
 
   /* configuration file path */
   var targetPath: String = _
   var adminConfPath: String = _
+  var taskRunner: TaskRunner = _
 
   /* Primary stage's root */
   lazy val root = new VBox {
     id = "root"
-    children = new VBox {
-      vgrow = Priority.Always
-      padding = Insets(10)
-      spacing = 20
-      children = List(itemsPanel, buttonsPanel)
-    }
+    vgrow = Priority.Always
+    padding = Insets(10)
+    children =
+      Seq(mainPanel)
   }
   var stage: scalafx.stage.Stage = null
 
   /** utilities */
   def adminConfPathIsEmpty(): Boolean = StringUtils.isEmpty(adminConfPath)
-
   /** Launch application and display main window. */
   def main(args: Array[String]) = {
     Application.launch(classOf[Monitor])
@@ -61,40 +61,42 @@ object Monitor extends LazyLogging {
 class Monitor extends Application with LazyLogging {
 
   override def init: Unit = {
+
     /* Locate 'config' folder */
     val srcPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
     Monitor.targetPath = new File(srcPath).getParent().replaceAll("\\\\", "/")
     val configPath = Monitor.targetPath + File.separator + """config""" + File.separator
+
     /* Locate application.CONF file */
     val _appConfPath = configPath + "application.conf"
-    /* Usual case : default conf file exists */
-    require(new File(_appConfPath).exists(), "The configuration file application.conf does not exists!")
     Monitor.adminConfPath = _appConfPath
-
   }
 
   def start(stage: javafx.stage.Stage): Unit = {
 
+    /* Create main window */
+    val homeViewModel = new HomeViewModel(Monitor.adminConfPath)
+    val homePanel = new HomePanel(homeViewModel)
+
     require(Monitor.stage == null, "stage is already instantiated")
-    Monitor.itemsPanel = MonitorPane
-    Monitor.buttonsPanel = MonitorBottomsPanel
+    Monitor.mainPanel = homePanel
     Monitor.stage = new Stage(stage) {
-      width = 1050
-      minWidth = 700
-      height = 780
-      minHeight = 680
+      width = 1040
+      height = 800
       scene = new Scene(Monitor.root)
       title = s"${Module.name} ${Module.version}"
     }
+
     /* Build and show stage */
     Monitor.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Monitor.stage.scene.value.getStylesheets.add("/css/Style.css")
     Monitor.stage.show()
-    /* load initial configurations */
-
+    /* Show notifications */
+    Monitor.taskRunner = homePanel.taskRunner
+    /* Load initial  from UDS database */
   }
 
-  /** Close UDSdb context on application close **/
+  /** Close UDSdb context on close application **/
   override def stop() {
     if (UdsRepository.getUdsDbContext() != null) UdsRepository.getUdsDbContext().close()
     if (UdsRepository.getDataStoreConnFactory() != null) UdsRepository.getDataStoreConnFactory().closeAll()

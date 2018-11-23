@@ -202,6 +202,7 @@ object UdsRepository extends LazyLogging {
       val externalDbList = udsEM.createQuery(jpqlSelectExternalDb, externalDbClass)
         .setParameter("msi", fr.proline.repository.ProlineDatabaseType.MSI)
         .setParameter("lcms", fr.proline.repository.ProlineDatabaseType.LCMS)
+        .setParameter("uds", fr.proline.repository.ProlineDatabaseType.UDS)
         .getResultList()
       externalDbList.asScala.toArray
     } catch {

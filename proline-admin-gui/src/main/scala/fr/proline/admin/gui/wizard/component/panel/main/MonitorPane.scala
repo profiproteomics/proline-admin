@@ -296,8 +296,7 @@ object MonitorPane extends VBox with LazyLogging {
   /** check Proline-Admin configurations and show warning and error labels */
   def isAdminConfigsOk(adminConfig: AdminConfig): Seq[Boolean] = adminConfig match {
     case adminConfigValue @ AdminConfig(filePath, serverConfigFilePath, pwx, pgsqlDataDir, seqRepoConfigFilePath, _, _, _, _, _, _) => {
-      logger.debug("Loading and checking Proline configurations. Please wait ...")
-      System.out.println("INFO - Loading and checking Proline configurations. Please wait ...")
+      logger.debug("Loading Proline configurations. Please wait ...")
       val isUdsDbReachable = UdsRepository.isUdsDbReachable()
       udsDbErrorLabel.visible = !isUdsDbReachable
       val isConnectionEstablished = DatabaseConnection.testDbConnection(adminConfigValue, showSuccessPopup = false, showFailurePopup = false)

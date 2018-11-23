@@ -18,7 +18,6 @@ import fr.proline.admin.gui.wizard.util.GetConfirmation
 import fr.proline.admin.gui.wizard.util.UserGuide
 import fr.proline.admin.gui.wizard.util.HelpPopup
 
-import fr.proline.admin.gui.wizard.service.SetupDbs
 import fr.proline.admin.gui.wizard.component.panel.bottom.InstallNavButtons
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
@@ -123,7 +122,7 @@ object Summary extends LazyLogging {
           if (setUpUpdateChBox.isSelected()) {
             val confirmed = GetConfirmation("Are you sure you want to setup and update Proline databases ?\n(This process may take hours.)", "Confirm your action", "Yes", "Cancel", Wizard.stage)
             if (confirmed) {
-              SetupDbs(Wizard.stage).restart()
+             // SetupDbs(Wizard.stage).restart()
             }
           }
         } catch {

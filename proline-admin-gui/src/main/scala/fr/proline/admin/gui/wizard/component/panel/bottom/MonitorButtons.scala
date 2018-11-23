@@ -8,10 +8,10 @@ import fr.profi.util.scala.ScalaUtils._
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle._
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.wizard.util.ExitPopup
-import fr.proline.admin.gui.wizard.monitor.component._
-import fr.proline.admin.gui.wizard.component.panel.main.MonitorPane
 import fr.proline.admin.gui.process.config.AdminConfig
 import java.io.File
+import fr.proline.admin.gui.monitor.view.HomePanel
+
 
 /**
  * builds the bottom home panel: cancel and go buttons
@@ -22,8 +22,8 @@ object MonitorBottomsPanel extends VBox with IButtons with LazyLogging {
 
   /** show the main panel  (the list of TableView) */
   def go() {
-    Monitor.itemsPanel.getChildren.clear()
-    Monitor.itemsPanel.getChildren.addAll(MainPanel)
+    Monitor.mainPanel.getChildren.clear()
+    //Monitor.mainPanel.getChildren.addAll(MainView)
     goButton.visible = false
   }
 
@@ -32,18 +32,5 @@ object MonitorBottomsPanel extends VBox with IButtons with LazyLogging {
     ExitPopup("Exit Setup", "Are you sure that you want to exit Proline-Admin Monitor ?", Some(Monitor.stage), false)
   }
 
-  /** check the initial settings of Proline-Admin */
-  def isInitialSettingsOk(): Boolean = {
-    try {
-      MonitorPane.getAdminConfigOpt().map(adminConfig => MonitorPane.isAdminConfigsOk(adminConfig).forall { _.==(true) }).getOrElse(false)
-    } catch {
-      case t: Throwable =>
-        logger.error("Error while trying to check initial Proline-Admin settings.", t.getMessage)
-        false
-    }
-  }
-  //disable go button when there is a problem of connectivity.
-  goButton.disable = !isInitialSettingsOk()
-  //components
   children = component
 }
