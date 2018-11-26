@@ -10,6 +10,7 @@ import scalafx.stage.Window
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.task.TaskRunner
+import fr.proline.admin.gui.monitor.database.UsersDB
 import fr.proline.admin.gui.monitor.model.AdapterModel._
 import fr.proline.admin.gui.monitor.view.dialog._
 import fr.profi.util.scala.ScalaUtils._
@@ -98,10 +99,10 @@ class UserViewModel extends LazyLogging {
   /** Disable Proline user */
   def onDisable(): Unit = {
     taskRunner.run(
-      caption = s"Disabling the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no selected item")}",
+      caption = s"Disabling the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}",
       op = {
         //disable user 
-        logger.info(s"Disabling the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no selected item")}")
+        logger.info(s"Disabling the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}")
         usersDB.changeState(selectedItems.toSet, false)
         // Return items from database
         val updatedItems = usersDB.queryUsersAsView()
@@ -115,9 +116,9 @@ class UserViewModel extends LazyLogging {
   /** Activate Proline user */
   def onActivate(): Unit = {
     taskRunner.run(
-      caption = s"Activating the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no selected item")}",
+      caption = s"Activating the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}",
       op = {
-        logger.info(s"Activating the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no selected item")}")
+        logger.info(s"Activating the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}")
         usersDB.changeState(selectedItems.toSet, true)
 
         // Return items from database
@@ -132,9 +133,9 @@ class UserViewModel extends LazyLogging {
   /** Add user to user group */
   def onAddToUserGrp(): Unit = {
     taskRunner.run(
-      caption = s"Adding the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no selected item")} to user group",
+      caption = s"Adding the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")} to user group",
       op = {
-        logger.info(s"Adding the selected user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no selected item")} to user group")
+        logger.info(s"Adding the selected user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")} to user group")
         usersDB.changeGroup(selectedItems.toSet, true)
         // Return items from database
         val updatedItems = usersDB.queryUsersAsView()
@@ -148,9 +149,9 @@ class UserViewModel extends LazyLogging {
   /** Add user to Admin group */
   def onAddToAdminGrp(): Unit = {
     taskRunner.run(
-      caption = s"Adding the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no selected item")} to admin group",
+      caption = s"Adding the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")} to admin group",
       op = {
-        logger.info(s"Adding the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no selected item")} to admin group")
+        logger.info(s"Adding the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")} to admin group")
         usersDB.changeGroup(selectedItems.toSet, false)
         // Return items from database
         val updatedItems = usersDB.queryUsersAsView()

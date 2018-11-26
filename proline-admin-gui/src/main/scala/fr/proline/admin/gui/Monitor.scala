@@ -8,18 +8,15 @@ import scalafx.scene.Scene
 import scalafx.scene.layout.HBox
 import scalafx.scene.layout.VBox
 import scalafx.scene.layout.Priority
-import scalafx.scene.layout.StackPane
 import scalafx.stage.Stage
 
-import fr.proline.admin.gui.wizard.component.panel.bottom.MonitorBottomsPanel
-import fr.proline.admin.gui.wizard.component.panel.main.MonitorPane
-import fr.proline.admin.gui.process.ProlineAdminConnection
-import fr.proline.admin.gui.process.UdsRepository
-import fr.proline.admin.gui.util.FxUtils
-import fr.proline.admin.gui.wizard.util.Module
 import fr.proline.admin.gui.monitor.view.HomePanel
-import fr.proline.admin.gui.monitor.model._
+import fr.proline.admin.gui.monitor.model.HomeViewModel
+import fr.proline.admin.gui.monitor.database._
+import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.task.TaskRunner
+import fr.proline.admin.gui.wizard.util.Module
+import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.StringUtils
 import java.io.File
 
@@ -93,7 +90,8 @@ class Monitor extends Application with LazyLogging {
     Monitor.stage.show()
     /* Show notifications */
     Monitor.taskRunner = homePanel.taskRunner
-    /* Load initial  from UDS database */
+    /* Load initial tables rows from UDS database */
+
   }
 
   /** Close UDSdb context on close application **/

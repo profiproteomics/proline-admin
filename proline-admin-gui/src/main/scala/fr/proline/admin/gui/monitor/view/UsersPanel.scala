@@ -13,13 +13,12 @@ import scalafx.collections.ObservableBuffer
 import javafx.scene.{ control => jfxsc }
 
 import fr.proline.admin.gui.Monitor
-import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.util.FxUtils
-import fr.proline.admin.gui.wizard.util.{ GetConfirmation }
-import fr.profi.util.scala.ScalaUtils._
-
 import fr.proline.admin.gui.monitor.model.UserViewModel
 import fr.proline.admin.gui.monitor.model.AdapterModel._
+import fr.proline.admin.gui.wizard.util.GetConfirmation
+import fr.proline.admin.gui.IconResource
+import fr.proline.admin.gui.util.FxUtils
+import fr.profi.util.scala.ScalaUtils._
 
 /**
  * Create and display a table view of Proline users.
@@ -62,7 +61,7 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
 
   private val refreshButton = new Button {
     text = "Refresh"
-    tooltip = "Refresh the table of users."
+    tooltip = "Refresh the table view of users."
     graphic = FxUtils.newImageView(IconResource.REFERESH)
     onAction = handle {
       model.onRefresh()

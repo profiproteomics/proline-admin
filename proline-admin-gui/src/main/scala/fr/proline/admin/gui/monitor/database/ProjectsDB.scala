@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.monitor.model
+package fr.proline.admin.gui.monitor.database
 
 import com.typesafe.scalalogging.LazyLogging
 

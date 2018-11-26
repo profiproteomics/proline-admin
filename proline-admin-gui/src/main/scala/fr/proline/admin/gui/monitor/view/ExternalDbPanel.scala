@@ -16,9 +16,9 @@ import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.wizard.util.GetConfirmation
-import fr.profi.util.scala.ScalaUtils._
 import fr.proline.admin.gui.monitor.model.ExternalDbViewModel
 import fr.proline.admin.gui.monitor.model.AdapterModel._
+import fr.profi.util.scala.ScalaUtils._
 
 /**
  * ExternalDbPanel Create and display a table view of External databases.
@@ -62,7 +62,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
   /* Refresh table view button */
   val refreshButton = new Button {
     text = "Refresh"
-    tooltip = "Refresh the table of external databases."
+    tooltip = "Refresh the table view of external databases."
     graphic = FxUtils.newImageView(IconResource.REFERESH)
     onAction = handle {
       model.onRefresh()
@@ -71,8 +71,8 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
 
   /* Change database parameters button */
   val editDbEntry = new Button {
-    text = "Edit database parameters"
-    tooltip = "Edit the parameters of the selected external databases."
+    text = "Change database parameters"
+    tooltip = "Change external database configuration parameters."
     graphic = FxUtils.newImageView(IconResource.EDITSMALL)
     onAction = handle {
       model.onChange()
@@ -81,19 +81,21 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
   /* Upgrade all Proline databases button */
   val upgradeButton = new Button {
     text = "Upgrade all databases"
-    tooltip = "Upgrade all Proline databases to the last version."
+    tooltip = "Upgrade all Proline databases to the last version. This action can take a while."
     graphic = FxUtils.newImageView(IconResource.UPGRADE)
     onAction = handle {
-      model.onUpgradeAllDbs()
+      val confirmed = GetConfirmation(s"Are you sure that you want to upgrade all Proline databases to the last version. This action can take a while.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
+      if (confirmed) model.onUpgradeAllDbs()
     }
   }
   /* Check for updates button */
   val checkUpdatesButton = new Button {
     text = "Check for updates"
-    tooltip = "Check version the available updates for all databases."
+    tooltip = "Check for updates for all Proline databases."
     graphic = FxUtils.newImageView(IconResource.TICK)
     onAction = handle {
-      model.onCheckForUpdates()
+      val confirmed = GetConfirmation(s"Are you sure that you want to check for updates. This action can take a while.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
+      if (confirmed) model.onCheckForUpdates()
     }
   }
 

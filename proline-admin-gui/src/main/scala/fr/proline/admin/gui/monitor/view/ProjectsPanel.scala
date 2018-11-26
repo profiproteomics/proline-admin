@@ -13,13 +13,12 @@ import scalafx.collections.ObservableBuffer
 import javafx.scene.{ control => jfxsc }
 
 import fr.proline.admin.gui.Monitor
-import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.util.FxUtils
-import fr.proline.admin.gui.wizard.util.GetConfirmation
-import fr.profi.util.scala.ScalaUtils._
-
 import fr.proline.admin.gui.monitor.model.ProjectViewModel
 import fr.proline.admin.gui.monitor.model.AdapterModel._
+import fr.proline.admin.gui.wizard.util.GetConfirmation
+import fr.proline.admin.gui.IconResource
+import fr.proline.admin.gui.util.FxUtils
+import fr.profi.util.scala.ScalaUtils._
 
 /**
  * ProjectsPanel Create and display a table view of Proline projects.
@@ -99,18 +98,17 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
   lazy val deleteProjButton = new Button {
     text = "Delete"
     tooltip = "Delete permanently the selected project."
-    disable = true
     graphic = FxUtils.newImageView(IconResource.TRASH)
     onAction = handle {
       if (!model.selectedItems.isEmpty) {
-        val confirmed = GetConfirmation(s"Are you sure that you want to Delete the project with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
+        val confirmed = GetConfirmation(s"Are you sure that you want to delete permanently the project with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
         if (confirmed) model.onDelete()
       }
     }
   }
   val activeProjButton = new Button {
     text = "Activate"
-    tooltip = "Acivate the selected project."
+    tooltip = "Activate the selected project."
     graphic = FxUtils.newImageView(IconResource.TICK)
     onAction = handle {
       if (!model.selectedItems.isEmpty) {

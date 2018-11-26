@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.monitor.model
+package fr.proline.admin.gui.monitor.database
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -19,7 +19,7 @@ import fr.profi.util.security._
  *
  */
 object UsersDB extends LazyLogging {
-  
+
   private val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
 
   /** TODO Remove all users to clean UDS database ?  */

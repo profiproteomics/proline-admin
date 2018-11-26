@@ -10,6 +10,7 @@ import scalafx.stage.Window
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.scala.ScalaUtils._
+import fr.proline.admin.gui.monitor.database.ProjectsDB
 import fr.proline.admin.gui.monitor.model.AdapterModel._
 import fr.proline.admin.gui.monitor.view.dialog._
 import fr.proline.admin.gui.task.TaskRunner

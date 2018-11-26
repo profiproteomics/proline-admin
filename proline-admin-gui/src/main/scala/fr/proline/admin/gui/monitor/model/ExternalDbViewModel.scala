@@ -14,6 +14,7 @@ import fr.profi.util.scala.ScalaUtils._
 
 import fr.proline.admin.gui.task.TaskRunner
 import fr.proline.admin.gui.monitor.model.AdapterModel._
+import fr.proline.admin.gui.monitor.database.ExternalsDB
 import fr.proline.admin.gui.monitor.view.dialog.ChangeExtDbParamsDialog
 import fr.proline.admin.gui.monitor.view.dialog.ChangeExtDbParamsDialog.Result
 

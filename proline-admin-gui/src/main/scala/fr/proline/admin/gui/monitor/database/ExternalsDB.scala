@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.monitor.model
+package fr.proline.admin.gui.monitor.database
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -26,7 +26,7 @@ object ExternalsDB extends LazyLogging {
 
   private val dsConnectorFactory: IDataStoreConnectorFactory = UdsRepository.getDataStoreConnFactory()
   private val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
-  
+
   /** Remove all ExternalDb */
   def clear(): Unit = {}
 
