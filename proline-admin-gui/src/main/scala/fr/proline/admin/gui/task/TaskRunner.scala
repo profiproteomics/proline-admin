@@ -4,12 +4,13 @@ import javafx.{ concurrent => jfxc }
 import scalafx.application.Platform
 import scalafx.scene.Node
 import scalafx.stage.Stage
-
 import scalafx.scene.control.Label
 import scalafx.scene.{ Scene, Cursor }
-import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
-import fr.proline.admin.gui.wizard.util.HelpPopup
 import fr.proline.admin.gui.Monitor
+import fr.proline.admin.gui.util.ShowPopupWindow
+import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
+
+
 /**
  * Runs a background task disabling the `mainView` and main visible `glassPane`.
  * Shows status using `statusLabel`.
@@ -50,27 +51,27 @@ class TaskRunner(
       override def call(): R = {
         op
       }
-      
-      //task succeeded
+
+      // Task succeeded
       override def succeeded(): Unit = {
         showProgress(false)
         mainView.getScene().setCursor(Cursor.DEFAULT)
         statusLabel.setStyle(TextStyle.GREEN_ITALIC)
         statusLabel.text = caption + " - Finished successfully."
-        HelpPopup(caption, caption + " - Finished successfully.", Some(Monitor.stage), false)
-        // Do callback 
+        ShowPopupWindow(caption + " - Finished successfully.", caption, Some(Monitor.stage), false)
+        //TODO callback 
       }
-      
-      //task is running
+
+      // Task is running
       override def running(): Unit = {
         showProgress(true)
         mainView.getScene().setCursor(Cursor.WAIT)
         statusLabel.setStyle(TextStyle.BLUE_ITALIC)
         statusLabel.text = caption + " - In progress, please wait... "
-        // Do callback,
+        //TODO callback
       }
-      
-      //task failed 
+
+      // Task failed 
       override def failed(): Unit = {
 
         showProgress(false)
@@ -79,27 +80,30 @@ class TaskRunner(
         statusLabel.text = caption + " - Failed."
         val t = Option(getException)
         t.foreach(_.printStackTrace())
-        
-       //show popup 
-        HelpPopup(caption,
-          s"Operation failed.  ${t.map("Exception: " + _.getClass).getOrElse("")}\n"
-            + s"${t.map(_.getMessage).getOrElse("")}",
+
+        // Show popup 
+        ShowPopupWindow(
+          s"Operation failed. ${t.map("Exception: " + _.getClass).getOrElse("")}\n"
+            + s"${t.map(_.getMessage).getOrElse("")}", caption,
           Some(Monitor.stage), false)
       }
-      
-      // task canceled
+
+      // Task cancelled
       override def cancelled(): Unit = {
         showProgress(false)
-         mainView.getScene().setCursor(Cursor.DEFAULT)
+        mainView.getScene().setCursor(Cursor.DEFAULT)
         statusLabel.setStyle(TextStyle.RED_ITALIC)
         statusLabel.text = caption + " - Cancelled."
+        // Show popup 
+        ShowPopupWindow(caption + " - Cancelled.", caption, Some(Monitor.stage), false)
       }
 
     }
-    
-    //run the task as daemon 
+
+    // Run the task as a daemon
     val th = new Thread(task, caption)
     th.setDaemon(true)
     th.start()
+    
   }
 }

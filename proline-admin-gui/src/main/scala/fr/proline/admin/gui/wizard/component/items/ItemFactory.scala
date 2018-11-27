@@ -5,7 +5,7 @@ import scalafx.scene.control.TabPane
 import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
 import fr.proline.admin.gui.Wizard
-import fr.proline.admin.gui.wizard.util.UserGuide
+import fr.proline.admin.gui.util.AdminGuide
 
 import java.io.File
 import java.io.File.separator
@@ -38,6 +38,6 @@ trait Item extends VBox {
   val headerHelpIcon: Hyperlink
   val tabPane = new TabPane()
   def _openUserGuide() {
-    UserGuide.openUrl(Wizard.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
+    AdminGuide.openUrl(Wizard.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
   }
 }

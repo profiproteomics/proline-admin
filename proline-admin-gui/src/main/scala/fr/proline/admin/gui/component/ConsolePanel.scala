@@ -59,9 +59,8 @@ object ConsolePanel {
  * Create a custom console by redirecting Output stream to desired textFlow (here in ConsolePanel).
  */
 class Console(
-  consoleDisp: WebView,
-  isStdErr: Boolean = false
-) extends OutputStream {
+    consoleDisp: WebView,
+    isStdErr: Boolean = false) extends OutputStream {
 
   /** Create HTML content */
   // Provide console style (<kbd>) and auto-scroll to bottom (javaScript)

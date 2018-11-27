@@ -13,6 +13,7 @@ import fr.profi.util.scala.ScalaUtils._
 import fr.proline.admin.gui.monitor.database.ProjectsDB
 import fr.proline.admin.gui.monitor.model.AdapterModel._
 import fr.proline.admin.gui.monitor.view.dialog._
+import fr.proline.admin.gui.util.ShowPopupWindow
 import fr.proline.admin.gui.task.TaskRunner
 
 /**
@@ -186,7 +187,18 @@ class ProjectViewModel extends LazyLogging {
     }
 
   }
-
+  
+  /** show more info about the the slected project */
+  def onMoreInfo() {
+    val projectId = selectedItems.headOption.map(_.id.value).get
+    ShowPopupWindow(s"Databases size of project with id= #$projectId : \n" +
+      s" - MSI database : ${if (ProjectsDB.computeMsiSize(projectId).isDefined) ProjectsDB.computeMsiSize(projectId).get}\n" +
+      s" - LCMS database : ${if (ProjectsDB.computeLcmsSize(projectId).isDefined) ProjectsDB.computeLcmsSize(projectId).get}\n",
+      "Info",
+      Some(Monitor.stage),
+      false)
+  }
+  
   /** Update items in table view */
   private def updateItems(updatedItems: Seq[Project]): Unit = {
     val toAdd = updatedItems.diff(items)

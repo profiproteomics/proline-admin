@@ -6,19 +6,20 @@ import fr.proline.repository.ProlineDatabaseType
 import fr.proline.core.orm.uds.{ Project => UdsProject }
 import fr.proline.core.orm.uds.UserAccount
 import fr.proline.core.orm.uds.{ ExternalDb => UdsExternalDb }
+import fr.proline.admin.gui.monitor.database.ProjectsDB
 import scala.util.Try
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
-import fr.proline.admin.gui.process.UdsRepository
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 
-/**
- * ************************************************************** *
- * Simplified model for uds User, adapted to ScalaFx TableView *
- * ************************************************************** *
- */
 package object AdapterModel {
+  
+  /**
+   * ************************************************************** *
+   * Simplified model for uds User, adapted to ScalaFx TableView *
+   * ************************************************************** *
+   */
   case class User(udsUserAccount: UserAccount) {
     val login = new ObjectProperty(this, "owner", udsUserAccount.getLogin)
     val id = new ObjectProperty(this, "id", udsUserAccount.getId)
@@ -31,7 +32,7 @@ package object AdapterModel {
       if (!new JsonParser().parse(udsUserAccount.getSerializedProperties).getAsJsonObject.get("is_active").getAsBoolean) "Disabled" else "Active"
     }.getOrElse("Active"))
   }
-  
+
   /**
    * ************************************************************** *
    * Simplified model for uds Project, adapted to ScalaFx TableView *
@@ -49,8 +50,8 @@ package object AdapterModel {
     val isActivated = new ObjectProperty(this, "isActivated", Try {
       if (!new JsonParser().parse(udsProject.getSerializedProperties).getAsJsonObject.get("is_active").getAsBoolean) "Disabled" else "Active"
     }.getOrElse("Active"))
-    lazy val lcmsSize = new ObjectProperty(this, "lcmsSize", UdsRepository.computeLcmsSize(udsProject.getId))
-    lazy val msiSize = new ObjectProperty(this, "msiSize", UdsRepository.computeMsiSize(udsProject.getId))
+    lazy val lcmsSize = new ObjectProperty(this, "lcmsSize", ProjectsDB.computeLcmsSize(udsProject.getId))
+    lazy val msiSize = new ObjectProperty(this, "msiSize", ProjectsDB.computeMsiSize(udsProject.getId))
   }
 
   /**

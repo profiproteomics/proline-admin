@@ -15,7 +15,7 @@ import javafx.scene.{ control => jfxsc }
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.monitor.model.ProjectViewModel
 import fr.proline.admin.gui.monitor.model.AdapterModel._
-import fr.proline.admin.gui.wizard.util.GetConfirmation
+import fr.proline.admin.gui.util.GetConfirmation
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.scala.ScalaUtils._
@@ -141,9 +141,8 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     graphic = FxUtils.newImageView(IconResource.INFO)
     onAction = handle {
       if (!model.selectedItems.isEmpty) {
-
+        model.onMoreInfo()
       }
-
     }
   }
   Seq(

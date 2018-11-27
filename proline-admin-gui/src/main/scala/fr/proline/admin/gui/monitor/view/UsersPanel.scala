@@ -15,7 +15,7 @@ import javafx.scene.{ control => jfxsc }
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.monitor.model.UserViewModel
 import fr.proline.admin.gui.monitor.model.AdapterModel._
-import fr.proline.admin.gui.wizard.util.GetConfirmation
+import fr.proline.admin.gui.util.GetConfirmation
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.scala.ScalaUtils._
@@ -82,7 +82,11 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
     graphic = FxUtils.newImageView(IconResource.DISABLE)
     onAction = handle {
       if (!model.selectedItems.isEmpty) {
-        val confirmed = GetConfirmation(s"Are you sure that you want to disable the user with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
+        val confirmed = GetConfirmation(s"Are you sure that you want to disable the user with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ",
+          "Confirm your action",
+          " Yes ",
+          "Cancel",
+          Monitor.stage)
         if (confirmed) model.onDisable()
       }
     }

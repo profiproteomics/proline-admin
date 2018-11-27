@@ -3,21 +3,18 @@ package fr.proline.admin.gui.monitor.model
 import com.typesafe.scalalogging.LazyLogging
 
 import scalafx.Includes._
-import scalafx.application.Platform
 import fr.proline.admin.gui.Monitor
-import fr.proline.admin.gui.process.{ UdsRepository, DatabaseConnection }
-import fr.proline.admin.gui.util.FxUtils
-import fr.profi.util.scala.ScalaUtils._
+
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.proline.admin.gui.wizard.process.config.{ NodeConfig, ParsingRule }
 import fr.proline.admin.gui.wizard.process.config.{ NodeConfigFile, ParsingRulesFile }
-import fr.proline.admin.gui.process.{ UdsRepository, ProlineAdminConnection }
-import fr.proline.admin.gui.wizard.util.UserGuide
+import fr.proline.admin.gui.process.{ UdsRepository, ProlineAdminConnection,DatabaseConnection }
+import fr.proline.admin.gui.util.AdminGuide
 import java.io.File
 
 /**
- * HomeViewModel check home panel operations
+ * Load Proline-Admin configurations and check UDS database connection.
  * @author aromdhani
  *
  */
@@ -72,29 +69,34 @@ class HomeViewModel(monitorConfPath: String) extends LazyLogging {
     }
   }
 
-  /** Check that UDS database installed and the connection is established  */
+  /** Check that UDS database is installed */
   def isUdsDbReachable() = UdsRepository.isUdsDbReachable()
 
   /** Check Proline-Admin GUI configurations */
-  def isAdminConfigsOk(adminConfig: AdminConfig): Map[Option[String], Boolean] = adminConfig match {
-    case adminConfigValue @ AdminConfig(filePath, serverConfigFilePath, pwxConfigFilePath, pgsqlDataDir, seqRepoConfigFilePath, _, _, _, _, _, _) => {
-      Map(
-        Option(filePath) -> !(new File(filePath).exists),
-        serverConfigFilePath -> (!serverConfigFilePath.isDefined || !(new File(serverConfigFilePath.get).exists)),
-        pgsqlDataDir -> (!pgsqlDataDir.isDefined || !(new File(pgsqlDataDir.get).exists)),
-        seqRepoConfigFilePath -> (!seqRepoConfigFilePath.isDefined || !(new File(seqRepoConfigFilePath.get).exists)))
-    }
-    case _ => logger.error("Proline-Admin config is not valid file!"); Map.empty
+
+  def isServerConfigFileOK(): Boolean = getAdminConfigOpt() match {
+    case Some(AdminConfig(_, serverConfigFilePath, _, _, _, _, _, _, _, _, _)) if (serverConfigFilePath.isDefined && (new File(serverConfigFilePath.get).exists)) => true
+    case _ => false
+  }
+  def isPgSQLDataDirOK(): Boolean = getAdminConfigOpt() match {
+    case Some(AdminConfig(_, _, pgsqlDataDir, _, _, _, _, _, _, _, _)) if (pgsqlDataDir.isDefined && (new File(pgsqlDataDir.get).exists)) => true
+    case _ => false
+  }
+  def isSeqRepoConfigFileOK(): Boolean = getAdminConfigOpt() match {
+    case Some(AdminConfig(_, _, _, seqRepoConfigFilePath, _, _, _, _, _, _, _)) if (!seqRepoConfigFilePath.isDefined || !(new File(seqRepoConfigFilePath.get).exists)) => true
+    case _ => false
   }
 
-  /** Check Proline-Admin GUI connection */
+  /** Check Proline-Admin GUI UDS db connection */
   def isConnectionEstablished(): Boolean = {
-    DatabaseConnection.testDbConnection(getAdminConfigOpt().get, false, false)
+    if (getAdminConfigOpt().isDefined)
+      DatabaseConnection.testDbConnection(getAdminConfigOpt().get, false, false)
+    else false
   }
 
-  /** Open Proline-Admin guide pdf file */
+  /** Open Proline-Admin guide */
   def openAdminGuide() {
-    UserGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_2.0.pdf")
+    AdminGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_2.0.pdf")
   }
 
 }

@@ -24,8 +24,8 @@ import scala.collection.JavaConverters._
  */
 object ExternalsDB extends LazyLogging {
 
-  private val dsConnectorFactory: IDataStoreConnectorFactory = UdsRepository.getDataStoreConnFactory()
-  private val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
+  val dsConnectorFactory: IDataStoreConnectorFactory = UdsRepository.getDataStoreConnFactory()
+  val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
 
   /** Remove all ExternalDb */
   def clear(): Unit = {}
@@ -40,7 +40,7 @@ object ExternalsDB extends LazyLogging {
     queryExternalDbs().toBuffer[UdsExternalDb].sortBy(_.getId).map(ExternalDb(_))
   }
 
-  /** Return the current content of UDS database from ExternalDb */
+  /** Return the current content of UDS database from ExternalDb(Select only LCMS and MSI type) */
   def queryExternalDbs(): Array[UdsExternalDb] = {
     run(
       try {
@@ -48,9 +48,12 @@ object ExternalsDB extends LazyLogging {
         udsDbCtx.tryInTransaction {
           val udsEM = udsDbCtx.getEntityManager()
           udsEM.clear()
-          val UdsExternalDbClass = classOf[UdsExternalDb]
-          val jpqlSelectUdsExternalDb = s"FROM ${UdsExternalDbClass.getName}"
-          val udsExternalDbs = udsEM.createQuery(jpqlSelectUdsExternalDb, UdsExternalDbClass).getResultList()
+          val udsExternalDbClass = classOf[UdsExternalDb]
+          val jpqlSelectExternalDb = s"Select ed FROM ${udsExternalDbClass.getName} ed where ed.type = :msi or ed.type = :lcms"
+          val udsExternalDbs = udsEM.createQuery(jpqlSelectExternalDb, udsExternalDbClass)
+            .setParameter("msi", fr.proline.repository.ProlineDatabaseType.MSI)
+            .setParameter("lcms", fr.proline.repository.ProlineDatabaseType.LCMS)
+            .getResultList()
           udsExternalDbsArray = udsExternalDbs.asScala.toArray
         }
         udsExternalDbsArray

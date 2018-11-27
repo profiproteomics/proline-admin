@@ -24,6 +24,7 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.TitledBorderPane
 import com.typesafe.scalalogging.LazyLogging
+import fr.proline.admin.gui.util.AdminGuide
 
 /**
  * Builds home panel of Proline install.
@@ -293,7 +294,7 @@ object InstallPane extends VBox with INotification with LazyLogging {
   }
 
   def _openUserGuide() {
-    UserGuide.openUrl(Wizard.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
+    AdminGuide.openUrl(Wizard.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
   }
 
   /**

@@ -3,6 +3,7 @@ package fr.proline.admin.gui.monitor.database
 import com.typesafe.scalalogging.LazyLogging
 
 import fr.proline.core.dal.context._
+import fr.proline.core.dal.DoJDBCWork
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.uds.{ Project => UdsProject }
 import fr.proline.admin.service.user.ChangeProjectState
@@ -25,7 +26,7 @@ import scala.collection.JavaConverters._
  *
  */
 object ProjectsDB extends LazyLogging {
-  private val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
+  val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
   /** TODO Remove all projects to clean UDS database?  */
   def clear(): Unit = {
 
@@ -122,6 +123,28 @@ object ProjectsDB extends LazyLogging {
       val userName = UdsRepository.getUdsDbConfig().userName
       new RestoreProject(udsDbCtx, userName, ownerId, binDirPath, archivedProjDirPath, projectName).doWork()
     }
+  }
+
+  /** Compute LCMS database size */
+  def computeLcmsSize(projectId: Long): Option[String] = {
+    var size: Option[String] = None
+    DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
+      ezDBC.selectAndProcess("SELECT pg_size_pretty(pg_database_size(datname)) as size FROM pg_database WHERE datname='lcms_db_project_" + projectId + "'") { record =>
+        size = Option(record.getString("size"))
+      }
+    }
+    size
+  }
+
+  /** Compute MSI database size*/
+  def computeMsiSize(projectId: Long): Option[String] = {
+    var size: Option[String] = None
+    DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
+      ezDBC.selectAndProcess("SELECT pg_size_pretty(pg_database_size(datname)) as size FROM pg_database WHERE datname='msi_db_project_" + projectId + "'") { record =>
+        size = Option(record.getString("size"))
+      }
+    }
+    size
   }
 
   /** Perform database actions and wait for completion */

@@ -110,29 +110,19 @@ object UdsRepository extends LazyLogging {
    *  Test connection with database
    */
   def isUdsDbReachable(verbose: Boolean = true): Boolean = {
-    val udsDbConnector = getUdsDbConnector()
-    var udsDbCtx: DatabaseConnectionContext = null //especially created for SQLite test, needs to be closed in this method
     var stream = new ByteArrayOutputStream()
     var isSetup = false
     try {
-      /** Check to retrieve DB connection */
-      logger.debug("Checking if UDS database is reachable. Please wait ...")
-      System.out.println("INFO - Checking if UDS database is reachable. Please wait ...")
-      logger.debug("Redirecting Output Error Stream from the Standard Out Stream.")
+      logger.info("Checking that initial Proline database is set up. Please wait...")
       var ps = new PrintStream(stream)
       System.setErr(ps)
-      udsDbConnector.getDataSource().getConnection()
-      /** Additionnal check for file-based databases (SQLite) */
-      udsDbCtx = new DatabaseConnectionContext(udsDbConnector)
+      val udsDbCtx: DatabaseConnectionContext = getUdsDbContext()
       isSetup = udsDbCtx.getEntityManager().find(classOf[UserAccount], 1L) != null
     } catch {
-      case t: Throwable => logger.error("Error while trying to check if UDSDb is set up!")
+      case t: Throwable => logger.error("Error while trying to check that initial Proline database is set up ", t.getMessage)
     } finally {
-      logger.debug("Reset the default setting for Output Error Stream.")
       stream.reset()
       System.setErr(System.out)
-      logger.debug("close udsDb Context.")
-      if (udsDbCtx != null) udsDbCtx.close()
     }
     isSetup
   }
@@ -247,39 +237,7 @@ object UdsRepository extends LazyLogging {
   def getProjectLcmsVersion(project: Project): ExternalDb = {
     ExternalDbRepository.findExternalByTypeAndProject(this.getUdsDbContext.getEntityManager(), fr.proline.repository.ProlineDatabaseType.LCMS, project)
   }
-  /**
-   * Compute the size of  lcms database
-   * @param projectId The project id to compute its database size.
-   *
-   */
-  def computeLcmsSize(projectId: Long): String = {
-    Try {
-      var size: String = "no.size"
-      DoJDBCWork.withEzDBC(this.getUdsDbContext) { ezDBC =>
-        ezDBC.selectAndProcess("SELECT pg_size_pretty(pg_database_size(datname)) as lcmsSize FROM pg_database WHERE datname='lcms_db_project_" + projectId + "'") { record =>
-          size = record.getString("lcmsSize")
-        }
-      }
-      size
-    }.getOrElse("no.size")
-  }
-  /**
-   * Compute the size of msi database
-   * @param projectId The project id to compute its database size.
-   *
-   */
 
-  def computeMsiSize(projectId: Long): String = {
-    Try {
-      var size: String = "no.size"
-      DoJDBCWork.withEzDBC(this.getUdsDbContext) { ezDBC =>
-        ezDBC.selectAndProcess("SELECT pg_size_pretty(pg_database_size(datname)) as msiSize FROM pg_database WHERE datname='msi_db_project_" + projectId + "'") { record =>
-          size = record.getString("msiSize")
-        }
-      }
-      size
-    }.getOrElse("no.size")
-  }
 }
 
 class DynamicDataStoreConnectorFactory(

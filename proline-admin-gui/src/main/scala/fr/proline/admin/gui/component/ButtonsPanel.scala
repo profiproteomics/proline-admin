@@ -10,8 +10,6 @@ import scalafx.geometry.Insets
 import scalafx.scene.control.Button
 import scalafx.scene.layout.VBox
 
-import fr.proline.admin.gui.component.configuration.ConfigurationTabbedWindow
-import fr.proline.admin.gui.component.resource.ResourcesTabbedWindow
 import fr.proline.admin.gui.process._
 import fr.proline.admin.gui.util._
 import fr.proline.admin.service.db.SetupProline
@@ -39,7 +37,7 @@ object ButtonsPanel extends LazyLogging {
   /* Configure PostgreSQL, Proline, SeqRepo */
   val configurationButton = new Button("Configuration") {
     onAction = handle {
-      new ConfigurationTabbedWindow().showAndWait()
+
     }
   }
 
@@ -100,7 +98,7 @@ object ButtonsPanel extends LazyLogging {
   /* Manage resources: users, projects, PTMs, instrument configurations... */
   val manageResourcesButton = new Button("Manage resources") {
     onAction = handle {
-      new ResourcesTabbedWindow().showAndWait()
+      //  new ResourcesTabbedWindow().showAndWait()
     }
   }
 
@@ -184,23 +182,6 @@ object ButtonsPanel extends LazyLogging {
     ButtonsPanel.prolineMustBeSetUp.set(false)
   }
 
-  //  def disableAll() {
-  //    this.disableAllButEdit()
-  //    this.someActionRunning.set(true)
-  //  }
-
-  //  /**
-  //   * Print these booleans
-  //   */
-  //  def printAllBool() {
-  //    println(s"""  
-  //    dbCanBeUsed    $dbCanBeUsed
-  //    mustBeSetUp    $mustBeSetUp
-  //    someUserInDb  $someUserInDb
-  //    
-  //    """)
-  //  }
-
   /**
    * ***** *
    * LAYOUT *
@@ -263,7 +244,5 @@ object ButtonsPanel extends LazyLogging {
    * ADDITIONAL FEATURES *
    * ***************** *
    */
-
-
 
 }

@@ -15,7 +15,7 @@ import fr.proline.admin.gui.Monitor
 
 import fr.proline.admin.gui.process.DatabaseConnection
 import fr.proline.admin.gui.process.{ UdsRepository, ProlineAdminConnection }
-import fr.proline.admin.gui.wizard.util.UserGuide
+import fr.proline.admin.gui.util.AdminGuide
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.wizard.util.WindowSize
 import fr.proline.admin.gui.util.FxUtils
@@ -246,7 +246,7 @@ object MonitorPane extends VBox with LazyLogging {
 
   /** open Proline-admin guide file */
   def openAdminGuide() {
-    UserGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
+    AdminGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
   }
 
   /** get Proline-Admin confi initial settings  */

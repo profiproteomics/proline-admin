@@ -126,6 +126,7 @@ object ProlineAdminConnection extends LazyLogging {
     _isConfigValid
 
   }
+  
   /**
    *  Update SetupProline config when CONF
    *  file changes
@@ -136,7 +137,7 @@ object ProlineAdminConnection extends LazyLogging {
     /** Reload CONF file */
     val newConfigFile = ConfigFactory.parseFile(new File(confPath))
     synchronized {
-      logger.debug("Set new config parameters in ProlineAdmin");
+      logger.debug("Set new config parameters in Proline-Admin");
       SetupProline.setConfigParams(newConfigFile)
       logger.debug("Set new udsDB config");
       UdsRepository.setUdsDbConfig(SetupProline.getUpdatedConfig.udsDBConfig)

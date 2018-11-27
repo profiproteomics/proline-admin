@@ -15,7 +15,7 @@ import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.process._
 import fr.proline.admin.gui.wizard.util.GetConfirmation
-import fr.proline.admin.gui.wizard.util.UserGuide
+import fr.proline.admin.gui.util.AdminGuide
 import fr.proline.admin.gui.wizard.util.HelpPopup
 
 import fr.proline.admin.gui.wizard.component.panel.bottom.InstallNavButtons

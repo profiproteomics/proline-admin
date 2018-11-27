@@ -17,9 +17,8 @@ import fr.proline.admin.gui._
 import fr.proline.admin.gui.Main
 
 class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog extends ChoiceDialog
-  dTitle: String,
-  dText: String
-) {
+    dTitle: String,
+    dText: String) {
 
   var isActionConfirmed = false
 
@@ -41,7 +40,7 @@ class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog ex
 
       title = dTitle
       initOwner(dInitOwner)
-//      initStyle(StageStyle.UTILITY)
+      //      initStyle(StageStyle.UTILITY)
       initModality(Modality.WINDOW_MODAL)
       centerOnScreen()
       //      this.x = Util.getStartX(mainStage = confirmDialog)
@@ -60,12 +59,12 @@ class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog ex
 
         val yesButton = new Button(_yesButtonText) {
           //styleClass += ("minorButtons")
-          onKeyPressed = (ke: KeyEvent ) => {ScalaFxUtils.fireIfEnterPressed(this, ke)}
+          onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.fireIfEnterPressed(this, ke) }
           onAction = handle {
             isActionConfirmed = true
             confirmDialog.close()
           }
-           graphic = FxUtils.newImageView(IconResource.TICK)
+          graphic = FxUtils.newImageView(IconResource.TICK)
         }
 
         val cancelButton = new Button(_cancelButtonText) { //No
@@ -96,7 +95,7 @@ class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog ex
         }
       }
     }
-
+    _stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     /** Display this window */
     _stage.showAndWait()
   }
@@ -110,98 +109,16 @@ object GetConfirmation {
     title: String = "Confirm your action",
     yesText: String = "Yes", //TODO: delete me
     cancelText: String = "Cancel",
-    initOwner: Stage = Main.stage
-  ): Boolean = {
+    initOwner: Stage = Main.stage): Boolean = {
 
     val confDialog = new ConfirmationDialog(dTitle = title, dText = text)
 
     if (yesText != null && yesText != "Yes") confDialog.setYesButtonText(yesText)
     if (cancelText != null && cancelText != "Cancel") confDialog.setCancelButtonText(cancelText)
     confDialog.showIn(initOwner)
-    
+
     confDialog.isActionConfirmed //when stage closed()
   }
 }
 
 
-///**
-// *  Create and display a modal window to ask user to confirm before running the action.
-// */
-//class ChoiceDialog(dInitOwner: Stage, dTitle: String, dText: String) { //, button: String = "Yes", button2String = "No")
-//
-//  var isConfirmed = false
-//
-//  //defaults 
-//  private var _button1 = new Button("Yes") 
-//  private var _button2 = new Button("No")
-//
-//  def setButton1Text(text: String) = _button1.text = text
-//  def setButton2Text(text: String) = _button2.text = text
-//
-//  def setButton1Action(action: Unit) = _button1.onAction = handle { action }
-//  def setButton2Action(action: Unit) = _button2.onAction = handle { action }
-//
-//  /** Define modal window */
-//  val _stage = new Stage {
-//
-//    val choiceDialog = this
-//
-//    title = dTitle
-//    initOwner(dInitOwner)
-//    initStyle(StageStyle.UTILITY)
-//    initModality(Modality.WINDOW_MODAL)
-//
-//    this.x = Util.getStartX()
-//    this.y = Util.getStartY()
-//    resizable = false
-//
-//    scene = new Scene {
-//
-//      /**
-//       * ********** *
-//       * COMPONENTS *
-//       * ********** *
-//       */
-//
-//      val text = new Label(dText)
-//
-//      val button1 = _button1
-//      
-//
-//      new Button("Yes") {
-//        //styleClass += ("minorButtons")
-//        onAction = handle {
-//          isActionConfirmed = true
-//          confirmDialog.close()
-//        }
-//      }
-//
-//      val cancelButton = new Button("Cancel") { //No
-//        //styleClass += ("minorButtons")
-//        onAction = handle { confirmDialog.close() } //isActionConfirmed = false
-//      }
-//
-//      /**
-//       * ****** *
-//       * LAYOUT *
-//       * ****** *
-//       */
-//
-//      //stylesheets = List(Main.CSS)
-//
-//      val buttons = new HBox {
-//        alignment = Pos.BASELINE_CENTER
-//        padding = Insets(10)
-//        spacing = 20
-//        content = List(yesButton, cancelButton)
-//      }
-//
-//      root = new VBox {
-//        padding = Insets(20, 20, 10, 20)
-//        spacing = 10
-//        content = List(text, buttons)
-//      }
-//    }
-//  }
-//
-//}

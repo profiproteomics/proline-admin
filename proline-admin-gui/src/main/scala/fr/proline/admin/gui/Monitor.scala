@@ -79,18 +79,21 @@ class Monitor extends Application with LazyLogging {
     Monitor.mainPanel = homePanel
     Monitor.stage = new Stage(stage) {
       width = 1040
-      height = 800
+      minWidth = 700
+      height = 750
+      minHeight = 700
       scene = new Scene(Monitor.root)
       title = s"${Module.name} ${Module.version}"
     }
 
-    /* Build and show stage */
+    /* Build and display stage */
     Monitor.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Monitor.stage.scene.value.getStylesheets.add("/css/Style.css")
     Monitor.stage.show()
     /* Show notifications */
     Monitor.taskRunner = homePanel.taskRunner
-    /* Load initial tables rows from UDS database */
+
+    //TODO Load initial tables rows from UDS database
 
   }
 

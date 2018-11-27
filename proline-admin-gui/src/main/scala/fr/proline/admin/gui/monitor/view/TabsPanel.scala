@@ -9,7 +9,7 @@ import scalafx.scene.control.Label
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Monitor
-import fr.proline.admin.gui.wizard.util.UserGuide
+import fr.proline.admin.gui.util.AdminGuide
 import fr.profi.util.scalafx.ScalaFxUtils
 import java.io.File
 import scalafx.scene.layout.{ Priority, StackPane, VBox, HBox }
@@ -93,6 +93,6 @@ object TabsPanel extends VBox {
 
   /** Open Proline Admin Guide */
   def _openAdminGuide() {
-    UserGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
+    AdminGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
   }
 }

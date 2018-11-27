@@ -20,7 +20,7 @@ import fr.profi.util.security._
  */
 object UsersDB extends LazyLogging {
 
-  private val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
+  val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
 
   /** TODO Remove all users to clean UDS database ?  */
   def clear(): Unit = {

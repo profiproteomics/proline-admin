@@ -5,81 +5,71 @@ import scalafx.Includes._
 import scalafx.stage.Stage
 import scalafx.geometry.{ Pos, Insets }
 import scalafx.scene.layout.{ VBox, HBox, StackPane, Priority, Region }
-import scalafx.scene.control.{ Label, TextField, Hyperlink, Button }
+import scalafx.scene.control.Label
+import scalafx.scene.control.TextField
+import scalafx.scene.control.Hyperlink
+import scalafx.scene.control.Button
 import scalafx.scene.text.{ Font, FontWeight }
+import scalafx.scene.control.ProgressIndicator
+import scalafx.beans.property.BooleanProperty
 
 import fr.proline.admin.gui.Monitor
-import fr.proline.admin.gui.process.DatabaseConnection
+import fr.proline.admin.gui.task.TaskRunner
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.wizard.util.WindowSize
-
+import fr.proline.admin.gui.monitor.model.HomeViewModel
 import fr.profi.util.scalafx.{ BoldLabel, TitledBorderPane }
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
-import fr.proline.admin.gui.wizard.util.ExitPopup
-import scalafx.scene.control.ProgressIndicator
-import fr.proline.admin.gui.task.TaskRunner
-import fr.proline.admin.gui.monitor.model.HomeViewModel
-import java.io.File
+import fr.proline.admin.gui.util.ExitPopup
 
 /**
- * Builds home panel of Proline-Admin GUI monitor .
+ * Creates and displays home panel of Proline-Admin GUI monitor .
+ * @author aromdhani
  *
  */
 
 class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
 
-  // Set new configurations
+  // Load initial configurations
   model.setNewConfig()
 
-  // Proline error and warning labels
-  val adminConfigErrorLabel = new Label {
-    text = "The Proline-Admin configuration file not found. Make sure that you have already setup Proline."
-    graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
-    style = TextStyle.RED_ITALIC
-    visible = false
-    managed <== visible
-  }
+  /* Proline error and warning labels */
+
   val udsDbErrorLabel = new Label {
     text = "Proline databases are not initialized. Make sure that you have already setup Proline."
     graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
     style = TextStyle.RED_ITALIC
     visible = false
-    managed <== visible
-
   }
   val connectionErrorLabel = new Label {
-    text = "Error establishing a database connection. Please check the database connection properties."
+    text = "Error establishing a database connection. Please check database connection parameters."
     graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
     style = TextStyle.RED_ITALIC
     visible = false
-    managed <== visible
   }
   val serverConfigWarningLabel = new Label {
-    text = "The path of Proline server and jms-node configuration files not found. Make sure that you have already setup Proline."
+    text = "The path of Proline server and jms-node configuration files not found."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
-    //managed <== visible
     visible = false
   }
   val seqReposWarningLabel = new Label {
-    text = "The path of the sequence repository configuration file not found. Make sure that you have already setup Proline."
+    text = "The path of the sequence repository configuration file not found."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
-    visible = false
-    //managed <== visible
-  }
-  val pgsqlDataDirWarningLabel = new Label {
-    text = "The path of the Proline data directory not found. Make sure that you have already setup Proline."
-    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
-    style = TextStyle.ORANGE_ITALIC
-    // managed <== visible
     visible = false
   }
 
-  //JMS server initial properties
+  val pgsqlDataDirWarningLabel = new Label {
+    text = "The path of the Proline data directory not found."
+    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+    style = TextStyle.ORANGE_ITALIC
+    visible = false
+  }
+  // Help icon
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
     alignmentInParent = Pos.BASELINE_RIGHT
@@ -87,11 +77,11 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
       model.openAdminGuide()
     }
   }
+
+  // JMS components
   val infoMessage = new BoldLabel("(By default, same server as Proline Server Cortex)")
   private val V_SPACING = 10
   private val H_SPACING = 5
-
-  // jms components
   val jmsServerLabel = new HBox {
     vgrow = Priority.Always
     children = List(new Label {
@@ -240,8 +230,8 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
       go()
     }
   }
-  //buttons pane
 
+  // Buttons pane
   val space = new Region {
     prefWidth = 200
     hgrow = Priority.ALWAYS
@@ -258,17 +248,15 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
       })
   }
 
-  //layout
-  Seq(
-    exitButton,
+  // Layout
+  Seq(exitButton,
     goButton).foreach { b =>
-    b.prefHeight = 20
-    b.prefWidth = 120
-    b.styleClass += ("mainButtons")
-  }
+      b.prefHeight = 20
+      b.prefWidth = 120
+      b.styleClass += ("mainButtons")
+    }
 
-  Seq(
-    pgServerLabel,
+  Seq(pgServerLabel,
     jmsServerLabel,
     pgPortLabel,
     pgHostLabel,
@@ -286,8 +274,8 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
     jmsHostField,
     jmsProlineQueueField,
     jmsPortField).foreach {
-    f => f.hgrow = Priority.Always
-  }
+      f => f.hgrow = Priority.Always
+    }
 
   val helpPane = new HBox {
     children = Seq(
@@ -298,7 +286,6 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
     spacing = 5
     children = Seq(
       udsDbErrorLabel,
-      adminConfigErrorLabel,
       connectionErrorLabel,
       serverConfigWarningLabel,
       seqReposWarningLabel,
@@ -326,7 +313,7 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
       buttonsPane)
   }
 
-  //Final monitor pane
+  // Final monitor pane
   alignment = Pos.CENTER
   alignmentInParent = Pos.CENTER
   spacing = 1
@@ -334,6 +321,15 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
   vgrow = Priority.ALWAYS
   children = Seq(
     mainPane)
+
+  // Show error and warning labels 
+  val isConnectionEstablishedProp = BooleanProperty(model.isConnectionEstablished())
+  val isUdsDbSetup = BooleanProperty(isConnectionEstablishedProp.value && model.isUdsDbReachable())
+  connectionErrorLabel.visible <== !isConnectionEstablishedProp
+  udsDbErrorLabel.visible <== !isUdsDbSetup
+  serverConfigWarningLabel.visible <== !BooleanProperty(model.isServerConfigFileOK())
+  seqReposWarningLabel.visible <== !BooleanProperty(model.isSeqRepoConfigFileOK())
+  pgsqlDataDirWarningLabel.visible <== !BooleanProperty(model.isPgSQLDataDirOK())
 
   // Create task Runner
   val taskRunner = new TaskRunner(mainPane, glassPane, statusLabel)(Monitor.stage)
@@ -347,14 +343,16 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
       }, statusLabel,
         buttonsPane)
     }
-
     this.toRemovePane.getChildren.clear()
     this.getChildren.addAll(toAdd)
     goButton.visible = false
   }
-  // goButton.disable = !isInitialSettingsOk()
-  /** exit and close Proline-admin GUI monitor*/
+
+  // Disable go button when  UDS db is not setup or connection to UDS database failed.
+  goButton.disable <== BooleanProperty(!isConnectionEstablishedProp.value || !isUdsDbSetup.value)
+
+  /** Exit and close Proline-Admin GUI window */
   def exit() {
-    ExitPopup("Exit Setup", "Are you sure that you want to exit Proline-Admin Monitor ?", Some(Monitor.stage), false)
+    ExitPopup("Exit", "Are you sure that you want to exit Proline-Admin-GUI Monitor ?", Some(Monitor.stage), false)
   }
 }
