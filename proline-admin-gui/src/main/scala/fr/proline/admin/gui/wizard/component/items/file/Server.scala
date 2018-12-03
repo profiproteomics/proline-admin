@@ -266,12 +266,12 @@ class Server(path: String) extends VBox with IPostgres with ITabForm with LazyLo
   def _testDbConnection(
     showSuccessPopup: Boolean = false,
     showFailurePopup: Boolean = false): Boolean = {
-    DatabaseConnection.testDbConnectionToWizard(driver, Wizard.userName, Wizard.passWord, Wizard.hostName, Wizard.port, showSuccessPopup, showFailurePopup)
+    DatabaseConnection.testDbConnection(driver, Wizard.userName, Wizard.passWord, Wizard.hostName, Wizard.port, showSuccessPopup, showFailurePopup)
   }
 
   /** get database connection */
   def getInfos: String = {
-    if (DatabaseConnection.testDbConnectionToWizard(driver, Wizard.userName, Wizard.passWord, Wizard.hostName, Wizard.port, false, false))
+    if (DatabaseConnection.testDbConnection(driver, Wizard.userName, Wizard.passWord, Wizard.hostName, Wizard.port, false, false))
       s"""PostgreSQL: OK""" else s"""PostgreSQL: NOK"""
   }
   /** save Proline-Admin form  **/

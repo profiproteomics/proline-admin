@@ -19,6 +19,7 @@ import fr.proline.repository.ProlineDatabaseType.LCMS
 import fr.proline.core.dal.DoJDBCWork
 import scala.util.Try
 import java.io.{ ByteArrayOutputStream, PrintStream }
+import java.sql.{ Connection, Statement }
 
 /**
  * Some utilities relative to UDS database connection
@@ -107,24 +108,24 @@ object UdsRepository extends LazyLogging {
   }
 
   /**
-   *  Test connection with database
+   * Check that UDS database exists
    */
-  def isUdsDbReachable(verbose: Boolean = true): Boolean = {
-    var stream = new ByteArrayOutputStream()
-    var isSetup = false
-    try {
-      logger.info("Checking that initial Proline database is set up. Please wait...")
-      var ps = new PrintStream(stream)
-      System.setErr(ps)
-      val udsDbCtx: DatabaseConnectionContext = getUdsDbContext()
-      isSetup = udsDbCtx.getEntityManager().find(classOf[UserAccount], 1L) != null
-    } catch {
-      case t: Throwable => logger.error("Error while trying to check that initial Proline database is set up ", t.getMessage)
-    } finally {
-      stream.reset()
-      System.setErr(System.out)
-    }
-    isSetup
+  def isUdsDbReachable(verbose: Boolean = false): Boolean = {
+    var udsConn: Connection = null
+    var stmt: Statement = null
+    val isUdsDbExists =
+      try {
+        udsConn = getUdsDbConnector().createUnmanagedConnection()
+        stmt = udsConn.createStatement
+        val jdbcRS = stmt.executeQuery(s"SELECT count(*) FROM public.user_account")
+        if (jdbcRS.next() && jdbcRS.getInt(1) == 0) false else true
+      } catch {
+        case t: Throwable => logger.error("Error while trying to check uds_db exists", t.getMessage); false
+      } finally {
+        if (stmt != null) stmt.close()
+        if (udsConn != null) udsConn.close()
+      }
+    isUdsDbExists
   }
   /**
    *  Get the exhaustive list of UserAccount instances in database as a map of type "login ->  id"

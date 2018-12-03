@@ -24,6 +24,7 @@ import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
 import fr.proline.admin.gui.util.ExitPopup
+import fr.proline.admin.gui.process.PostgreSQLUtils
 
 /**
  * Creates and displays home panel of Proline-Admin GUI monitor .
@@ -39,35 +40,35 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
   /* Proline error and warning labels */
 
   val udsDbErrorLabel = new Label {
-    text = "Proline databases are not initialized. Make sure that you have already setup Proline."
+    text = "Error Proline is not set up. Make sure that you have already setup Proline."
     graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
     style = TextStyle.RED_ITALIC
-    visible = false
+    managed <== visible
   }
   val connectionErrorLabel = new Label {
     text = "Error establishing a database connection. Please check database connection parameters."
     graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
     style = TextStyle.RED_ITALIC
-    visible = false
+    managed <== visible
   }
   val serverConfigWarningLabel = new Label {
     text = "The path of Proline server and jms-node configuration files not found."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
-    visible = false
+    managed <== visible
   }
   val seqReposWarningLabel = new Label {
     text = "The path of the sequence repository configuration file not found."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
-    visible = false
+    managed <== visible
   }
 
   val pgsqlDataDirWarningLabel = new Label {
     text = "The path of the Proline data directory not found."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
-    visible = false
+    managed <== visible
   }
   // Help icon
   val headerHelpIcon = new Hyperlink {
@@ -93,19 +94,19 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
   val jmsHostLabel = new Label("Host: ")
   val jmsHostField = new TextField() {
     disable = true
-    text = model.getServerNodeConfigOpt.map(_.jmsServerHost.getOrElse("localhost")).getOrElse("localhost")
+    text = model.serverNodeConfigOpt.map(_.jmsServerHost.getOrElse("localhost")).getOrElse("localhost")
   }
 
   val jmsPortLabel = new Label("Port: ")
   val jmsPortField = new TextField() {
     disable = true
-    text = model.getServerNodeConfigOpt.map(_.jmsServePort.getOrElse(5442).toString()).getOrElse(5442).toString()
+    text = model.serverNodeConfigOpt.map(_.jmsServePort.getOrElse(5442).toString()).getOrElse(5442).toString()
   }
 
   val jmsProlineQueueLabel = new Label("Proline Queue Name:")
   val jmsProlineQueueField = new TextField {
     disable = true
-    text = model.getServerNodeConfigOpt.map(_.requestQueueName.getOrElse("ProlineServiceRequestQueue")).getOrElse("ProlineServiceRequestQueue")
+    text = model.serverNodeConfigOpt.map(_.requestQueueName.getOrElse("ProlineServiceRequestQueue")).getOrElse("ProlineServiceRequestQueue")
   }
   val jmsTiteledPane = new HBox {
     children = new TitledBorderPane(
@@ -149,25 +150,25 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
   val pgHostLabel = new Label("Host: ")
   val pgHostField = new TextField() {
     disable = true
-    text = model.getAdminConfigOpt.get.dbHost.getOrElse("<db_host>")
+    text = model.adminConfigOpt.get.dbHost.getOrElse("<db_host>")
   }
 
   val pgPortLabel = new Label("Port: ")
   val pgPortField = new TextField() {
     disable = true
-    text = model.getAdminConfigOpt.get.dbPort.getOrElse(5432).toString()
+    text = model.adminConfigOpt.get.dbPort.getOrElse(5432).toString()
   }
 
   val pgUserLabel = new Label("User: ")
   val pgUserField = new TextField() {
     disable = true
-    text = model.getAdminConfigOpt.get.dbUserName.getOrElse("<db_user>")
+    text = model.adminConfigOpt.get.dbUserName.getOrElse("<db_user>")
   }
 
   val pgPasswordLabel = new Label("Password: ")
   val pgPasswordField = new TextField() {
     disable = true
-    text = model.getAdminConfigOpt.get.dbPassword.getOrElse("<db_password>")
+    text = model.adminConfigOpt.get.dbPassword.getOrElse("<db_password>")
   }
 
   val pgTitledPane = new HBox {
@@ -323,10 +324,10 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
     mainPane)
 
   // Show error and warning labels 
-  val isConnectionEstablishedProp = BooleanProperty(model.isConnectionEstablished())
-  val isUdsDbSetup = BooleanProperty(isConnectionEstablishedProp.value && model.isUdsDbReachable())
-  connectionErrorLabel.visible <== !isConnectionEstablishedProp
-  udsDbErrorLabel.visible <== !isUdsDbSetup
+  val isConnectionEstablished = BooleanProperty(!model.isConnectionEstablished())
+  connectionErrorLabel.visible <== isConnectionEstablished
+  val isUdsDbSetup = BooleanProperty(!model.isUdsDbReachable())
+  udsDbErrorLabel.visible <== isUdsDbSetup
   serverConfigWarningLabel.visible <== !BooleanProperty(model.isServerConfigFileOK())
   seqReposWarningLabel.visible <== !BooleanProperty(model.isSeqRepoConfigFileOK())
   pgsqlDataDirWarningLabel.visible <== !BooleanProperty(model.isPgSQLDataDirOK())
@@ -348,8 +349,8 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
     goButton.visible = false
   }
 
-  // Disable go button when  UDS db is not setup or connection to UDS database failed.
-  goButton.disable <== BooleanProperty(!isConnectionEstablishedProp.value || !isUdsDbSetup.value)
+  // Disable go button when connection to UDS database failed or UDS database is not setup .
+  goButton.disable <== BooleanProperty(isConnectionEstablished.value || isUdsDbSetup.value)
 
   /** Exit and close Proline-Admin GUI window */
   def exit() {

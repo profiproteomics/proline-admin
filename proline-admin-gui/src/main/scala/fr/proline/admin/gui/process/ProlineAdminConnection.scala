@@ -39,7 +39,7 @@ object ProlineAdminConnection extends LazyLogging {
   }
 
   /**
-   * Udapte Proline Admin config (processing + UI management)
+   * Update Proline-Admin config (processing + UI management)
    */
   def loadProlineConf(verbose: Boolean = true): Boolean = { //return isConfigValid
 
@@ -126,7 +126,7 @@ object ProlineAdminConnection extends LazyLogging {
     _isConfigValid
 
   }
-  
+
   /**
    *  Update SetupProline config when CONF
    *  file changes
@@ -155,6 +155,7 @@ object ProlineAdminConnection extends LazyLogging {
       Platform.runLater(Main.stage.title = "Proline Admin")
     }
   }
+
   def _setNewProlineConfigs(adminConfPath: String): Unit = {
     /** load CONF file */
     require(StringUtils.isEmpty(adminConfPath), "Configuration file could not be null nor empty!")

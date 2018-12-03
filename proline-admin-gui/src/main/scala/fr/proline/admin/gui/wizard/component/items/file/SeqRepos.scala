@@ -229,12 +229,12 @@ class SeqRepos(path: String, stage: Stage) extends VBox with IPostgres with ITab
   def _testDbConnection(
     showSuccessPopup: Boolean = false,
     showFailurePopup: Boolean = false): Boolean = {
-    DatabaseConnection.testDbConnectionToWizard(driver, userName, passWord, hostName, port, showSuccessPopup, showFailurePopup)
+    DatabaseConnection.testDbConnection(driver, userName, passWord, hostName, port, showSuccessPopup, showFailurePopup)
   }
 
   /** get database connection */
   def getInfos: String = {
-    if (DatabaseConnection.testDbConnectionToWizard(driver, userName, passWord, hostName, port, false, false))
+    if (DatabaseConnection.testDbConnection(driver, userName, passWord, hostName, port, false, false))
       s"""PostgreSQL: OK""" else s"""PostgreSQL: NOK"""
   }
 
