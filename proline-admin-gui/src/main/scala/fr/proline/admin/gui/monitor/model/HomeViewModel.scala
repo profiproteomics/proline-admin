@@ -87,7 +87,7 @@ class HomeViewModel(monitorConfPath: String) extends LazyLogging {
     case _ => false
   }
 
-  /** Check Proline-Admin GUI UDS db connection */
+  /** Check Proline-Admin GUI UDS database connection */
   def isConnectionEstablished(): Boolean = {
     if (adminConfigOpt().isDefined)
       DatabaseConnection.testDbConnection(adminConfigOpt().get, false, false)

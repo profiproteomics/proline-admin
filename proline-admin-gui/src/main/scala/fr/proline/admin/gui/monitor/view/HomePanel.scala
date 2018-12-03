@@ -333,7 +333,7 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
   pgsqlDataDirWarningLabel.visible <== !BooleanProperty(model.isPgSQLDataDirOK())
 
   // Create task Runner
-  val taskRunner = new TaskRunner(mainPane, glassPane, statusLabel)(Monitor.stage)
+  val taskRunner = new TaskRunner(mainPane, glassPane, statusLabel)
 
   def go() {
     val toAdd = new VBox {

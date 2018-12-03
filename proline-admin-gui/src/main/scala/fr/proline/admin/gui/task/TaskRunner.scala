@@ -2,23 +2,23 @@ package fr.proline.admin.gui.task
 
 import javafx.{ concurrent => jfxc }
 import scalafx.application.Platform
-import scalafx.scene.Node
 import scalafx.stage.Stage
+import scalafx.scene.Node
 import scalafx.scene.control.Label
 import scalafx.scene.{ Scene, Cursor }
-import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.util.ShowPopupWindow
+import fr.proline.admin.gui.Monitor
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
-
 
 /**
  * Runs a background task disabling the `mainView` and main visible `glassPane`.
  * Shows status using `statusLabel`.
+ *
  */
 class TaskRunner(
     mainView: Node,
     glassPane: Node,
-    statusLabel: Label)(implicit stage: Stage) {
+    statusLabel: Label) {
 
   /**
    * Run an operation on a separate thread. Return and wait for its completion,
@@ -28,13 +28,17 @@ class TaskRunner(
    *
    * @param caption name for the thread (useful in debugging) and status displayed
    *                when running the task.
-   * @param op      operation to run.
+   * @param op operation to run.
    * @param R type of result returned by the operation.
+   * @param showPopup show pop up Window.
+   * @param stage the parent stage.
    * @return result returned by operation `op`.
    */
   def run[R](
     caption: String,
-    op: => R): Unit = {
+    op: => R,
+    showPopup: Boolean = true,
+    stage: Option[Stage] = Option(Monitor.stage)): Unit = {
 
     def showProgress(progressEnabled: Boolean): Unit = {
       mainView.disable = progressEnabled
@@ -58,7 +62,8 @@ class TaskRunner(
         mainView.getScene().setCursor(Cursor.DEFAULT)
         statusLabel.setStyle(TextStyle.GREEN_ITALIC)
         statusLabel.text = caption + " - Finished successfully."
-        ShowPopupWindow(caption + " - Finished successfully.", caption, Some(Monitor.stage), false)
+        if (showPopup)
+          ShowPopupWindow(caption + " - Finished successfully.", caption, stage, false)
         //TODO callback 
       }
 
@@ -82,10 +87,11 @@ class TaskRunner(
         t.foreach(_.printStackTrace())
 
         // Show popup 
-        ShowPopupWindow(
-          s"Operation failed. ${t.map("Exception: " + _.getClass).getOrElse("")}\n"
-            + s"${t.map(_.getMessage).getOrElse("")}", caption,
-          Some(Monitor.stage), false)
+        if (showPopup)
+          ShowPopupWindow(
+            s"Operation failed. ${t.map("Exception: " + _.getClass).getOrElse("")}\n"
+              + s"${t.map(_.getMessage).getOrElse("")}", caption,
+            stage, false)
       }
 
       // Task cancelled
@@ -94,16 +100,16 @@ class TaskRunner(
         mainView.getScene().setCursor(Cursor.DEFAULT)
         statusLabel.setStyle(TextStyle.RED_ITALIC)
         statusLabel.text = caption + " - Cancelled."
-        // Show popup 
-        ShowPopupWindow(caption + " - Cancelled.", caption, Some(Monitor.stage), false)
+        // Show popup
+        if (showPopup)
+          ShowPopupWindow(caption + " - Cancelled.", caption, stage, false)
       }
-
     }
 
     // Run the task as a daemon
     val th = new Thread(task, caption)
     th.setDaemon(true)
     th.start()
-    
+
   }
 }
