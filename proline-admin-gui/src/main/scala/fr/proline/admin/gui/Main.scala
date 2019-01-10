@@ -112,7 +112,7 @@ class Main extends Application {
     /* Usual case : default conf file exists */
     if (new File(_appConfPath).exists()) {
       Main.adminConfPath = _appConfPath
-      ProlineAdminConnection.loadProlineConf(verbose = false)
+      ProlineAdminConnection.loadProlineConf(verbose = false,Option(Main.stage))
     }
     
     /* Choose one if not */

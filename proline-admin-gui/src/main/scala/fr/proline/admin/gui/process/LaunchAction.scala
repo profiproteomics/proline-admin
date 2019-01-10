@@ -27,8 +27,7 @@ object LaunchAction extends LazyLogging {
     actionString: String,
     action: () => Unit,
     reloadConfig: Boolean = true,
-    disableNode: Node = null
-  ) {
+    disableNode: Node = null) {
 
     synchronized {
       /** Add progress indicator to activated button */
@@ -39,7 +38,7 @@ object LaunchAction extends LazyLogging {
         prefHeight = 20
         prefWidth = 20
       }
-      
+
       if (disableNode != null) disableNode.disable = true
 
       Main.stage.scene().setCursor(Cursor.WAIT)
@@ -101,7 +100,7 @@ object LaunchAction extends LazyLogging {
         Main.stage.scene().setCursor(Cursor.DEFAULT)
       }
       //ButtonsPanel.computeButtonsAvailability()
-      if (reloadConfig) ProlineAdminConnection.loadProlineConf(verbose = false) //workaround => correctly compute buttons' availability for SQLite (FIXME)
+      if (reloadConfig) ProlineAdminConnection.loadProlineConf(verbose = false, Option(Main.stage)) //workaround => correctly compute buttons' availability for SQLite (FIXME)
 
     }
   }

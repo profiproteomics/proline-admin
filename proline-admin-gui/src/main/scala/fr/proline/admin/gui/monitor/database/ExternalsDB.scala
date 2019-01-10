@@ -24,8 +24,8 @@ import scala.collection.JavaConverters._
  */
 object ExternalsDB extends LazyLogging {
 
-  val dsConnectorFactory: IDataStoreConnectorFactory = UdsRepository.getDataStoreConnFactory()
-  val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
+  lazy val dsConnectorFactory: IDataStoreConnectorFactory = UdsRepository.getDataStoreConnFactory()
+  lazy val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
 
   /** Remove all ExternalDb */
   def clear(): Unit = {}
@@ -44,6 +44,7 @@ object ExternalsDB extends LazyLogging {
   def queryExternalDbs(): Array[UdsExternalDb] = {
     run(
       try {
+        logger.debug("load external db from UDS database.")
         var udsExternalDbsArray = Array[UdsExternalDb]()
         udsDbCtx.tryInTransaction {
           val udsEM = udsDbCtx.getEntityManager()

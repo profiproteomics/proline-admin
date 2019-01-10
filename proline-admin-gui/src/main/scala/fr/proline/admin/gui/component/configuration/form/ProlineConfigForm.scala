@@ -59,14 +59,13 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
 
   private val serverConfigFileOpt =
     if (isEmpty(Main.serverConfPath)) None
-    else Option( new ServerConfigFile(Main.serverConfPath) )
+    else Option(new ServerConfigFile(Main.serverConfPath))
 
   private val serverConfigOpt = serverConfigFileOpt.map(_.read()).flatten
 
   private val pwxConfigFileOpt =
     if (isEmpty(Main.pwxConfPath)) None
     else Option(new PwxConfigFile(Main.pwxConfPath))
-
 
   /*
    * ********** *
@@ -84,13 +83,12 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
   //    )
   //    disable = true
   //  }
-  
+
   val driverTypeBox = new ComboBox[DriverType] {
     items = ObservableBuffer(
       DriverType.POSTGRESQL,
       DriverType.H2,
-      DriverType.SQLITE
-    )
+      DriverType.SQLITE)
     disable = true
   }
 
@@ -124,7 +122,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
 
   val hostNameLabel = new Label("Host name :")
   val hostNameField = new TextField()
-  val hostNameWarning = new Label{
+  val hostNameWarning = new Label {
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     text = "Don't use the term 'localhost', but the real IP address or fully qualified name of the server."
     wrapText = true
@@ -137,12 +135,12 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
     onAction = handle { _testDbConnection(_toAdminConfig()) }
   }
 
-//  /* DB names */
-//  val udsLabel = new Label("UDS database:")
-//  val pdiLabel = new Label("PDI database:")
-//  val psLabel = new Label("PS database:")
-//  val msiLabel = new Label("MSI database:")
-//  val lcmsLabel = new Label("LCMS database:")
+  //  /* DB names */
+  //  val udsLabel = new Label("UDS database:")
+  //  val pdiLabel = new Label("PDI database:")
+  //  val psLabel = new Label("PS database:")
+  //  val msiLabel = new Label("MSI database:")
+  //  val lcmsLabel = new Label("LCMS database:")
 
   /* Mount points */
   val disableMpNoteLabel = new Label() {
@@ -183,19 +181,16 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
   // Labels' width
   Seq(
     driverTypeLabel, dataDirLabel,
-    userNameLabel, pwdLabel, hostNameLabel, portLabel
-  //rawFilesMpLabel, mzdbFilesMpLabel, resultFilesMpLabel
-  ).foreach(_.minWidth = 88)
+    userNameLabel, pwdLabel, hostNameLabel, portLabel //rawFilesMpLabel, mzdbFilesMpLabel, resultFilesMpLabel
+    ).foreach(_.minWidth = 88)
 
   Seq(
-    rawFilesMpLabel, mzdbFilesMpLabel, resultFilesMpLabel
-  ).foreach(_.minHeight = 25)
+    rawFilesMpLabel, mzdbFilesMpLabel, resultFilesMpLabel).foreach(_.minHeight = 25)
 
   // Make all text fields grow the max. they can
   Seq(
     driverTypeBox, dataDirField,
-    userNameField, passwordPWDField, passwordTextField, hostNameField, hostNameWarning, portField
-  ).foreach { node =>
+    userNameField, passwordPWDField, passwordTextField, hostNameField, hostNameWarning, portField).foreach { node =>
       node.minWidth = 150
       node.prefWidth <== parentStage.width
     }
@@ -252,17 +247,14 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
             hostNameLabel,
             new VBox {
               children = List(hostNameField, hostNameWarning)
-            }
-          )
+            })
         },
         new HBox {
           spacing = H_SPACING
           children = List(portLabel, portField)
         },
-        testConnectionHyperlink
-      )
-    }
-  )
+        testConnectionHyperlink)
+    })
 
   /* Mount points */
   val mountPointsSettings = new TitledBorderPane(
@@ -287,10 +279,8 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
           spacing = H_SPACING
           children = List(resultFilesMpLabel, addResultFilesMpButton)
         },
-        resultFilesMpBox
-      )
-    }
-  )
+        resultFilesMpBox)
+    })
 
   val mountPointsWithDisableNote = new VBox {
     spacing = 20
@@ -300,14 +290,13 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
   /* VBox layout and content */
   alignment = Pos.Center
   alignmentInParent = Pos.Center
-//  padding = Insets(25, 20, 15, 30)
+  //  padding = Insets(25, 20, 15, 30)
   spacing = 4 * V_SPACING
   children = List(
     //prolineSettings,
     dbConnectionSettings,
     mountPointsWithDisableNote,
-    wrappedApplyButton
-  )
+    wrappedApplyButton)
   prefWidth <== parentStage.width
 
   /*
@@ -371,7 +360,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
     if (resultMp.isEmpty) _addResultFilesMountPoint()
     else resultMp.foreach { case (k, v) => _addResultFilesMountPoint(k, v) }
   }
-  
+
   /**
    * ******** *
    * FEATURES *
@@ -382,8 +371,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
   private def _browseDataDir() {
     val dataDir = FxUtils.browseDirectory(
       dcTitle = "Proline data directory",
-      dcInitialDir = dataDirField.text()
-    )
+      dcInitialDir = dataDirField.text())
     if (dataDir != null) dataDirField.text = dataDir.getPath()
   }
 
@@ -401,7 +389,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
     dbPassword = _getTextFieldValue(passwordTextField),
     dbHost = _getTextFieldValue(hostNameField),
     dbPort = portField //FIXME
-  )
+    )
 
   /** Get GUI information to create new ServerConfig object **/
   private def _getMountPointsMap(mpArray: ArrayBuffer[MountPointPanel]): Map[String, String] = {
@@ -411,32 +399,28 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
         (k, v) = (mp.getKey, mp.getValue);
         if k.isEmpty == false && v.isEmpty == false
       ) yield k -> v //doubleQuoted(v)
-
-    ).toMap
+      ).toMap
   }
 
   private def _toServerConfig() = ServerConfig(
     //serverConfFilePath = serverConfigOpt.get.filePath,
     rawFilesMountPoints = _getMountPointsMap(rawFilesMountPoints),
     mzdbFilesMountPoints = _getMountPointsMap(mzdbFilesMountPoints),
-    resultFilesMountPoints = _getMountPointsMap(resultFilesMountPoints)
-  )
+    resultFilesMountPoints = _getMountPointsMap(resultFilesMountPoints))
 
   /** Test connection with DB with provided parameters **/
   private def _testDbConnection(
     adminConfig: AdminConfig,
     showSuccessPopup: Boolean = true,
-    showFailurePopup: Boolean = true
-  ): Boolean = { //return connectionEstablished
+    showFailurePopup: Boolean = true): Boolean = { //return connectionEstablished
 
-    DatabaseConnection.testDbConnection(adminConfig, showSuccessPopup, showFailurePopup)
+    DatabaseConnection.testDbConnection(adminConfig, showSuccessPopup, showFailurePopup, Option(Main.stage))
   }
 
   /** Add stuff to define another raw_files mount point **/
   private def _addRawFilesMountPoint(
     key: String = "",
-    value: String = ""
-  ) {
+    value: String = "") {
 
     def _onRawFileMpDelete(mp: MountPointPanel): Unit = {
       rawFilesMountPoints -= mp
@@ -447,16 +431,14 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
       key = key,
       value = value,
       onDeleteAction = _onRawFileMpDelete,
-      parentStage = parentStage
-    )
+      parentStage = parentStage)
     rawFilesMpBox.children = rawFilesMountPoints
   }
 
   /** Add stuff to define another mzdb_files mount point **/
   private def _addMzdbFilesMountPoint(
     key: String = "",
-    value: String = ""
-  ) {
+    value: String = "") {
 
     def _onMzdbFileMpDelete(mp: MountPointPanel): Unit = {
       mzdbFilesMountPoints -= mp
@@ -467,16 +449,14 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
       key = key,
       value = value,
       onDeleteAction = _onMzdbFileMpDelete,
-      parentStage = parentStage
-    )
+      parentStage = parentStage)
     mzdbFilesMpBox.children = mzdbFilesMountPoints
   }
 
   /** Add stuff to define another result_files mount point **/
   private def _addResultFilesMountPoint(
     key: String = "",
-    value: String = ""
-  ) {
+    value: String = "") {
 
     def _onResultFileMpDelete(mp: MountPointPanel): Unit = {
       resultFilesMountPoints -= mp
@@ -487,32 +467,30 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
       key = key,
       value = value,
       onDeleteAction = _onResultFileMpDelete,
-      parentStage = parentStage
-    )
+      parentStage = parentStage)
     resultFilesMpBox.children = resultFilesMountPoints
   }
-  
+
   /** Check form **/
   private def _checkForm(): String = {
-    
+
     //TODO: finish me
-    
+
     val errString = new StringBuilder()
 
     /* Mount points keys */
-//    val spaceCharPattern = """\s""".r
-//    val corruptedKeys = (rawFilesMountPoints ++ mzdbFilesMountPoints ++ resultFilesMountPoints).toArray
-//      .map(_.getKey)
-//      .filter { key =>
-//        // no space in key
-//        spaceCharPattern.findFirstIn(key).isDefined
-//      }
-//    
-//    if (corruptedKeys.isEmpty == false){
-//      errString ++= "The following mount point names are incorrect: " + corruptedKeys.mkString(", ") + "\n"
-//    }
-    
-    
+    //    val spaceCharPattern = """\s""".r
+    //    val corruptedKeys = (rawFilesMountPoints ++ mzdbFilesMountPoints ++ resultFilesMountPoints).toArray
+    //      .map(_.getKey)
+    //      .filter { key =>
+    //        // no space in key
+    //        spaceCharPattern.findFirstIn(key).isDefined
+    //      }
+    //    
+    //    if (corruptedKeys.isEmpty == false){
+    //      errString ++= "The following mount point names are incorrect: " + corruptedKeys.mkString(", ") + "\n"
+    //    }
+
     //return 
     errString.result()
   }
@@ -523,32 +501,27 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
     //TODO
     true
   }
-  
+
   def saveForm() {
-    
+
     //TODO
 
     Main.stage.scene().setCursor(Cursor.WAIT)
 
     val isPwxConfigDefined = pwxConfigFileOpt.isDefined
     var continue: Boolean = false
-    
+
     /* If PWX config is defined, make sure user understand that values will be overwritten */
     if (isPwxConfigDefined) {
       continue = GetConfirmation(
         text = "Proline Web Extension (PWX) mount points will be overwritten with these values.\nDo you want to continue?",
-        title = "Warning"
-      )
-    }
-    
-    /* If PWX config is undefined, warn user that changes will not be written in it */
-    else {
+        title = "Warning")
+    } /* If PWX config is undefined, warn user that changes will not be written in it */ else {
       continue = GetConfirmation(
-        text = "Proline Web Extension (PWX) mount points will not be updated since its configuration file is not defined "+
-        "\n(see Menu -> Select configuration files -> Full path to PWX configuration file)." + 
-        "\nDo you want to continue?",
-        title = "Warning"
-      )
+        text = "Proline Web Extension (PWX) mount points will not be updated since its configuration file is not defined " +
+          "\n(see Menu -> Select configuration files -> Full path to PWX configuration file)." +
+          "\nDo you want to continue?",
+        title = "Warning")
     }
 
     if (continue) {
@@ -577,21 +550,19 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
         parentStage.close()
 
         /* Then compute if Proline is already set up */
-        ProlineAdminConnection.loadProlineConf(verbose = true)
+        ProlineAdminConnection.loadProlineConf(verbose = true, Option(Main.stage))
 
-      }
-      else {
+      } else {
 
         /* If DB can't be reached, allow to save configuration anyway */
         val isConfirmed = GetConfirmation(
           title = "Invalid configuration",
           text = "The connection to the database can't be established with these settings.\n" +
-            "Do you want to save this configuration anyway?"
-        )
+            "Do you want to save this configuration anyway?")
 
         if (isConfirmed) {
           parentStage.close()
-          ProlineAdminConnection.loadProlineConf(verbose = true)
+          ProlineAdminConnection.loadProlineConf(verbose = true, Option(Main.stage))
         }
       }
       //}
@@ -602,7 +573,7 @@ class ProlineConfigForm()(implicit val parentStage: Stage) extends VBox with ICo
 
 /**
  * List mount points types
- **/
+ */
 object MountPointType {
   val RAW_FILES = "RAW_FILES"
   val MZDB_FILES = "MZDB_FILES"
@@ -611,13 +582,12 @@ object MountPointType {
 
 /**
  * Build 1 mount point panel
- **/
+ */
 class MountPointPanel(
-  parentStage: Stage,
-  onDeleteAction: (MountPointPanel) => Unit,
-  key: String = "",
-  value: String = ""
-) extends HBox {
+    parentStage: Stage,
+    onDeleteAction: (MountPointPanel) => Unit,
+    key: String = "",
+    value: String = "") extends HBox {
 
   val thisMountPoint = this
 
@@ -644,9 +614,8 @@ class MountPointPanel(
       val dir = FileBrowsing.browseDirectory(
         dcTitle = "Select mount point directory",
         dcInitialDir = valueField.text(),
-        dcInitOwner = parentStage
-      )
-      
+        dcInitOwner = parentStage)
+
       if (dir != null) valueField.text = dir.getAbsolutePath()
     }
   }

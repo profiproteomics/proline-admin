@@ -107,7 +107,7 @@ class ExternalDbViewModel extends LazyLogging {
           updateItems(updatedItems)
         }
       })
-
+      
   }
 
   /** Delete obsolete databases */

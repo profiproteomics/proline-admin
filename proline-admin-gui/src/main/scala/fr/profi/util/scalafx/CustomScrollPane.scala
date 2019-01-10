@@ -18,7 +18,7 @@ class CustomScrollPane(
 
   val contentPane = new VBox {
     alignment = Pos.TopCenter
-    padding = Insets(15)
+    padding = Insets(5)
     content = contentNode
   }
 

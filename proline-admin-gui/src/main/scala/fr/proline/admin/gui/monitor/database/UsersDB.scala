@@ -20,7 +20,7 @@ import fr.profi.util.security._
  */
 object UsersDB extends LazyLogging {
 
-  val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
+  lazy val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
 
   /** TODO Remove all users to clean UDS database ?  */
   def clear(): Unit = {
@@ -40,6 +40,7 @@ object UsersDB extends LazyLogging {
   def queryUsers(): Array[UserAccount] = {
     run(
       try {
+        logger.debug("load user accounts from UDS database.")
         var udsUsersArray = Array[UserAccount]()
         udsDbCtx.tryInTransaction {
           val udsEM = udsDbCtx.getEntityManager()
@@ -53,7 +54,7 @@ object UsersDB extends LazyLogging {
       } catch {
         case t: Throwable => {
           synchronized {
-            logger.error("Cannot load user accounts from UDSdb")
+            logger.error("Cannot load user accounts from UDS db!")
             logger.error(t.getLocalizedMessage())
             throw t
           }

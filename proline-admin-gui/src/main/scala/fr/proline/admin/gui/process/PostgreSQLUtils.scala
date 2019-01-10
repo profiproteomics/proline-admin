@@ -9,22 +9,25 @@ import sys.process._
 
 /**
  * Proline-Admin PostgreSQL utilities
- *
+ * @author aromdhani
  */
+
 object PostgreSQLUtils extends LazyLogging {
 
-  /** Return PostreSQL  service name */
+  /** Return PostreSQL service name */
   def name(): Option[String] = {
     var name: Option[String] = None
     OSInfo.getOSType() match {
       case (OSType.WINDOWS_X86 | OSType.WINDOWS_AMD64) => {
-        execute(Seq("cmd.exe", "/c", "sc", "query", "|", "findstr", "/r", "/i", "postgresql"),
-          out => {
-            if (out.toLowerCase().indexOf("postgresql") >= 0) {
-              val result = out.split(":").map(_.trim)
-              name = Option(result(1))
-            }
-          })
+        execute(
+          Seq("cmd.exe", "/c", "sc", "query", "|", "findstr", "/r", "/i", "SERVICE_NAME"),
+          out =>
+            {
+              //Example: SERVICE_NAME : postgresql-x64-9.6
+              if (out.indexOf("postgresql") > 0) {
+                name = Option(out.split(":").apply(1).trim())
+              }
+            })
         name
       }
       case (OSType.LINUX_I386 | OSType.LINUX_AMD64) => name //TODO
@@ -48,7 +51,7 @@ object PostgreSQLUtils extends LazyLogging {
       logger.info(s"Trying to restart service: $serviceName")
       OSInfo.getOSType() match {
         case (OSType.WINDOWS_X86 | OSType.WINDOWS_AMD64) => {
-          execute(Seq("cmd.exe", "/c", "sc", "stop", serviceName), out => logger.debug(out))
+          execute(Seq("cmd.exe", "/c", "sc", "stop ", serviceName), out => logger.debug(out))
           execute(Seq("cmd.exe", "/c", "sc", "start", serviceName), out => logger.debug(out))
         }
         case (OSType.LINUX_I386 | OSType.LINUX_AMD64) => //TODO
@@ -56,7 +59,7 @@ object PostgreSQLUtils extends LazyLogging {
         case _ => //TODO
       }
     } catch {
-      case ex: Exception => logger.error(s"Cannot restart service: $serviceName. Make sure that you have admin rights!", ex.getMessage)
+      case ex: Exception => new Exception(s"Cannot restart service: $serviceName. Make sure that you have admin rights!")
     }
   }
 

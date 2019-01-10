@@ -7,20 +7,20 @@ import fr.proline.admin.gui.Monitor
 
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.process.config.AdminConfigFile
-import fr.proline.admin.gui.wizard.process.config.{ NodeConfig, ParsingRule }
-import fr.proline.admin.gui.wizard.process.config.{ NodeConfigFile, ParsingRulesFile }
+import fr.proline.admin.gui.process.config.{ NodeConfig, ParsingRule }
+import fr.proline.admin.gui.process.config.{ NodeConfigFile, ParsingRulesFile }
 import fr.proline.admin.gui.process.{ UdsRepository, ProlineAdminConnection, DatabaseConnection }
-import fr.proline.admin.gui.util.AdminGuide
+import fr.proline.admin.gui.util.{ AdminGuide, ExitPopup }
 import java.io.File
 
 /**
- * Load Proline-Admin configurations and check UDS database connection.
+ * Load Proline-Admin configuration file and check UDS database connection.
  * @author aromdhani
  *
  */
-class HomeViewModel(monitorConfPath: String) extends LazyLogging {
+class HomePanelViewModel(monitorConfPath: String) extends LazyLogging {
 
-  /** Get Proline-Admin Config */
+  /** Return Proline-Admin Config */
   def adminConfigOpt(): Option[AdminConfig] = {
     try {
       if (Monitor.adminConfPathIsEmpty()) return None
@@ -30,13 +30,13 @@ class HomeViewModel(monitorConfPath: String) extends LazyLogging {
       }
     } catch {
       case t: Throwable => {
-        logger.error("Error occured while trying to get Proline-Admin configurations", t.getMessage())
+        logger.error("Error while trying to get Proline-Admin configurations", t.getMessage())
         None
       }
     }
   }
 
-  /** Get Proline Server JMS-node  */
+  /** Return Proline Server JMS-node  */
   def serverNodeConfigOpt(): Option[NodeConfig] = {
     try {
       if (adminConfigOpt().isDefined) {
@@ -46,7 +46,7 @@ class HomeViewModel(monitorConfPath: String) extends LazyLogging {
           val nodeConfigFile = new NodeConfigFile(nodeConfigPath)
           nodeConfigFile.read
         } else {
-          logger.warn("Cannot find jms-node configurations file.")
+          logger.warn("Cannot find jms-node configuration file.")
           None
         }
       } else {
@@ -69,10 +69,10 @@ class HomeViewModel(monitorConfPath: String) extends LazyLogging {
     }
   }
 
-  /** Check that UDS database is installed */
+  /** Check that UDS database is setup */
   def isUdsDbReachable() = UdsRepository.isUdsDbReachable()
 
-  /** Check Proline-Admin GUI configurations */
+  /** Check Proline-Admin GUI initial configurations */
 
   def isServerConfigFileOK(): Boolean = adminConfigOpt() match {
     case Some(AdminConfig(_, serverConfigFilePath, _, _, _, _, _, _, _, _, _)) if (serverConfigFilePath.isDefined && (new File(serverConfigFilePath.get).exists)) => true
@@ -89,14 +89,17 @@ class HomeViewModel(monitorConfPath: String) extends LazyLogging {
 
   /** Check Proline-Admin GUI UDS database connection */
   def isConnectionEstablished(): Boolean = {
-    if (adminConfigOpt().isDefined)
-      DatabaseConnection.testDbConnection(adminConfigOpt().get, false, false)
-    else false
+    adminConfigOpt().map(DatabaseConnection.testDbConnection(_, false, false, Option(Monitor.stage))).getOrElse(false)
   }
 
-  /** Open Proline-Admin guide */
+  /** Open Proline-Admin GUI guide */
   def openAdminGuide() {
     AdminGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_2.0.pdf")
+  }
+
+  /** Exit and close Proline-Admin GUI window */
+  def exit() {
+    ExitPopup("Exit", "Are you sure you want to exit Proline-Admin-GUI Monitor ?", Some(Monitor.stage), false)
   }
 
 }

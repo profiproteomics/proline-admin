@@ -26,7 +26,7 @@ import scala.collection.JavaConverters._
  *
  */
 object ProjectsDB extends LazyLogging {
-  val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
+  lazy val udsDbCtx: DatabaseConnectionContext = UdsRepository.getUdsDbContext()
   /** TODO Remove all projects to clean UDS database?  */
   def clear(): Unit = {
 
@@ -46,6 +46,7 @@ object ProjectsDB extends LazyLogging {
   def queryProjects(): Array[UdsProject] = {
     run(
       try {
+        logger.debug("load projects from UDS database.")
         var udsProjectsArray = Array[UdsProject]()
         udsDbCtx.tryInTransaction {
           val udsEM = udsDbCtx.getEntityManager()

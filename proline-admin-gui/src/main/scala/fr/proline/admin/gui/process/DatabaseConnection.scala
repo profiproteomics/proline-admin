@@ -1,7 +1,7 @@
 package fr.proline.admin.gui.process
 
 import com.typesafe.scalalogging.LazyLogging
-
+import scalafx.stage.Stage
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
@@ -11,7 +11,7 @@ import java.sql.Connection
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.util.ShowPopupWindow
 import fr.proline.repository.DriverType
-import fr.proline.admin.gui.Wizard
+
 /**
  * Custom exceptions
  */
@@ -34,7 +34,8 @@ object DatabaseConnection extends LazyLogging {
     host: String,
     port: Int,
     showSuccessPopup: Boolean,
-    showFailurePopup: Boolean): Boolean = { //return connectionEstablished
+    showFailurePopup: Boolean,
+    parent: Option[Stage]): Boolean = { //return connectionEstablished
 
     require(driverType != null, "driverType is null")
 
@@ -57,7 +58,8 @@ object DatabaseConnection extends LazyLogging {
 
         if (showSuccessPopup) ShowPopupWindow(
           wTitle = "Test connection to database",
-          wText = "The connection to the database has been successfully established !")
+          wText = "The connection to the database has been successfully established !",
+          wParent = parent)
         true
       }
 
@@ -70,7 +72,8 @@ object DatabaseConnection extends LazyLogging {
           wText = "The connection to the database could not be established with this configuration.\n\n" +
             "Check that your Proline configuration (Database connection parameters) is correct.\n" +
             s"Note: you may also check that your $driverType server is running.\n\n" +
-            "Got the following error:\n" + errorMsg)
+            "See proline_admin_gui_log file for more details.\n",
+          wParent = parent)
         false
       }
     }
@@ -79,7 +82,8 @@ object DatabaseConnection extends LazyLogging {
   def testDbConnection(
     adminConfig: AdminConfig,
     showSuccessPopup: Boolean = true,
-    showFailurePopup: Boolean = true): Boolean = {
+    showFailurePopup: Boolean = true,
+    parent: Option[Stage]): Boolean = {
     testDbConnection(
       adminConfig.driverType.getOrElse(null),
       adminConfig.dbUserName.getOrElse(""),
@@ -87,7 +91,8 @@ object DatabaseConnection extends LazyLogging {
       adminConfig.dbHost.getOrElse(""),
       adminConfig.dbPort.getOrElse(5432),
       showSuccessPopup,
-      showFailurePopup)
+      showFailurePopup,
+      parent)
   }
 
   /** Test connection to PostgreSQL database **/

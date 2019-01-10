@@ -26,7 +26,7 @@ import fr.profi.util.scala.ScalaUtils._
  *
  */
 class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogging {
-  //users table view 
+  // Users table view 
   private val externalDbsTable = new TableView[ExternalDb](model.items) {
     columns ++= List(
       new TableColumn[ExternalDb, Long] {
@@ -51,7 +51,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
       })
   }
 
-  //resize columns
+  // Resize columns
   externalDbsTable.setColumnResizePolicy(jfxsc.TableView.CONSTRAINED_RESIZE_POLICY)
 
   //selected items 
@@ -78,6 +78,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
       model.onChange()
     }
   }
+
   /* Upgrade all Proline databases button */
   val upgradeButton = new Button {
     text = "Upgrade all databases"
@@ -88,6 +89,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
       if (confirmed) model.onUpgradeAllDbs()
     }
   }
+
   /* Check for updates button */
   val checkUpdatesButton = new Button {
     text = "Check for updates"

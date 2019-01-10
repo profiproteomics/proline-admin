@@ -29,7 +29,6 @@ import scalafx.stage.Stage
 
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Main
-import fr.proline.admin.gui.Wizard
 import fr.proline.admin.gui.process.config.ConfigFileKVLine
 import fr.proline.admin.gui.process.config.postgres._
 import fr.proline.admin.gui.process.config.postgres.PgParamType._
@@ -61,6 +60,7 @@ case class PgFormLine(
  * Form to edit and update PostgreSQL configuration (postresql.conf) *
  * ***************************************************************** *
  */
+
 class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStage: Stage) extends VBox with IConfigFilesForm with LazyLogging {
   var isUpdated = false
   /* Read initial settings */
@@ -397,14 +397,14 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
     wrapText = true
     onAction = handle {
       _setAllToOptimized()
-      Wizard.isPgOptimized = true
+    
     }
   }
   val setQllToDefaultsButton = new Button("Set all to default value") {
     wrapText = true
     onAction = handle {
       _setAllToDefault()
-      Wizard.isPgOptimized = false
+    
     }
   }
 
@@ -514,16 +514,6 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
         commented = true)
 
       return oldKVLine.toNewKVLine(valueAsString, commented = false)
-
-      //      return ConfigFileKVLine(
-      //        line = line.drop(1),
-      //        index = lineIndex,
-      //        key = kvMatch.group(1),
-      //        valueString = kvMatch.group(2),
-      //        valueStartIdx = kvMatch.start(2) - 1, //-1 because initial '#' has been removed
-      //        valueEndIdx = kvMatch.end(2) - 1,
-      //        commented = false
-      //      )
     }
 
     /* If key wasn't found, append line to file */
@@ -617,7 +607,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
       wText = warningAboutRestartText,
       wParent = Option(parentStage))
 
-    println("<br>INFO - postgresql.conf successfully updated !<br>")
+    println("INFO - postgresql.conf successfully updated !")
     logger.info("postgresql.conf successfully updated !")
   }
 

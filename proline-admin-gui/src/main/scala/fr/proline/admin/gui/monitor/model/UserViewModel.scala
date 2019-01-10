@@ -67,9 +67,7 @@ class UserViewModel extends LazyLogging {
             }
           })
       case _ =>
-
     }
-
   }
 
   /** Change user's password */
@@ -91,9 +89,7 @@ class UserViewModel extends LazyLogging {
             }
           })
       case _ =>
-
     }
-
   }
 
   /** Disable Proline user */

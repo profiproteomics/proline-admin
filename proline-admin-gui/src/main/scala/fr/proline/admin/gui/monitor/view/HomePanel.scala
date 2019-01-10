@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
 import scalafx.stage.Stage
 import scalafx.geometry.{ Pos, Insets }
-import scalafx.scene.layout.{ VBox, HBox, StackPane, Priority, Region }
+import scalafx.scene.layout.{ VBox, HBox, StackPane, Priority }
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
 import scalafx.scene.control.Hyperlink
@@ -17,14 +17,12 @@ import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.task.TaskRunner
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util.FxUtils
-import fr.proline.admin.gui.wizard.util.WindowSize
-import fr.proline.admin.gui.monitor.model.HomeViewModel
+import fr.proline.admin.gui.util.WindowSize
+import fr.proline.admin.gui.monitor.model.HomePanelViewModel
 import fr.profi.util.scalafx.{ BoldLabel, TitledBorderPane }
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
-import fr.proline.admin.gui.util.ExitPopup
-import fr.proline.admin.gui.process.PostgreSQLUtils
 
 /**
  * Creates and displays home panel of Proline-Admin GUI monitor .
@@ -32,7 +30,7 @@ import fr.proline.admin.gui.process.PostgreSQLUtils
  *
  */
 
-class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
+class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
 
   // Load initial configurations
   model.setNewConfig()
@@ -41,13 +39,13 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
 
   val udsDbErrorLabel = new Label {
     text = "Error Proline is not set up. Make sure that you have already setup Proline."
-    graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
+    graphic = ScalaFxUtils.newImageView(IconResource.EXCLAMATION)
     style = TextStyle.RED_ITALIC
     managed <== visible
   }
   val connectionErrorLabel = new Label {
     text = "Error establishing a database connection. Please check database connection parameters."
-    graphic = ScalaFxUtils.newImageView(IconResource.CANCEL)
+    graphic = ScalaFxUtils.newImageView(IconResource.EXCLAMATION)
     style = TextStyle.RED_ITALIC
     managed <== visible
   }
@@ -64,7 +62,7 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
     managed <== visible
   }
 
-  val pgsqlDataDirWarningLabel = new Label {
+  val dataDirWarningLabel = new Label {
     text = "The path of the Proline data directory not found."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
@@ -108,12 +106,13 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
     disable = true
     text = model.serverNodeConfigOpt.map(_.requestQueueName.getOrElse("ProlineServiceRequestQueue")).getOrElse("ProlineServiceRequestQueue")
   }
-  val jmsTiteledPane = new HBox {
+  val jmsTitledPane = new HBox {
+    hgrow = Priority.Always
     children = new TitledBorderPane(
       title = "",
       titleTooltip = "JMS Server properties",
       contentNode = new VBox {
-        prefWidth = (WindowSize.prefWitdh)
+        prefWidth = WindowSize.prefWitdh
         spacing = V_SPACING * 2
         children = List(infoMessage, new HBox {
           spacing = H_SPACING * 3
@@ -135,7 +134,7 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
     vgrow = Priority.Always
     hgrow = Priority.Always
     fillWidth = true
-    children = List(jmsServerLabel, jmsTiteledPane)
+    children = List(jmsServerLabel, jmsTitledPane)
   }
 
   // postgreSQL server components
@@ -172,11 +171,13 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
   }
 
   val pgTitledPane = new HBox {
+    hgrow = Priority.Always
+    vgrow = Priority.Always
     children = Seq(new TitledBorderPane(
       title = "",
       titleTooltip = "PostgreSQL Server Properties",
       contentNode = new VBox {
-        prefWidth = (WindowSize.prefWitdh)
+        prefWidth = WindowSize.prefWitdh
         spacing = V_SPACING * 2
         children = List(new HBox {
           spacing = H_SPACING * 3
@@ -202,7 +203,7 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
     children = List(pgServerLabel, pgTitledPane)
   }
 
-  //task Progress Indicator
+  // Task Progress Indicator
   private val glassPane = new VBox {
     children = new ProgressIndicator {
       progress = ProgressIndicator.IndeterminateProgress
@@ -211,20 +212,20 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
     alignment = Pos.Center
     visible = false
   }
-  //task Status
+  // Task Status
   private val statusLabel = new Label {
     maxWidth = Double.MaxValue
     padding = Insets(0, 10, 10, 10)
   }
 
-  //exit button to exit Admin-GUI
+  // To close PRoline-Admin GUI application
   val exitButton = new Button("Exit") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
     onAction = handle {
-      exit()
+      model.exit()
     }
   }
-  //go button to start
+  // To start
   val goButton = new Button(" Go ") {
     graphic = FxUtils.newImageView(IconResource.EXECUTE)
     onAction = handle {
@@ -233,13 +234,9 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
   }
 
   // Buttons pane
-  val space = new Region {
-    prefWidth = 200
-    hgrow = Priority.ALWAYS
-  }
   val buttonsPane = new HBox {
     children = Seq(
-      space,
+      ScalaFxUtils.newHSpacer(minW = 200),
       new HBox {
         padding = Insets(10)
         spacing = 10
@@ -249,7 +246,7 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
       })
   }
 
-  // Layout
+  // Style
   Seq(exitButton,
     goButton).foreach { b =>
       b.prefHeight = 20
@@ -277,20 +274,20 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
     jmsPortField).foreach {
       f => f.hgrow = Priority.Always
     }
-
+  // Layout
   val helpPane = new HBox {
     children = Seq(
       ScalaFxUtils.newHSpacer(minW = pgServerPane.getWidth - 50),
       headerHelpIcon)
   }
   val notificationsPane = new VBox {
-    spacing = 5
+    spacing = 0.5
     children = Seq(
       udsDbErrorLabel,
       connectionErrorLabel,
       serverConfigWarningLabel,
       seqReposWarningLabel,
-      pgsqlDataDirWarningLabel)
+      dataDirWarningLabel)
   }
   val propertiesPane = new VBox {
     spacing = V_SPACING
@@ -314,7 +311,7 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
       buttonsPane)
   }
 
-  // Final monitor pane
+  // Monitor panel
   alignment = Pos.CENTER
   alignmentInParent = Pos.CENTER
   spacing = 1
@@ -330,13 +327,13 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
   udsDbErrorLabel.visible <== isUdsDbSetup
   serverConfigWarningLabel.visible <== !BooleanProperty(model.isServerConfigFileOK())
   seqReposWarningLabel.visible <== !BooleanProperty(model.isSeqRepoConfigFileOK())
-  pgsqlDataDirWarningLabel.visible <== !BooleanProperty(model.isPgSQLDataDirOK())
+  dataDirWarningLabel.visible <== !BooleanProperty(model.isPgSQLDataDirOK())
 
   // Create task Runner
   val taskRunner = new TaskRunner(mainPane, glassPane, statusLabel)
 
   def go() {
-    val toAdd = new VBox {
+    val toAddPane = new VBox {
       children = Seq(new StackPane {
         children = Seq(
           TabsPanel,
@@ -345,15 +342,11 @@ class HomePanel(model: HomeViewModel) extends VBox with LazyLogging {
         buttonsPane)
     }
     this.toRemovePane.getChildren.clear()
-    this.getChildren.addAll(toAdd)
+    this.getChildren.addAll(toAddPane)
     goButton.visible = false
   }
 
-  // Disable go button when connection to UDS database failed or UDS database is not setup .
+  // Disable go button when connection to UDS database failed or UDS database is not setup.
   goButton.disable <== BooleanProperty(isConnectionEstablished.value || isUdsDbSetup.value)
 
-  /** Exit and close Proline-Admin GUI window */
-  def exit() {
-    ExitPopup("Exit", "Are you sure that you want to exit Proline-Admin-GUI Monitor ?", Some(Monitor.stage), false)
-  }
 }

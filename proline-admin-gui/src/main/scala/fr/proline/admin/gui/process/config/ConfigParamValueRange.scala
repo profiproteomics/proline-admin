@@ -40,24 +40,4 @@ case class ConfigParamValueRange(
   
 }
 
-/*
-case class ConfigFloatParamValueRange(
-  minValue: Float,
-  defaultValue: Float,
-  suggestedValue: Float,
-  maxValue: Float
-) extends IConfigParamValueRange[Float] {
 
-  def this(minValue: Double, defaultValue: Double, suggestedValue: Double, maxValue: Double) = {
-    this( minValue.toFloat, defaultValue.toFloat, suggestedValue.toFloat, maxValue.toFloat)
-  }
-  
-}*/
-
-/*case class ConfigStringParamValueRange(
-  minValue: String,
-  defaultValue: String,
-  suggestedValue: String,
-  maxValue: String
-//) extends IConfigParamValueRange
-) extends IConfigParamValueRange[String]*/

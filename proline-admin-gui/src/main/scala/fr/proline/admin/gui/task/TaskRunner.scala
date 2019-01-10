@@ -16,9 +16,9 @@ import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
  *
  */
 class TaskRunner(
-    mainView: Node,
-    glassPane: Node,
-    statusLabel: Label) {
+  mainView: Node,
+  glassPane: Node,
+  statusLabel: Label) {
 
   /**
    * Run an operation on a separate thread. Return and wait for its completion,
@@ -30,7 +30,7 @@ class TaskRunner(
    *                when running the task.
    * @param op operation to run.
    * @param R type of result returned by the operation.
-   * @param showPopup show pop up Window.
+   * @param showPopup show popup window.
    * @param stage the parent stage.
    * @return result returned by operation `op`.
    */
@@ -64,7 +64,7 @@ class TaskRunner(
         statusLabel.text = caption + " - Finished successfully."
         if (showPopup)
           ShowPopupWindow(caption + " - Finished successfully.", caption, stage, false)
-        //TODO callback 
+        //TODO callback
       }
 
       // Task is running
@@ -76,7 +76,7 @@ class TaskRunner(
         //TODO callback
       }
 
-      // Task failed 
+      // Task failed
       override def failed(): Unit = {
 
         showProgress(false)
@@ -86,7 +86,7 @@ class TaskRunner(
         val t = Option(getException)
         t.foreach(_.printStackTrace())
 
-        // Show popup 
+        // Show popup
         if (showPopup)
           ShowPopupWindow(
             s"Operation failed. ${t.map("Exception: " + _.getClass).getOrElse("")}\n"

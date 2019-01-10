@@ -183,11 +183,9 @@ class ProjectViewModel extends LazyLogging {
             }
           })
       case _ =>
-
     }
-
   }
-  
+
   /** show more info about the the slected project */
   def onMoreInfo() {
     val projectId = selectedItems.headOption.map(_.id.value).get
@@ -198,7 +196,7 @@ class ProjectViewModel extends LazyLogging {
       Some(Monitor.stage),
       false)
   }
-  
+
   /** Update items in table view */
   private def updateItems(updatedItems: Seq[Project]): Unit = {
     val toAdd = updatedItems.diff(items)

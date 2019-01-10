@@ -11,18 +11,16 @@ import scalafx.scene.layout.Priority
 import scalafx.stage.Stage
 
 import fr.proline.admin.gui.monitor.view.HomePanel
-import fr.proline.admin.gui.monitor.model.HomeViewModel
+import fr.proline.admin.gui.monitor.model.HomePanelViewModel
 import fr.proline.admin.gui.monitor.database._
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.task.TaskRunner
-import fr.proline.admin.gui.wizard.util.Module
 import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.StringUtils
 import java.io.File
 
 /**
- * Proline-Admin Monitor.
- *
+ *  Graphical user interface of Proline-Admin Monitor.
  * @author aromdhani
  *
  */
@@ -32,9 +30,10 @@ object Monitor extends LazyLogging {
   /* Panels */
   var mainPanel: VBox = _
 
-  /* configuration file path */
+  /* Configuration file path */
   var targetPath: String = _
   var adminConfPath: String = _
+  /* Task runner */
   var taskRunner: TaskRunner = _
 
   /* Primary stage's root */
@@ -49,6 +48,7 @@ object Monitor extends LazyLogging {
 
   /** utilities */
   def adminConfPathIsEmpty(): Boolean = StringUtils.isEmpty(adminConfPath)
+
   /** Launch application and display main window. */
   def main(args: Array[String]) = {
     Application.launch(classOf[Monitor])
@@ -72,27 +72,27 @@ class Monitor extends Application with LazyLogging {
   def start(stage: javafx.stage.Stage): Unit = {
 
     /* Create main window */
-    val homeViewModel = new HomeViewModel(Monitor.adminConfPath)
+    val homeViewModel = new HomePanelViewModel(Monitor.adminConfPath)
     val homePanel = new HomePanel(homeViewModel)
 
-    require(Monitor.stage == null, "stage is already instantiated")
+    require(Monitor.stage == null, "Stage is already instantiated!")
     Monitor.mainPanel = homePanel
+    val admin = new Version()
     Monitor.stage = new Stage(stage) {
       width = 1040
       minWidth = 700
       height = 750
       minHeight = 700
       scene = new Scene(Monitor.root)
-      title = s"${Module.name} ${Module.version}"
+      title = s"${admin.getModuleName} ${admin.getVersion.split("_").apply(0)}"
     }
 
     /* Build and display stage */
     Monitor.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Monitor.stage.scene.value.getStylesheets.add("/css/Style.css")
     Monitor.stage.show()
-    /* Show notifications */
+    // Initialize task runner
     Monitor.taskRunner = homePanel.taskRunner
-
     //TODO Load initial tables rows from UDS database
 
   }

@@ -38,8 +38,8 @@ import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.config.postgres._
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.util.ShowPopupWindow
-import fr.proline.admin.gui.Wizard
-import fr.proline.admin.gui.wizard.util.HelpPopup
+
+
 
 import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.primitives._

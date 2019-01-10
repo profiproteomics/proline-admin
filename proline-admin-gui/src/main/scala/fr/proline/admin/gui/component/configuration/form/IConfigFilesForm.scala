@@ -5,9 +5,6 @@ import scalafx.geometry.Pos
 import scalafx.scene.control.Button
 import scalafx.scene.layout.StackPane
 import scalafx.scene.Node
-import fr.proline.admin.gui.Wizard
-import fr.proline.admin.gui.wizard.util.HelpPopup
-
 
 /**
  * ****************************** *
@@ -22,9 +19,8 @@ trait IConfigFilesForm extends Node {
       try {
         if (checkForm()) saveForm()
       } catch {
-        case ade: java.nio.file.AccessDeniedException => {
-          System.out.println("[Error] - Access denied, you should have administrator rights to edit configuration files")
-          HelpPopup("Error", "Access denied, you should have administrator rights to edit configuration files", Some(Wizard.stage), false)
+        case ex: java.nio.file.AccessDeniedException => {
+          System.out.println("[Error] - Access denied, you should have administrator rights to edit configuration files", ex.getMessage())
         }
       }
     }
