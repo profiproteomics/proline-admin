@@ -24,6 +24,7 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.process.config.SeqConfig
 import fr.proline.admin.gui.install.model.SeqReposModelView
+import fr.proline.admin.gui.process.DatabaseConnection
 import fr.proline.admin.gui.util.FxUtils
 
 import fr.profi.util.scalafx.NumericTextField
@@ -126,7 +127,7 @@ class SeqReposPgPanel(model: SeqReposModelView) extends VBox {
         user,
         password,
         host,
-        port.toInt)
+        port)
     }
   }
 
@@ -194,6 +195,18 @@ class SeqReposPgPanel(model: SeqReposModelView) extends VBox {
           children = List(ScalaFxUtils.newHSpacer(minW = 100), testDbConnectionButton)
         })
     })
+  /** Test database connection parameters from GUI fields */
+  def onTestDbConn(): Boolean = {
+    DatabaseConnection.testDbConnection(
+      driverType,
+      user,
+      password,
+      host,
+      port,
+      showSuccessPopup = false,
+      showFailurePopup = false,
+      Option(Install.stage))
+  }
 
   /** Return Proline admin configurations */
   def toAdminConfig(): AdminConfig = {

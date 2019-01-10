@@ -122,7 +122,7 @@ class ServerPgPanel(model: AdminModelView) extends VBox {
         user,
         password,
         host,
-        port.toInt)
+        port)
     }
   }
 

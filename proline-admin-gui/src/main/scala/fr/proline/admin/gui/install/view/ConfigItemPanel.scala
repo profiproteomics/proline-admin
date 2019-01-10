@@ -129,6 +129,7 @@ object ServerConfigPanel extends ConfigItemPanel {
         })
       })
     }
+
     // Create PostgreSQL TabPane
     val adminModelView = new AdminModelView(Install.serverConfPath)
     val serverPgView = new ServerPgPanel(adminModelView)
@@ -138,6 +139,7 @@ object ServerConfigPanel extends ConfigItemPanel {
         closable_=(false)
         content_=(serverPgView)
       }
+
     // Create JMS server TabPane
     val jmsModelView = new JmsModelView(Install.serverJmsPath)
     val serverJmsView = new ServerJmsPanel(jmsModelView)
@@ -371,9 +373,15 @@ object SummaryConfigPanel extends ConfigItemPanel {
           title = "PostgreSQL Server Configuration ",
           contentNode = new VBox {
             spacing = 1
+            hgrow = Priority.ALWAYS
+            vgrow = Priority.ALWAYS
             children = Seq(
-              new Label {
-                text = s"""PostgreSQL Server Configuration: Optimzed values.PostgreSQL Server Configuration"""
+              new HBox {
+                children = Seq(new BoldLabel("PostgreSQL Server Configuration: ", upperCase = false),
+                  new Label {
+                    text = s"""Default values"""
+                    style = TextStyle.BLUE_ITALIC
+                  })
               }, ScalaFxUtils.newVSpacer(1))
           })
       }
@@ -391,23 +399,24 @@ object SummaryConfigPanel extends ConfigItemPanel {
               contentNode = new VBox {
                 spacing = 1
                 hgrow = Priority.ALWAYS
+                vgrow = Priority.ALWAYS
                 children = Seq(
                   new HBox {
-                    children = Seq(new BoldLabel("PostgreSQL: ", upperCase = false),
+                    children = Seq(new BoldLabel("PostgreSQL:\t", upperCase = false),
                       new Label {
                         text = s"""${if (serverPgView.onTestDbConn()) "OK" else "NOK"}"""
                         style = if (serverPgView.onTestDbConn()) TextStyle.BLUE_ITALIC else TextStyle.RED_ITALIC
                       })
                   },
                   new HBox {
-                    children = Seq(new BoldLabel("JMS Server Type: ", upperCase = false),
+                    children = Seq(new BoldLabel("JMS Server Type:\t", upperCase = false),
                       new Label {
                         text = s"""${if (serverJmsView.getType) "Embedded" else "Specific"}"""
                         style = TextStyle.BLUE_ITALIC
                       })
                   },
                   new HBox {
-                    children = Seq(new BoldLabel("Mount Points: ", upperCase = false),
+                    children = Seq(new BoldLabel("Mount Points:\t", upperCase = false),
                       new Label {
                         text = s"""${mountPointsView.getProperties()}"""
                         style = TextStyle.BLUE_ITALIC
@@ -417,14 +426,13 @@ object SummaryConfigPanel extends ConfigItemPanel {
                   upgradeChBox,
                   ScalaFxUtils.newVSpacer(1))
               })
-
           }
           case _ =>
         }
 
       }
 
-      // Sequence repository properties 
+      // Proline Web Extension properties 
       case PWXConfigPanel => {
         pwxResultPanel.children = new TitledBorderPane(
           title = "Proline Web Extension Configuration",
@@ -438,29 +446,48 @@ object SummaryConfigPanel extends ConfigItemPanel {
               new Label {
                 text = s""
               },
-              ScalaFxUtils.newVSpacer(10),
               ScalaFxUtils.newVSpacer(1))
           })
 
       }
-
-      // Proline Web Extension properties 
+      // Sequence repository properties 
       case SeqReposConfigPanel => {
-        seqReposResultPanel.children = new TitledBorderPane(
-          title = "Sequence Repository Configuration",
-          contentNode = new VBox {
-            spacing = 1
-            hgrow = Priority.ALWAYS
-            children = Seq(
-              new Label {
-                text = s""
-              },
-              new Label {
-                text = s""
-              },
-              ScalaFxUtils.newVSpacer(10),
-              ScalaFxUtils.newVSpacer(1))
-          })
+        SeqReposConfigPanel.configSeq match {
+          case Some((seqReposModelView, seqReposPgView, jmsModelView, serverJmsView, parsingRulesView)) => {
+            seqReposResultPanel.children = new TitledBorderPane(
+              title = "Sequence Repository Configuration",
+              contentNode = new VBox {
+                spacing = 1
+                hgrow = Priority.ALWAYS
+                vgrow = Priority.ALWAYS
+                children = Seq(
+                  new HBox {
+                    children = Seq(new BoldLabel("PostgreSQL:\t", upperCase = false),
+                      new Label {
+                        text = s"""${if (seqReposPgView.onTestDbConn()) "OK" else "NOK"}"""
+                        style = if (seqReposPgView.onTestDbConn()) TextStyle.BLUE_ITALIC else TextStyle.RED_ITALIC
+                      })
+                  },
+                  new HBox {
+                    children = Seq(new BoldLabel("JMS Server Type:\t", upperCase = false),
+                      new Label {
+                        text = s"""${if (serverJmsView.getType) "Embedded" else "Specific"}"""
+                        style = TextStyle.BLUE_ITALIC
+                      })
+                  },
+                  new HBox {
+                    children = Seq(new BoldLabel("Parsing Rules:", upperCase = false),
+                      new Label {
+                        text = s"""${parsingRulesView.getProperties()}"""
+                        style = TextStyle.BLUE_ITALIC
+                      })
+                  },
+                  ScalaFxUtils.newVSpacer(1))
+              })
+          }
+          case _ =>
+        }
+
       }
 
       case _ =>

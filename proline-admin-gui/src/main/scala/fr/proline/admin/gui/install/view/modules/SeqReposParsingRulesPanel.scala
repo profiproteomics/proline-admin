@@ -282,8 +282,8 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
       _getDefaultProteinAccesion())
 
   /** Return parsing rules number */
-  def getProperties: String = {
-    s"Specific module:\n\tSequence Repository: Parsing Rules: ${localRules.size} rule(s)"
+  def getProperties(): String = {
+    s"${localRules.size} Parsing rule(s)"
   }
   /* check Fields */
 
@@ -298,10 +298,10 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
 // Fasta directory
 
 class FastaDirectory(
-  parentStage: Stage,
-  onDeleteAction: (FastaDirectory) => Unit,
-  key: String = "",
-  value: String = "") extends HBox {
+    parentStage: Stage,
+    onDeleteAction: (FastaDirectory) => Unit,
+    key: String = "",
+    value: String = "") extends HBox {
 
   val thisFastaDir = this
 
@@ -344,12 +344,12 @@ class FastaDirectory(
 /* Model of a parsing rule defined with GUI fields */
 
 class Rules(
-  parentStage: Stage,
-  onDeleteAction: (Rules) => Unit,
-  name: String,
-  fastaName: String,
-  fastaVersion: String,
-  proteinAccession: String) extends HBox {
+    parentStage: Stage,
+    onDeleteAction: (Rules) => Unit,
+    name: String,
+    fastaName: String,
+    fastaVersion: String,
+    proteinAccession: String) extends HBox {
   val thisrule = this
 
   /* Component */
