@@ -13,10 +13,10 @@ import scalafx.scene.layout.{ VBox, HBox }
 import javafx.scene.{ control => jfxsc }
 
 import fr.proline.admin.gui.Monitor
+import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.monitor.model.AdapterModel._
 import fr.proline.admin.gui.monitor.model.ExternalDbViewModel
 import fr.proline.admin.gui.util.GetConfirmation
-import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.scala.ScalaUtils._
 
@@ -100,21 +100,31 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
       if (confirmed) model.onCheckForUpdates()
     }
   }
-
+  /* Check for updates button */
+  val deleteObsoleDbsButton = new Button {
+    text = "Delete obsolete databases"
+    tooltip = "Delete obsolete Proline databases. Make sure that all Proline databases are upgraded before to procede!"
+    graphic = FxUtils.newImageView(IconResource.TRASH)
+    onAction = handle {
+      val confirmed = GetConfirmation(s"Are you sure that you want to delete obsolete Proline databases. Make sure that all databases are upgraded before to procede.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
+      if (confirmed) model.onDeleteObsoleteDbs()
+    }
+  }
   //Layout & Style
   Seq(
     refreshButton,
     editDbEntry,
     upgradeButton,
-    checkUpdatesButton).foreach { b =>
+    checkUpdatesButton,
+    deleteObsoleDbsButton).foreach { b =>
       b.prefHeight = 20
       b.prefWidth = 200
       b.styleClass += ("mainButtons")
     }
   val buttonsPanel = new HBox {
-    spacing = 50
+    spacing = 40
     alignment_=(Pos.BOTTOM_CENTER)
-    children = Seq(refreshButton, editDbEntry, checkUpdatesButton, upgradeButton)
+    children = Seq(refreshButton, editDbEntry, deleteObsoleDbsButton, checkUpdatesButton, upgradeButton)
   }
   val contentNode = new VBox {
     spacing = 10

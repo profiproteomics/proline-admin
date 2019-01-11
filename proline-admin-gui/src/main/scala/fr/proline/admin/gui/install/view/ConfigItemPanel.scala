@@ -182,7 +182,6 @@ object ServerConfigPanel extends ConfigItemPanel {
       case _ => logger.error("Error while trying to update server properties")
     }
   }
-
 }
 
 /**
@@ -372,21 +371,26 @@ object SummaryConfigPanel extends ConfigItemPanel {
     ConfigItemPanel.configItemMap.values.toList.foreach {
       // PostgreSQL server properties
       case PgServerConfigPanel => {
-        pgServerResultPanel.children = new TitledBorderPane(
-          title = "PostgreSQL Server Configuration ",
-          contentNode = new VBox {
-            spacing = 1
-            hgrow = Priority.ALWAYS
-            vgrow = Priority.ALWAYS
-            children = Seq(
-              new HBox {
-                children = Seq(new BoldLabel("PostgreSQL Server Configuration: ", upperCase = false),
-                  new Label {
-                    text = s"""Default values"""
-                    style = TextStyle.BLUE_ITALIC
-                  })
-              }, ScalaFxUtils.newVSpacer(1))
-          })
+        PgServerConfigPanel.configSeq match {
+          case Some((postgresModelView, postgresConfigPanel, pgHbaConfigPanel)) => {
+            pgServerResultPanel.children = new TitledBorderPane(
+              title = "PostgreSQL Server Configuration ",
+              contentNode = new VBox {
+                spacing = 1
+                hgrow = Priority.ALWAYS
+                vgrow = Priority.ALWAYS
+                children = Seq(
+                  new HBox {
+                    children = Seq(new BoldLabel("PostgreSQL Server Configuration:\t", upperCase = false),
+                      new Label {
+                        text = s"${if (postgresConfigPanel.isOptimized) "Optimized values" else "Default values"}"
+                        style = TextStyle.BLUE_ITALIC
+                      })
+                  }, ScalaFxUtils.newVSpacer(1))
+              })
+          }
+          case _ =>
+        }
       }
 
       // Proline server configuration summary  
@@ -432,7 +436,6 @@ object SummaryConfigPanel extends ConfigItemPanel {
           }
           case _ =>
         }
-
       }
 
       // Proline Web Extension properties 
@@ -479,7 +482,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
                       })
                   },
                   new HBox {
-                    children = Seq(new BoldLabel("Parsing Rules:\t", upperCase = false),
+                    children = Seq(new BoldLabel("Parsing Rules:  ", upperCase = false),
                       new Label {
                         text = s"""${parsingRulesView.getProperties()}"""
                         style = TextStyle.BLUE_ITALIC
@@ -502,17 +505,17 @@ object SummaryConfigPanel extends ConfigItemPanel {
       if (confirm) {
         val prolineIsSetUp = UdsRepository.isUdsDbReachable()
         if (!prolineIsSetUp) {
-          // Setup Proline 
+          // Setup Proline databases task
           Install.taskRunner.run("Setup Proline databases",
             { new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run() },
             true,
-            Option(Install.stage))
+            Some(Install.stage))
         } else {
-          // Upgrade Proline databases 
+          // Upgrade Proline databases task
           Install.taskRunner.run("Upgrading Proline databases",
             { ExternalsDB.upgradeAllDbs() },
             true,
-            Option(Install.stage))
+            Some(Install.stage))
         }
       }
     }

@@ -107,7 +107,7 @@ class ExternalDbViewModel extends LazyLogging {
           updateItems(updatedItems)
         }
       })
-      
+
   }
 
   /** Delete obsolete databases */
@@ -115,8 +115,8 @@ class ExternalDbViewModel extends LazyLogging {
     taskRunner.run(
       caption = s"Deleting Obsolete databases",
       op = {
-        logger.info("Deleting Obsolete databases. It could take a while. Please wait...")
-        externalsDB.checkForUpdates()
+        logger.info("Deleting Obsolete Proline databases. It could take a while. Please wait...")
+        externalsDB.deleteObsoleteDbs()
         // Update items on FX thread
         val updatedItems = externalsDB.queryExternalDbsAsView()
         Platform.runLater {

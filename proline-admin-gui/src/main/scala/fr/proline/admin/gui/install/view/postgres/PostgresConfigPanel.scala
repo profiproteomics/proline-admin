@@ -24,8 +24,10 @@ import scala.collection.Seq
  */
 
 class PostgresConfigPanel(model: PostgresModelView)(implicit val parentStage: Stage) extends CustomScrollPane {
+  var isOptimized = false
   private val postgresFilePath = model.postgresqlFilePath
   private val postgresConfigForm = new PostgresConfigForm(postgresFilePath)(parentStage)
+  isOptimized = postgresConfigForm.isOptimized
   postgresConfigForm.applyButton.visible = false
   setContentNode(
     new VBox {

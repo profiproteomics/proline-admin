@@ -62,7 +62,7 @@ case class PgFormLine(
  */
 
 class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStage: Stage) extends VBox with IConfigFilesForm with LazyLogging {
-  var isUpdated = false
+  var isOptimized = false
   /* Read initial settings */
   val pgConfigFile = new PostgresConfigFile(postgresConfigFilePath)
   val pgConfigInitSettings = pgConfigFile.lineByKey
@@ -397,14 +397,15 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
     wrapText = true
     onAction = handle {
       _setAllToOptimized()
-    
+      isOptimized = true
+
     }
   }
   val setQllToDefaultsButton = new Button("Set all to default value") {
     wrapText = true
     onAction = handle {
       _setAllToDefault()
-    
+      isOptimized = false
     }
   }
 

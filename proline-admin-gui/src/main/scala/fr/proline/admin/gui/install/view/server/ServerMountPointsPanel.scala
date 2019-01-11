@@ -250,9 +250,8 @@ class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane wit
     val mountPointsBuilder = new StringBuilder()
     if (Seq(rawFilesMountPoints, mzdbFilesMountPoints, resultFilesMountPoints).forall(_.isEmpty)) { mountPointsBuilder.toString }
     else {
-      mountPointsBuilder.append("\t")
-      mountPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n\t")
-        .append(mzdbFilesMountPoints.size).append("  Mzdb files\n\t")
+      mountPointsBuilder.append(rawFilesMountPoints.size).append("  raw files\n")
+        .append(mzdbFilesMountPoints.size).append("  Mzdb files\n")
         .append(resultFilesMountPoints.size).append("  Result Files\t")
       mountPointsBuilder.toString
     }
