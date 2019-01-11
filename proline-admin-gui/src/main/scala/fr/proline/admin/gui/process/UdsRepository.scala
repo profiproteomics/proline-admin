@@ -110,7 +110,7 @@ object UdsRepository extends LazyLogging {
   /**
    * Check that UDS database exists
    */
-  def isUdsDbReachable(verbose: Boolean = false): Boolean = {
+  def isUdsDbReachable(): Boolean = {
     var udsConn: Connection = null
     var stmt: Statement = null
     val isUdsDbExists =

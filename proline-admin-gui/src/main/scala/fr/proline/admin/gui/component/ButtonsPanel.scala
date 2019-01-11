@@ -163,13 +163,13 @@ object ButtonsPanel extends LazyLogging {
     if (_prolineConfIsOk == true) {
 
       /** Check if Proline is already set up **/
-      val _prolineIsSetUp = UdsRepository.isUdsDbReachable(verbose)
+      //val _prolineIsSetUp = UdsRepository.isUdsDbReachable(verbose)
       //logger.info("_prolineIsSetUp (uds reachable) : " + _prolineIsSetUp)
 
       Platform.runLater {
-        prolineMustBeSetUp.set(!_prolineIsSetUp)
-        dbCanBeUsed.set(_prolineIsSetUp)
-        logger.info("Proline is set up: " + _prolineIsSetUp)
+       // prolineMustBeSetUp.set(!_prolineIsSetUp)
+       // dbCanBeUsed.set(_prolineIsSetUp)
+        // logger.info("Proline is set up: " + _prolineIsSetUp)
       }
     }
 

@@ -19,13 +19,16 @@ import fr.proline.admin.gui.install.view.jms._
 import fr.proline.admin.gui.install.view.server._
 import fr.proline.admin.gui.install.view.postgres._
 import fr.proline.admin.gui.install.view.modules._
+import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.util.GetConfirmation
+import fr.proline.admin.service.db.SetupProline
+import fr.proline.admin.gui.monitor.database.ExternalsDB
 import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 import fr.profi.util.scalafx.BoldLabel
-import fr.proline.admin.gui.monitor.database.ExternalsDB
+
 import scala.collection.Seq
 import scala.collection.SortedMap
 
@@ -391,7 +394,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
         ServerConfigPanel.configSeq match {
           case Some((adminModelView, serverPgView, jmsModelView, serverJmsView, mountPointsView)) => {
             upgradeChBox = new CheckBox {
-              text = "Set up or update Proline databases"
+              text = "Set up or upgrade all Proline databases"
               selected = true
             }
             serverResultPanel.children = new TitledBorderPane(
@@ -476,7 +479,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
                       })
                   },
                   new HBox {
-                    children = Seq(new BoldLabel("Parsing Rules:", upperCase = false),
+                    children = Seq(new BoldLabel("Parsing Rules:\t", upperCase = false),
                       new Label {
                         text = s"""${parsingRulesView.getProperties()}"""
                         style = TextStyle.BLUE_ITALIC
@@ -487,9 +490,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
           }
           case _ =>
         }
-
       }
-
       case _ =>
     }
   }
@@ -497,12 +498,22 @@ object SummaryConfigPanel extends ConfigItemPanel {
   /** Save the new configurations */
   def save(): Unit = {
     if (upgradeChBox.isSelected) {
-      val confitrm = GetConfirmation(s"Are you sure that you want to upgrade all Proline databases to the last version. This action can take a while.", "Confirm your action", " Yes ", "Cancel", Install.stage)
-      if (confitrm) {
-        Install.taskRunner.run("Upgrading Proline databases",
-          { ExternalsDB.upgradeAllDbs() },
-          true,
-          Option(Install.stage))
+      val confirm = GetConfirmation(s"Are you sure that you want to set up and upgrade all Proline databases to the last version. This action can take a while.", "Confirm your action", " Yes ", "Cancel", Install.stage)
+      if (confirm) {
+        val prolineIsSetUp = UdsRepository.isUdsDbReachable()
+        if (!prolineIsSetUp) {
+          // Setup Proline 
+          Install.taskRunner.run("Setup Proline databases",
+            { new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run() },
+            true,
+            Option(Install.stage))
+        } else {
+          // Upgrade Proline databases 
+          Install.taskRunner.run("Upgrading Proline databases",
+            { ExternalsDB.upgradeAllDbs() },
+            true,
+            Option(Install.stage))
+        }
       }
     }
   }
