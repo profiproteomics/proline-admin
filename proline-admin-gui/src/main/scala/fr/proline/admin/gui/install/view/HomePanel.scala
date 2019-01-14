@@ -574,7 +574,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     }
   }
 
-  /** Validate the new settings */
+  /** Validate the new configurations */
   private def onValidate(): Unit = {
     ConfigItemPanel.configItemMap.values.toList.foreach { _.save() }
   }

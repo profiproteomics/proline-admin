@@ -54,7 +54,7 @@ sealed trait ConfigItemPanel extends LazyLogging {
  */
 
 object PgServerConfigPanel extends ConfigItemPanel {
-  var configSeq: Option[(PostgresModelView, PostgresConfigPanel, PgHbaConfigPanel)] = None
+  var components: Option[(PostgresModelView, PostgresConfigPanel, PgHbaConfigPanel)] = None
   def id = IntegerProperty(1)
   /** Create postgreSQL server configuration panel */
   override def apply(): VBox = {
@@ -70,6 +70,7 @@ object PgServerConfigPanel extends ConfigItemPanel {
       })
     }
     val postgresModelView = new PostgresModelView(Install.pgDataDirPath)
+
     // Create PostgreSQL Optimization TabPane
     val postgresConfigPanel = new PostgresConfigPanel(postgresModelView)(Install.stage)
     val pgOptimtabPane =
@@ -79,6 +80,7 @@ object PgServerConfigPanel extends ConfigItemPanel {
         //margin = Insets(5, 5, 5, 5)
         content_=(postgresConfigPanel)
       }
+
     // Create PostgreSQL Network Access TabPane
     val pgHbaConfigPanel = new PgHbaConfigPanel(postgresModelView)(Install.stage)
     val pgNetAccessTabPane =
@@ -88,7 +90,8 @@ object PgServerConfigPanel extends ConfigItemPanel {
         // margin = Insets(5, 5, 5, 5)
         content_=(pgHbaConfigPanel)
       }
-    configSeq = Option((postgresModelView, postgresConfigPanel, pgHbaConfigPanel))
+    // Update
+    components = Option((postgresModelView, postgresConfigPanel, pgHbaConfigPanel))
     val tabPane = new TabPane {
       vgrow = Priority.ALWAYS
     }
@@ -101,7 +104,7 @@ object PgServerConfigPanel extends ConfigItemPanel {
 
   /** Save PostgreSQL new configurations */
   def save(): Unit = {
-    configSeq match {
+    components match {
       case Some((postgresModelView, postgresConfigPanel, pgHbaConfigPanel)) => {
         try {
           postgresConfigPanel.saveForm()
@@ -131,7 +134,7 @@ object PgServerConfigPanel extends ConfigItemPanel {
 
 object ServerConfigPanel extends ConfigItemPanel {
 
-  var configSeq: Option[(AdminModelView, ServerPgPanel, JmsModelView, ServerJmsPanel, ServerMountPointsPanel)] = None
+  var components: Option[(AdminModelView, ServerPgPanel, JmsModelView, ServerJmsPanel, ServerMountPointsPanel)] = None
   override def id = IntegerProperty(2)
   /** Create server configuration panel */
   override def apply(): VBox = {
@@ -174,7 +177,7 @@ object ServerConfigPanel extends ConfigItemPanel {
         closable_=(false)
         content_=(mountPointsView)
       }
-    configSeq = Option((adminModelView, serverPgView, jmsModelView, serverJmsView, mountPointsView))
+    components = Option((adminModelView, serverPgView, jmsModelView, serverJmsView, mountPointsView))
     val tabPane = new TabPane {
       vgrow = Priority.ALWAYS
     }
@@ -187,7 +190,7 @@ object ServerConfigPanel extends ConfigItemPanel {
 
   /** Save Proline server new configurations */
   def save(): Unit = {
-    configSeq match {
+    components match {
       case Some((adminModelView, serverPgView, jmsModelView, serverJmsView, mountPointsView)) => {
         adminModelView.onSaveAdminConfig(serverPgView.toAdminConfig())
         adminModelView.onSaveServerConfig(serverPgView.toAdminConfig(), mountPointsView.toServerConfig())
@@ -205,7 +208,7 @@ object ServerConfigPanel extends ConfigItemPanel {
 
 object PWXConfigPanel extends ConfigItemPanel {
 
-  var configSeq: Option[(PwxModelView, PwxPgPanel, PwxMountPointsPanel)] = None
+  var components: Option[(PwxModelView, PwxPgPanel, PwxMountPointsPanel)] = None
   def id = IntegerProperty(3)
   /** Create PWX configuration panel */
   override def apply(): VBox = {
@@ -237,7 +240,7 @@ object PWXConfigPanel extends ConfigItemPanel {
         closable_=(false)
         content_=(mountPointsView)
       }
-    configSeq = Option((pwxModelView, serverPgView, mountPointsView))
+    components = Option((pwxModelView, serverPgView, mountPointsView))
     val tabPane = new TabPane {
       vgrow = Priority.ALWAYS
     }
@@ -250,7 +253,7 @@ object PWXConfigPanel extends ConfigItemPanel {
 
   /** Save PWX new configurations */
   def save(): Unit = {
-    configSeq match {
+    components match {
       case Some((pwxModelView, serverPgView, mountPointsView)) =>
         {
           pwxModelView.onSavePwxConfig(serverPgView.toSimpleConfig(), mountPointsView.toServerConfig())
@@ -267,7 +270,7 @@ object PWXConfigPanel extends ConfigItemPanel {
 
 object SeqReposConfigPanel extends ConfigItemPanel {
 
-  var configSeq: Option[(SeqReposModelView, SeqReposPgPanel, JmsModelView, ServerJmsPanel, SeqReposParsingRulesPanel)] = None
+  var components: Option[(SeqReposModelView, SeqReposPgPanel, JmsModelView, ServerJmsPanel, SeqReposParsingRulesPanel)] = None
   def id = IntegerProperty(4)
   /** Create sequence repository configuration panel */
   override def apply(): VBox = {
@@ -308,7 +311,7 @@ object SeqReposConfigPanel extends ConfigItemPanel {
         closable_=(false)
         content_=(parsingRulesView)
       }
-    configSeq = Option((seqReposModelView, seqReposPgView, jmsModelView, serverJmsView, parsingRulesView))
+    components = Option((seqReposModelView, seqReposPgView, jmsModelView, serverJmsView, parsingRulesView))
     val tabPane = new TabPane {
       vgrow = Priority.ALWAYS
     }
@@ -321,7 +324,7 @@ object SeqReposConfigPanel extends ConfigItemPanel {
 
   /** Save the new configurations */
   def save(): Unit = {
-    configSeq match {
+    components match {
       case Some((seqReposModelView, seqReposPgView, jmsModelView, serverJmsView, parsingRulesView)) => {
         seqReposModelView.onSaveConfig(seqReposPgView.toSeqConfig())
         seqReposModelView.onSaveParsingRules(parsingRulesView.toParsingRule())
@@ -385,7 +388,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
     ConfigItemPanel.configItemMap.values.toList.foreach {
       // PostgreSQL server properties
       case PgServerConfigPanel => {
-        PgServerConfigPanel.configSeq match {
+        PgServerConfigPanel.components match {
           case Some((postgresModelView, postgresConfigPanel, pgHbaConfigPanel)) => {
             pgServerResultPanel.children = new TitledBorderPane(
               title = "PostgreSQL Server Configuration ",
@@ -409,7 +412,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
 
       // Proline server configuration summary  
       case ServerConfigPanel => {
-        ServerConfigPanel.configSeq match {
+        ServerConfigPanel.components match {
           case Some((adminModelView, serverPgView, jmsModelView, serverJmsView, mountPointsView)) => {
             upgradeDbsChBoxOpt = Some(new CheckBox {
               text = "Set up or upgrade all Proline databases"
@@ -454,7 +457,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
 
       // Proline Web Extension properties 
       case PWXConfigPanel => {
-        PWXConfigPanel.configSeq match {
+        PWXConfigPanel.components match {
           case Some((pwxModelView, serverPgView, mountPointsView)) => {
             pwxResultPanel.children = new TitledBorderPane(
               title = "Proline Web Extension Configuration",
@@ -477,7 +480,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
       }
       // Sequence repository properties 
       case SeqReposConfigPanel => {
-        SeqReposConfigPanel.configSeq match {
+        SeqReposConfigPanel.components match {
           case Some((seqReposModelView, seqReposPgView, jmsModelView, serverJmsView, parsingRulesView)) => {
             seqReposResultPanel.children = new TitledBorderPane(
               title = "Sequence Repository Configuration",
