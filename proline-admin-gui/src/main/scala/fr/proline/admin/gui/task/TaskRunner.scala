@@ -16,9 +16,9 @@ import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
  *
  */
 class TaskRunner(
-  mainView: Node,
-  glassPane: Node,
-  statusLabel: Label) {
+    mainView: Node,
+    glassPane: Node,
+    statusLabel: Label) {
 
   /**
    * Run an operation on a separate thread. Return and wait for its completion,
@@ -63,7 +63,10 @@ class TaskRunner(
         statusLabel.setStyle(TextStyle.GREEN_ITALIC)
         statusLabel.text = caption + " - Finished successfully."
         if (showPopup)
-          ShowPopupWindow(caption + " - Finished successfully.", caption, stage, false)
+          ShowPopupWindow(caption + " - Finished successfully.",
+            caption,
+            stage,
+            false)
         //TODO callback
       }
 
@@ -90,8 +93,10 @@ class TaskRunner(
         if (showPopup)
           ShowPopupWindow(
             s"Operation failed. ${t.map("Exception: " + _.getClass).getOrElse("")}\n"
-              + s"${t.map(_.getMessage).getOrElse("")}", caption,
-            stage, false)
+              + s"${t.map(_.getMessage).getOrElse("")}",
+            caption,
+            stage,
+            false)
       }
 
       // Task cancelled

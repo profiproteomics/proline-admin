@@ -57,10 +57,8 @@ class AdminConfigFile(val path: String) extends LazyLogging {
 
   /** Read config file **/
   def read(): Option[AdminConfig] = {
-
     try {
       val config = getTypesafeConfig()
-
       Some(
         AdminConfig(
           filePath = path,
@@ -78,7 +76,6 @@ class AdminConfigFile(val path: String) extends LazyLogging {
       case t: Throwable => {
         logger.error("Error occured while reading server configuration file", t.getMessage())
         None
-
       }
     }
   }
@@ -253,10 +250,10 @@ case class SimpleConfig(
   var dbPort: Option[Int] = None)
 /** Model what is in the Proline server configuration file(mount points), corresponding to GUI fields **/
 case class ServerConfig(
-  //serverConfFilePath: String,
-  rawFilesMountPoints: Map[String, String] = Map(),
-  mzdbFilesMountPoints: Map[String, String] = Map(),
-  resultFilesMountPoints: Map[String, String] = Map()) {
+    //serverConfFilePath: String,
+    rawFilesMountPoints: Map[String, String] = Map(),
+    mzdbFilesMountPoints: Map[String, String] = Map(),
+    resultFilesMountPoints: Map[String, String] = Map()) {
 
   /** Return mount points as a string to write in config template */
   def toTypeSafeConfigString(): String = {

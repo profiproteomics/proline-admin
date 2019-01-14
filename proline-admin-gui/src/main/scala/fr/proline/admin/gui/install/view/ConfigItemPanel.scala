@@ -25,6 +25,7 @@ import fr.proline.admin.gui.util.GetConfirmation
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.util.ShowPopupWindow
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
@@ -102,13 +103,25 @@ object PgServerConfigPanel extends ConfigItemPanel {
   def save(): Unit = {
     configSeq match {
       case Some((postgresModelView, postgresConfigPanel, pgHbaConfigPanel)) => {
-        postgresConfigPanel.saveForm()
-        pgHbaConfigPanel.saveForm()
+        try {
+          postgresConfigPanel.saveForm()
+          pgHbaConfigPanel.saveForm()
+        } catch {
+          case ex: Exception => {
+            logger.error("Error while trying to update PostgreSQL server configuration files. Make sure that you have administrator rights to edit configuration files", ex.printStackTrace())
+            val exOpt = Option(ex)
+            ShowPopupWindow(
+              s"Error while trying to update PostgreSQL server configuration files. Make sure that you have administrator rights to edit configuration files.\n${exOpt.map("Exception: " + _.getClass).getOrElse("")}\n"
+                + s"${exOpt.map(_.getMessage).getOrElse("")}",
+              "Error",
+              Some(Install.stage),
+              false)
+          }
+        }
       }
-      case _ => logger.error("Error while trying to update PostgreSQL server properties")
+      case _ => logger.error("Error while trying to update PostgreSQL server properties!")
     }
   }
-
 }
 
 /**
@@ -326,7 +339,7 @@ object SeqReposConfigPanel extends ConfigItemPanel {
 
 object SummaryConfigPanel extends ConfigItemPanel {
   def id = IntegerProperty(5)
-  var upgradeChBox: CheckBox = _
+  var upgradeDbsChBoxOpt: Option[CheckBox] = None
   var pgServerResultPanel = new VBox {
     managed <== visible
   }
@@ -398,10 +411,10 @@ object SummaryConfigPanel extends ConfigItemPanel {
       case ServerConfigPanel => {
         ServerConfigPanel.configSeq match {
           case Some((adminModelView, serverPgView, jmsModelView, serverJmsView, mountPointsView)) => {
-            upgradeChBox = new CheckBox {
+            upgradeDbsChBoxOpt = Some(new CheckBox {
               text = "Set up or upgrade all Proline databases"
               selected = true
-            }
+            })
             serverResultPanel.children = new TitledBorderPane(
               title = "Proline Server Configuration",
               contentNode = new VBox {
@@ -431,7 +444,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
                       })
                   },
                   ScalaFxUtils.newVSpacer(10),
-                  upgradeChBox,
+                  upgradeDbsChBoxOpt.get,
                   ScalaFxUtils.newVSpacer(1))
               })
           }
@@ -506,26 +519,28 @@ object SummaryConfigPanel extends ConfigItemPanel {
 
   /** Save the new configurations */
   def save(): Unit = {
-    if (upgradeChBox.isSelected) {
-      val confirm = GetConfirmation(s"Are you sure that you want to set up and upgrade all Proline databases to the last version. This action can take a while.", "Confirm your action", " Yes ", "Cancel", Install.stage)
-      if (confirm) {
-        ProlineAdminConnection.setNewProlineInstallConfig(Install.adminConfPath)
-        val prolineIsSetUp = UdsRepository.isUdsDbReachable()
-        if (!prolineIsSetUp) {
-          // Setup Proline databases task
-          Install.taskRunner.run("Setup Proline databases",
-            { new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run() },
-            true,
-            Some(Install.stage))
-        } else {
-          // Upgrade all Proline databases task
-          Install.taskRunner.run("Upgrading Proline databases",
-            {
-              val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
-              new UpgradeAllDatabases(dsConnectorFactory).doWork()
-            },
-            true,
-            Some(Install.stage))
+    upgradeDbsChBoxOpt.foreach { upgradeDbsChBox =>
+      if (upgradeDbsChBox.isSelected) {
+        val confirm = GetConfirmation(s"Are you sure that you want to set up and upgrade all Proline databases to the last version. This action can take a while.", "Confirm your action", " Yes ", "Cancel", Install.stage)
+        if (confirm) {
+          ProlineAdminConnection.setNewProlineInstallConfig(Install.adminConfPath)
+          val prolineIsSetUp = UdsRepository.isUdsDbReachable()
+          if (!prolineIsSetUp) {
+            // Setup Proline databases task
+            Install.taskRunner.run("Setup Proline databases",
+              { new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run() },
+              true,
+              Some(Install.stage))
+          } else {
+            // Upgrade all Proline databases task
+            Install.taskRunner.run("Upgrading Proline databases",
+              {
+                val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
+                new UpgradeAllDatabases(dsConnectorFactory).doWork()
+              },
+              true,
+              Some(Install.stage))
+          }
         }
       }
     }

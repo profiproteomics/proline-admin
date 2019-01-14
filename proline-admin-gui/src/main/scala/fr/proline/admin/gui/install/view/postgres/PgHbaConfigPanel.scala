@@ -36,8 +36,8 @@ class PgHbaConfigPanel(model: PostgresModelView)(implicit val parentStage: Stage
       children = List(pgHbaConfigForm)
     })
 
-  /* Save new settings  */
-  def saveForm() {
+  /* Save new configurations  */
+  def saveForm(): Unit = {
     pgHbaConfigForm.saveForm()
   }
 }
