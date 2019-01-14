@@ -92,7 +92,7 @@ class ExternalDbViewModel extends LazyLogging {
 
   }
 
-  /** Check for updates */
+  /** Check for Proline databases updates */
   def onCheckForUpdates(): Unit = {
     taskRunner.run(
       caption = s"Checking for Proline updates",

@@ -13,12 +13,10 @@ import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
 
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.util.ShowPopupWindow
 
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
-
 
 /**
  * ************************************************** *
@@ -43,7 +41,7 @@ class PostgresDataDirPanel(onSelectionChange: String => Boolean = null)(implicit
   val dataDirField = new TextField {
     hgrow = Priority.Always
 
-    if (Main.postgresDataDirIsEmpty() == false) text = Main.postgresqlDataDir
+    // if (Main.postgresDataDirIsEmpty() == false) text = Main.postgresqlDataDir
 
     if (onSelectionChange != null) {
       text.onChange { (_, oldString, newString) => onSelectionChange(newString) }
@@ -69,8 +67,7 @@ class PostgresDataDirPanel(onSelectionChange: String => Boolean = null)(implicit
       spacing = 5
       children = List(headerHelpIcon, headerLabel, dataDirField, browseButton)
     },
-    warningLabel
-  )
+    warningLabel)
 
   /*
    * ******** *
@@ -82,22 +79,20 @@ class PostgresDataDirPanel(onSelectionChange: String => Boolean = null)(implicit
   private def _openHelpDialog() = ShowPopupWindow(
     wTitle = "Help",
     wText = "The PostgreSQL data directory is defined when PostgreSQL is installed on the machine.\n" +
-      "This is the folder in which you will find the \"postgresql.conf\" and \"pg_hba.conf\" files."
-  )
+      "This is the folder in which you will find the \"postgresql.conf\" and \"pg_hba.conf\" files.")
 
   /** Browse PostresSQL data dir and update field **/
   private def _browseDataDir() {
     val file = FxUtils.browseDirectory(
       dcTitle = "Select PostgreSQL data directory",
-      dcInitialDir = dataDirField.text()
-    )
+      dcInitialDir = dataDirField.text())
 
     val newPath = file.getPath()
     if (file != null) {
       dataDirField.text = newPath
     }
   }
-  
+
   /** Get the selected directory **/
   def getPgDataDir(): String = dataDirField.text()
 
@@ -111,28 +106,28 @@ class PostgresDataDirPanel(onSelectionChange: String => Boolean = null)(implicit
 
   /** Save PostgreSQL datadir in global variables and, if possible, in admin config file **/
   def saveForm(): Unit = {
-    
+
     val newPath = dataDirField.text()
     val newPathIsEmpty = newPath.isEmpty()
-    
+
     /* Update global variable */
-    Main.postgresqlDataDir = newPath
+    //  Main.postgresqlDataDir = newPath
 
     /* Store data dir in admin config if possible and needed */
-    val adminConfigFileOpt = Main.getAdminConfigFile()
-    if (adminConfigFileOpt.isDefined) {
+    // val adminConfigFileOpt = None
+    //    if (adminConfigFileOpt.isDefined) {
+    //
+    //      val adminConfigFile = adminConfigFileOpt.get
+    //      val pathInAdminConfigOpt = adminConfigFile.getPostgreSqlDataDir()
+    //
+    //      if (newPathIsEmpty == false && (pathInAdminConfigOpt.isEmpty || pathInAdminConfigOpt.get != newPath)) {
+    //        adminConfigFile.setPostgreSqlDataDir(newPath)
+    //      }
+    //    }
 
-      val adminConfigFile = adminConfigFileOpt.get
-      val pathInAdminConfigOpt = adminConfigFile.getPostgreSqlDataDir()
-
-      if (newPathIsEmpty == false && (pathInAdminConfigOpt.isEmpty || pathInAdminConfigOpt.get != newPath)) {
-        adminConfigFile.setPostgreSqlDataDir(newPath)
-      }
-    }
-    
     /* Reset warning */
     warningLabel.visible = false
-    
+
     /* Logback */
     val sb = new StringBuilder()
     sb ++= "[INFO]-- Configuration directory path --\n"

@@ -10,7 +10,7 @@ import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 import scalafx.stage.Stage
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.Install
 import fr.profi.util.scala.ScalaUtils
 
 /**
@@ -18,14 +18,14 @@ import fr.profi.util.scala.ScalaUtils
  */
 object FxUtils extends LazyLogging {
 
-  /** Modal windows location, relative to main window **/
-  def getStartX(mainStage: Stage = Main.stage, div: Int = 2): Double = {
+  /** Modal windows location, relative to Install window **/
+  def getStartX(mainStage: Stage = Install.stage, div: Int = 2): Double = {
     val stageX = mainStage.x
     val stageWidth = mainStage.width
     (stageX + (stageWidth / div)).toDouble
   }
 
-  def getStartY(mainStage: Stage = Main.stage, div: Int = 4): Double = {
+  def getStartY(mainStage: Stage = Install.stage, div: Int = 4): Double = {
     val stageY = mainStage.y
     val stageHeight = mainStage.height
     (stageY + (stageHeight / div)).toDouble
@@ -45,7 +45,7 @@ object FxUtils extends LazyLogging {
     fcTitle: String,
     fcInitialDir: String = "",
     fcExtFilters: Array[ExtensionFilter] = Array(),
-    fcInitOwner: Stage = Main.stage //multipleSelection: Boolean = false
+    fcInitOwner: Stage = Install.stage //multipleSelection: Boolean = false
     ): File = {
 
     //fr.profi.util.scalafx.FileBrowsing.browseFile(fcTitle, fcInitialDir, fcExtFilters, fcInitOwner, multipleSelection = true)
@@ -82,7 +82,7 @@ object FxUtils extends LazyLogging {
   def browseDirectory(
     dcTitle: String,
     dcInitialDir: String = "",
-    dcInitOwner: Stage = Main.stage): File = {
+    dcInitOwner: Stage = Install.stage): File = {
 
     /** Define directory chooser */
     val dc = new DirectoryChooser {

@@ -14,8 +14,7 @@ import scalafx.scene.Node
 import scalafx.scene.control.Button
 import scalafx.scene.control.ProgressIndicator
 import scalafx.scene.image.ImageView
-
-import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.Install
 
 /**
  * Run button's action asynchronously
@@ -41,7 +40,7 @@ object LaunchAction extends LazyLogging {
 
       if (disableNode != null) disableNode.disable = true
 
-      Main.stage.scene().setCursor(Cursor.WAIT)
+      // Main.stage.scene().setCursor(Cursor.WAIT)
       //      ButtonsPanel.disableAll()
 
       /** Print relative command line in console panel */
@@ -97,10 +96,10 @@ object LaunchAction extends LazyLogging {
       Platform.runLater {
         actionButton.graphic = new ImageView()
         if (disableNode != null) disableNode.disable = false
-        Main.stage.scene().setCursor(Cursor.DEFAULT)
+        Install.stage.scene().setCursor(Cursor.DEFAULT)
       }
       //ButtonsPanel.computeButtonsAvailability()
-      if (reloadConfig) ProlineAdminConnection.loadProlineConf(verbose = false, Option(Main.stage)) //workaround => correctly compute buttons' availability for SQLite (FIXME)
+      // if (reloadConfig) ProlineAdminConnection.loadProlineConf(verbose = false, Option(Main.stage)) //workaround => correctly compute buttons' availability for SQLite (FIXME)
 
     }
   }

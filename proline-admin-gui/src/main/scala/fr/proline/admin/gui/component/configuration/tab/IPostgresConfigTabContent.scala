@@ -3,7 +3,6 @@ package fr.proline.admin.gui.component.configuration.tab
 import java.io.File
 import scalafx.Includes._
 import scalafx.scene.control.Label
-import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.component.configuration.file.PostgresDataDirPanel
 import fr.proline.admin.gui.component.configuration.form.IConfigFilesForm
 import fr.profi.util.StringUtils
@@ -17,8 +16,8 @@ import scalafx.geometry.Pos
  * ************************************* *
  * List all types of Postges config tabs *
  * ************************************* *
- **/
-object PostgresTabType extends Enumeration{
+ */
+object PostgresTabType extends Enumeration {
   val AUTHORIZATIONS, OPTIMIZATION = Value
 }
 
@@ -56,14 +55,13 @@ trait IPostgresConfigTabContent extends IConfigTabContent {
     children = Seq(workingFileLabel, workingFileWarning)
   }
 
-
   /* IConfigTabContent methods (implement) */
 
   /** Try to display ConfigForm with initial config **/
   protected def init() {
     /* Add warnings to default components */
     setConfigFilePanelEnhancedContent(warningsAsVBox)
-    
+
     /* Update warnings */
     _updateWorkingFile(configFilesPanel.getPgDataDir())
     onApplyWorkingFilesPressed()
@@ -79,7 +77,7 @@ trait IPostgresConfigTabContent extends IConfigTabContent {
   /** Set last saved config path  (cancelButton pressed)**/
   protected def onCancelWorkingFilesPressed(): Unit = {
     // Set last saved value in field
-    configFilesPanel.setPgDataDir(Main.postgresqlDataDir)
+    //configFilesPanel.setPgDataDir(Main.postgresqlDataDir)
   }
 
   /* Private methods */

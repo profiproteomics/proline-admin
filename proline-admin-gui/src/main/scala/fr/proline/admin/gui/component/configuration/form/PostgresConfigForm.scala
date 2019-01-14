@@ -28,7 +28,6 @@ import scalafx.scene.layout.VBox
 import scalafx.stage.Stage
 
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.Main
 import fr.proline.admin.gui.process.config.ConfigFileKVLine
 import fr.proline.admin.gui.process.config.postgres._
 import fr.proline.admin.gui.process.config.postgres.PgParamType._

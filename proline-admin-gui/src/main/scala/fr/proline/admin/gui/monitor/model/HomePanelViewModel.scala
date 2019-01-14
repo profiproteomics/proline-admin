@@ -63,7 +63,7 @@ class HomePanelViewModel(monitorConfPath: String) extends LazyLogging {
   /** Reload Proline-Admin Config */
   def setNewConfig() {
     try {
-      ProlineAdminConnection._setNewProlineInstallConfig(monitorConfPath)
+      ProlineAdminConnection.setNewProlineInstallConfig(monitorConfPath)
     } catch {
       case t: Throwable => logger.error("Error while trying to set the new configurations", t.getMessage())
     }

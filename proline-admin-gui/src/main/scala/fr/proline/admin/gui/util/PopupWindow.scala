@@ -11,7 +11,7 @@ import scalafx.scene.layout.StackPane
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 import fr.profi.util.scalafx.ScalaFxUtils
-import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.Install
 import scalafx.scene.layout.VBox
 import fr.proline.admin.gui.IconResource
 
@@ -22,14 +22,10 @@ import fr.proline.admin.gui.IconResource
  */
 class PopupWindow(
 
-  wTitle: String,
-  wText: String,
-  wParent: Option[Stage] = Option(Main.stage),
-  isResizable: Boolean = false 
-  //X: Option[Double] = Some(Main.stage.width() / 2),
-  //Y: Option[Double] = Some(Main.stage.width() / 2)
-
-) extends Stage {
+    wTitle: String,
+    wText: String,
+    wParent: Option[Stage] = Option(Install.stage),
+    isResizable: Boolean = false) extends Stage {
 
   //TODO: rename package into window, for this is no dialog
   // TODO: see scalafx.stage.PopupWindow
@@ -40,7 +36,7 @@ class PopupWindow(
   initModality(Modality.WINDOW_MODAL)
   resizable = isResizable
   if (wParent.isDefined) initOwner(wParent.get)
-   popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
+  popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
   scene = new Scene {
 
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }
@@ -58,8 +54,7 @@ class PopupWindow(
         new Button("OK") {
           graphic = FxUtils.newImageView(IconResource.TICK)
           onAction = handle { popup.close() }
-        }
-      )
+        })
     }
   }
 }
@@ -74,9 +69,8 @@ object ShowPopupWindow {
   def apply(
     wText: String,
     wTitle: String = "",
-    wParent: Option[Stage] = Option(Main.stage),
-    isResizable: Boolean = false
-  ) {
+    wParent: Option[Stage] = Option(Install.stage),
+    isResizable: Boolean = false) {
     new PopupWindow(wTitle, wText, wParent, isResizable).showAndWait()
   }
 

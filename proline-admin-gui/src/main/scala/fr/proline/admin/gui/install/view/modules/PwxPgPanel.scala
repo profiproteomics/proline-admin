@@ -19,6 +19,7 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.install.model.PwxModelView
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.process.config.SimpleConfig
+import fr.proline.admin.gui.process.DatabaseConnection
 import fr.proline.admin.gui.util.FxUtils
 
 import fr.profi.util.scalafx.NumericTextField
@@ -191,6 +192,18 @@ class PwxPgPanel(model: PwxModelView) extends VBox {
         })
     })
 
+  /** Test database connection parameters from GUI fields */
+  def onTestDbConn(): Boolean = {
+    DatabaseConnection.testDbConnection(
+      driverType,
+      user,
+      password,
+      host,
+      port,
+      showSuccessPopup = false,
+      showFailurePopup = false,
+      Option(Install.stage))
+  }
   /** Return database connection parameters */
   def toSimpleConfig(): SimpleConfig = {
     SimpleConfig(
@@ -200,9 +213,8 @@ class PwxPgPanel(model: PwxModelView) extends VBox {
       dbPassword = Option(this.password),
       dbHost = Option(this.host),
       dbPort = Option(this.port.toInt) //FIXME
-    )
+      )
   }
-
   // Create node content
   this.vgrow = Priority.Always
   this.hgrow = Priority.Always

@@ -38,7 +38,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   /* Proline error and warning labels */
 
   val udsDbErrorLabel = new Label {
-    text = "Error Proline is not set up. Make sure that you have already setup Proline."
+    text = "Error Proline databases are not set up. Make sure that you have already setup Proline."
     graphic = ScalaFxUtils.newImageView(IconResource.EXCLAMATION)
     style = TextStyle.RED_ITALIC
     managed <== visible
@@ -50,24 +50,25 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     managed <== visible
   }
   val serverConfigWarningLabel = new Label {
-    text = "The path of Proline server and jms-node configuration files not found."
+    text = "Proline server is not setup."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
     managed <== visible
   }
   val seqReposWarningLabel = new Label {
-    text = "The path of the sequence repository configuration file not found."
+    text = "Proline sequence repository is not setup."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
     managed <== visible
   }
 
   val dataDirWarningLabel = new Label {
-    text = "The path of the Proline data directory not found."
+    text = "The path of Proline data directory is not found."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
     managed <== visible
   }
+
   // Help icon
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)

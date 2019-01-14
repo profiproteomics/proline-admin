@@ -222,7 +222,7 @@ class SeqReposPgPanel(model: SeqReposModelView) extends VBox {
       dbPassword = Option(this.password),
       dbHost = Option(this.host),
       dbPort = Option(this.port.toInt) //FIXME
-    )
+      )
   }
 
   /** Return sequence repository configurations */
@@ -234,7 +234,7 @@ class SeqReposPgPanel(model: SeqReposModelView) extends VBox {
       dbPassword = Option(this.password),
       dbHost = Option(this.host),
       dbPort = Option(this.port.toInt) //FIXME
-    )
+      )
   }
   // Create node content
   this.vgrow = Priority.Always

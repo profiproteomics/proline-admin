@@ -20,9 +20,10 @@ import fr.proline.admin.gui.install.view.server._
 import fr.proline.admin.gui.install.view.postgres._
 import fr.proline.admin.gui.install.view.modules._
 import fr.proline.admin.gui.process.UdsRepository
+import fr.proline.admin.gui.process.ProlineAdminConnection
 import fr.proline.admin.gui.util.GetConfirmation
 import fr.proline.admin.service.db.SetupProline
-import fr.proline.admin.gui.monitor.database.ExternalsDB
+import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.scalafx.TitledBorderPane
 import fr.profi.util.scalafx.ScalaFxUtils
@@ -39,7 +40,7 @@ import scala.collection.SortedMap
  */
 
 sealed trait ConfigItemPanel extends LazyLogging {
-  // id used to sort, remove and add a ConfigItemPanel
+  // Id used to sort, remove and add a configuration item
   def id: IntegerProperty
   def apply(): Node
   def save(): Unit
@@ -241,7 +242,7 @@ object PWXConfigPanel extends ConfigItemPanel {
         {
           pwxModelView.onSavePwxConfig(serverPgView.toSimpleConfig(), mountPointsView.toServerConfig())
         }
-      case _ => logger.error("Error while trying to update PWX properties")
+      case _ => logger.error("Error while trying to update Proline Web Extension configuration!")
     }
   }
 }
@@ -361,12 +362,12 @@ object SummaryConfigPanel extends ConfigItemPanel {
         subTitle,
         pgServerResultPanel,
         serverResultPanel,
-        pwxResultPanel,
-        seqReposResultPanel)
+        seqReposResultPanel,
+        pwxResultPanel)
     }
   }
 
-  /** Set a summary  the selected configurations items */
+  /** Set a summary  for the selected configurations items */
   def sum(): Unit = {
     ConfigItemPanel.configItemMap.values.toList.foreach {
       // PostgreSQL server properties
@@ -440,21 +441,26 @@ object SummaryConfigPanel extends ConfigItemPanel {
 
       // Proline Web Extension properties 
       case PWXConfigPanel => {
-        pwxResultPanel.children = new TitledBorderPane(
-          title = "Proline Web Extension Configuration",
-          contentNode = new VBox {
-            spacing = 1
-            hgrow = Priority.ALWAYS
-            children = Seq(
-              new Label {
-                text = s""
-              },
-              new Label {
-                text = s""
-              },
-              ScalaFxUtils.newVSpacer(1))
-          })
-
+        PWXConfigPanel.configSeq match {
+          case Some((pwxModelView, serverPgView, mountPointsView)) => {
+            pwxResultPanel.children = new TitledBorderPane(
+              title = "Proline Web Extension Configuration",
+              contentNode = new VBox {
+                spacing = 1
+                hgrow = Priority.ALWAYS
+                children = Seq(
+                  new HBox {
+                    children = Seq(new BoldLabel("PostgreSQL:\t", upperCase = false),
+                      new Label {
+                        text = s"""${if (serverPgView.onTestDbConn()) "OK" else "NOK"}"""
+                        style = if (serverPgView.onTestDbConn()) TextStyle.BLUE_ITALIC else TextStyle.RED_ITALIC
+                      })
+                  },
+                  ScalaFxUtils.newVSpacer(1))
+              })
+          }
+          case _ =>
+        }
       }
       // Sequence repository properties 
       case SeqReposConfigPanel => {
@@ -503,6 +509,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
     if (upgradeChBox.isSelected) {
       val confirm = GetConfirmation(s"Are you sure that you want to set up and upgrade all Proline databases to the last version. This action can take a while.", "Confirm your action", " Yes ", "Cancel", Install.stage)
       if (confirm) {
+        ProlineAdminConnection.setNewProlineInstallConfig(Install.adminConfPath)
         val prolineIsSetUp = UdsRepository.isUdsDbReachable()
         if (!prolineIsSetUp) {
           // Setup Proline databases task
@@ -511,9 +518,12 @@ object SummaryConfigPanel extends ConfigItemPanel {
             true,
             Some(Install.stage))
         } else {
-          // Upgrade Proline databases task
+          // Upgrade all Proline databases task
           Install.taskRunner.run("Upgrading Proline databases",
-            { ExternalsDB.upgradeAllDbs() },
+            {
+              val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
+              new UpgradeAllDatabases(dsConnectorFactory).doWork()
+            },
             true,
             Some(Install.stage))
         }

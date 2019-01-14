@@ -14,7 +14,7 @@ import scalafx.stage.Stage
 
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.proline.admin.gui._
-import fr.proline.admin.gui.Main
+import fr.proline.admin.gui.Install
 
 class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog extends ChoiceDialog
     dTitle: String,
@@ -31,7 +31,7 @@ class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog ex
 
   /** END TMP CODE */
 
-  def showIn(dInitOwner: Stage = Main.stage) {
+  def showIn(dInitOwner: Stage = Install.stage) {
 
     /** Define modal window */
     val _stage = new Stage {
@@ -99,7 +99,6 @@ class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog ex
     /** Display this window */
     _stage.showAndWait()
   }
-
 }
 
 object GetConfirmation {
@@ -109,7 +108,7 @@ object GetConfirmation {
     title: String = "Confirm your action",
     yesText: String = "Yes", //TODO: delete me
     cancelText: String = "Cancel",
-    initOwner: Stage = Main.stage): Boolean = {
+    initOwner: Stage = Install.stage): Boolean = {
 
     val confDialog = new ConfirmationDialog(dTitle = title, dText = text)
 

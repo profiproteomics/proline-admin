@@ -1,4 +1,4 @@
-package fr.proline.admin.gui.wizard
+package fr.proline.admin.gui.install
 
 import org.junit.Rule
 import java.io.File
@@ -13,11 +13,11 @@ import fr.proline.admin.gui.process.config.AdminConfig
 import fr.profi.util.scala.ScalaUtils
 import fr.proline.repository.DriverType
 
-class WizardTest extends LazyLogging {
+class InstallTest extends LazyLogging {
   var tmpDir, serverDir, dataDir, confFile: File = null
 
   @Before
-  def createProlineDir() {
+  def createProlineDir(): Unit = {
     val now = new Date()
     val tmpDirName = String.format("temp_%tY%<tm%<td%<tH%<tM%<tS_%<tL", now)
     tmpDir = new File(tmpDirName)
@@ -37,6 +37,6 @@ class WizardTest extends LazyLogging {
   def writeAdminConfFile() {
     val adminConfig = new AdminConfigFile(confFile.getAbsolutePath)
     val adminConfigModel = AdminConfig(confFile.getAbsolutePath, Some(""), Some(""), Some(""), Some(""), Some(fr.proline.repository.DriverType.POSTGRESQL), Some(dataDir.getAbsolutePath), Some("proline"), Some("proline"), Some("localhost"), Some(5432))
-   
+
   }
 }
