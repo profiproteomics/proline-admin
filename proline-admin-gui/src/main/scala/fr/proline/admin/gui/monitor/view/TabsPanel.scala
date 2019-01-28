@@ -6,18 +6,22 @@ import scalafx.scene.control.Tab
 import scalafx.scene.control.TabPane
 import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Label
+import scalafx.scene.layout.{ Priority, StackPane, VBox, HBox }
+import scalafx.scene.control.ProgressIndicator
+
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.Monitor
+import fr.proline.admin.gui.monitor.model._
 import fr.proline.admin.gui.util.AdminGuide
-import fr.profi.util.scalafx.ScalaFxUtils
-import java.io.File
-import scalafx.scene.layout.{ Priority, StackPane, VBox, HBox }
-import fr.proline.admin.gui.monitor.model.{ UserViewModel, ProjectViewModel, ExternalDbViewModel }
-import scalafx.scene.control.ProgressIndicator
 import fr.proline.admin.gui.task.TaskRunner
+import fr.profi.util.scalafx.ScalaFxUtils
+
+import java.io.File
+
+
 /**
- * TabsPanel create and display a Tabspane of Proline users, projects and external databases.
+ * TabsPanel Create and display a Tabspane of Proline users, projects and external databases.
  * @author aromdhani
  *
  */
@@ -25,11 +29,11 @@ import fr.proline.admin.gui.task.TaskRunner
 object TabsPanel extends VBox {
 
   //Help Icon 
-  val headerHelpIcon = new Hyperlink {
+  private val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
     alignmentInParent = Pos.BASELINE_RIGHT
     onAction = handle {
-      _openAdminGuide()
+      openAdminGuide()
     }
   }
   // Create Proline users TabPane
@@ -92,7 +96,7 @@ object TabsPanel extends VBox {
   }
 
   /** Open Proline Admin Guide */
-  def _openAdminGuide() {
-    AdminGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_1.7.pdf")
+  private def openAdminGuide() {
+    AdminGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_2.0.pdf")(Monitor.stage)
   }
 }

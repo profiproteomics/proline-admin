@@ -94,7 +94,7 @@ class HomePanelViewModel(monitorConfPath: String) extends LazyLogging {
 
   /** Open Proline-Admin GUI guide */
   def openAdminGuide() {
-    AdminGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_2.0.pdf")
+    AdminGuide.openUrl(Monitor.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_2.0.pdf")(Monitor.stage)
   }
 
   /** Exit and close Proline-Admin GUI window */

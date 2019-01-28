@@ -145,7 +145,7 @@ class HomePanelViewModel(adminConfigFilePath: String) extends LazyLogging {
 
   /** Open Proline-Admin GUI guide */
   def openAdminGuide() {
-    AdminGuide.openUrl(Install.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_2.0.pdf")
+    AdminGuide.openUrl(Install.targetPath + File.separator + "classes" + File.separator + "documentation" + File.separator + "Proline_AdminGuide_2.0.pdf")(Install.stage)
   }
 
   /** Exit and close Proline-Admin GUI application */
