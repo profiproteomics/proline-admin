@@ -123,27 +123,29 @@ class ProjectViewModel extends LazyLogging {
         }
       })
   }
-/** Change the selected project owner */
+
+  /** Change the selected project owner */
   def onChangeOwner() {
-    val result = ChangeProjOwnerDiaog.showAndWait(Monitor.stage)
-        result match {
-      case Some(changeProjectOwner) =>{
-   taskRunner.run(
-      caption = s"Changing the project with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no project was selected")} owner",
-      op = {
-        logger.info(s"Changing the project with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no project was selected")} owner")
-        projectsDB.changeOwner(selectedItems.head.id.value, changeProjectOwner.ownerId)
-        // Return items from database
-        val updatedItems = projectsDB.queryProjectsAsView()
-        // Update items on FX thread
-        Platform.runLater {
-          updateItems(updatedItems)
-        }
-      })}
-         case _ =>
+    val result = ChangeProjOwnerDialog.showAndWait(Monitor.stage)
+    result match {
+      case Some(changeProjectOwner) => {
+        taskRunner.run(
+          caption = s"Changing the project with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no project was selected")}",
+          op = {
+            logger.info(s"Changing the project with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no project was selected")}")
+            projectsDB.changeOwner(selectedItems.head.id.value, changeProjectOwner.ownerId)
+            // Return items from database
+            val updatedItems = projectsDB.queryProjectsAsView()
+            // Update items on FX thread
+            Platform.runLater {
+              updateItems(updatedItems)
+            }
+          })
       }
+      case _ =>
+    }
   }
-  
+
   /** Refresh table view */
   def onRefresh(): Unit = {
     taskRunner.run(

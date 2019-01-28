@@ -101,10 +101,10 @@ object ProjectsDB extends LazyLogging {
   def delete(projects: Set[Project], dropDbs: Boolean) {
     run(new DeleteProject(udsDbCtx, projects.map(_.id.value), dropDbs).run())
   }
-  
+
   /** Change Proline project owner */
-  def changeOwner(projectId: Long,ownerId: Long) {
-    run(new ChangeProjectOwner(udsDbCtx,projectId,ownerId ).run())
+  def changeOwner(projectId: Long, ownerId: Long) {
+    run(new ChangeProjectOwner(udsDbCtx, projectId, ownerId).run())
   }
 
   /** Archive Proline project */

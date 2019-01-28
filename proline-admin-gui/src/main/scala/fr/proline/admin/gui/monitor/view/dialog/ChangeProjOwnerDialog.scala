@@ -22,12 +22,12 @@ import fr.proline.admin.gui.process.UdsRepository
 import java.io.File
 
 /**
- * Creates and displays a Change project dialog.
+ * Creates and displays change project owner dialog.
  * @author aromdhani
  *
  */
 
-object ChangeProjOwnerDiaog extends LazyLogging {
+object ChangeProjOwnerDialog extends LazyLogging {
 
   case class Result(ownerId: Long)
 
@@ -37,7 +37,7 @@ object ChangeProjOwnerDiaog extends LazyLogging {
     val dialog = new Dialog[Result]() {
       initOwner(parentWindow)
       title = "Change Project Owner"
-      headerText = "Project Owner details"
+      headerText = "Project owner details"
       graphic = FxUtils.newImageView(IconResource.EDIT)
     }
 
@@ -47,7 +47,7 @@ object ChangeProjOwnerDiaog extends LazyLogging {
     /* Component */
     // Notification labels
        val errorProjOwnerLabel = new Label {
-      text = "The project owner must not be empty. Select an owner from the list."
+      text = "The new project owner must not be empty. Select an owner from the list."
       managed <== visible
       style = TextStyle.RED_ITALIC
     }
@@ -64,15 +64,13 @@ object ChangeProjOwnerDiaog extends LazyLogging {
       spacing = 30
       children = Seq(ownerLabel, ownerList)
     }
-    
-    
     val restoreProjectPanel = new VBox {
       spacing = 10
       children = Seq(notificationsPanel,
-        
         projOwnerPanel
         )
     }
+    
     // Style
     Seq(
       ownerList).foreach { node =>
@@ -87,11 +85,9 @@ object ChangeProjOwnerDiaog extends LazyLogging {
     }
     dialog.dialogPane().content = contentPane
     val okButton = dialog.dialogPane().lookupButton(ButtonType.OK)
-    /* Check dialog input fields */
-
     //Project owner must not be empty
     errorProjOwnerLabel.visible <== ownerList.getSelectionModel().selectedItemProperty.isNull
-      // Enable/Disable OK button depending on whether all data was entered.
+    // Enable/Disable OK button depending on whether all data was entered.
     okButton.disable <== (ownerList.getSelectionModel().selectedItemProperty.isNull)
     // Request focus on the owner list .
     Platform.runLater(ownerList.requestFocus())
@@ -100,9 +96,7 @@ object ChangeProjOwnerDiaog extends LazyLogging {
         Result(ownerList.getValue.getId)
       else
         null
-
     val result = dialog.showAndWait()
-
     result match {
       case Some(Result(ownerId)) =>
         Some(Result(ownerId))

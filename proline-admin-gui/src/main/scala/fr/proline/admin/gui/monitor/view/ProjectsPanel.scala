@@ -117,7 +117,7 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
       }
     }
   }
-   val changeProjOwnerButton = new Button {
+  val changeProjOwnerButton = new Button {
     tooltip = "Change the selected project owner."
     text = "Change owner"
     graphic = FxUtils.newImageView(IconResource.EDITSMALL)
