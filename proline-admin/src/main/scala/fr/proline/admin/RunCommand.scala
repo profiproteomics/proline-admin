@@ -143,7 +143,15 @@ object RunCommand extends App with LazyLogging {
     @Parameter(names = Array("--disable", "-d"), description = "Disable project. The project is activated per default.", required = false)
     var isActive: Boolean = true
   }
+  /** Change project owner command */
+  @Parameters(commandNames = Array("change_project_owner"), commandDescription = "Change project owner", separators = "=")
+  private object ChangeProjectOwnerCommand extends JCommandReflection {
 
+    @Parameter(names = Array("--project_id", "-pid"), description = "The project id to change its owner", required = true)
+    var projectId: Int = 0
+    @Parameter(names = Array("--owner_id", "-oid"), description = "The user account id of the new project owner", required = true)
+    var userId: Int = 0
+  }
   /** restore project command */
   @Parameters(commandNames = Array("restore_project"), commandDescription = "Restore project", separators = "=")
   private object RestoreProjectCommand extends JCommandReflection {
@@ -206,6 +214,7 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(CreateProjectCommand)
     jCmd.addCommand(DeleteProjectCommand)
     jCmd.addCommand(ChangeProjectStateCommand)
+    jCmd.addCommand(ChangeProjectOwnerCommand)
     jCmd.addCommand(ChangePasswordCommand)
     jCmd.addCommand(ChangeUserGroupCommand)
     jCmd.addCommand(ChangeUserStateCommand)
@@ -248,6 +257,12 @@ object RunCommand extends App with LazyLogging {
             Set(DeleteProjectCommand.projectId),
             DeleteProjectCommand.dropDatabases)
         }
+        case ChangeProjectOwnerCommand.Parameters.firstName => {
+          ChangeProjectOwner(
+            ChangeProjectOwnerCommand.projectId,
+            ChangeProjectOwnerCommand.userId)
+        }
+        
         case ArchiveProjectCommand.Parameters.firstName => {
           import fr.proline.admin.service.user.ArchiveProject
           ArchiveProject(
