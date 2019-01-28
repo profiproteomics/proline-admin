@@ -14,27 +14,27 @@ import fr.proline.core.orm.uds.Project
  *
  * @param udsDbContext The connection context to UDSDb to change the project owner into.
  * @param projectId The project id
- * @param userId The project owner id
+ * @param userId The new project owner id
  *
  */
 class ChangeProjectOwner(
     udsDbContext: DatabaseConnectionContext,
     projectId: Long,
     userId: Long) extends LazyLogging {
+  
   def run() {
-   
     val isTxOk = udsDbContext.tryInTransaction {
       // Creation UDS entity manager
-     val udsEM = udsDbContext.getEntityManager
-      val udsProject = udsEM.find(classOf[Project], projectId) 
-      val oldOwner = udsProject.getOwner()
+      val udsEM = udsDbContext.getEntityManager
+      val udsProject = udsEM.find(classOf[Project], projectId)
       require(udsProject != null, s"The project with id= ${projectId} does not exist!")
       val udsUser = udsEM.find(classOf[UdsUser], userId)
       require(udsUser != null, s"The user with id= ${userId} does not exist!")
+      val oldOwner = udsProject.getOwner()
       udsProject.setOwner(udsUser)
       udsProject.removeMember(oldOwner)
       udsEM.merge(udsProject)
-          }
+    }
     if (isTxOk) {
       logger.info(s"The project with id= #${projectId} has been assigned to the owner with id= #${userId} successfully.")
     } else {
@@ -44,14 +44,14 @@ class ChangeProjectOwner(
 }
 
 object ChangeProjectOwner extends LazyLogging {
- /**
- * Change a Proline project owner.
- * @param projectId the project id
- * @param userId the project owner id
- *
- */
+  /**
+   * Change a Proline project owner.
+   * @param projectId the project id
+   * @param userId the project owner id
+   *
+   */
 
-  def apply(projectId: Long, userId:Long) = {
+  def apply(projectId: Long, userId: Long) = {
     // Retrieve Proline configuration
     val prolineConf = SetupProline.config
     var localUdsDbConnector: Boolean = false
@@ -71,10 +71,9 @@ object ChangeProjectOwner extends LazyLogging {
         // change user state 
         val chnageUserState = new ChangeProjectOwner(udsDbContext,
           projectId,
-            userId
-          )
+          userId)
         chnageUserState.run()
-             } finally {
+      } finally {
         logger.debug("Closing current UDS Db Context")
         try {
           udsDbContext.close()
