@@ -117,6 +117,16 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
       }
     }
   }
+   val changeProjOwnerButton = new Button {
+    tooltip = "Change the selected project owner."
+    text = "Change owner"
+    graphic = FxUtils.newImageView(IconResource.EDITSMALL)
+    onAction = handle {
+      if (!model.selectedItems.isEmpty) {
+        model.onChangeOwner()
+      }
+    }
+  }
   val archiveProjButton = new Button {
     text = "Archive"
     tooltip = "Archive the selected project."
@@ -151,6 +161,7 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     disableProjButton,
     deleteProjButton,
     activeProjButton,
+    changeProjOwnerButton,
     archiveProjButton,
     restoreProjButton,
     infosButton).foreach { b =>
@@ -165,6 +176,7 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
       newProjButton,
       activeProjButton,
       disableProjButton,
+      changeProjOwnerButton,
       deleteProjButton,
       archiveProjButton,
       restoreProjButton,

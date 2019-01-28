@@ -6,12 +6,7 @@ import fr.proline.core.dal.context._
 import fr.proline.core.dal.DoJDBCWork
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.uds.{ Project => UdsProject }
-import fr.proline.admin.service.user.ChangeProjectState
-import fr.proline.admin.service.user.ArchiveProject
-import fr.proline.admin.service.user.RestoreProject
-import fr.proline.admin.service.user.CreateProject
-import fr.proline.admin.service.user.DeleteProject
-import fr.proline.admin.service.user.{ CreateProject, ProjectUtils }
+import fr.proline.admin.service.user._
 import fr.proline.admin.service.db.{ CreateProjectDBs, SetupProline }
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.monitor.model.AdapterModel._
@@ -94,9 +89,7 @@ object ProjectsDB extends LazyLogging {
           throw t
         }
       }
-
     }
-
   }
 
   /** Change Proline project state */
@@ -107,6 +100,11 @@ object ProjectsDB extends LazyLogging {
   /** Delete Proline project */
   def delete(projects: Set[Project], dropDbs: Boolean) {
     run(new DeleteProject(udsDbCtx, projects.map(_.id.value), dropDbs).run())
+  }
+  
+  /** Change Proline project owner */
+  def changeOwner(projectId: Long,ownerId: Long) {
+    run(new ChangeProjectOwner(udsDbCtx,projectId,ownerId ).run())
   }
 
   /** Archive Proline project */
