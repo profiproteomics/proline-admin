@@ -79,7 +79,7 @@ object ProjectsDB extends LazyLogging {
         val msiDbVersionOpt = ProjectUtils.retrieveDbVersion(msiDbConnector)
         val lcmsDbConnector = dataStoreConnFactory.getLcMsDbConnector(projectId)
         val lcmsDbVersionOpt = ProjectUtils.retrieveDbVersion(lcmsDbConnector)
-        ProjectUtils.updateExtDbs(udsDbCtx, projectId, msiDbVersionOpt, lcmsDbVersionOpt)
+        ProjectUtils.updateExternalDbs(udsDbCtx, projectId, msiDbVersionOpt, lcmsDbVersionOpt)
       }
     } catch {
       case t: Throwable => {
