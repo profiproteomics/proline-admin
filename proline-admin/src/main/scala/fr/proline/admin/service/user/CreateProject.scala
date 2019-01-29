@@ -138,7 +138,7 @@ object CreateProject extends LazyLogging {
             val msiDbVersionOpt = ProjectUtils.retrieveDbVersion(msiDbConnector)
             val lcmsDbConnector = connectorFactory.getLcMsDbConnector(projectId)
             val lcmsDbVersionOpt = ProjectUtils.retrieveDbVersion(lcmsDbConnector)
-            ProjectUtils.updateExtDbs(udsDbContext, projectId, msiDbVersionOpt, lcmsDbVersionOpt)
+            ProjectUtils.updateExternalDbs(udsDbContext, projectId, msiDbVersionOpt, lcmsDbVersionOpt)
 
           } catch {
             case t: Throwable => logger.error("Error while trying to update project version: ", t.printStackTrace())
@@ -197,7 +197,7 @@ object ProjectUtils extends LazyLogging {
   }
 
   /** update external_dbs with current dbs schema version */
-  def updateExtDbs(udsDbContext: DatabaseConnectionContext, projectId: Long, msiDbVersionOpt: Option[String], lcmsDbVersionOpt: Option[String]): Boolean = {
+  def updateExternalDbs(udsDbContext: DatabaseConnectionContext, projectId: Long, msiDbVersionOpt: Option[String], lcmsDbVersionOpt: Option[String]): Boolean = {
     val isTxOk = udsDbContext.tryInTransaction {
       // Creation UDS entity manager
       val udsEM = udsDbContext.getEntityManager
