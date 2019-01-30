@@ -105,6 +105,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
     text = "Delete obsolete databases"
     tooltip = "Delete obsolete Proline databases. Make sure that all Proline databases are upgraded before to procede!"
     graphic = FxUtils.newImageView(IconResource.TRASH)
+    disable = true
     onAction = handle {
       val confirmed = GetConfirmation(s"Are you sure that you want to delete obsolete Proline databases. Make sure that all databases are upgraded before to procede.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
       if (confirmed) model.onDeleteObsoleteDbs()
