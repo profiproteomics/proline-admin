@@ -66,25 +66,20 @@ object ProjectsDB extends LazyLogging {
   /** Add Proline project */
   def add(name: String, description: String, ownerId: Long) {
     try {
-      val projectCreator = new CreateProject(udsDbCtx, name, description, ownerId)
+      val projectCreator = new CreateProject(UdsRepository.getDataStoreConnFactory(),
+        udsDbCtx,
+        name,
+        description,
+        ownerId)
       projectCreator.doWork()
       val projectId = projectCreator.projectId
       if (projectId > 0L) {
-        val prolineConf = SetupProline.getUpdatedConfig
-        // Create project  databases
-        new CreateProjectDBs(udsDbCtx, prolineConf, projectId).doWork()
-        // Update ExetrnalDb with created project version
-        val dataStoreConnFactory = UdsRepository.getDataStoreConnFactory()
-        val msiDbConnector = dataStoreConnFactory.getMsiDbConnector(projectId)
-        val msiDbVersionOpt = ProjectUtils.retrieveDbVersion(msiDbConnector)
-        val lcmsDbConnector = dataStoreConnFactory.getLcMsDbConnector(projectId)
-        val lcmsDbVersionOpt = ProjectUtils.retrieveDbVersion(lcmsDbConnector)
-        ProjectUtils.updateExternalDbs(udsDbCtx, projectId, msiDbVersionOpt, lcmsDbVersionOpt)
+        logger.info(s"Project with id=${projectId} has been created !")
       }
     } catch {
       case t: Throwable => {
         synchronized {
-          logger.error("Cannot add Proline project!")
+          logger.error("Cannot create Proline project!")
           logger.error(t.getMessage())
           throw t
         }
