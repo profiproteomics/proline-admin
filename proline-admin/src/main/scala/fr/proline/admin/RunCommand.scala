@@ -220,7 +220,7 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(ChangeUserStateCommand)
     jCmd.addCommand(DumpMsiDbCommand)
     jCmd.addCommand(DumpUdsDbCommand)
-    jCmd.addCommand(DeleteObsoleteDatabasesCommand)
+    //jCmd.addCommand(DeleteObsoleteDatabasesCommand)
     jCmd.addCommand(ExportDbUnitDTDsCommand)
     jCmd.addCommand(ExportMsiDbStatsCommand)
     jCmd.addCommand(ArchiveProjectCommand)
