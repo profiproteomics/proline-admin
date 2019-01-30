@@ -99,6 +99,7 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     text = "Delete"
     tooltip = "Delete permanently the selected project."
     graphic = FxUtils.newImageView(IconResource.TRASH)
+    disable = true
     onAction = handle {
       if (!model.selectedItems.isEmpty) {
         val confirmed = GetConfirmation(s"Are you sure that you want to delete permanently the project with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
