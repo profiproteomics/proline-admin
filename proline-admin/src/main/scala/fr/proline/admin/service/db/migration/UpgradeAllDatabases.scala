@@ -9,11 +9,16 @@ import fr.proline.core.dal.ProlineEzDBC
 import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
+import fr.proline.core.orm.uds.ExternalDb
 import fr.proline.repository._
 import scala.collection.mutable.Set
 import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import java.io.{ ByteArrayOutputStream, PrintStream }
 import java.sql.Connection
+import scala.util.Try
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 /**
  *
  * Upgrades all Proline Databases (UDS and all projects MSI and LCMS Dbs).
@@ -23,7 +28,7 @@ import java.sql.Connection
  */
 class UpgradeAllDatabases(
     val dsConnectorFactory: IDataStoreConnectorFactory) extends ICommandWork with StrictLogging {
-
+  var failedDbSet: Set[String] = Set.empty
   def doWork(): Unit = {
 
     if ((dsConnectorFactory == null) || !dsConnectorFactory.isInitialized)
@@ -94,16 +99,15 @@ class UpgradeAllDatabases(
       udsEM.flush()
       udsTx.commit()
 
-      if (UpgradeDatabase.failedConDbNameSet.isEmpty)
-        logger.info("Proline databases upgrade has finished successfully!")
-      else
-        logger.warn(s"Proline databases upgrade has finished, but some databases = ${UpgradeDatabase.failedConDbNameSet.mkString(",")} failed to migrate!")
-
-      //Create default user admin
-      createDefaultAdmin(udsEM, udsDbConnector.getDriverType)
-
+      // Create default user admin
+      _createDefaultAdmin(udsEM, udsDbConnector.getDriverType)
+      // Retrieve ps database migration state. This is for remove ps_db
+      _isPsDbMigrationOk(udsEM)
+      if (failedDbSet.isEmpty) { logger.info("Proline databases upgrade has finished successfully!") }
+      else {
+        logger.warn(s"*** Proline databases upgrade has finished, but some databases cannot migrate: ${failedDbSet.mkString(",")}")
+      }
     } finally {
-
       // Close UDSdb connection context
       if (udsDbCtx != null) {
         udsDbCtx.close()
@@ -118,7 +122,7 @@ class UpgradeAllDatabases(
     ()
   }
   /** Create default Admin user */
-  private def createDefaultAdmin(udsEM: EntityManager, driverType: DriverType) {
+  private def _createDefaultAdmin(udsEM: EntityManager, driverType: DriverType) {
     var localUdsTransaction: EntityTransaction = null
     try {
       localUdsTransaction = udsEM.getTransaction
@@ -152,6 +156,7 @@ class UpgradeAllDatabases(
     }
   }
 
+  /** Update external db with schema db version */
   private def _updateExternalDbVersion(newVersion: String, udsEM: EntityManager, dbType: ProlineDatabaseType, projectId: Option[Long] = None) {
 
     val extDb = projectId match {
@@ -161,23 +166,37 @@ class UpgradeAllDatabases(
         dbType,
         udsEM.find(classOf[fr.proline.core.orm.uds.Project], id))
     }
-
     extDb.setDbVersion(newVersion)
   }
 
+  /** Retrieve ps_db migration state */
+  private def _isPsDbMigrationOk(udsEM: EntityManager): Unit = {
+    var parser = new JsonParser()
+    val udsExternalDbClass = classOf[ExternalDb]
+    val jpqlSelectExternalDb = s"Select db FROM ${udsExternalDbClass.getName} db where db.type = :type"
+    val udsExternalDbs = udsEM.createQuery(jpqlSelectExternalDb, udsExternalDbClass)
+      .setParameter("type", fr.proline.repository.ProlineDatabaseType.MSI)
+      .getResultList()
+    val udsExternalDbsArray = udsExternalDbs.asScala.toArray
+    udsExternalDbsArray.foreach {
+      extDb =>
+        {
+          val properties = extDb.getSerializedProperties()
+          val array: JsonObject = Try(parser.parse(properties).getAsJsonObject()).getOrElse(parser.parse("{}").getAsJsonObject())
+          if (!array.has("is_psdb_migration_ok")) failedDbSet += extDb.getDbName()
+        }
+    }
+  }
 }
 
 object UpgradeDatabase extends StrictLogging {
-
-  var failedConDbNameSet: Set[String] = Set.empty
-
-  /** Check that the connection to database is established before to upgrade it */
+  /** Check database connection before to upgrade */
   private def isConnectionEstablished(dbConnector: IDatabaseConnector): Boolean = {
     var connection: Option[Connection] = None
     var isConnectionEstablished: Boolean = false
     var stream = new ByteArrayOutputStream()
     try {
-      logger.info("Checking database connection. Please wait ...")
+      logger.info("Checking database connection...")
       var ps = new PrintStream(stream)
       System.setErr(ps)
       connection = Option { dbConnector.createUnmanagedConnection() }
@@ -197,7 +216,7 @@ object UpgradeDatabase extends StrictLogging {
     }
     isConnectionEstablished
   }
-
+  /** Upgrade database  */
   def apply(
     dbConnector: IDatabaseConnector,
     dbShortName: String,
@@ -217,7 +236,6 @@ object UpgradeDatabase extends StrictLogging {
             logger.info(s"$dbShortName: $dbMigrationCount migration(s) done.")
           }
           val driverType = dbConnector.getDriverType
-
           // TODO: find a way to migrate SQLite databases using flyway
           val version = if (driverType == DriverType.SQLITE) "no.version"
           else {
@@ -229,11 +247,7 @@ object UpgradeDatabase extends StrictLogging {
           }
           if (upgradeCallback != null)
             upgradeCallback(version)
-        } else {
-          //Set of database names that failed to connect   
-          failedConDbNameSet += dbShortName
         }
-
       } finally {
         if (closeConnector)
           dbConnector.close()
@@ -244,9 +258,7 @@ object UpgradeDatabase extends StrictLogging {
 }
 
 object UpgradeAllDatabases extends StrictLogging {
-
   def apply(dsConnectorFactory: IDataStoreConnectorFactory): Unit = {
-
     try {
       new UpgradeAllDatabases(dsConnectorFactory).doWork()
     } catch {
