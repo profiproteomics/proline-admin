@@ -114,8 +114,8 @@ object PgServerConfigPanel extends ConfigItemPanel {
             logger.error("Error while trying to update PostgreSQL server configuration files. Make sure that you have administrator rights to edit configuration files", ex.printStackTrace())
             val exOpt = Option(ex)
             ShowPopupWindow(
-              s"Error while trying to update PostgreSQL server configuration files. Make sure that you have administrator rights to edit configuration files.\n${exOpt.map("Exception: " + _.getClass).getOrElse("")}\n"
-                + s"${exOpt.map(_.getMessage).getOrElse("")}",
+              new Label(s"Error while trying to update PostgreSQL server configuration files. Make sure that you have administrator rights to edit configuration files.\n${exOpt.map("Exception: " + _.getClass).getOrElse("")}\n"
+                + s"${exOpt.map(_.getMessage).getOrElse("")}"),
               "Error",
               Some(Install.stage),
               false)

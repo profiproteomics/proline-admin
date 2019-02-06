@@ -4,11 +4,18 @@ import javafx.{ concurrent => jfxc }
 import scalafx.application.Platform
 import scalafx.stage.Stage
 import scalafx.scene.Node
+import scalafx.scene.layout.VBox
+import scalafx.scene.control.TextArea
 import scalafx.scene.control.Label
 import scalafx.scene.{ Scene, Cursor }
-import fr.proline.admin.gui.util.ShowPopupWindow
+import scalafx.scene.control.ScrollPane
+import scalafx.scene.control.ScrollPane.ScrollBarPolicy
 import fr.proline.admin.gui.Monitor
+import fr.proline.admin.gui.IconResource
+import fr.proline.admin.gui.util.ShowPopupWindow
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
+import fr.profi.util.scalafx.ScalaFxUtils
+import scala.collection.mutable.Set
 
 /**
  * Runs a background task disabling the `mainView` and main visible `glassPane`.
@@ -60,13 +67,36 @@ class TaskRunner(
       override def succeeded(): Unit = {
         showProgress(false)
         mainView.getScene().setCursor(Cursor.DEFAULT)
-        statusLabel.setStyle(TextStyle.GREEN_ITALIC)
-        statusLabel.text = caption + " - Finished successfully."
+
         if (showPopup)
-          ShowPopupWindow(caption + " - Finished successfully.",
-            caption,
-            stage,
-            false)
+          this.get match {
+            case set: Set[_] if !set.isEmpty => {
+              statusLabel.setStyle(TextStyle.ORANGE_ITALIC)
+              statusLabel.text = caption + " - Finished but some error has occurred."
+              ShowPopupWindow(
+                node = new VBox {
+                  spacing = 5
+                  children = Seq(new Label {
+                    text = "Warning: Some error has occurred."
+                    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+                    style = TextStyle.ORANGE_ITALIC
+                  }, new TextArea(s"${set.mkString("\n")}"))
+                },
+                caption,
+                stage,
+                false)
+            }
+            case _ => {
+              statusLabel.setStyle(TextStyle.GREEN_ITALIC)
+              statusLabel.text = caption + " - Finished successfully."
+              ShowPopupWindow(
+                node = new Label(caption + " - Finished successfully."),
+                caption,
+                stage,
+                false)
+            }
+          }
+
         //TODO callback
       }
 
@@ -92,8 +122,8 @@ class TaskRunner(
         // Show popup
         if (showPopup)
           ShowPopupWindow(
-            s"Operation failed. ${t.map("Exception: " + _.getClass).getOrElse("")}\n"
-              + s"${t.map(_.getMessage).getOrElse("")}",
+            new Label(s"Operation failed. ${t.map("Exception: " + _.getClass).getOrElse("")}\n"
+              + s"${t.map(_.getMessage).getOrElse("")}"),
             caption,
             stage,
             false)
@@ -107,7 +137,7 @@ class TaskRunner(
         statusLabel.text = caption + " - Cancelled."
         // Show popup
         if (showPopup)
-          ShowPopupWindow(caption + " - Cancelled.", caption, stage, false)
+          ShowPopupWindow(new Label(caption + " - Cancelled."), caption, stage, false)
       }
     }
 

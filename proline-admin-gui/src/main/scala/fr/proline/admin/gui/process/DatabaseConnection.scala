@@ -2,6 +2,7 @@ package fr.proline.admin.gui.process
 
 import com.typesafe.scalalogging.LazyLogging
 import scalafx.stage.Stage
+import scalafx.scene.control.Label
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
@@ -57,8 +58,8 @@ object DatabaseConnection extends LazyLogging {
         logger.debug("Successfully connected to database !")
 
         if (showSuccessPopup) ShowPopupWindow(
+          node = new Label("The connection to the database has been successfully established !"),
           wTitle = "Test connection to database",
-          wText = "The connection to the database has been successfully established !",
           wParent = parent)
         true
       }
@@ -68,11 +69,12 @@ object DatabaseConnection extends LazyLogging {
         logger.warn("Unable to connect to database:\n" + errorMsg)
 
         if (showFailurePopup) ShowPopupWindow(
-          wTitle = "Test connection to database",
-          wText = "The connection to the database could not be established with this configuration.\n\n" +
+          node =new Label("The connection to the database could not be established with this configuration.\n\n" +
             "Check that your Proline configuration (Database connection parameters) is correct.\n" +
             s"Note: you may also check that your $driverType server is running.\n\n" +
-            "See proline_admin_gui_log file for more details.\n",
+            "See proline_admin_gui_log file for more details.\n"),
+          wTitle = "Test connection to database",
+
           wParent = parent)
         false
       }

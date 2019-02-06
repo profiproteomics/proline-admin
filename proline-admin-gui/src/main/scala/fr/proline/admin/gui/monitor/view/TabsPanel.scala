@@ -19,7 +19,6 @@ import fr.profi.util.scalafx.ScalaFxUtils
 
 import java.io.File
 
-
 /**
  * TabsPanel Create and display a Tabspane of Proline users, projects and external databases.
  * @author aromdhani
@@ -49,7 +48,6 @@ object TabsPanel extends VBox {
       margin = Insets(5, 5, 5, 5)
       content_=(usesrsView)
     }
-
   // Create Proline projects TabPane
   private val projectViewModel = new ProjectViewModel()
   projectViewModel.onInitialize()
@@ -77,7 +75,6 @@ object TabsPanel extends VBox {
       margin = Insets(5, 5, 5, 5)
       content_=(externalDbsPanel)
     }
-
   val tabPane = new TabPane {
     vgrow = Priority.ALWAYS
   }

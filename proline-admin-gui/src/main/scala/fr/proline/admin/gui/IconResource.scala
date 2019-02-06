@@ -32,4 +32,5 @@ object IconResource extends EnhancedEnum {
   val ADMIN = Value("/images/admin.png")
   val USER = Value("/images/user.png")
   val UPGRADE = Value("/images/upgrade.png")
+  val CONSOLE = Value("/images/console.png")
 }

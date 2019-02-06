@@ -2,6 +2,7 @@ package fr.proline.admin.gui.util
 
 import com.typesafe.scalalogging.LazyLogging
 import scalafx.stage.Stage
+import scalafx.scene.control.Label
 import fr.proline.admin.gui.Install
 import java.io.File
 
@@ -21,7 +22,7 @@ object AdminGuide extends LazyLogging {
       case t: Throwable => {
         logger.error(s"Error while trying to browse Proline_Admin guide file ${t.getMessage()}")
         ShowPopupWindow(
-          wText = s"Error while trying to browse Proline-Admin guide file!",
+          node = new Label(s"Error while trying to browse Proline-Admin guide file!"),
           wTitle = "Proline-Admin guide",
           wParent = Option(stage),
           isResizable = true)

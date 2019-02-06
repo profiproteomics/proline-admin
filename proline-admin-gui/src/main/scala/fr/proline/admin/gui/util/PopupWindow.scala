@@ -4,8 +4,8 @@ import scalafx.Includes._
 import scalafx.geometry.Insets
 import scalafx.geometry.Pos
 import scalafx.scene.Scene
+import scalafx.scene.Node
 import scalafx.scene.control.Button
-import scalafx.scene.control.Label
 import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.StackPane
 import scalafx.stage.Modality
@@ -21,9 +21,8 @@ import fr.proline.admin.gui.IconResource
  * **************************************** *
  */
 class PopupWindow(
-
     wTitle: String,
-    wText: String,
+    node: Node,
     wParent: Option[Stage] = Option(Install.stage),
     isResizable: Boolean = false) extends Stage {
 
@@ -47,10 +46,7 @@ class PopupWindow(
       padding = Insets(10)
 
       children = List(
-
-        new Label(wText) {
-          wrapText = true
-        },
+        node,
         new Button("OK") {
           graphic = FxUtils.newImageView(IconResource.TICK)
           onAction = handle { popup.close() }
@@ -67,11 +63,11 @@ class PopupWindow(
 object ShowPopupWindow {
 
   def apply(
-    wText: String,
-    wTitle: String = "",
+    node: Node,
+    wTitle: String,
     wParent: Option[Stage] = Option(Install.stage),
     isResizable: Boolean = false) {
-    new PopupWindow(wTitle, wText, wParent, isResizable).showAndWait()
+    new PopupWindow(wTitle, node, wParent, isResizable).showAndWait()
   }
 
 }

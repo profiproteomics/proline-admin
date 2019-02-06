@@ -38,8 +38,6 @@ import fr.proline.admin.gui.process.config.postgres._
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.util.ShowPopupWindow
 
-
-
 import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.primitives._
 import fr.profi.util.scala.ScalaUtils._
@@ -416,8 +414,8 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
     val errorString = sb.result()
     val errorStringIsEmpty = ScalaUtils.isEmpty(errorString)
     if (errorStringIsEmpty == false) ShowPopupWindow(
-      wTitle = "Errors in form",
-      wText = errorString)
+      new Label(errorString),
+      wTitle = "Errors in form")
 
     errorStringIsEmpty
   }

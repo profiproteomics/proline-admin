@@ -6,7 +6,7 @@ import scalafx.collections.ObservableBuffer
 import scalafx.application.Platform
 import scalafx.beans.property.{ BooleanProperty, ObjectProperty }
 import scalafx.stage.Window
-
+import scalafx.scene.control.Label
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.scala.ScalaUtils._
@@ -97,7 +97,6 @@ class ProjectViewModel extends LazyLogging {
         // Activate project 
         logger.info(s"Activating the project with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no project was selected")}")
         projectsDB.changeState(selectedItems.toSet, true)
-
         // Return items from database
         val updatedItems = projectsDB.queryProjectsAsView()
         // Update items on FX thread
@@ -211,9 +210,9 @@ class ProjectViewModel extends LazyLogging {
   /** show more info about the the slected project */
   def onMoreInfo() {
     val projectId = selectedItems.headOption.map(_.id.value).get
-    ShowPopupWindow(s"Databases size of project with id= #$projectId : \n" +
+    ShowPopupWindow(new Label(s"Databases size of project with id= #$projectId : \n" +
       s" - MSI database : ${if (ProjectsDB.computeMsiSize(projectId).isDefined) ProjectsDB.computeMsiSize(projectId).get}\n" +
-      s" - LCMS database : ${if (ProjectsDB.computeLcmsSize(projectId).isDefined) ProjectsDB.computeLcmsSize(projectId).get}\n",
+      s" - LCMS database : ${if (ProjectsDB.computeLcmsSize(projectId).isDefined) ProjectsDB.computeLcmsSize(projectId).get}\n"),
       "Info",
       Some(Monitor.stage),
       false)

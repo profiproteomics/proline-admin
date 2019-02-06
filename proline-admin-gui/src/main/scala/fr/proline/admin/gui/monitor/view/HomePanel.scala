@@ -3,15 +3,18 @@ package fr.proline.admin.gui.monitor.view
 import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
 import scalafx.stage.Stage
-import scalafx.geometry.{ Pos, Insets }
+import scalafx.geometry.{ Pos, Insets, Orientation }
 import scalafx.scene.layout.{ VBox, HBox, StackPane, Priority }
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
 import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Button
+import scalafx.scene.control.SplitPane
 import scalafx.scene.text.{ Font, FontWeight }
 import scalafx.scene.control.ProgressIndicator
 import scalafx.beans.property.BooleanProperty
+import scalafx.scene.control.TabPane
+import scalafx.scene.control.Tab
 
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.task.TaskRunner
@@ -237,7 +240,8 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   // Buttons pane
   val buttonsPane = new HBox {
     children = Seq(
-      ScalaFxUtils.newHSpacer(minW = 200),
+      statusLabel,
+      ScalaFxUtils.newHSpacer(minW = 150),
       new HBox {
         padding = Insets(10)
         spacing = 10
@@ -332,15 +336,35 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
 
   // Create task Runner
   val taskRunner = new TaskRunner(mainPane, glassPane, statusLabel)
-
   def go() {
-    val toAddPane = new VBox {
-      children = Seq(new StackPane {
-        children = Seq(
-          TabsPanel,
-          glassPane)
-      }, statusLabel,
+    val stckPane = new StackPane {
+      children = Seq(
+        TabsPanel,
+        glassPane)
+    }
+    val bottomPane = new VBox {
+      children = Seq(
+        ConsolePanel(),
         buttonsPane)
+    }
+    val tabPane = new TabPane()
+    val tab = new Tab {
+      text = "Console"
+      closable = false
+      graphic = ScalaFxUtils.newImageView(IconResource.CONSOLE)
+      content = bottomPane
+    }
+    tabPane.getTabs().add(tab)
+
+    val splitPane = new SplitPane {
+      dividerPositions_=(0.70, 0.30)
+      orientation = (Orientation.VERTICAL)
+    }
+
+    splitPane.getItems().addAll(stckPane, tabPane)
+
+    val toAddPane = new VBox {
+      children = Seq(splitPane)
     }
     this.toRemovePane.getChildren.clear()
     this.getChildren.addAll(toAddPane)

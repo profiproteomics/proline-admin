@@ -603,8 +603,8 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
     /* Restart PostgreSQL if needed */
     //TODO : restart PostgreSQL when needed
     ShowPopupWindow(
+      new Label(warningAboutRestartText),
       wTitle = "Warning",
-      wText = warningAboutRestartText,
       wParent = Option(parentStage))
 
     println("INFO - postgresql.conf successfully updated !")

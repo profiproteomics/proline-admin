@@ -77,9 +77,9 @@ class PostgresDataDirPanel(onSelectionChange: String => Boolean = null)(implicit
 
   /** Open a popup to help user understand whant the PostgreSQL data dir is **/
   private def _openHelpDialog() = ShowPopupWindow(
-    wTitle = "Help",
-    wText = "The PostgreSQL data directory is defined when PostgreSQL is installed on the machine.\n" +
-      "This is the folder in which you will find the \"postgresql.conf\" and \"pg_hba.conf\" files.")
+    new Label("The PostgreSQL data directory is defined when PostgreSQL is installed on the machine.\n" +
+      "This is the folder in which you will find the \"postgresql.conf\" and \"pg_hba.conf\" files."),
+    wTitle = "Help")
 
   /** Browse PostresSQL data dir and update field **/
   private def _browseDataDir() {

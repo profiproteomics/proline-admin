@@ -17,6 +17,7 @@ import fr.proline.admin.gui.monitor.model.AdapterModel._
 import fr.proline.admin.gui.monitor.database.ExternalsDB
 import fr.proline.admin.gui.monitor.view.dialog.ChangeExtDbParamsDialog
 import fr.proline.admin.gui.monitor.view.dialog.ChangeExtDbParamsDialog.Result
+import scala.collection.mutable.Set
 
 /**
  * The ExternalDb view model. Defines UI actions and database actions via ExternalDB.
@@ -59,7 +60,7 @@ class ExternalDbViewModel extends LazyLogging {
         taskRunner.run(
           caption = s"Changing external database parameters",
           op = {
-            // change external database parameters 
+            // change external database parameters
             logger.info(s"Changing external database parameters")
             externalsDB.change(Set(selectedItems.headOption.map(_.dbId.value).get), extDbParams.host, extDbParams.port)
 
@@ -81,13 +82,13 @@ class ExternalDbViewModel extends LazyLogging {
       caption = s"Upgrading all Proline databases",
       op = {
         logger.info("Upgrading all Proline databases. It could take a while. Please wait...")
-        externalsDB.upgradeAllDbs()
-
+        val failedbNameSet = externalsDB.upgradeAllDbs()
         val updatedItems = externalsDB.queryExternalDbsAsView()
         // Update items on FX thread
         Platform.runLater {
           updateItems(updatedItems)
         }
+        failedbNameSet
       })
 
   }
