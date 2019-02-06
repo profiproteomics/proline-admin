@@ -73,6 +73,11 @@ class TaskRunner(
             case set: Set[_] if !set.isEmpty => {
               statusLabel.setStyle(TextStyle.ORANGE_ITALIC)
               statusLabel.text = caption + " - Finished but some error has occurred."
+              val textArea = new TextArea {
+                text = s"${set.mkString("\n")}"
+                prefHeight = 80
+              }
+
               ShowPopupWindow(
                 node = new VBox {
                   spacing = 5
@@ -80,11 +85,11 @@ class TaskRunner(
                     text = "Warning: Some error has occurred."
                     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
                     style = TextStyle.ORANGE_ITALIC
-                  }, new TextArea(s"${set.mkString("\n")}"))
+                  }, textArea)
                 },
                 caption,
                 stage,
-                false)
+                true)
             }
             case _ => {
               statusLabel.setStyle(TextStyle.GREEN_ITALIC)

@@ -528,10 +528,13 @@ object SummaryConfigPanel extends ConfigItemPanel {
         if (confirm) {
           ProlineAdminConnection.setNewProlineInstallConfig(Install.adminConfPath)
           val prolineIsSetUp = UdsRepository.isUdsDbReachable()
+
           if (!prolineIsSetUp) {
             // Setup Proline databases task
             Install.taskRunner.run("Setup Proline databases",
-              { new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run() },
+              {
+                new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run()
+              },
               true,
               Some(Install.stage))
           } else {
@@ -539,7 +542,9 @@ object SummaryConfigPanel extends ConfigItemPanel {
             Install.taskRunner.run("Upgrading Proline databases",
               {
                 val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
-                new UpgradeAllDatabases(dsConnectorFactory).doWork()
+                val upgradeDbsTask = new UpgradeAllDatabases(dsConnectorFactory)
+                upgradeDbsTask.doWork()
+                upgradeDbsTask.failedDbSet
               },
               true,
               Some(Install.stage))
