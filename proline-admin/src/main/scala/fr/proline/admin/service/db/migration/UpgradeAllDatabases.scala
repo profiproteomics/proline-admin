@@ -105,7 +105,7 @@ class UpgradeAllDatabases(
       _isPsDbMigrationOk(udsEM)
       if (failedDbSet.isEmpty) { logger.info("Proline databases upgrade has finished successfully!") }
       else {
-        logger.warn(s"*** Proline databases upgrade has finished, but some databases cannot migrate: ${failedDbSet.mkString(",")}")
+        logger.warn(s"--- Proline databases upgrade has finished, but some databases cannot migrate: ${failedDbSet.mkString(",")}")
       }
     } finally {
       // Close UDSdb connection context
@@ -180,11 +180,10 @@ class UpgradeAllDatabases(
     val udsExternalDbsArray = udsExternalDbs.asScala.toArray
     udsExternalDbsArray.foreach {
       extDb =>
-        {
-          val properties = extDb.getSerializedProperties()
-          val array: JsonObject = Try(parser.parse(properties).getAsJsonObject()).getOrElse(parser.parse("{}").getAsJsonObject())
-          if (!array.has("is_psdb_migration_ok")) failedDbSet += extDb.getDbName()
-        }
+        val properties = extDb.getSerializedProperties()
+        // We use a fallback to an empty JSON object to avoid error if processing an externalDb that has no serialized properties.
+        val extDbJsonProps: JsonObject = Try(parser.parse(properties).getAsJsonObject()).getOrElse(parser.parse("{}").getAsJsonObject())
+        if (!extDbJsonProps.has("is_psdb_migration_ok") || (!extDbJsonProps.get("is_psdb_migration_ok").getAsBoolean)) failedDbSet += extDb.getDbName()
     }
   }
 }
