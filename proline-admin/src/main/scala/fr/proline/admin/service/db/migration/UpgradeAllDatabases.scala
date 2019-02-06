@@ -195,7 +195,7 @@ object UpgradeDatabase extends StrictLogging {
     var isConnectionEstablished: Boolean = false
     var stream = new ByteArrayOutputStream()
     try {
-      logger.info("Checking database connection...")
+      logger.debug("Testing the database connection. Please wait...")
       var ps = new PrintStream(stream)
       System.setErr(ps)
       connection = Option { dbConnector.createUnmanagedConnection() }
