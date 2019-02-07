@@ -125,13 +125,17 @@ class TaskRunner(
         t.foreach(_.printStackTrace())
 
         // Show popup
-        if (showPopup)
+        if (showPopup) {
+          val errortextArea = new TextArea {
+            text = s"Operation failed. ${t.map("Exception: " + _.getClass).getOrElse("")}\n ${t.map(_.getMessage).getOrElse("")}"
+            prefHeight = 80
+          }
           ShowPopupWindow(
-            new Label(s"Operation failed. ${t.map("Exception: " + _.getClass).getOrElse("")}\n"
-              + s"${t.map(_.getMessage).getOrElse("")}"),
+            errortextArea,
             caption,
             stage,
             false)
+        }
       }
 
       // Task cancelled

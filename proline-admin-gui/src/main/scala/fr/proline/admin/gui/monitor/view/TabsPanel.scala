@@ -85,12 +85,13 @@ object TabsPanel extends VBox {
     prefWidth_=(tabPane.getWidth)
     children = Seq(ScalaFxUtils.newHSpacer(minW = tabPane.getWidth - 50), headerHelpIcon)
   }
-  children = {
+  hgrow = Priority.Always
+  vgrow = Priority.Always
+  children = Seq(
     new VBox {
       spacing = 10
       children = Seq(helpPane, tabPane)
-    }
-  }
+    })
 
   /** Open Proline Admin Guide */
   private def openAdminGuide() {
