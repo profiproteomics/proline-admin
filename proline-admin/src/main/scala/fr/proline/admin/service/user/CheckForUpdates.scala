@@ -63,9 +63,9 @@ class CheckForUpdates(
           "UDSdb",
           closeConnector = false)
         if (!undoneMigrationsUdsDb.isEmpty) undoneMigrationsByDb += ("UDSdb" -> undoneMigrationsUdsDb)
-        if (CheckDbUpdates.failedConDbNameSet.isEmpty) logger.info("Check for updates has finished successfully!")
+        if (CheckDbUpdates.failedDbNameSet.isEmpty) logger.info("Check for updates has finished successfully!")
         else
-          logger.warn(s"Check for updates has finished, but it failed for some databases = ${CheckDbUpdates.failedConDbNameSet.mkString(",")}")
+          logger.warn(s"--- Check for updates has finished, but some databases cannot migrate: ${CheckDbUpdates.failedDbNameSet.mkString(",")}")
       }
     } catch {
       case t: Throwable => logger.error("Error while trying to check for available updates! ", t.printStackTrace())
@@ -80,7 +80,7 @@ class CheckForUpdates(
 
 object CheckDbUpdates extends StrictLogging {
 
-  var failedConDbNameSet: Set[String] = Set.empty
+  var failedDbNameSet: Set[String] = Set.empty
 
   /** Check that the connection to database is established before to check script's state from Flyway */
   private def isConnectionEstablished(dbConnector: IDatabaseConnector): Boolean = {
@@ -88,7 +88,7 @@ object CheckDbUpdates extends StrictLogging {
     var isConnectionEstablished: Boolean = false
     var stream = new ByteArrayOutputStream()
     try {
-      logger.info("Checking database connection. Please wait ...")
+      logger.debug("Testing the database connection. Please wait...")
       var ps = new PrintStream(stream)
       System.setErr(ps)
       connection = Option { dbConnector.createUnmanagedConnection() }
@@ -122,7 +122,7 @@ object CheckDbUpdates extends StrictLogging {
           val driverType = dbConnector.getDriverType
           if (driverType != DriverType.SQLITE) {
 
-            /* get the available/not applied scripts */
+            /* Retrieve the available updates */
             val undoneMigrationsByDb = DatabaseUpgrader.getUndoneMigrations(dbConnector)
             val undoneMigrationsAsMap = undoneMigrationsByDb.get(dbConnector.getProlineDatabaseType())
             if (undoneMigrationsAsMap.isEmpty) {
@@ -131,27 +131,26 @@ object CheckDbUpdates extends StrictLogging {
               undoneMigrationsAsMap.foreach {
                 case (script, state) => {
                   undoneMigrations += (script -> state.toString)
-                  logger.warn(s"The script $script is $state. To apply undone migrations, please upgrade Proline databases.")
+                  logger.warn(s"The script $script is $state. To apply undone migration(s), please upgrade Proline databases.")
                 }
               }
             }
 
-            /* Check Proline udsDb version */
+            /* Check uds_db version */
             if (dbConnector.getProlineDatabaseType() == ProlineDatabaseType.UDS) {
               val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)
               // Try to retrieve the current version from uds_db version
               val udsDbVersion =
-                ezDBC.selectHead("""SELECT "version" FROM "schema_version" ORDER BY "version_rank" DESC LIMIT 1""") { r =>
+                ezDBC.selectHead("""SELECT "version_rank" FROM "schema_version" ORDER BY "version_rank" DESC LIMIT 1""") { r =>
                   r.nextString
                 }
-              val udsDbVersionOpt = Option(udsDbVersion.toDouble)
-              udsDbVersionOpt.collect {
-                case (version) if (version < 0.8) => logger.warn("Proline databases are not upgraded! Important updates needed. Please upgrade your databases.")
+              Option(udsDbVersion.toInt).collect {
+                case (version) if (version < 8) => logger.warn("Proline databases are not upgraded! Important  updates are needed.")
               }
             }
           }
         } else {
-          failedConDbNameSet += dbShortName
+          failedDbNameSet += dbShortName
         }
       } finally {
         if (closeConnector)

@@ -5,13 +5,14 @@ import com.typesafe.scalalogging.LazyLogging
 import fr.profi.jdbc.easy.{ date2Formattable, int2Formattable, string2Formattable }
 import fr.proline.admin.service.db.{ CreateProjectDBs, SetupProline }
 import fr.proline.admin.service.ICommandWork
-import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.uds.{ Dataset => UdsDataset, Project => UdsProject, UserAccount => UdsUser }
+import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.core.orm.util.DataStoreConnectorFactory
+import fr.proline.repository.IDataStoreConnectorFactory
 import fr.proline.repository.DriverType
 import fr.proline.core.dal.ProlineEzDBC
-import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.repository.ProlineDatabaseType
+import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.context._
 import fr.proline.repository._
 /**
@@ -19,10 +20,12 @@ import fr.proline.repository._
  *
  */
 class CreateProject(
+    connectorFactory: IDataStoreConnectorFactory,
     udsDbContext: DatabaseConnectionContext,
     projectName: String,
     projectDescription: String,
-    ownerId: Long) extends ICommandWork with LazyLogging {
+    ownerId: Long,
+    createDbs: Boolean = true) extends ICommandWork with LazyLogging {
 
   var projectId: Long = -1L
 
@@ -30,10 +33,8 @@ class CreateProject(
 
     // Retrieve UDS entity manager
     val udsEM = udsDbContext.getEntityManager
-
     var localUdsTransaction: EntityTransaction = null
     var udsTransacOK: Boolean = false
-
     try {
       if (!udsDbContext.isInTransaction) {
         localUdsTransaction = udsEM.getTransaction
@@ -65,24 +66,39 @@ class CreateProject(
         localUdsTransaction.commit()
         udsTransacOK = true
       }
-
       projectId = udsProject.getId
       logger.debug("Project #" + projectId + " has been created")
     } finally {
-
       if ((localUdsTransaction != null) && !udsTransacOK && udsDbContext.getDriverType() != DriverType.SQLITE) {
         logger.info("Rollbacking current UDS Db Transaction")
-
         try {
           localUdsTransaction.rollback()
         } catch {
           case ex: Exception => logger.error("Error rollbacking UDS Db Transaction", ex)
         }
-
       }
-
     }
+    if ((projectId > 0L) && (createDbs)) {
+      mergeExternalDbs()
+    } else {
+      logger.error("Failed to create project DBs!")
+    }
+  }
 
+  /** Create project databases and update project with current external DBs version */
+  private def mergeExternalDbs() {
+    // Create project databases
+    new CreateProjectDBs(udsDbContext, SetupProline.config, projectId).doWork()
+    // Update project with the current external DBs version
+    try {
+      val msiDbConnector = connectorFactory.getMsiDbConnector(projectId)
+      val msiDbVersionOpt = ProjectUtils.retrieveExtDbVersion(msiDbConnector)
+      val lcmsDbConnector = connectorFactory.getLcMsDbConnector(projectId)
+      val lcmsDbVersionOpt = ProjectUtils.retrieveExtDbVersion(lcmsDbConnector)
+      ProjectUtils.updateExternalDbs(udsDbContext, projectId, msiDbVersionOpt, lcmsDbVersionOpt)
+    } catch {
+      case t: Throwable => logger.error("Error while trying to update project schema version", t.getMessage())
+    }
   }
 
 }
@@ -90,8 +106,6 @@ class CreateProject(
 object CreateProject extends LazyLogging {
 
   def apply(name: String, description: String, ownerId: Long): Long = {
-
-    import fr.proline.admin.service.db.CreateProjectDBs
 
     var projectId: Long = -1L
 
@@ -110,42 +124,23 @@ object CreateProject extends LazyLogging {
       localUdsDbConnector = true
       newUdsDbConnector
     }
-
     try {
+      if ((connectorFactory == null) || !connectorFactory.isInitialized()) {
+        connectorFactory.initialize(udsDbConnector)
+      }
       val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
       try {
         // Create project
         val projectCreator = new CreateProject(
+          connectorFactory,
           udsDbContext,
           name,
           description,
-          ownerId)
+          ownerId,
+          createDbs = true)
         projectCreator.doWork()
-
         projectId = projectCreator.projectId
 
-        if (projectId > 0L) {
-
-          // Create project databases
-          new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
-
-          // Update External_db with the current schema version 
-          try {
-            if ((connectorFactory == null) || !connectorFactory.isInitialized()) {
-              connectorFactory.initialize(udsDbConnector)
-            }
-            val msiDbConnector = connectorFactory.getMsiDbConnector(projectId)
-            val msiDbVersionOpt = ProjectUtils.retrieveDbVersion(msiDbConnector)
-            val lcmsDbConnector = connectorFactory.getLcMsDbConnector(projectId)
-            val lcmsDbVersionOpt = ProjectUtils.retrieveDbVersion(lcmsDbConnector)
-            ProjectUtils.updateExtDbs(udsDbContext, projectId, msiDbVersionOpt, lcmsDbVersionOpt)
-
-          } catch {
-            case t: Throwable => logger.error("Error while trying to update project version: ", t.printStackTrace())
-          }
-        } else {
-          logger.error("Invalid Project Id: ", projectId)
-        }
       } finally {
         logger.debug("Closing current UDS Db Context")
         try {
@@ -167,15 +162,15 @@ object CreateProject extends LazyLogging {
 
 object ProjectUtils extends LazyLogging {
 
-  /** retrieve database schema version*/
-  def retrieveDbVersion(dbConnector: IDatabaseConnector): Option[String] = {
+  /** Retrieve external database schema version */
+  def retrieveExtDbVersion(dbConnector: IDatabaseConnector): Option[String] = {
     var schemaVersionOpt: Option[String] = None
     if (dbConnector == null) {
       logger.warn("DataStoreConnectorFactory has no valid connector")
     } else {
       try {
         val driverType = dbConnector.getDriverType
-        if (driverType == DriverType.POSTGRESQL || driverType == DriverType.H2) {
+        if (driverType != DriverType.SQLITE) {
           // Try to retrieve the version reached after the applied migration
           val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)
           schemaVersionOpt = Option {
@@ -196,8 +191,8 @@ object ProjectUtils extends LazyLogging {
     schemaVersionOpt
   }
 
-  /** update external_dbs with current dbs schema version */
-  def updateExtDbs(udsDbContext: DatabaseConnectionContext, projectId: Long, msiDbVersionOpt: Option[String], lcmsDbVersionOpt: Option[String]): Boolean = {
+  /** Update external databases with current project schema version */
+  def updateExternalDbs(udsDbContext: DatabaseConnectionContext, projectId: Long, msiDbVersionOpt: Option[String], lcmsDbVersionOpt: Option[String]): Boolean = {
     val isTxOk = udsDbContext.tryInTransaction {
       // Creation UDS entity manager
       val udsEM = udsDbContext.getEntityManager
