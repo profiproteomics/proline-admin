@@ -25,25 +25,10 @@ class AddProject(val projectName: String, val projectDesc: String, val ownerId: 
     protected def call(): Long = {
       /* Create project */
       val udsDbContext = UdsRepository.getUdsDbContext()
-      val projectCreator = new CreateProject(udsDbContext, projectName, projectDesc, ownerId)
+      val udsDStoreConFactory = UdsRepository.getDataStoreConnFactory()
+      val projectCreator = new CreateProject(udsDStoreConFactory, udsDbContext, projectName, projectDesc, ownerId)
       projectCreator.doWork()
       var projectId = projectCreator.projectId
-      if (projectId > 0L) {
-        val prolineConf = SetupProline.getUpdatedConfig
-        // create project  databases
-        new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
-        // try to update extDbs with the current schema version
-        try {
-          val connectorFactory = UdsRepository.getDataStoreConnFactory()
-          val msiDbConnector = connectorFactory.getMsiDbConnector(projectId)
-          val msiDbVersionOpt = ProjectUtils.retrieveDbVersion(msiDbConnector)
-          val lcmsDbConnector = connectorFactory.getLcMsDbConnector(projectId)
-          val lcmsDbVersionOpt = ProjectUtils.retrieveDbVersion(lcmsDbConnector)
-          ProjectUtils.updateExtDbs(udsDbContext, projectId, msiDbVersionOpt, lcmsDbVersionOpt)
-        } catch {
-          case t: Throwable => print("Error while trying to update external databases version: ", t.printStackTrace())
-        }
-      }
       projectId
     }
     override def scheduled(): Unit = {
@@ -81,6 +66,16 @@ class AddProject(val projectName: String, val projectDesc: String, val ownerId: 
         projectDialog.addButton.disable_=(false)
         projectDialog.exitButton.disable_=(false)
       }
+    }
+    override def failed(): Unit = {
+      projectDialog.informationLabel.setStyle(TextStyle.RED_ITALIC)
+      // projectDialog.informationLabel.setText(s"Error while trying to create project with name $projectName :$t")
+      projectDialog.informationLabel.setText(s"Error while trying to create project!")
+      projectDialog.progressBar.visible_=(false)
+      projectDialog.informationLabel.visible_=(true)
+      projectDialog.projectPanel.disable_=(false)
+      projectDialog.addButton.disable_=(false)
+      projectDialog.exitButton.disable_=(false)
     }
   }
 })

@@ -372,35 +372,12 @@ class NewProjectPanel() extends INewEntryPanel with LazyLogging {
       //      disableNode = ResourcesTabbedWindow.tabPanel,
       actionString = Utils.mkCmd(cmd),
       action = () => {
-
         val udsDbContext = UdsRepository.getUdsDbContext()
-        val prolineConf = SetupProline.getUpdatedConfig
-
-        //try {
-
-        /* Create project */
-        val projectCreator = new CreateProject(udsDbContext, newProjectName, newProjectDesc, ownerID)
+        val dsConFactory = UdsRepository.getDataStoreConnFactory()
+        val projectCreator = new CreateProject(dsConFactory, udsDbContext, newProjectName, newProjectDesc, ownerID)
         projectCreator.doWork()
         val projectId = projectCreator.projectId
 
-        /* Create project databases */
-        if (projectId > 0L) {
-          new CreateProjectDBs(udsDbContext, prolineConf, projectId).doWork()
-          warningCreatedProject()
-
-        } else {
-          logger.error("Invalid Project Id: " + projectId)
-        }
-
-        /*} finally {
-          /* Close udsDbContext */
-          logger.debug("Closing current UDS Db Context")
-          try {
-            udsDbContext.close()
-          } catch {
-            case exClose: Exception => logger.error("Error closing UDS Db Context", exClose)
-          }
-        }*/
       })
   }
 }
