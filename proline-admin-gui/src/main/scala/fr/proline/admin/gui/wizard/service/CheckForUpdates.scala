@@ -3,18 +3,18 @@ package fr.proline.admin.gui.wizard.service
 import com.typesafe.scalalogging.LazyLogging
 import scalafx.stage.Stage
 import scalafx.scene.{ Scene, Cursor }
-import scalafx.scene.control.Label
+import scalafx.scene.control.TextArea
 import javafx.{ concurrent => jfxc }
 import scalafx.concurrent.Service
-import scala.util.{ Try, Success, Failure }
-import fr.proline.admin.gui.wizard.util.HelpPopup
 import fr.proline.admin.service.user.{ CheckForUpdates => CheckDbsUpdates }
 import fr.proline.admin.service.db.SetupProline
 import fr.proline.admin.gui.process._
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.wizard.monitor.component.MainPanel
 import fr.proline.admin.gui.wizard.component.panel.bottom.MonitorBottomsPanel
+import fr.proline.admin.gui.wizard.util.ShowDialog
 import scala.collection.Map
+import scala.util.{ Try, Success, Failure }
 import java.util.concurrent.atomic.AtomicBoolean
 /**
  * Service to setup and upgrade Proline databases.
@@ -50,12 +50,33 @@ object CheckForUpdates extends LazyLogging {
         MonitorBottomsPanel.progressBarPanel.visible = false
         Monitor.stage.getScene().setCursor(Cursor.DEFAULT)
         val undoneMigrations = this.get
-        HelpPopup("Check for updates", "Checking for updates has finished successfully: \n" +
+        val message = "Checking for updates has finished successfully: \n" +
           s"-There are ${undoneMigrations.get("MSIdb").getOrElse("0")} migrations to apply to MSI databases.\n" +
           s"-There are ${undoneMigrations.get("LCMSdb").getOrElse("0")} migrations to apply to LCMS databases.\n" +
           s"-There are ${undoneMigrations.get("UDSdb").getOrElse("0")} migrations to apply to UDS database.\n" +
-          "To check each Proline database migration state: \n" +
-          "See proline_admin_gui_log for more details.", Some(Monitor.stage), false)
+          "See proline_admin_gui_log for more details."
+        val infoTextArea = new TextArea {
+          text = message
+          prefHeight = 100
+        }
+        ShowDialog(
+          infoTextArea,
+          "Check for updates",
+          Some(Monitor.stage),
+          false)
+      }
+      override def failed(): Unit = {
+        val message = "Check for updates has failed\nSee proline_admin_gui_log for more details."
+        val errorTextArea = new TextArea {
+          text = message
+          prefHeight = 80
+        }
+        ShowDialog(
+          errorTextArea,
+          "Check for updates",
+          Some(Monitor.stage),
+          true)
+
       }
     }
   })

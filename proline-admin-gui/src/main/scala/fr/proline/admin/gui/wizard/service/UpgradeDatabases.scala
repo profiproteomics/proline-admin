@@ -68,7 +68,7 @@ object UpgradeDatabases extends LazyLogging {
         ShowDialog(
           infoTextArea,
           "Proline databases upgrade",
-          Some(Wizard.stage),
+          Some(Monitor.stage),
           false)
       }
       override def failed(): Unit = {
@@ -87,7 +87,7 @@ object UpgradeDatabases extends LazyLogging {
         ShowDialog(
           errorTextArea,
           "Proline databases upgrade",
-          Some(Wizard.stage),
+          Some(Monitor.stage),
           false)
 
       }
