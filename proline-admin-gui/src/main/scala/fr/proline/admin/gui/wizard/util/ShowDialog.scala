@@ -33,7 +33,7 @@ class ShowDialog(
   initModality(Modality.WINDOW_MODAL)
   resizable = isResizable
   if (wParent.isDefined) initOwner(wParent.get)
-  popup.getIcons.add(FxUtils.newImageView(IconResource.INFO).image.value)
+  popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
   scene = new Scene {
 
     onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.closeIfEscapePressed(popup, ke) }

@@ -66,7 +66,7 @@ object CheckForUpdates extends LazyLogging {
           false)
       }
       override def failed(): Unit = {
-        val message = "Check for updates has failed\nSee proline_admin_gui_log for more details."
+        val message = "ERROR:\n Check for updates has failed\nSee proline_admin_gui_log for more details."
         val errorTextArea = new TextArea {
           text = message
           prefHeight = 80
@@ -75,7 +75,7 @@ object CheckForUpdates extends LazyLogging {
           errorTextArea,
           "Check for updates",
           Some(Monitor.stage),
-          true)
+          false)
 
       }
     }

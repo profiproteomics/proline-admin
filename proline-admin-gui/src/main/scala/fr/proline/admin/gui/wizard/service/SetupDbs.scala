@@ -37,7 +37,7 @@ class SetupDbs(stage: Stage) extends Service(new jfxc.Service[TaskState]() {
           } catch {
             case e: Exception =>
               logger.error("Error while trying to set up Proline!", e.getMessage)
-              TaskState(false, s"Error while trying to set up Proline:\n ${e.getMessage()}")
+              TaskState(false, s"ERROR:\nError while trying to set up Proline:\n${e.getMessage()}")
           }
           setupTaskState
         } else {
@@ -48,13 +48,13 @@ class SetupDbs(stage: Stage) extends Service(new jfxc.Service[TaskState]() {
             val failedDbSet = upgradeProlineDbs.failedDbSet
             if (failedDbSet.isEmpty) { TaskState(true, "All Proline databases have been upgraded successfully!") }
             else {
-              TaskState(true, s"Warning:\nProline databases upgrade has finished, but some databases has failed to migrate!\n${failedDbSet.mkString("\n")}")
+              TaskState(true, s"WARNING:\nProline databases upgrade has finished, but some databases has failed to migrate!\n${failedDbSet.mkString("\n")}")
             }
           } catch {
             case e: Exception =>
               {
                 logger.error("Error while trying to upgrade Proline databases!", e.getMessage())
-                TaskState(false, s"Error while trying to upgrade Proline databases:\n ${e.getMessage()}")
+                TaskState(false, s"ERROR:\nError while trying to upgrade Proline databases:\n ${e.getMessage()}")
               }
           }
           upgradeDbsTaskState
@@ -102,7 +102,7 @@ class SetupDbs(stage: Stage) extends Service(new jfxc.Service[TaskState]() {
       Wizard.stage.getScene().setCursor(Cursor.DEFAULT)
       val message = this.get.isSucceeded match {
         case true => s"${this.get.message}"
-        case _ => s"Error: see proline_admin_gui_log for more details."
+        case _ => s"ERROR:\nProline databases setup and upgrade has failed\nSee proline_admin_gui_log for more details."
       }
       val errorTextArea = new TextArea {
         text = message
