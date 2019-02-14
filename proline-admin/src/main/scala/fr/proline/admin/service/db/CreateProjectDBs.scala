@@ -113,7 +113,7 @@ class CreateProjectDBs(
 
   }
 
-  private def _insertExtDb(udsEzDBC: EasyDBC, extDb: fr.proline.core.orm.uds.ExternalDb) {
+  private def _insertExtDb(udsEzDBC: EasyDBC, udsExtDb: fr.proline.core.orm.uds.ExternalDb) {
 
     import fr.profi.jdbc.easy._
     import fr.proline.core.dal.tables.uds.{ UdsDbExternalDbTable, UdsDbProjectDbMapTable }
@@ -126,16 +126,15 @@ class CreateProjectDBs(
     udsEzDBC.beginTransaction()
 
     val extDbId = udsEzDBC.executePrepared(extDbInsertQuery, true) { stmt =>
-      stmt.executeWith(extDb.getDbName,
-        extDb.getConnectionMode.toString(),
-        Option(extDb.getDbUser),
-        Option(extDb.getDbPassword),
-        Option(extDb.getHost),
-        if (extDb.getPort != null) Some(extDb.getPort.toInt) else Option.empty[Int],
-        extDb.getType.toString(),
-        extDb.getDbVersion(),
+      stmt.executeWith(
+        udsExtDb.getDbName,
+        udsExtDb.getConnectionMode.toString(),
+        Option(udsExtDb.getHost),
+        if (udsExtDb.getPort != null) Some(udsExtDb.getPort.toInt) else Option.empty[Int],
+        udsExtDb.getType.toString(),
+        udsExtDb.getDbVersion(),
         false,
-        Option(extDb.getSerializedProperties)
+        Option(udsExtDb.getSerializedProperties)
       )
       
       stmt.generatedLong

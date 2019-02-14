@@ -1,6 +1,5 @@
 package fr.proline.admin.service.db.migration
 
-import org.flywaydb.core.Flyway
 import com.typesafe.scalalogging.LazyLogging
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.context._
@@ -18,11 +17,11 @@ trait IUpgradeDB extends LazyLogging {
   protected def upgradeDefinitions(): Unit
 
   /** Execution state. */
-  def isExecuted = _executed
+  def isExecuted: Boolean = _executed
 
   /** Execute the setup of the database. */
   def run() {
-    require(_executed == false, "upgrade already executed")
+    require(!_executed, "upgrade already executed")
 
     // TODO: call the DatabaseUpgrader ?
     dbCtx.tryInTransaction {

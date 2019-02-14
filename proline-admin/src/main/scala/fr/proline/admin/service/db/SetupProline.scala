@@ -6,12 +6,8 @@ import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
 import fr.proline.admin.helper.sql._
 import fr.proline.admin.service.db.setup._
-import fr.proline.core.orm.uds.{ AdminInformation => UdsAdminInfos }
-import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.repository.{IDatabaseConnector, DriverType, ProlineDatabaseType}
 import fr.profi.util.ThreadLogger
-import fr.profi.util.resources._
-import fr.profi.util.sql.getTimeAsSQLTimestamp
 import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
 import fr.profi.util.security._
 
@@ -43,17 +39,6 @@ class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseC
       logger.info("setting up the 'User Data Set' database...")
       setupDbFromDataset( udsDbConnector, prolineConfig.udsDBConfig, "/dbunit_init_datasets/uds-db_dataset.xml" )
       
-      tryInTransaction( udsDbConnector, { udsEM =>
-        
-        // Import Admin information
-        _importAdminInformation(udsEM)
-        logger.info("Admin information imported !")
-  
-        // Import external DBs connections
-        _importExternalDBs(udsEM)
-        logger.info("External databases connection settings imported !")
-        
-      })
       //create default admin user 
        tryInTransaction(udsDbConnector, { udsEM =>
         createDefaultAdmin(udsEM)
@@ -65,68 +50,27 @@ class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseC
         udsDbConnector.close()
       }
     }
-
-    // Set Up the PSdb
-    logger.info("setting up the 'Peptide Sequence' database...")
-    setupDbFromDataset( prolineConfig.psDBConfig, "/dbunit_init_datasets/ps-db_dataset.xml" )
-    
-    // TODO: re-enable this importation ?
-    /*val psAdminInfos = new PsAdminInfos()
-    psAdminInfos.setModelVersion(dbConfig.schemaVersion)
-    psAdminInfos.setDbCreationDate(getTimeAsSQLTimestamp)
-    //psAdminInfos.setModelUpdateDate()    
-    psEM.persist(psAdminInfos)
-
-    logger.info("PSdb admin information imported !")
-    */
-
-    // Set Up the PDIdb
-    logger.info("setting up the 'Protein Database Index' database...")
-    setupDbFromDataset( prolineConfig.pdiDBConfig, "/dbunit_init_datasets/pdi-db_dataset.xml" )
-
-    logger.info("Proline has been successfully set up !")
   }
-  // create default user Admin
+  /** create default admin user */
   private def createDefaultAdmin(udsEM: EntityManager) {
     try {
-      val query = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
-      val listUsers = query.getResultList()
-      if (listUsers.isEmpty) {
-        logger.info("Creating default admin user")
+      val defaultAdminQuery = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
+      val defaultAdmin = defaultAdminQuery.getResultList()
+      if (defaultAdmin.isEmpty) {
+        logger.info("Creating default admin user...")
         val udsUser = new UdsUser()
         udsUser.setLogin("admin")
         udsUser.setPasswordHash(sha256Hex("proline"))
-        udsUser.setCreationMode("MANUAL")
+        udsUser.setCreationMode("AUTO")
         var serializedPropertiesMap = new java.util.HashMap[String, Object]
         serializedPropertiesMap.put("user_group", UdsUser.UserGroupType.ADMIN.name())
         udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap)
         udsEM.persist(udsUser)
-        logger.info("Default admin user has been created succefully !")
+        if(udsUser.getId > 0L) logger.info("Default admin user has been created successfully!")
       }
     } catch {
-      case t: Throwable => logger.error("error while creating default admin user", t)
+      case t: Throwable => logger.error("Error while trying to create default admin user ", t.getMessage)
     }
-  }
-  private def _importAdminInformation(udsEM: EntityManager) {
-    
-    val udsDbConfig = prolineConfig.udsDBConfig
-
-    val udsAdminInfos = new UdsAdminInfos()
-    udsAdminInfos.setModelVersion(udsDbConfig.schemaVersion)
-    udsAdminInfos.setDbCreationDate(getTimeAsSQLTimestamp)
-    //udsAdminInfos.setModelUpdateDate()
-    udsAdminInfos.setConfiguration("""{}""")
-
-    udsEM.persist(udsAdminInfos)
-  }
-
-  private def _importExternalDBs(udsEM: EntityManager) {
-
-    // Store PSdb connection settings
-    udsEM.persist(prolineConfig.psDBConfig.toUdsExternalDb())
-
-    // Store PDIdb connection settings
-    udsEM.persist(prolineConfig.pdiDBConfig.toUdsExternalDb())
   }
 
 }
@@ -175,7 +119,6 @@ object SetupProline {
 
     // Load proline main settings
     val prolineConfig = config.getConfig("proline-config")
-
     // Load shared settings
     val authConfig = config.getConfig("auth-config")
     val hostConfig = config.getConfig("host-config")
@@ -186,19 +129,17 @@ object SetupProline {
     
     val dataDirStrOpt = if (driver == DriverType.POSTGRESQL) None else Some(prolineConfig.getString("data-directory"))
     val dataDirOpt = dataDirStrOpt.map(new File(_))
-    
-    val dsDbNaming = GetDataStoreDbNaming(driver)
+
+    val dsDbNaming = GetDataStoreDefaultDbNaming(driver)
     
     val dbNamingMapping = Map(
       "uds" -> dsDbNaming.udsDbName,
-      "pdi"-> dsDbNaming.pdiDbName,
-      "ps"-> dsDbNaming.psDbName,
       "msi"-> dsDbNaming.msiDbName,
       "lcms"-> dsDbNaming.lcMsDbName
     )
 
     // Load database specific settings
-    val dbList = List("uds", "pdi", "ps", "msi", "lcms")
+    val dbList = dbNamingMapping.keys
     val dbSetupConfigByType = dbList.map { dbType =>
 
       // Retrieve settings relative to database connection
@@ -224,8 +165,6 @@ object SetupProline {
     ProlineSetupConfig(
       dataDirectoryOpt = dataDirOpt,
       udsDBConfig = dbSetupConfigByType("uds"),
-      pdiDBConfig = dbSetupConfigByType("pdi"),
-      psDBConfig = dbSetupConfigByType("ps"),
       msiDBConfig = dbSetupConfigByType("msi"),
       lcmsDBConfig = dbSetupConfigByType("lcms")
       //prolineServerConfigFile= serverConfigFileOpt

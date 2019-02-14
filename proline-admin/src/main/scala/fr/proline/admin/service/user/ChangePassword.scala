@@ -1,70 +1,59 @@
 package fr.proline.admin.service.user
 
 import com.typesafe.scalalogging.LazyLogging
-import fr.proline.admin.service.db.SetupProline
+import fr.proline.core.orm.util.DataStoreConnectorFactory
 import fr.proline.context.DatabaseConnectionContext
+import fr.proline.admin.service.db.SetupProline
 import fr.proline.core.dal.context._
 import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
-import fr.proline.core.orm.util.DataStoreConnectorFactory
-import javax.persistence.EntityTransaction
 
 /**
- * Modify UserGroup, userGroup can be User or Admin
- *
+ * Change password ,if password is indefined , 'proline' used as default password .
+ * @param udsDbContext The connection context to UDSDb to restore project into.
+ * @param userId The user id.
+ * @param password The new password.
  */
-class ModifyUserGroup(
-  udsDbContext: DatabaseConnectionContext,
-  userId: Long,
-  isUser: Boolean) extends LazyLogging {
-
+class ChangePassword(
+    udsDbContext: DatabaseConnectionContext,
+    userId: Long,
+    password: Option[String] = None) extends LazyLogging {
+  var isSuccess: Boolean = false
   def run() {
-
     import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
     import fr.profi.util.security._
-
     val isTxOk = udsDbContext.tryInTransaction {
-
       // Creation UDS entity manager
       val udsEM = udsDbContext.getEntityManager
       val udsUser = udsEM.find(classOf[UdsUser], userId)
-      if (udsUser != null) {
-        // modify user group
-
-         var serializedPropertiesMap = udsUser.getSerializedPropertiesAsMap();
-         if (serializedPropertiesMap == null) {
-           serializedPropertiesMap = new java.util.HashMap[String, Object]
-         }
-         if (isUser) {
-        	 serializedPropertiesMap.put("user_group",UdsUser.UserGroupType.USER.name())
-         } else {
-        	 serializedPropertiesMap.put("user_group",UdsUser.UserGroupType.ADMIN.name())
-         }
-         udsUser.setSerializedPropertiesAsMap(serializedPropertiesMap);
-        
-        udsEM.merge(udsUser)
-      } else {
-        logger.info(s" user with id= ${userId} does not exist ")
-      }
+      require(udsUser != null, s"The user with id=#${userId} does not exist")
+      // reset user password 
+      val pswd = password.getOrElse("proline")
+      udsUser.setPasswordHash(sha256Hex(pswd))
+      udsEM.merge(udsUser)
     }
+    isSuccess = isTxOk
     if (isTxOk) {
-      logger.info("Your user group has been succefully reset")
+      logger.info(s"The password of user with id= #$userId has been changed successfully.")
     } else {
-      logger.error(" can't modify user group !")
+      logger.error(" can't chnage password !")
     }
-
   }
-
 }
 
-object ModifyUserGroup extends LazyLogging {
+object ChangePassword extends LazyLogging {
 
-  def apply(userId: Long, isUser: Boolean) {
+  /**
+   * Change password ,if password is indefined , 'proline' used as default password .
+   * @param userId The user id.
+   * @param password The new password.
+   *
+   */
+  def apply(userId: Long, pswd: Option[String] = None): Boolean = {
 
     // Retrieve Proline configuration
     val prolineConf = SetupProline.config
-
     var localUdsDbConnector: Boolean = false
-
+    var isSuccess: Boolean = false
     val connectorFactory = DataStoreConnectorFactory.getInstance()
 
     val udsDbConnector = if (connectorFactory.isInitialized) {
@@ -82,31 +71,27 @@ object ModifyUserGroup extends LazyLogging {
 
     try {
       val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
-
       try {
-        // modify User Group
-        
-        val modifyUserGroup = new ModifyUserGroup(udsDbContext, userId, isUser)
-        modifyUserGroup.run()
-
+        // change password
+        val changePassword = new ChangePassword(udsDbContext,
+          userId,
+          pswd)
+        changePassword.run()
+        isSuccess = changePassword.isSuccess
       } finally {
         logger.debug("Closing current UDS Db Context")
-
         try {
           udsDbContext.close()
         } catch {
           case exClose: Exception => logger.error("Error closing UDS Db Context", exClose)
         }
       }
-
     } finally {
       //close connector
       if (localUdsDbConnector && (udsDbConnector != null)) {
         udsDbConnector.close()
       }
-
     }
-
+    isSuccess
   }
-
 }

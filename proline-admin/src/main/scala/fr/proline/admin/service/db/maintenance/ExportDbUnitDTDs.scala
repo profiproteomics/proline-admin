@@ -24,20 +24,14 @@ class ExportDbUnitDTDs( dsConnectorFactory: IDataStoreConnectorFactory, dirPath:
     require( outputDir.exists(), "unexisting export directory: "+ dirPath)
     
     val udsDbDtd = new java.io.File(outputDir, "uds-dataset.dtd")
-    val psDbDtd = new java.io.File(outputDir, "ps-dataset.dtd")
-    val pdiDbDtd = new java.io.File(outputDir, "pdi-dataset.dtd")
     val msiDbDtd = new java.io.File(outputDir, "msi-dataset.dtd")
     val lcmsDbDtd = new java.io.File(outputDir, "lcms-dataset.dtd")
     
     val udsDbConnector = dsConnectorFactory.getUdsDbConnector()
-    val psDbConnector = dsConnectorFactory.getPsDbConnector()
-    val pdiDbConnector = dsConnectorFactory.getPdiDbConnector()
     val msiDbConnector = dsConnectorFactory.getMsiDbConnector(1L) // we assume the first project exists
     val lcmsDbConnector = dsConnectorFactory.getLcMsDbConnector(1L)
     
     this.writeDataSetDTD(udsDbConnector,udsDbDtd.toString)
-    this.writeDataSetDTD(psDbConnector,psDbDtd.toString)
-    this.writeDataSetDTD(pdiDbConnector,pdiDbDtd.toString)
     this.writeDataSetDTD(msiDbConnector,msiDbDtd.toString)
     this.writeDataSetDTD(lcmsDbConnector,lcmsDbDtd.toString)
   }

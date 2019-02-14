@@ -1,120 +1,156 @@
 package fr.proline.admin.service.user
 
-import javax.persistence.EntityTransaction
-import javax.persistence.FlushModeType
-
-import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
-
 import com.typesafe.scalalogging.LazyLogging
-
-import fr.proline.admin.service.ICommandWork
-import fr.proline.context._
+import fr.proline.core.orm.util.DataStoreConnectorFactory
+import fr.proline.context.DatabaseConnectionContext
+import fr.proline.admin.service.db.SetupProline
+import fr.proline.core.dal.context._
 import fr.proline.core.dal.DoJDBCWork
-import fr.proline.core.orm.uds.IdentificationDataset
-import fr.proline.core.orm.uds.{ Project => UdsProject }
 import fr.proline.core.orm.uds.Project
-import fr.proline.core.orm.uds.repository.DatasetRepository
 import fr.proline.core.orm.uds.repository.ExternalDbRepository
-import fr.proline.repository._
+import scala.collection.Set
+import scala.util.{ Try, Success, Failure }
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 
 /**
- *  Delete project
+ *  Delete or disable a Proline project(s).
+ *  @param udsDbContext  The connection context to UDSDb to delete opr to disable the project(s) into.
+ *  @param projectIdSet The set of project(s) id to delete or to disable.
+ *  @param dropDatabases <code>true</code> will drop the MSI and LCMS databases of the project(s).
  */
 class DeleteProject(
-  dsConnectorFactory: IDataStoreConnectorFactory,
-  projectId: Long,
-  dropDatabases: Boolean
-) extends ICommandWork with LazyLogging {
-
-  def doWork() {
-
-    // Open a connection to the UDSdb
-
-    val udsDbConnector = dsConnectorFactory.getUdsDbConnector
-    val udsDbCtx = new UdsDbConnectionContext(udsDbConnector)
-    val udsEM = udsDbCtx.getEntityManager
-    var localUdsTransaction: EntityTransaction = null
-    udsEM.setFlushMode(FlushModeType.COMMIT)
-    
-    try {
-
-      if (!udsDbCtx.isInTransaction) {
-        localUdsTransaction = udsEM.getTransaction()
-        localUdsTransaction.begin()
-      }
-
-      // Retrieve the project
-      val project = udsEM.find(classOf[Project], projectId)
-      if (project != null) {
-        
-        // Remove externalDb type='MSI' and projectId
-        val externalDbMsi = ExternalDbRepository.findExternalByTypeAndProject(udsEM, fr.proline.repository.ProlineDatabaseType.MSI, project)
-        udsEM.remove(externalDbMsi)
-
-        // Remove externalDb type LCMS and projectId
-        val externalDbLcms = ExternalDbRepository.findExternalByTypeAndProject(udsEM, fr.proline.repository.ProlineDatabaseType.LCMS, project)
-        udsEM.remove(externalDbLcms)
-
-        //delete from dataset 
-        // DBO: this manual deletion is useless because of the delete cascade constraints on:
-        // - project_data_set_fk
-        // - data_set_run_identification_fk
-
-        /*val dataSets = DatasetRepository.findDatasetsByProject(udsEM, projectId)
-        dataSets.toList.foreach { dataSet =>
-          if (dataSet != null) {
-            //delete run_identification 
-            val runIdentification = udsEM.find(classOf[IdentificationDataset], dataSet.getId())
-            if (runIdentification != null) {
-              udsEM.remove(runIdentification)
+    udsDbContext: DatabaseConnectionContext,
+    projectIdSet: Set[Long],
+    dropDatabases: Boolean) extends LazyLogging {
+  var isSuccess = false
+  def run() {
+    val batchSize = 20
+    if (dropDatabases) {
+      //delete permanently a set of project with its MSI and LCMS databases. 
+      val isTxOk = udsDbContext.tryInTransaction {
+        val udsEM = udsDbContext.getEntityManager
+        projectIdSet.zipWithIndex.foreach {
+          case (projectId, index) =>
+            val project = udsEM.find(classOf[Project], projectId)
+            require(project != null, "Undefined project with id=" + projectId)
+            // remove externalDb type='MSI' and projectId
+            val externalDbMsi = ExternalDbRepository.findExternalByTypeAndProject(udsEM, fr.proline.repository.ProlineDatabaseType.MSI, project)
+            udsEM.remove(externalDbMsi)
+            // remove externalDb type LCMS and projectId
+            val externalDbLcms = ExternalDbRepository.findExternalByTypeAndProject(udsEM, fr.proline.repository.ProlineDatabaseType.LCMS, project)
+            udsEM.remove(externalDbLcms)
+            //remove the project
+            udsEM.remove(project)
+            if (index % batchSize == 0 && index > 0) {
+              udsEM.flush()
+              udsEM.clear()
             }
-            //delete dataSet 
-            udsEM.remove(dataSet)
-          }
-        }*/
-        
-        // Delete  project 
-        udsEM.remove(project)
-        logger.info(s"Project #$projectId has been deleted.")
-      } else {
-        logger.error(s"Project #$projectId does not exist in uds_db.")
-      }
-      
-      if (localUdsTransaction != null) {
-        localUdsTransaction.commit()
-      }
-      
-      // Drop databases (MSI and LCMS)
-      if (dropDatabases) {
-        
-        logger.debug(s"Dropping MSI and LCMS databases of project #$projectId....")
-
-        try {
-          DoJDBCWork.withEzDBC(udsDbCtx) { ezDBC =>
-            ezDBC.execute("DROP DATABASE IF EXISTS msi_db_project_" + projectId)
-            ezDBC.execute("DROP DATABASE IF EXISTS lcms_db_project_" + projectId)
-          }
-        } catch {
-          case t: Throwable => logger.error("Error while dropping MSI and LCMS databases", t)
         }
-
       }
-
-    } finally {
-      udsEM.setFlushMode(FlushModeType.AUTO)
-      udsDbCtx.close()
-      udsDbConnector.close()
-
+      if (isTxOk) {
+        val dropDbs: Try[Boolean] =
+          Try {
+            projectIdSet.forall { projectId =>
+              logger.debug(s"Dropping MSI and LCMS databases of project #$projectId please wait...")
+              try {
+                DoJDBCWork.withEzDBC(udsDbContext) { ezDBC =>
+                  ezDBC.execute("DROP DATABASE IF EXISTS msi_db_project_" + projectId)
+                  ezDBC.execute("DROP DATABASE IF EXISTS lcms_db_project_" + projectId)
+                }
+                true
+              } catch {
+                case t: Throwable => {
+                  logger.error("Error while trying to drop MSI and LCMS databases.", t.printStackTrace())
+                  false
+                }
+              }
+            }
+          }
+        dropDbs match {
+          case Success(isDbsDropped) if (isDbsDropped) => {
+            isSuccess = true
+            logger.info(s"The project(s) with id(s)= #${projectIdSet.mkString(",")} have been deleted successfully.")
+          }
+          case Failure(t) => {
+            isSuccess = false
+            logger.info(s"Error while trying to drop the project(s) databases: ", t.printStackTrace())
+          }
+        }
+      } else {
+        logger.info(s"Can't delete the the project(s) with id(s)= #${projectIdSet.mkString(",")} !")
+      }
+    } else {
+      // this action will disable the set of project(s) 
+      val isTxOk = udsDbContext.tryInTransaction {
+        val udsEM = udsDbContext.getEntityManager
+        projectIdSet.zipWithIndex.foreach {
+          case (projectId, index) =>
+            val project = udsEM.find(classOf[Project], projectId)
+            require(project != null, "Undefined project with id=" + projectId)
+            val properties = project.getSerializedProperties()
+            var parser = new JsonParser()
+            var array: JsonObject = Try(parser.parse(properties).getAsJsonObject()).getOrElse(parser.parse("{}").getAsJsonObject())
+            array.addProperty("is_active", false)
+            project.setSerializedProperties(array.toString())
+            udsEM.merge(project)
+            if (index % batchSize == 0 && index > 0) {
+              udsEM.flush()
+              udsEM.clear()
+            }
+        }
+      }
+      isSuccess = isTxOk
+      if (isTxOk) {
+        logger.info(s"The project(s) with id(s)= #${projectIdSet.mkString(",")} has been deleted successfully.")
+      } else {
+        logger.info(s"Can't disable the the project(s) with id(s)= #${projectIdSet.mkString(",")} !")
+      }
     }
   }
-
 }
 
 object DeleteProject {
-
-  def apply(dsConnectorFactory: IDataStoreConnectorFactory, projectId: Long, dropDatabases: Boolean): Unit = {
-    new DeleteProject(dsConnectorFactory, projectId, dropDatabases).doWork()
+  /**
+   *  Delete or disable a Proline project(s)
+   *  @param projectIdSet The set of project(s) id to delete or to disable.
+   *  @param dropDatabases <code>true</code> will drop the MSI and LCMS databases of the project(s).
+   *  @return <code>true</code> if the project(s) disabled or deleted successfully.
+   */
+  def apply(projectIdSet: Set[Long], dropDatabases: Boolean): Boolean = {
+    val prolineConf = SetupProline.config
+    var localUdsDbConnector: Boolean = false
+    var isSuccess: Boolean = false
+    val connectorFactory = DataStoreConnectorFactory.getInstance()
+    val udsDbConnector = if (connectorFactory.isInitialized) {
+      connectorFactory.getUdsDbConnector
+    } else {
+      // Instantiate a database manager
+      val udsDBConfig = prolineConf.udsDBConfig
+      val newUdsDbConnector = udsDBConfig.toNewConnector()
+      localUdsDbConnector = true
+      newUdsDbConnector
+    }
+    try {
+      val udsDbContext = new DatabaseConnectionContext(udsDbConnector)
+      try {
+        val deleteUdsProject = new DeleteProject(udsDbContext,
+          projectIdSet,
+          dropDatabases)
+        deleteUdsProject.run()
+        isSuccess = deleteUdsProject.isSuccess
+      } finally {
+        try {
+          udsDbContext.close()
+        } catch {
+          case exClose: Exception => print("Error while trying to close UDS Db Context", exClose)
+        }
+      }
+    } finally {
+      if (localUdsDbConnector && (udsDbConnector != null)) {
+        udsDbConnector.close()
+      }
+    }
+    isSuccess
   }
-
 }
