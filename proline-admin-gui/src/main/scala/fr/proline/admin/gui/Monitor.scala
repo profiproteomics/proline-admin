@@ -78,13 +78,15 @@ class Monitor extends Application with LazyLogging {
     require(Monitor.stage == null, "stage is already instantiated")
     Monitor.itemsPanel = MonitorPane
     Monitor.buttonsPanel = MonitorBottomsPanel
+    // Version 
+    val module = new Version
     Monitor.stage = new Stage(stage) {
       width = 1050
       minWidth = 700
       height = 780
       minHeight = 680
       scene = new Scene(Monitor.root)
-      title = s"${Module.name} ${Module.version}"
+      title = s"${module.getModuleName} ${module.getVersion}"
     }
     /* Build and show stage */
     Monitor.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)

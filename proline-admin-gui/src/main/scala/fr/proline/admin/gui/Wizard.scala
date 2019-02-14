@@ -98,7 +98,9 @@ class Wizard extends Application {
     // Locate application.CONF file and update Proline config in consequence 
     val _appConfPath = configPath + "application.conf"
     Wizard.adminConfPath = _appConfPath
-    // locate application .CONF file of proline server 
+    // Version 
+    val module = new Version
+    // Locate application .CONF file of proline server 
     require(Wizard.stage == null, "stage is already instantiated")
     Wizard.configItemsPanel = InstallPane
     Wizard.buttonsPanel = InstallButtons
@@ -108,7 +110,7 @@ class Wizard extends Application {
       minWidth = 700
       height = 780
       minHeight = 650
-      title = s"${Module.name} ${Module.version}"
+      title = s"${module.getModuleName} ${module.getVersion}"
     }
     Wizard.stage.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
     Wizard.stage.scene.value.getStylesheets.add("/css/Style.css")
