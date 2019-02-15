@@ -88,14 +88,14 @@
 
 		<!-- Proline -->
 		<dependency>
-			<groupId>fr.proline.util</groupId>
+			<groupId>fr.profi.util</groupId>
 			<artifactId>profi-commons-scala</artifactId>
-			<version>0.8.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
+			<version>0.9.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
 		</dependency>
 		<dependency>
-			<groupId>fr.proline.util</groupId>
+			<groupId>fr.profi.util</groupId>
 			<artifactId>profi-commons-java</artifactId>
-			<version>0.7.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
+			<version>0.8.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
 		</dependency>
 
 		<dependency>
