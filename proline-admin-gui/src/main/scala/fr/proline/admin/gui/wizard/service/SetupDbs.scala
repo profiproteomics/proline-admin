@@ -24,40 +24,42 @@ class SetupDbs(stage: Stage) extends Service(new jfxc.Service[TaskState]() {
   protected def createTask(): jfxc.Task[TaskState] = new jfxc.Task[TaskState] with LazyLogging {
     protected def call(): TaskState =
       {
-        ProlineAdminConnection.loadProlineInstallConfig(Wizard.adminConfPath, verbose = false)
-        val isUdsReachable = UdsRepository.isUdsDbReachable(false)
-        val setupUpgradeDbsTaskState = if (!isUdsReachable) {
-          // Setup
-          val setupTaskState = try {
-            logger.info("Start to set up Proline databases. Please wait...")
-            synchronized {
-              new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run()
-              TaskState(true, "Proline has been successfully setup!")
-            }
-          } catch {
-            case e: Exception =>
-              logger.error("Error while trying to set up Proline!", e.getMessage)
-              TaskState(false, s"ERROR:\nError while trying to set up Proline:\n${e.getMessage()}")
-          }
-          setupTaskState
-        } else {
-          val upgradeDbsTaskState = try {
-            logger.info("Start to upgrade all Proline databases. Please wait...")
-            val upgradeProlineDbs = new UpgradeAllDatabases(UdsRepository.getDataStoreConnFactory())
-            upgradeProlineDbs.doWork()
-            val failedDbSet = upgradeProlineDbs.failedDbSet
-            if (failedDbSet.isEmpty) { TaskState(true, "All Proline databases have been upgraded successfully!") }
-            else {
-              TaskState(true, s"WARNING:\nProline databases upgrade has finished, but some databases has failed to migrate!\n${failedDbSet.mkString("\n")}")
-            }
-          } catch {
-            case e: Exception =>
-              {
-                logger.error("Error while trying to upgrade Proline databases!", e.getMessage())
-                TaskState(false, s"ERROR:\nError while trying to upgrade Proline databases:\n ${e.getMessage()}")
+        var setupUpgradeDbsTaskState = TaskState(true, "ERROR: Configuration saved but no upgrade/setup datastore was done.\nCheck your PG connection and try again!")
+        if (ProlineAdminConnection.loadProlineInstallConfig(Wizard.adminConfPath, verbose = false)) {
+          val isUdsReachable = UdsRepository.isUdsDbReachable(false)
+          setupUpgradeDbsTaskState = if (!isUdsReachable) {
+            // Setup
+            val setupTaskState = try {
+              logger.info("Start to set up Proline databases. Please wait...")
+              synchronized {
+                new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run()
+                TaskState(true, "Proline has been successfully setup!")
               }
+            } catch {
+              case e: Exception =>
+                logger.error("Error while trying to set up Proline!", e.getMessage)
+                TaskState(false, s"ERROR:\nError while trying to set up Proline:\n${e.getMessage()}")
+            }
+            setupTaskState
+          } else {
+            val upgradeDbsTaskState = try {
+              logger.info("Start to upgrade all Proline databases. Please wait...")
+              val upgradeProlineDbs = new UpgradeAllDatabases(UdsRepository.getDataStoreConnFactory())
+              upgradeProlineDbs.doWork()
+              val failedDbSet = upgradeProlineDbs.failedDbSet
+              if (failedDbSet.isEmpty) { TaskState(true, "All Proline databases have been upgraded successfully!") }
+              else {
+                TaskState(true, s"WARNING:\nProline databases upgrade has finished, but some databases has failed to migrate!\n${failedDbSet.mkString("\n")}")
+              }
+            } catch {
+              case e: Exception =>
+                {
+                  logger.error("Error while trying to upgrade Proline databases!", e.getMessage())
+                  TaskState(false, s"ERROR:\nError while trying to upgrade Proline databases:\n ${e.getMessage()}")
+                }
+            }
+            upgradeDbsTaskState
           }
-          upgradeDbsTaskState
         }
         setupUpgradeDbsTaskState
       }
