@@ -1,20 +1,16 @@
 package fr.proline.admin.service.user
 
-import javax.persistence.EntityTransaction
 import com.typesafe.scalalogging.LazyLogging
-import fr.profi.jdbc.easy.{ date2Formattable, int2Formattable, string2Formattable }
-import fr.proline.admin.service.db.{ CreateProjectDBs, SetupProline }
 import fr.proline.admin.service.ICommandWork
-import fr.proline.core.orm.uds.{ Dataset => UdsDataset, Project => UdsProject, UserAccount => UdsUser }
-import fr.proline.core.orm.uds.repository.ExternalDbRepository
-import fr.proline.core.orm.util.DataStoreConnectorFactory
-import fr.proline.repository.IDataStoreConnectorFactory
-import fr.proline.repository.DriverType
-import fr.proline.core.dal.ProlineEzDBC
-import fr.proline.repository.ProlineDatabaseType
+import fr.proline.admin.service.db.{CreateProjectDBs, SetupProline}
 import fr.proline.context.DatabaseConnectionContext
+import fr.proline.core.dal.ProlineEzDBC
 import fr.proline.core.dal.context._
-import fr.proline.repository._
+import fr.proline.core.orm.uds.repository.ExternalDbRepository
+import fr.proline.core.orm.uds.{Dataset => UdsDataset, Project => UdsProject, UserAccount => UdsUser}
+import fr.proline.core.orm.util.DataStoreConnectorFactory
+import fr.proline.repository.{DriverType, IDataStoreConnectorFactory, ProlineDatabaseType, _}
+import javax.persistence.EntityTransaction
 /**
  * @author David Bouyssie
  *
@@ -25,7 +21,8 @@ class CreateProject(
     projectName: String,
     projectDescription: String,
     ownerId: Long,
-    createDbs: Boolean = true) extends ICommandWork with LazyLogging {
+    createDbs: Boolean = true,
+    closeConnector: Boolean = false) extends ICommandWork with LazyLogging {
 
   var projectId: Long = -1L
 
@@ -92,9 +89,9 @@ class CreateProject(
     // Update project with the current external DBs version
     try {
       val msiDbConnector = connectorFactory.getMsiDbConnector(projectId)
-      val msiDbVersionOpt = ProjectUtils.retrieveExtDbVersion(msiDbConnector)
+      val msiDbVersionOpt = ProjectUtils.retrieveExtDbVersion(msiDbConnector, closeConnector)
       val lcmsDbConnector = connectorFactory.getLcMsDbConnector(projectId)
-      val lcmsDbVersionOpt = ProjectUtils.retrieveExtDbVersion(lcmsDbConnector)
+      val lcmsDbVersionOpt = ProjectUtils.retrieveExtDbVersion(lcmsDbConnector,closeConnector)
       ProjectUtils.updateExternalDbs(udsDbContext, projectId, msiDbVersionOpt, lcmsDbVersionOpt)
     } catch {
       case t: Throwable => logger.error("Error while trying to update project schema version", t.getMessage())
@@ -137,7 +134,8 @@ object CreateProject extends LazyLogging {
           name,
           description,
           ownerId,
-          createDbs = true)
+          createDbs = true,
+          closeConnector = true)
         projectCreator.doWork()
         projectId = projectCreator.projectId
 
@@ -163,7 +161,7 @@ object CreateProject extends LazyLogging {
 object ProjectUtils extends LazyLogging {
 
   /** Retrieve external database schema version */
-  def retrieveExtDbVersion(dbConnector: IDatabaseConnector): Option[String] = {
+  def retrieveExtDbVersion(dbConnector: IDatabaseConnector, closeConnector: Boolean ): Option[String] = {
     var schemaVersionOpt: Option[String] = None
     if (dbConnector == null) {
       logger.warn("DataStoreConnectorFactory has no valid connector")
@@ -184,7 +182,7 @@ object ProjectUtils extends LazyLogging {
       } catch {
         case t: Throwable => logger.error("Error while trying to retrieve project version: ", t.printStackTrace())
       } finally {
-        if (dbConnector != null && !dbConnector.isClosed())
+        if (dbConnector != null && !dbConnector.isClosed() && closeConnector)
           dbConnector.close()
       }
     }
