@@ -14,7 +14,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 
 package object AdapterModel {
-  
+
   /**
    * ************************************************************** *
    * Simplified model for uds User, adapted to ScalaFx TableView *
@@ -43,7 +43,6 @@ package object AdapterModel {
     val id = new ObjectProperty(this, "id", udsProject.getId)
     val ownerLogin = new ObjectProperty(this, "owner", udsProject.getOwner.getLogin)
     val name = new ObjectProperty(this, "name", udsProject.getName)
-    val databases = new ObjectProperty(this, "databases", s"lcms_db_project_${udsProject.getId} - msi_db_project_${udsProject.getId}")
     val description = new ObjectProperty(this, "description", udsProject.getDescription)
     val lcmsDbVersion = new ObjectProperty(this, "lcmsDbVersion", Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.LCMS).get.getDbVersion }.getOrElse("no.version"))
     val msiDbVersion = new ObjectProperty(this, "msiDbVersion", Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.MSI).get.getDbVersion }.getOrElse("no.version"))
