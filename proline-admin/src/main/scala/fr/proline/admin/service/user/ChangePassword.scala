@@ -35,7 +35,7 @@ class ChangePassword(
     if (isTxOk) {
       logger.info(s"The password of user with id= #$userId has been changed successfully.")
     } else {
-      logger.error(" can't chnage password !")
+      logger.error(" can't change password !")
     }
   }
 }
