@@ -121,11 +121,11 @@ class UpgradeAllDatabases(
     }
     ()
   }
-  /** Create default Admin user */
+  /** Create default admin user */
   private def _createDefaultAdmin(udsEM: EntityManager, driverType: DriverType) {
     var localUdsTransaction: EntityTransaction = null
     try {
-      localUdsTransaction = udsEM.getTransaction
+      localUdsTransaction = udsEM.getTransaction()
       localUdsTransaction.begin()
       val createDefaultAdminQuery = udsEM.createQuery("select user from UserAccount user where user.login='admin'")
       val defaultAdminList = createDefaultAdminQuery.getResultList()
@@ -171,6 +171,7 @@ class UpgradeAllDatabases(
 
   /** Retrieve ps_db migration state */
   private def _isPsDbMigrationOk(udsEM: EntityManager): Unit = {
+    udsEM.clear()
     var parser = new JsonParser()
     val udsExternalDbClass = classOf[ExternalDb]
     val jpqlSelectExternalDb = s"Select db FROM ${udsExternalDbClass.getName} db where db.type = :type"
