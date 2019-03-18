@@ -46,6 +46,10 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
         cellValueFactory = { _.value.isActivated }
       },
       new TableColumn[Project, String] {
+        text = "Databases "
+        cellValueFactory = { _.value.databases }
+      },
+      new TableColumn[Project, String] {
         text = "LCMS version "
         cellValueFactory = { _.value.lcmsDbVersion }
       },

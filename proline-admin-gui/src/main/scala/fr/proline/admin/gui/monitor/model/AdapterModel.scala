@@ -43,6 +43,8 @@ package object AdapterModel {
     val id = new ObjectProperty(this, "id", udsProject.getId)
     val ownerLogin = new ObjectProperty(this, "owner", udsProject.getOwner.getLogin)
     val name = new ObjectProperty(this, "name", udsProject.getName)
+    val databases = new ObjectProperty(this, "databases", s"${Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.LCMS).get.getDbName() }.getOrElse("not.found")} -" +
+      s"${Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.MSI).get.getDbName() }.getOrElse("not.found")}")
     val description = new ObjectProperty(this, "description", udsProject.getDescription)
     val lcmsDbVersion = new ObjectProperty(this, "lcmsDbVersion", Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.LCMS).get.getDbVersion }.getOrElse("no.version"))
     val msiDbVersion = new ObjectProperty(this, "msiDbVersion", Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.MSI).get.getDbVersion }.getOrElse("no.version"))
