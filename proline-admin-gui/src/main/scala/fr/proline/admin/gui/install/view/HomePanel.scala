@@ -282,7 +282,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
       onPrevious()
     }
   }
-  val validateButton = new Button("Validate") {
+  val validateButton = new Button("Apply") {
     disable = true
     graphic = FxUtils.newImageView(IconResource.SAVE)
     onAction = handle {

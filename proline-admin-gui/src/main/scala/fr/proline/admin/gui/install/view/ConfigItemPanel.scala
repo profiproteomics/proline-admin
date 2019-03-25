@@ -35,7 +35,7 @@ import scala.collection.Seq
 import scala.collection.SortedMap
 
 /**
- *  All configuration items must be defined here
+ *  All configuration items must be defined here.
  *  @author aromdhani
  *
  */
@@ -58,7 +58,7 @@ object PgServerConfigPanel extends ConfigItemPanel {
   def id = IntegerProperty(1)
   /** Create postgreSQL server configuration panel */
   override def apply(): VBox = {
-    // Create title panel
+    // Create a titled panel
     val titlePane = new HBox {
       spacing = 15
       children = Seq(FxUtils.newImageView(IconResource.SETTING), new VBox {
