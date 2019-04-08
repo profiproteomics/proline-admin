@@ -164,12 +164,10 @@ class UpgradeAllDatabases(
     extDb.setDbVersion(newVersion)
   }
 
-  /** Check MSI_db migration verion for remove_psDb */
+  /** Check whether remove_psDb migration is applied */
   private def _isPsDbMigrationOk(): Unit = {
     UpgradeDatabase.dbsVersionRankMap.foreach {
-      case (dbName, rank) => {
-        if (dbName.contains("MSI") && rank < 10) this.failedDbMap += (dbName -> rank)
-      }
+      case (dbName, rank) => if (dbName.contains("MSI") && rank < 10) this.failedDbMap += (dbName -> rank)
     }
   }
 }
