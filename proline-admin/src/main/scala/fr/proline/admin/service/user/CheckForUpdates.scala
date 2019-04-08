@@ -42,7 +42,6 @@ class CheckForUpdates(
 
           for (projectId <- projectIds) {
             logger.debug(s"Checking for available updates for the project with id= #$projectId")
-
             /* Check for available updates for MSI Db */
             val msiDbConnector = dsConnectorFactory.getMsiDbConnector(projectId)
             val undoneMigrationsMsiDb = CheckDbUpdates(
@@ -135,7 +134,6 @@ object CheckDbUpdates extends StrictLogging {
                 }
               }
             }
-
             /* Check uds_db version */
             if (dbConnector.getProlineDatabaseType() == ProlineDatabaseType.UDS) {
               val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)

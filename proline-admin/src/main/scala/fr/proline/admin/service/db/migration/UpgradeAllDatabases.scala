@@ -29,7 +29,7 @@ import com.google.gson.JsonParser
  */
 class UpgradeAllDatabases(
     val dsConnectorFactory: IDataStoreConnectorFactory) extends ICommandWork with StrictLogging {
-  var failedDbMap: Map[String, Int] = Map.empty
+  var failedDbSet: Set[String] = Set.empty
   def doWork(): Unit = {
 
     if ((dsConnectorFactory == null) || !dsConnectorFactory.isInitialized)
@@ -104,9 +104,9 @@ class UpgradeAllDatabases(
       _createDefaultAdmin(udsEM, udsDbConnector.getDriverType)
       // Check wether ps_db migration has finished successfully for all databases.
       _isPsDbMigrationOk()
-      if (failedDbMap.keys.isEmpty) { logger.info("Proline databases upgrade has finished successfully!") }
+      if (failedDbSet.isEmpty) { logger.info("Proline databases upgrade has finished successfully!") }
       else {
-        logger.warn(s"--- Proline databases upgrade has finished, but some databases cannot migrate: ${failedDbMap.keys.mkString(",")}")
+        logger.warn(s"--- Proline databases upgrade has finished, but some databases cannot migrate: ${failedDbSet.mkString(",")}")
       }
     } finally {
       // Close UDSdb connection context
@@ -167,7 +167,7 @@ class UpgradeAllDatabases(
   /** Check whether remove_psDb migration is applied */
   private def _isPsDbMigrationOk(): Unit = {
     UpgradeDatabase.dbsVersionRankMap.foreach {
-      case (dbName, rank) => if (dbName.contains("MSI") && rank < 10) this.failedDbMap += (dbName -> rank)
+      case (dbName, rank) => if (dbName.contains("MSI") && rank < 10) this.failedDbSet += (dbName)
     }
   }
 }
