@@ -17,9 +17,10 @@ import scala.concurrent.duration._
 import scala.concurrent.{ Future, Await }
 import scala.collection.JavaConverters._
 import scala.collection.mutable.Set
+import scala.collection.mutable.Map
 
 /**
- * ExternalsDB perform some operations (check for updates, update parameters and upgrade all databases) with Proline databases.
+ * ExternalsDB perform some operations (check for updates, update parameters and upgrade all databases) on Proline databases.
  * @author aromdhani
  *
  */
@@ -82,16 +83,20 @@ object ExternalsDB extends LazyLogging {
   }
 
   /** Check for updates */
-  def checkForUpdates() {
-    run { new CheckForUpdates(dsConnectorFactory).doWork() }
+  def checkForUpdates(): Tuple2[Object, Map[String, Map[String, String]]] = {
+    run {
+      val checkDbs = new CheckForUpdates(dsConnectorFactory)
+      checkDbs.doWork()
+      (checkDbs, checkDbs.undoneMigrationsByDb)
+    }
   }
 
   /** Upgrade all Proline databases */
-  def upgradeAllDbs(): Set[String] = {
+  def upgradeAllDbs(): Tuple2[Object, Set[String]] = {
     run {
       val upgradeAllDbs = new UpgradeAllDatabases(dsConnectorFactory)
       upgradeAllDbs.doWork()
-      upgradeAllDbs.failedDbSet
+      (upgradeAllDbs, upgradeAllDbs.failedDbSet)
     }
   }
 

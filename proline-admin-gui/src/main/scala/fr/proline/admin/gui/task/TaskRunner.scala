@@ -1,5 +1,6 @@
 package fr.proline.admin.gui.task
 
+import com.typesafe.scalalogging.LazyLogging
 import javafx.{ concurrent => jfxc }
 import scalafx.application.Platform
 import scalafx.stage.Stage
@@ -13,9 +14,12 @@ import scalafx.scene.control.ScrollPane.ScrollBarPolicy
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util.ShowPopupWindow
+import fr.proline.admin.service.user.CheckForUpdates
+import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.profi.util.scalafx.ScalaFxUtils.TextStyle
 import fr.profi.util.scalafx.ScalaFxUtils
 import scala.collection.mutable.Set
+import scala.collection.mutable.Map
 
 /**
  * Runs a background task disabling the `mainView` and main visible `glassPane`.
@@ -25,7 +29,7 @@ import scala.collection.mutable.Set
 class TaskRunner(
     mainView: Node,
     glassPane: Node,
-    statusLabel: Label) {
+    statusLabel: Label) extends LazyLogging {
 
   /**
    * Run an operation on a separate thread. Return and wait for its completion,
@@ -70,27 +74,81 @@ class TaskRunner(
 
         if (showPopup)
           this.get match {
-            case set: Set[_] if !set.isEmpty => {
-              statusLabel.setStyle(TextStyle.ORANGE_ITALIC)
-              statusLabel.text = caption + " - Finished but some error has occurred."
+            // Upgrade all databases task
+            case (upgradeDbs, failedDbs) if (upgradeDbs.isInstanceOf[UpgradeAllDatabases]) => {
+              var title = new Label {
+                text = caption + " - Finished successfully."
+                style = TextStyle.GREEN_ITALIC
+              }
+              var failedDbNames = "All databases are upgraded successfully!"
+              statusLabel.setStyle(TextStyle.GREEN_ITALIC)
+              statusLabel.text = caption + " - Finished successfully."
+              if (!failedDbs.asInstanceOf[Set[String]].isEmpty) {
+                statusLabel.setStyle(TextStyle.ORANGE_ITALIC)
+                statusLabel.text = caption + " - Finished but some databases has failed to migrate."
+                title = new Label {
+                  text = "Warning: Some databases has failed to migrate."
+                  graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+                  style = TextStyle.ORANGE_ITALIC
+                }
+                failedDbNames = s"${failedDbs.asInstanceOf[Set[String]].mkString("\n")}"
+              }
               val textArea = new TextArea {
-                text = s"${set.mkString("\n")}"
+                text = failedDbNames
                 prefHeight = 80
               }
-
               ShowPopupWindow(
                 node = new VBox {
                   spacing = 5
-                  children = Seq(new Label {
-                    text = "Warning: Some error has occurred."
-                    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
-                    style = TextStyle.ORANGE_ITALIC
-                  }, textArea)
+                  children = Seq(title, textArea)
                 },
                 caption,
                 stage,
                 true)
             }
+            // Check for updates task : dbName => script to apply with state
+            case (checkDbs, scriptsToApply) if (checkDbs.isInstanceOf[CheckForUpdates]) => {
+              var title = new Label {
+                text = caption + " - Finished successfully."
+                style = TextStyle.GREEN_ITALIC
+              }
+              var scriptsText: String = "All databases are upgraded!"
+              statusLabel.text = caption + " - Finished successfully."
+              statusLabel.setStyle(TextStyle.GREEN_ITALIC)
+
+              if (!scriptsToApply.asInstanceOf[Map[String, Map[String, String]]].isEmpty) {
+                var str = new StringBuilder()
+                scriptsToApply.asInstanceOf[Map[String, Map[String, String]]].foreach {
+                  case (k, v) => {
+                    str.append("# ").append(k).append("\n ")
+                    v.foreach { case (k, v) => str.append(k).append(" : ").append(v).append("\n ") }
+                  }
+                }
+                title = new Label {
+                  text = caption + " - Finished . Some updates are available."
+                  graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+                  style = TextStyle.ORANGE_ITALIC
+                }
+                scriptsText = str.toString
+                statusLabel.setStyle(TextStyle.ORANGE_ITALIC)
+                statusLabel.text = caption + " - Finished . Some updates are available."
+
+              }
+
+              val textArea = new TextArea {
+                text = scriptsText
+                prefHeight = 150
+              }
+              ShowPopupWindow(
+                node = new VBox {
+                  spacing = 5
+                  children = Seq(title, textArea)
+                },
+                caption,
+                stage,
+                true)
+            }
+            // Other tasks
             case _ => {
               statusLabel.setStyle(TextStyle.GREEN_ITALIC)
               statusLabel.text = caption + " - Finished successfully."
@@ -101,8 +159,6 @@ class TaskRunner(
                 false)
             }
           }
-
-        //TODO callback
       }
 
       // Task is running

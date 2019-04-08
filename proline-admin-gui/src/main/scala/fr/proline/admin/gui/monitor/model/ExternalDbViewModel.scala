@@ -82,13 +82,13 @@ class ExternalDbViewModel extends LazyLogging {
       caption = s"Upgrading all Proline databases",
       op = {
         logger.info("Upgrading all Proline databases. It could take a while. Please wait...")
-        val failedbNameSet = externalsDB.upgradeAllDbs()
+        val (upgradeAllDbs, failedDbSet) = externalsDB.upgradeAllDbs()
         val updatedItems = externalsDB.queryExternalDbsAsView()
         // Update items on FX thread
         Platform.runLater {
           updateItems(updatedItems)
         }
-        failedbNameSet
+        (upgradeAllDbs, failedDbSet)
       })
 
   }
@@ -99,14 +99,14 @@ class ExternalDbViewModel extends LazyLogging {
       caption = s"Checking for Proline updates",
       op = {
         logger.info("Checking for Proline updates. It could take a while. Please wait...")
-        externalsDB.checkForUpdates()
-
+        val (checkForUpdates, sriptsToApply) = externalsDB.checkForUpdates()
         // Return items from database
         val updatedItems = externalsDB.queryExternalDbsAsView()
         // Update items on FX thread
         Platform.runLater {
           updateItems(updatedItems)
         }
+        (checkForUpdates, sriptsToApply)
       })
 
   }
