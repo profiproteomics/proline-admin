@@ -12,6 +12,7 @@ import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
 import fr.proline.core.orm.uds.ExternalDb
 import fr.proline.repository._
 import scala.collection.mutable.Set
+import scala.collection.mutable.Map
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import java.io.{ ByteArrayOutputStream, PrintStream }
@@ -28,7 +29,7 @@ import com.google.gson.JsonParser
  */
 class UpgradeAllDatabases(
     val dsConnectorFactory: IDataStoreConnectorFactory) extends ICommandWork with StrictLogging {
-  var failedDbSet: Set[String] = Set.empty
+  var failedDbMap: Map[String, Int] = Map.empty
   def doWork(): Unit = {
 
     if ((dsConnectorFactory == null) || !dsConnectorFactory.isInitialized)
@@ -101,23 +102,17 @@ class UpgradeAllDatabases(
 
       // Create default user admin
       _createDefaultAdmin(udsEM, udsDbConnector.getDriverType)
-      // Retrieve ps database migration state. This is for remove ps_db
-      _isPsDbMigrationOk(udsEM)
-      if (failedDbSet.isEmpty) { logger.info("Proline databases upgrade has finished successfully!") }
+      // Check wether ps_db migration has finished successfully for all databases.
+      _isPsDbMigrationOk()
+      if (failedDbMap.keys.isEmpty) { logger.info("Proline databases upgrade has finished successfully!") }
       else {
-        logger.warn(s"--- Proline databases upgrade has finished, but some databases cannot migrate: ${failedDbSet.mkString(",")}")
+        logger.warn(s"--- Proline databases upgrade has finished, but some databases cannot migrate: ${failedDbMap.keys.mkString(",")}")
       }
     } finally {
       // Close UDSdb connection context
       if (udsDbCtx != null) {
         udsDbCtx.close()
       }
-
-      /*
-      // Close UDSdb connector at the end
-      if (udsDbConnector != null)
-        udsDbConnector.close()
-					 */
     }
     ()
   }
@@ -169,27 +164,18 @@ class UpgradeAllDatabases(
     extDb.setDbVersion(newVersion)
   }
 
-  /** Retrieve ps_db migration state */
-  private def _isPsDbMigrationOk(udsEM: EntityManager): Unit = {
-    udsEM.clear()
-    var parser = new JsonParser()
-    val udsExternalDbClass = classOf[ExternalDb]
-    val jpqlSelectExternalDb = s"Select db FROM ${udsExternalDbClass.getName} db where db.type = :type"
-    val udsExternalDbs = udsEM.createQuery(jpqlSelectExternalDb, udsExternalDbClass)
-      .setParameter("type", fr.proline.repository.ProlineDatabaseType.MSI)
-      .getResultList()
-    val udsExternalDbsArray = udsExternalDbs.asScala.toArray
-    udsExternalDbsArray.foreach {
-      extDb =>
-        val properties = extDb.getSerializedProperties()
-        // We use a fallback to an empty JSON object to avoid error if processing an externalDb that has no serialized properties.
-        val extDbJsonProps: JsonObject = Try(parser.parse(properties).getAsJsonObject()).getOrElse(parser.parse("{}").getAsJsonObject())
-        if (!extDbJsonProps.has("is_psdb_migration_ok") || (!extDbJsonProps.get("is_psdb_migration_ok").getAsBoolean)) failedDbSet += extDb.getDbName()
+  /** Check MSI_db migration verion for remove_psDb */
+  private def _isPsDbMigrationOk(): Unit = {
+    UpgradeDatabase.dbsVersionRankMap.foreach {
+      case (dbName, rank) => {
+        if (dbName.contains("MSI") && rank < 10) this.failedDbMap += (dbName -> rank)
+      }
     }
   }
 }
 
 object UpgradeDatabase extends StrictLogging {
+  var dbsVersionRankMap: Map[String, Int] = Map.empty
   /** Check database connection before to upgrade */
   private def isConnectionEstablished(dbConnector: IDatabaseConnector): Boolean = {
     var connection: Option[Connection] = None
@@ -239,12 +225,25 @@ object UpgradeDatabase extends StrictLogging {
           // TODO: find a way to migrate SQLite databases using flyway
           val version = if (driverType == DriverType.SQLITE) "no.version"
           else {
-            // Try to retrieve the version reached after the applied migration
+            // Try to retrieve the database version reached after the applied migration
             val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)
             ezDBC.selectHead("""SELECT "version" FROM "schema_version" ORDER BY "version_rank" DESC LIMIT 1""") { r =>
               r.nextString
             }
           }
+          val versionRankOpt = Option {
+            if (driverType == DriverType.SQLITE) "-1"
+            else {
+              // Try to retrieve database version rank
+              val ezDBC = ProlineEzDBC(dbConnector.getDataSource.getConnection, dbConnector.getDriverType)
+              ezDBC.selectHead("""SELECT "version_rank" FROM "schema_version" ORDER BY "version_rank" DESC LIMIT 1""") { r =>
+                r.nextString
+              }
+            }
+          }
+          versionRankOpt.foreach(rank => {
+            dbsVersionRankMap += (dbShortName -> rank.toInt)
+          })
           if (upgradeCallback != null)
             upgradeCallback(version)
         }
