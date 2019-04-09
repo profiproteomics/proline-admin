@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -Xmx1500M  -cp "config:lib/*:Proline-Admin-${admin.version}.jar" -Dlogback.configurationFile=config/logback.xml fr.proline.admin.RunCommand setup
+java -Xmx1500M  -cp "config:lib/*:proline-admin-${admin.version}.jar" -Dlogback.configurationFile=config/logback.xml fr.proline.admin.RunCommand setup
