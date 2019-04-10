@@ -80,7 +80,7 @@ class TaskRunner(
                 text = caption + " - Finished successfully."
                 style = TextStyle.GREEN_ITALIC
               }
-              var failedDbNames = "All databases are upgraded successfully!"
+              var failedDbNames = "All databases have been upgraded successfully!"
               statusLabel.setStyle(TextStyle.GREEN_ITALIC)
               statusLabel.text = caption + " - Finished successfully."
               if (!failedDbs.asInstanceOf[Set[String]].isEmpty) {
@@ -91,33 +91,34 @@ class TaskRunner(
                   graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
                   style = TextStyle.ORANGE_ITALIC
                 }
-                failedDbNames = s"${failedDbs.asInstanceOf[Set[String]].mkString("\n")}"
+                failedDbNames = s"Warning: Some databases has failed to migrate:\n${failedDbs.asInstanceOf[Set[String]].mkString("\n")}"
               }
               val textArea = new TextArea {
                 text = failedDbNames
-                prefHeight = 80
+                prefHeight = 150
               }
               ShowPopupWindow(
                 node = new VBox {
                   spacing = 5
-                  children = Seq(title, textArea)
+                  children = Seq(textArea)
                 },
                 caption,
                 stage,
                 true)
             }
-            // Check for updates task : dbName => script to apply with state
+            // Check for updates task : database name => list of scripts to apply: state
             case (checkDbs, scriptsToApply) if (checkDbs.isInstanceOf[CheckForUpdates]) => {
               var title = new Label {
                 text = caption + " - Finished successfully."
                 style = TextStyle.GREEN_ITALIC
               }
-              var scriptsText: String = "All databases are upgraded!"
+              var scriptsText: String = "All databases are up to date."
               statusLabel.text = caption + " - Finished successfully."
               statusLabel.setStyle(TextStyle.GREEN_ITALIC)
 
               if (!scriptsToApply.asInstanceOf[Map[String, Map[String, String]]].isEmpty) {
                 var str = new StringBuilder()
+                str.append("Some updates are available:\n")
                 scriptsToApply.asInstanceOf[Map[String, Map[String, String]]].foreach {
                   case (k, v) => {
                     str.append("# ").append(k).append("\n ")
@@ -142,7 +143,7 @@ class TaskRunner(
               ShowPopupWindow(
                 node = new VBox {
                   spacing = 5
-                  children = Seq(title, textArea)
+                  children = Seq(textArea)
                 },
                 caption,
                 stage,
@@ -180,7 +181,7 @@ class TaskRunner(
         val t = Option(getException)
         t.foreach(_.printStackTrace())
 
-        // Show popup
+        // Show dialog 
         if (showPopup) {
           val errortextArea = new TextArea {
             text = s"Operation failed. ${t.map("Exception: " + _.getClass).getOrElse("")}\n ${t.map(_.getMessage).getOrElse("")}"
@@ -200,7 +201,7 @@ class TaskRunner(
         mainView.getScene().setCursor(Cursor.DEFAULT)
         statusLabel.setStyle(TextStyle.RED_ITALIC)
         statusLabel.text = caption + " - Cancelled."
-        // Show popup
+        // Show dialog 
         if (showPopup)
           ShowPopupWindow(new Label(caption + " - Cancelled."), caption, stage, false)
       }
