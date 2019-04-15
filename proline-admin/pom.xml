@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>Proline-Admin</artifactId>
-	<version>0.8.0</version>
+	<version>0.8.1</version>
 
 	<name>${project.artifactId}</name>
 	<description>Proline Administration</description>
@@ -20,7 +20,7 @@
 		<version.path>${basedir}/src/main/scala/fr/proline/admin</version.path>
 	</properties>
 	<scm>
-		<connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-Admin/tags/0.8.0</connection>
+		<connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-Admin/tags/0.8.1</connection>
 	</scm>
 
 
