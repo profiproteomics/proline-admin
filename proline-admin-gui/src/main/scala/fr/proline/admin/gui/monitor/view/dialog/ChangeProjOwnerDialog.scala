@@ -38,7 +38,7 @@ object ChangeProjOwnerDialog extends LazyLogging {
       initOwner(parentWindow)
       title = "Change Project Owner"
       headerText = "Project owner details"
-      graphic = FxUtils.newImageView(IconResource.EDIT)
+      graphic = FxUtils.newImageView(IconResource.EDITSMALL)
     }
 
     // Set the button types.
