@@ -27,6 +27,7 @@ import fr.profi.util.scalafx.{ BoldLabel, TitledBorderPane }
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
+import java.io.File
 
 /**
  * Creates and displays home panel of Proline-Admin GUI monitor .
@@ -375,7 +376,9 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
    */
   def saveServerConfig(): Boolean = {
     try {
+      require(model.adminConfigOpt().isDefined, "Admin Config must not be empty nor null")
       val adminConfig = model.adminConfigOpt().get
+      require(new File(adminConfig.filePath).exists, "Admin Config file does not exists")
       val configFilePath = adminConfig.filePath
       adminConfig.dbUserName = Option(pgUserField.getText)
       adminConfig.dbPassword = Option(pgPasswordField.getText)
