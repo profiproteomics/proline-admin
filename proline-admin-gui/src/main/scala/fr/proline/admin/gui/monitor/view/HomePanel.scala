@@ -22,6 +22,7 @@ import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.util.WindowSize
 import fr.proline.admin.gui.monitor.model.HomePanelViewModel
+import fr.proline.admin.gui.process.config.AdminConfigFile
 import fr.profi.util.scalafx.{ BoldLabel, TitledBorderPane }
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
@@ -110,6 +111,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     disable = true
     text = model.serverNodeConfigOpt.map(_.requestQueueName.getOrElse("ProlineServiceRequestQueue")).getOrElse("ProlineServiceRequestQueue")
   }
+
   val jmsTitledPane = new HBox {
     hgrow = Priority.Always
     children = new TitledBorderPane(
@@ -173,7 +175,25 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     disable = true
     text = model.adminConfigOpt.get.dbPassword.getOrElse("<db_password>")
   }
-
+  val editServerButton = new Button(" Edit ") {
+    graphic = FxUtils.newImageView(IconResource.EDITSMALL)
+    onAction = handle {
+      enableServerConfig()
+    }
+  }
+  val saveServerButton = new Button(" Save ") {
+    graphic = FxUtils.newImageView(IconResource.SAVE)
+    onAction = handle {
+      if (saveServerConfig()) {
+        disableServerConfig()
+      }
+    }
+  }
+  Seq(editServerButton,
+    saveServerButton).foreach { b =>
+      b.prefHeight = 20
+      b.prefWidth = 70
+    }
   val pgTitledPane = new HBox {
     hgrow = Priority.Always
     vgrow = Priority.Always
@@ -196,6 +216,10 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
           }, new HBox {
             spacing = H_SPACING * 3
             children = List(pgPasswordLabel, pgPasswordField)
+          }, new HBox {
+            alignment = Pos.BOTTOM_RIGHT;
+            spacing = H_SPACING * 1
+            children = List(editServerButton, saveServerButton)
           })
       }))
   }
@@ -333,6 +357,39 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   serverConfigWarningLabel.visible <== !BooleanProperty(model.isServerConfigFileOK())
   seqReposWarningLabel.visible <== !BooleanProperty(model.isSeqRepoConfigFileOK())
   dataDirWarningLabel.visible <== !BooleanProperty(model.isPgSQLDataDirOK())
+  // Enable properties
+
+  def enableServerConfig() {
+    Seq(pgHostField, pgPortField, pgUserField, pgPasswordField).foreach { b =>
+      b.setDisable(false)
+    }
+  }
+  def disableServerConfig() {
+    Seq(pgHostField, pgPortField, pgUserField, pgPasswordField).foreach { b =>
+      b.setDisable(true)
+    }
+  }
+
+  /**
+   * Save new Admin-Config
+   */
+  def saveServerConfig(): Boolean = {
+    try {
+      val adminConfig = model.adminConfigOpt().get
+      val configFilePath = adminConfig.filePath
+      adminConfig.dbUserName = Option(pgUserField.getText)
+      adminConfig.dbPassword = Option(pgPasswordField.getText)
+      adminConfig.dbHost = Option(pgHostField.getText)
+      adminConfig.dbPort = Option(pgPortField.getText.toInt)
+      val adminConfigFile = new AdminConfigFile(configFilePath)
+      adminConfigFile.write(adminConfig)
+      true
+    } catch {
+      case e: Throwable =>
+        logger.error("Error while trying to update Admin Configuration", e)
+        false
+    }
+  }
 
   // Create task Runner
   val taskRunner = new TaskRunner(mainPane, glassPane, statusLabel)
