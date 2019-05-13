@@ -88,8 +88,8 @@ class HomePanelViewModel(monitorConfPath: String) extends LazyLogging {
   }
 
   /** Check Proline-Admin GUI UDS database connection */
-  def isConnectionEstablished(): Boolean = {
-    adminConfigOpt().map(DatabaseConnection.testDbConnection(_, false, false, Option(Monitor.stage))).getOrElse(false)
+  def isConnectionEstablished(adminConfigOpt: Option[AdminConfig]): Boolean = {
+    adminConfigOpt.map(DatabaseConnection.testDbConnection(_, false, false, Option(Monitor.stage))).getOrElse(false)
   }
 
   /** Open Proline-Admin GUI guide */

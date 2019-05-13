@@ -350,7 +350,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     mainPane)
 
   // Show error and warning labels 
-  val isConnectionEstablished = BooleanProperty(!model.isConnectionEstablished())
+  val isConnectionEstablished = BooleanProperty(!model.isConnectionEstablished(model.adminConfigOpt()))
   connectionErrorLabel.visible <== isConnectionEstablished
   val isUdsDbSetup = BooleanProperty(!model.isUdsDbReachable())
   udsDbErrorLabel.visible <== isUdsDbSetup
@@ -383,6 +383,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
       adminConfig.dbPort = Option(pgPortField.getText.toInt)
       val adminConfigFile = new AdminConfigFile(configFilePath)
       adminConfigFile.write(adminConfig)
+      isConnectionEstablished.setValue(!model.isConnectionEstablished(Option(adminConfig)))
       true
     } catch {
       case e: Throwable =>
