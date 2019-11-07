@@ -1,0 +1,1 @@
+java -cp "lib/*;proline-admin-gui-${pom.version}.jar;config" -Dlogback.configurationFile=config/logback.xml fr.proline.admin.gui.Monitor %*
