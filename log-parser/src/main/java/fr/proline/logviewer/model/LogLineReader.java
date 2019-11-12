@@ -8,7 +8,7 @@ package fr.proline.logviewer.model;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import fr.proline.logviewer.model.LogTask.LogLine;
-import fr.proline.logviewer.txt.TaskStartStopTraceWriter;
+import fr.proline.logviewer.txt.TasksFlowWriter;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -48,14 +48,14 @@ public class LogLineReader {
     //final String regex_consumerTaskKey2 = "Entering Consumer receive loop";
     final String regex_consumerTaskKey3 = "Entering ExpiredMessage Consumer receive loop";
     final String regex_consumerTaskKey4 = "Entering Notification Topic Publisher send loop";
-    LogTaskTrace m_trace;
+    LogTasksFlow m_flow;
     private boolean m_hasNewTrace;
-    private TaskStartStopTraceWriter m_traceWriter;
+    private TasksFlowWriter m_flowWriter;
 
-    public LogLineReader(TaskStartStopTraceWriter traceWriter, DATE_FORMAT dateFormat) {
-        m_trace = new LogTaskTrace();
+    public LogLineReader(TasksFlowWriter flowWriter, DATE_FORMAT dateFormat) {
+        m_flow = new LogTasksFlow();
         m_hasNewTrace = false;
-        m_traceWriter = traceWriter;
+        m_flowWriter = flowWriter;
         long start = System.currentTimeMillis();
         m_dateFormat = dateFormat;
         m_msgId2TaskMap = new HashMap();
@@ -67,17 +67,9 @@ public class LogLineReader {
         m_noTreatLineIndex = new Stack<>();
     }
 
-    public String getNewTraceHtmlFormat() {
+    public String getNewTrace() {
         m_hasNewTrace = false;
-        return m_trace.getNewTraceHtmlFormat();
-    }
-
-    public ArrayList<String> getRestTraceHtmlFormat() {
-        return m_trace.getRestTraceHtmlFormat();
-    }
-
-    public String getAllTraceHtmlFormat() {
-        return m_trace.getAllTraceHtmlFormat();
+        return m_flow.getNewTrace();
     }
 
     public boolean isHasNewTrace() {
@@ -255,9 +247,9 @@ public class LogLineReader {
     }
 
     private void newTask(LogTask task) {
-        String newLine = m_trace.taskStart(task);
-        if (m_traceWriter != null) {
-            m_traceWriter.addLine(newLine);
+        String newLine = m_flow.taskStart(task);
+        if (m_flowWriter != null) {
+            m_flowWriter.addLine(newLine);
         }
         m_hasNewTrace = true;
     }
@@ -266,9 +258,9 @@ public class LogLineReader {
         m_taskInRun.remove(task);
         m_msgId2TaskMap.remove(task.getMessageId());
         m_thread2TaskMap.remove(task.getThreadName());
-        String newLine = m_trace.taskStop(task);
-        if (m_traceWriter != null) {
-            m_traceWriter.addLine(newLine);
+        String newLine = m_flow.taskStop(task);
+        if (m_flowWriter != null) {
+            m_flowWriter.addLine(newLine);
         }
         this.m_hasNewTrace = true;
 
@@ -304,17 +296,19 @@ public class LogLineReader {
                 m_taskInRun.add(task);
                 task.setThreadName(threadName);
                 task.setStartLine(index, line, date);
-                updateTaskInRun(task);
+
                 LogTask wrongTask = m_thread2TaskMap.get(threadName);
                 if (wrongTask != null) {
                     LogLine lastLine = wrongTask.removeLastLine();
                     task.addLine(index - 1, m_lastBeginMatch.group(), date);
                     wrongTask.setStatus(LogTask.STATUS.FAILED);
                     m_thread2TaskMap.remove(threadName);
+                    m_taskInRun.remove(wrongTask);
                 } else {
                     task.addLine(index - 1, m_noTreatLine.pop(), date);//the head(time, thread) of break line which begin with calling service, suppose index is last index
                     m_noTreatLineIndex.pop();
                 }
+                updateTaskInRun(task);
                 m_thread2TaskMap.put(threadName, task);
             }
             task.setCallService(service);
@@ -467,50 +461,26 @@ public class LogLineReader {
         }
     }
 
-    class LogTaskTrace {
+    class LogTasksFlow {
 
         ArrayList<LogTask> m_taskList;
         ArrayList<String> m_newTrace;
         String m_lineEnd = "\n";
-        ArrayList<String> m_allTrace;
 
-        public LogTaskTrace() {
+        public LogTasksFlow() {
             this.m_taskList = new ArrayList();
             m_newTrace = new ArrayList();
-            m_allTrace = new ArrayList();
         }
 
         public void close() {
             m_taskList = null;
             m_newTrace = new ArrayList();
-            m_allTrace = new ArrayList();
         }
 
-        public synchronized String getNewTraceHtmlFormat() {
-            return getTraceHtmlFormat(m_newTrace);
-        }
-
-        public String getAllTraceHtmlFormat() {
-            return getTraceHtmlFormat(m_allTrace);
-        }
-
-        private ArrayList<String> getRestTraceHtmlFormat() {
-            ArrayList<String> result = new ArrayList<>();
-            String lineHtml;
-            for (String line : m_newTrace) {
-                lineHtml = line.replaceAll("\n", "<br>");
-                result.add(lineHtml);
-            }
-            m_newTrace = new ArrayList<>();
-            return result;
-        }
-
-        private String getTraceHtmlFormat(ArrayList<String> traceList) {
+        private String getNewTrace() {
             String result = "";
-            String lineHtml;
-            for (String line : traceList) {
-                lineHtml = line.replaceAll("\n", "<br>");
-                result += lineHtml;
+            for (String line : m_newTrace) {
+                result += line;
             }
             m_newTrace = new ArrayList<>();
             return result;
@@ -541,7 +511,6 @@ public class LogLineReader {
             String newLine = (startMark + "\\" + m_lineEnd)
                     + (startMark + "|+" + task.getStartInfo() + m_lineEnd);
             m_newTrace.add(newLine);
-            m_allTrace.add(newLine);
             return newLine;
         }
 
@@ -565,7 +534,6 @@ public class LogLineReader {
             String newLine = (startMark + "-" + task.getStopInfo() + m_lineEnd)
                     + (removeMark + m_lineEnd);
             m_newTrace.add(newLine);
-            m_allTrace.add(newLine);
             return (newLine);
         }
     }

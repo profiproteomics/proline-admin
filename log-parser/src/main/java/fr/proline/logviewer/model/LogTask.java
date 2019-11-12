@@ -76,12 +76,6 @@ public class LogTask {
         this.m_projectId = projectId;
     }
 
-//    public void addLine(String s) {
-//        m_traceLine.add(s);
-//    }
-//    public void addLineIndex(long index) {
-//        m_traceLineIndex.add(index);
-//    }
     public void addLine(long index, String line, Date date) {
         if (m_taskOrder > 0 && date != null && !line.contains(this.m_threadName) && !line.contains("Calling")) {
             m_logger.error("XXX thread name different {}, index = {}", this, index);
@@ -91,7 +85,7 @@ public class LogTask {
         if (date != null) {
             m_stopTime = date.getTime();
             m_stopLine = ll;
-        }//when date == null, don't add as stop line, because they are broken line
+        }//when date == null, don't add as stop line, because they are broken lines
     }
 
     LogLine removeLastLine() {

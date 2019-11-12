@@ -17,16 +17,25 @@
  */
 package fr.proline.logviewer.gui;
 
-import fr.proline.logviewer.txt.TaskStartStopTraceWriter;
+import fr.proline.logviewer.txt.TasksFlowWriter;
 import fr.proline.logviewer.model.LogLineReader.DATE_FORMAT;
 import fr.proline.logviewer.model.LogLineReader;
 import java.awt.BorderLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import org.openide.util.ImageUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +44,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karine XUE at CEA
  */
-public class LogGuiApp extends javax.swing.JFrame {
+public class LogGuiApp extends JFrame {
 
     protected static final Logger m_logger = LoggerFactory.getLogger(LogGuiApp.class);
     JFileChooser m_fileChooser;
@@ -44,8 +53,9 @@ public class LogGuiApp extends javax.swing.JFrame {
 
     private String m_path;
     private File m_file;
-    private LogConsolePane m_console;
-    private TaskStartStopTraceWriter m_trace;
+    private TasksFlowWriter m_tasksFlowWriter;
+    private JFrame m_taskFlowFrame;
+    private JTextPane m_taskFlowTextPane;
 
     public LogGuiApp() {
         super("Log Analyser");
@@ -58,8 +68,7 @@ public class LogGuiApp extends javax.swing.JFrame {
         File defaultFile = new File(m_path, fileName);
         m_fileChooser.setSelectedFile(defaultFile);
         m_dateFormat = DATE_FORMAT.SHORT;
-        m_console = m_logPanel.getConsole();
-        m_trace = new TaskStartStopTraceWriter("TaskTrace", false);
+        m_tasksFlowWriter = new TasksFlowWriter("TasksFlow", false);
 
         initComponents();
         this.setLocation(100, 10);
@@ -70,57 +79,82 @@ public class LogGuiApp extends javax.swing.JFrame {
     private void initComponents() {
         String path = "prolineLogo32x32.png";
         Image icon = ImageUtilities.loadImage(path);
-
         this.setIconImage(icon);
-        javax.swing.JMenuItem analyseFileMenuItem;
-        javax.swing.JMenuItem exitMunuItem;
-        javax.swing.JMenu fileMenu, dataFormatMenu;
-        javax.swing.JRadioButtonMenuItem shortMonthMenuItem;
-        javax.swing.JRadioButtonMenuItem normalMonthMenuItem;
-        javax.swing.JMenuBar jMenuBar;
-        javax.swing.ButtonGroup group = new javax.swing.ButtonGroup();//one choice one time
-        jMenuBar = new javax.swing.JMenuBar();
-        fileMenu = new javax.swing.JMenu();
 
-        fileMenu.setText("File");
+        m_taskFlowTextPane = new JTextPane();
+        m_taskFlowFrame = new JFrame("Log Task Flow");
+        m_taskFlowFrame.add(new JScrollPane(m_taskFlowTextPane));
+        m_taskFlowFrame.setSize(700, 800);
+        m_taskFlowFrame.setVisible(true);
+        m_taskFlowFrame.setIconImage(icon);
 
-        dataFormatMenu = new javax.swing.JMenu();
+        JMenuItem analyseFileMenuItem;
+        JMenuItem exitMunuItem;
+        JMenuItem showTaskFlowItem;
+        JMenu fileMenu, dataFormatMenu, taskMenu;
+        JRadioButtonMenuItem shortMonthMenuItem;
+        JRadioButtonMenuItem normalMonthMenuItem;
+        JMenuBar jMenuBar;
+        ButtonGroup group = new ButtonGroup();//one choice one time
+        jMenuBar = new JMenuBar();
+        fileMenu = new JMenu();
 
-        dataFormatMenu.setText("Date Format");
+        fileMenu.setText(
+                "File");
 
-        analyseFileMenuItem = new javax.swing.JMenuItem();
-        exitMunuItem = new javax.swing.JMenuItem();
+        dataFormatMenu = new JMenu();
 
-        shortMonthMenuItem = new javax.swing.JRadioButtonMenuItem("Short Month: like (18 Sep 2019) ");
-        normalMonthMenuItem = new javax.swing.JRadioButtonMenuItem("Normal Month: like (18 sep. 2019)");
-        shortMonthMenuItem.setSelected(true);
-        shortMonthMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        dataFormatMenu.setText(
+                "Date Format");
+
+        analyseFileMenuItem = new JMenuItem();
+        exitMunuItem = new JMenuItem();
+
+        shortMonthMenuItem = new JRadioButtonMenuItem("Short Month: like (18 Sep 2019) ");
+        normalMonthMenuItem = new JRadioButtonMenuItem("Normal Month: like (18 sep. 2019)");
+
+        shortMonthMenuItem.setSelected(
+                true);
+        shortMonthMenuItem.addActionListener(
+                new java.awt.event.ActionListener() {
             @Override
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt
+            ) {
                 m_dateFormat = DATE_FORMAT.SHORT;
                 m_logger.debug("m_dataFormat is {}", m_dateFormat);
             }
-        });
+        }
+        );
 
-        normalMonthMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        normalMonthMenuItem.addActionListener(
+                new java.awt.event.ActionListener() {
             @Override
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt
+            ) {
                 m_dateFormat = DATE_FORMAT.NORMAL;
                 m_logger.debug("m_dataFormat is {}", m_dateFormat);
             }
-        });
+        }
+        );
         dataFormatMenu.add(shortMonthMenuItem);
-        dataFormatMenu.add(normalMonthMenuItem);
-        group.add(shortMonthMenuItem);
-        group.add(normalMonthMenuItem);
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        analyseFileMenuItem.setText("Analyse File");
+        dataFormatMenu.add(normalMonthMenuItem);
+
+        group.add(shortMonthMenuItem);
+
+        group.add(normalMonthMenuItem);
+
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        analyseFileMenuItem.setText(
+                "Analyse File");
         analyseFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
+
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 analyseFileActionPerformed(evt);
             }
-        });
+        }
+        );
         fileMenu.add(analyseFileMenuItem);
 
         exitMunuItem.setText("Exit"); // NOI18N
@@ -129,9 +163,22 @@ public class LogGuiApp extends javax.swing.JFrame {
             System.exit(0);
         });
         fileMenu.add(exitMunuItem);
+        taskMenu = new JMenu();
+        taskMenu.setText("Tasks");
+        showTaskFlowItem = new JMenuItem();
+        showTaskFlowItem.setText("Show Flow of the tasks");
+        showTaskFlowItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showTaskFlowActionPerformed(evt);
+
+            }
+
+        });
+        taskMenu.add(showTaskFlowItem);
 
         jMenuBar.add(fileMenu);
         jMenuBar.add(dataFormatMenu);
+        jMenuBar.add(taskMenu);
         setJMenuBar(jMenuBar);
 
         getContentPane().setLayout(new BorderLayout());
@@ -139,27 +186,32 @@ public class LogGuiApp extends javax.swing.JFrame {
 
     }//
 
+    private void showTaskFlowActionPerformed(ActionEvent evt) {
+        m_taskFlowFrame.setVisible(true);
+    }
+
     private void analyseFileActionPerformed(ActionEvent evt) {
         LogLineReader logReader;
         int returnVal = m_fileChooser.showOpenDialog(LogGuiApp.this);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             try {
-                // m_logPanel.setData(null);
+                m_logPanel.clear();
                 m_file = m_fileChooser.getSelectedFile();
                 m_fileChooser.setSelectedFile(m_file);
                 //This is where a real application would open the file.
                 m_logger.debug("");//empty line
                 m_logger.info("File to analyse: " + m_file.getName() + ".");
                 String fileName = m_file.getName();
-                m_trace.open(fileName);
-                logReader = new LogLineReader(m_trace, m_dateFormat);
-                LogReaderWorker readWorker = new LogReaderWorker(m_console, m_file, m_dateFormat, logReader) {
+                m_tasksFlowWriter.open(fileName);
+                logReader = new LogLineReader(m_tasksFlowWriter, m_dateFormat);
+                LogReaderWorker readWorker = new LogReaderWorker(m_taskFlowTextPane, m_file, m_dateFormat, logReader) {
                     @Override
                     protected void done() {
 
                         m_logPanel.setData(logReader.getTasks(), fileName);
-                        m_trace.close();
+
+                        m_tasksFlowWriter.close();
                     }
                 };
 

@@ -20,7 +20,6 @@ package fr.proline.logviewer.gui;
 import fr.proline.logviewer.model.LogTask.LogLine;
 import java.awt.Dimension;
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -78,18 +77,6 @@ public class LogConsolePane extends JScrollPane {
         String es = ws.replaceAll("ERROR", "<font color=\"red\">ERROR</font>");
         String is = es.replaceAll("INFO", "<font color=\"Blue\">INFO</font>");
         return is;
-    }
-
-    public void addTraceBegin(String fileName) {
-        m_stringBuilder = new StringBuilder("<html><body>Analyse File: " + fileName + "<br>");
-        m_logTextPane.setText(m_stringBuilder.toString());
-    }
-
-    void addTrace(List<String> trace) {
-        for (String line : trace) {
-            m_stringBuilder.append(line);
-        }
-        m_logTextPane.setText(m_stringBuilder.toString() + "</body></html>");
     }
 
 }

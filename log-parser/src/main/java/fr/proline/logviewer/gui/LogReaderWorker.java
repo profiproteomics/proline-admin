@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Scanner;
 import javax.swing.JOptionPane;
+import javax.swing.JTextPane;
 import javax.swing.SwingWorker;
 import org.openide.util.Exceptions;
 import org.slf4j.Logger;
@@ -44,14 +45,15 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
     File m_file;
     private LogLineReader.DATE_FORMAT m_dateFormat;
     Scanner m_fileScanner;
-    LogConsolePane m_console;
+    JTextPane m_taskFlowTextPane;
     LogLineReader m_reader;
+    StringBuilder m_stringBuilder;
 
-    LogReaderWorker(LogConsolePane console, File file, DATE_FORMAT dateFormat, LogLineReader reader) {
+    LogReaderWorker(JTextPane taskFlowTextPane, File file, DATE_FORMAT dateFormat, LogLineReader reader) {
         super();
         FileInputStream inputStream = null;
         try {
-            m_console = console;
+            m_taskFlowTextPane = taskFlowTextPane;
             m_file = file;
             m_dateFormat = dateFormat;
             String abPath = file.getAbsolutePath();
@@ -59,6 +61,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
             inputStream = new FileInputStream(abPath);
             m_fileScanner = new Scanner(inputStream, StandardCharsets.UTF_8.name());
             m_reader = reader;
+            m_stringBuilder = new StringBuilder();
         } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -69,18 +72,18 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         long start = System.currentTimeMillis();
         long index = 0;
         try {
-            m_console.addTraceBegin(m_file.getName());
+            addTraceBegin(m_file.getName());
             m_logger.debug("Analyse begin...");
             while (m_fileScanner.hasNextLine()) {
                 String line = m_fileScanner.nextLine();
                 index++;
-                if (index ==19163){
-                    String s="debug begin";
+                if (index == 19163) {
+                    String s = "debug begin";
                 }
                 //m_logger.debug("{}, task register {}", index);
                 m_reader.registerTask(line, index);
                 if (m_reader.isHasNewTrace()) {
-                    publish(m_reader.getNewTraceHtmlFormat());
+                    publish(m_reader.getNewTrace());
                 }
             }
 
@@ -88,10 +91,10 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
 
         } catch (ProlineException ex) {
             if (ex.getCause() instanceof ParseException) {
-                JOptionPane.showMessageDialog(m_console, "Please veriry Data format, configuration is " + m_dateFormat + "\n" + ex.getMessage());
+                JOptionPane.showMessageDialog(m_taskFlowTextPane, "Please veriry Data format, configuration is " + m_dateFormat + "\n" + ex.getMessage());
                 m_logger.error("Stop by date ParseException" + "Please veriry Data format, configuration is " + m_dateFormat + "\n" + ex.getMessage());
             } else {
-                JOptionPane.showMessageDialog(m_console, ex + "\n" + ex.getStackTrace()[0], "Exception", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(m_taskFlowTextPane, ex + "\n" + ex.getStackTrace()[0], "Exception", JOptionPane.ERROR_MESSAGE);
                 StackTraceElement[] trace = ex.getStackTrace();
                 String result = "";
                 for (StackTraceElement el : trace) {
@@ -99,10 +102,10 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
                 }
                 m_logger.error(ex + "\n" + result);
             }
-            
+
             m_logger.error(" ProlineException, task register stop at line {}", index);
-        }catch (Exception ex) {
-             m_logger.error(" Exception task register stop at line {}", index);
+        } catch (Exception ex) {
+            m_logger.error(" Exception task register stop at line {}", index);
             ex.printStackTrace();
         }
         return index;
@@ -110,7 +113,18 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
 
     @Override
     protected void process(List<String> trace) {
-        m_console.addTrace(trace);
+        addTrace(trace);
     }
 
+    public void addTraceBegin(String fileName) {
+        m_stringBuilder = new StringBuilder("Analyse File: " + fileName + "\n");
+        m_taskFlowTextPane.setText(m_stringBuilder.toString());
+    }
+
+    void addTrace(List<String> trace) {
+        for (String line : trace) {
+            m_stringBuilder.append(line);
+        }
+        m_taskFlowTextPane.setText(m_stringBuilder.toString());
+    }
 }

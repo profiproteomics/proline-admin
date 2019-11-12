@@ -47,7 +47,11 @@ public class TaskListView extends JScrollPane {
     void setData(ArrayList<LogTask> tasks, String fileName) {
         m_taskTable.setModel(new TaskTableModel());
         ((TitledBorder) this.getBorder()).setTitle("List of Tasks" + "     " + fileName);
-        m_taskList = tasks;
+        if (tasks == null) {
+            m_taskList = new ArrayList<>();
+        } else {
+            m_taskList = tasks;
+        }
         this.viewport.revalidate();
         this.repaint();
     }

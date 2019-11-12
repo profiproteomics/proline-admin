@@ -25,15 +25,15 @@ import org.openide.util.Exceptions;
  *
  * @author Karine XUE at CEA
  */
-public class TaskStartStopTraceWriter {
+public class TasksFlowWriter {
 
     String m_fileName;
     FileWriter m_outputFile;
     boolean m_stdout;
 
-    public TaskStartStopTraceWriter(String fileName, boolean stdout) {
-        if (fileName == null || fileName.isEmpty() ) {
-            m_fileName = "LogTrace";
+    public TasksFlowWriter(String fileName, boolean stdout) {
+        if (fileName == null || fileName.isEmpty()) {
+            m_fileName = "TasksFlow";
         } else {
             this.m_fileName = fileName;
         }
@@ -61,6 +61,10 @@ public class TaskStartStopTraceWriter {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    public String getFileName() {
+        return m_fileName;
     }
 
     public void addLine(String s) {

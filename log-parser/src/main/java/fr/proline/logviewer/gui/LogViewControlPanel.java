@@ -51,15 +51,17 @@ public class LogViewControlPanel extends JPanel {
 
     public synchronized void setData(ArrayList<LogTask> tasks, String fileName) {
         m_taskQueueView.setData(tasks, fileName);
-        if (!(tasks == null || tasks.isEmpty())) {
-//            LogTask firstTask = tasks.get(0);
-//            m_taskView.setData(firstTask);
-//            m_console.setData(firstTask.getTrace());
-        } else {
+        if (tasks == null || tasks.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No task to show");
             m_taskView.setData(null);
             m_console.setData(null);
         }
+    }
+
+    void clear() {
+        m_taskQueueView.setData(null, null);
+        m_taskView.setData(null);
+        m_console.setData(null);
     }
 
 }

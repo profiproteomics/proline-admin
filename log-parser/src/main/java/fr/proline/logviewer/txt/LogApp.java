@@ -39,9 +39,9 @@ public class LogApp {
     LogLineReader m_reader;
 
     public LogApp(String fileName, LogLineReader.DATE_FORMAT dateFormat, String logTaskBeginEndFileName, String logTaskListFileName) throws IOException, ProlineException {
-        TaskStartStopTraceWriter tracer = new TaskStartStopTraceWriter(logTaskBeginEndFileName, true);
+        TasksFlowWriter tasksFlowWriter = new TasksFlowWriter(logTaskBeginEndFileName, true);
 
-        LogLineReader reader = new LogLineReader(tracer, dateFormat);
+        LogLineReader reader = new LogLineReader(tasksFlowWriter, dateFormat);
         m_reader = reader;
         long start = System.currentTimeMillis();
         InputStream inputStream = null;
@@ -49,7 +49,7 @@ public class LogApp {
         File file = new File(fileName);
         try {
             String abPath = file.getAbsolutePath();
-            tracer.open(file.getName());
+            tasksFlowWriter.open(file.getName());
             System.out.println("absolute path is " + abPath);
             inputStream = new FileInputStream(abPath);
             Scanner fileScanner = new Scanner(inputStream, StandardCharsets.UTF_8.name());
@@ -78,7 +78,7 @@ public class LogApp {
             m_reader.showNoTreatedLines();
             inputStream.close();
         }
-        tracer.close();
+        tasksFlowWriter.close();
         TasksJsonWriter taskListWriter = new TasksJsonWriter(logTaskListFileName);
         taskListWriter.setData(reader.getTasks(), file.getName());
 
@@ -86,7 +86,7 @@ public class LogApp {
 
     /**
      * args[0] : log file to Analyse.<br> args[1] : text file which register log
-     * Task Start-stop Trace.<br> args[2] : Json Text File which register all
+     * Task Start-stop Flow.<br> args[2] : Json Text File which register all
      * info
      *
      * @param args the command line arguments

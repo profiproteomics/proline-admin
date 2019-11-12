@@ -370,10 +370,6 @@ public class TaskView extends JPanel {
     private JScrollPane createParameterPanel() {
         JScrollPane paramePane = new JScrollPane();
         paramePane.setBorder(BorderFactory.createTitledBorder("task parameters"));
-        //paramerPane.setPreferredSize(new Dimension(400, 600));
-
-//        m_parameterTextArea = new JTextArea();
-//        paramePane.getViewport().add(m_parameterTextArea);
         return paramePane;
     }
 
