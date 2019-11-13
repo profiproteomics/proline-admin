@@ -26,15 +26,16 @@ public class LogViewControlPanel extends JPanel {
     public LogViewControlPanel() {
         super(new BorderLayout());
         this.setBackground(Color.white);
-        JSplitPane mainPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         m_console = new LogConsolePane();
         m_taskQueueView = new TaskListView(this);
         m_taskView = new TaskView(this);
-        JSplitPane leftPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        leftPanel.setTopComponent(m_taskQueueView);
-        leftPanel.setBottomComponent(m_console);
-        mainPanel.setLeftComponent(leftPanel);
-        mainPanel.setRightComponent(m_taskView);
+
+        JSplitPane mainPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        JSplitPane bottomPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        bottomPanel.setLeftComponent(m_taskView);
+        bottomPanel.setRightComponent(m_console);
+        mainPanel.setTopComponent(m_taskQueueView);
+        mainPanel.setBottomComponent(bottomPanel);
         this.add(mainPanel, BorderLayout.CENTER);
         this.setSize(1200, 800);
     }

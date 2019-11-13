@@ -42,6 +42,7 @@ public class LogLineReader {
     private DATE_FORMAT m_dateFormat;
     public static final String regex_logLevel_9 = "(\\bDEBUG|\\bWARN |\\bERROR|\\bINFO )";
     final static String ERROR_LOG = "ERROR";
+    final static String WARN_LOG = "WARN ";
     final String regex_content_Task_ID = "ID:([\\w-]+)";
     final String regex_consumerTaskKey1 = "Consumer selector string:";
     final String regex_ignoreSource = "PeakelsDetector";
@@ -146,6 +147,8 @@ public class LogLineReader {
                     if (isNotMatch) {//@todo here, BUG possible: when a thread has not finished by end key word, pool match, but task don't mache, not match, 
                         pop();
                         if (line.contains(ERROR_LOG)) {
+                            existTask.setStatus(LogTask.STATUS.FAILED);
+                        } else if (line.contains(WARN_LOG)) {
                             existTask.setStatus(LogTask.STATUS.WARNING);
                         }
                         existTask.addLine(index, line, date);
@@ -297,13 +300,13 @@ public class LogLineReader {
                 task.setThreadName(threadName);
                 task.setStartLine(index, line, date);
 
-                LogTask wrongTask = m_thread2TaskMap.get(threadName);
-                if (wrongTask != null) {
-                    LogLine lastLine = wrongTask.removeLastLine();
+                LogTask existTaskEnThread = m_thread2TaskMap.get(threadName);
+                if (existTaskEnThread != null) {
+                    LogLine lastLine = existTaskEnThread.removeLastLine();
                     task.addLine(index - 1, m_lastBeginMatch.group(), date);
-                    wrongTask.setStatus(LogTask.STATUS.FAILED);
+                    existTaskEnThread.setStatus(LogTask.STATUS.FINISHED_WARN);
                     m_thread2TaskMap.remove(threadName);
-                    m_taskInRun.remove(wrongTask);
+                    m_taskInRun.remove(existTaskEnThread);
                 } else {
                     task.addLine(index - 1, m_noTreatLine.pop(), date);//the head(time, thread) of break line which begin with calling service, suppose index is last index
                     m_noTreatLineIndex.pop();
@@ -350,9 +353,11 @@ public class LogLineReader {
 
     }
 
+    //
     private boolean matchTaskEnd(long index, String line2add, String line2Analyse, Date date, String threadName) throws ProlineException {
         //final String regex_content_task_end = "JMS response to [\\w]+ sent \\(##Message##_" + regex_content_Task_ID + "\\)";
         final String regex_content_task_end_2format = "^JMS [r|R]esponse to [\\w\\W]+ID:([\\w-]+)";//group 1 = message id
+        final String regex_task_end_no_client = "Request JMS Message has no 'JMSReplyTo' destination: cannot send JSON response to the client";
         //final String regex_peakel_end = "BULK insert of";
         Pattern pattern = Pattern.compile(regex_content_task_end_2format, Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(line2Analyse);
@@ -364,7 +369,7 @@ public class LogLineReader {
             //m_logger.debug("GGGGGGGGGGGGGGGGGG getTask {} for msgId={}", task, messageId);
             if (task == null) {
                 task = new LogTask(messageId);
-                task.setThreadName(m_lastBeginMatch.group(8));
+                task.setThreadName(threadName);
                 task.setStartLine(index, line2add, date);
                 m_msgId2TaskMap.put(messageId, task);
                 addTask(task);
@@ -377,6 +382,17 @@ public class LogLineReader {
             pop();
             return true;
         } else {
+            if (line2Analyse.contains(regex_task_end_no_client)) {
+                task = m_thread2TaskMap.get(threadName);
+                if (task != null) {
+                    task.setStatus(LogTask.STATUS.FINISHED_WARN);
+                    task.addLine(index, line2add, date);
+                    task.setStopLine(index, line2Analyse);
+                    removeTask(task);
+                    pop();
+                    return true;
+                }
+            }
             return false;
         }
     }
@@ -404,7 +420,7 @@ public class LogLineReader {
                 } else {//msgId already exist, means one task not finished, but the thread is distribute on a new task
                     this.m_thread2TaskMap.replace(threadName, task);
                     //therminate task with msgId
-                    existTask.setStatus(LogTask.STATUS.FAILED);
+                    existTask.setStatus(LogTask.STATUS.FINISHED_WARN);
                     m_taskInRun.remove(existTask);
                 }
             }
@@ -494,7 +510,7 @@ public class LogLineReader {
             for (int i = 0; i < m_taskList.size(); i++) {
                 oneTask = m_taskList.get(i);
                 if (oneTask.getStatus().equals(LogTask.STATUS.FINISHED)
-                        || oneTask.getStatus().equals(LogTask.STATUS.FINSHED_WARN)
+                        || oneTask.getStatus().equals(LogTask.STATUS.FINISHED_WARN)
                         || oneTask.getStatus().equals(LogTask.STATUS.FAILED)) {
                     startMark += "/" + oneTask.getTaskOrder();
                     tasks2Remove.add(oneTask);

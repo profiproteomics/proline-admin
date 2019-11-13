@@ -23,7 +23,7 @@ public class LogTask {
     protected static final Logger m_logger = LoggerFactory.getLogger(LogTask.class.getName());
 
     public enum STATUS {
-        RUNNING, FINISHED, FINSHED_WARN, WARNING, FAILED
+        RUNNING, FINISHED, WARNING, FINISHED_WARN, FAILED
     }
     private String m_messageId;
     private String m_projectId;
@@ -108,17 +108,9 @@ public class LogTask {
     public void setStatus(STATUS status) {
         if (m_status == null) {
             m_status = status;
+        } else if (status.compareTo(m_status) > 0) {//status after m_status
+            m_status = status;
         }
-        if (!(status.equals(STATUS.FINISHED) && m_status.equals(STATUS.WARNING))) {
-            this.m_status = status;
-            if (status.equals(STATUS.FAILED)) {//check last line
-                String lastLine = this.getTrace().get(this.getTrace().size() - 1).line;
-                if (lastLine.contains("Request JMS Message has no 'JMSReplyTo' destination")) {
-                    this.m_status = STATUS.FINSHED_WARN;
-                }
-            }
-        }//else remain WARNING
-
     }
 
     public void setStartLine(long index, String startLine, Date date) {
@@ -251,6 +243,7 @@ public class LogTask {
     @Override
     public String toString() {
         return "LogTask{" + "m_messageId=" + m_messageId + ", m_threadName=" + m_threadName + ", m_status=" + m_status + ", m_taskOrder=" + m_taskOrder + '}';
+
     }
 
     public class LogLine {

@@ -51,7 +51,7 @@ public class TaskView extends JPanel {
         m_ctrl = control;
         this.setBorder(BorderFactory.createTitledBorder("Task Detail"));
         initComponents();
-        this.setPreferredSize(new Dimension(600, 800));
+        this.setPreferredSize(new Dimension(800, 800));
     }
 
     void setData(LogTask selectedTask) {

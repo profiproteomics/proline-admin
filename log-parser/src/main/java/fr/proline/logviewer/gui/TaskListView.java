@@ -6,6 +6,7 @@
 package fr.proline.logviewer.gui;
 
 import fr.proline.logviewer.model.LogTask;
+import fr.proline.logviewer.model.LogTask.STATUS;
 import fr.proline.logviewer.model.TimeFormat;
 import java.awt.Dimension;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -53,13 +55,27 @@ public class TaskListView extends JScrollPane {
             m_taskList = tasks;
         }
         this.viewport.revalidate();
+        initColumnsize();
         this.repaint();
+    }
+
+    private void initColumnsize() {
+        TableColumn column;
+        column = m_taskTable.getColumnModel().getColumn(TaskTableModel.COLTYPE_NB_TASK_PARALELLE);
+        column.setPreferredWidth(10);
+        column = m_taskTable.getColumnModel().getColumn(TaskTableModel.COLTYPE_ORDER_ID);
+        column.setPreferredWidth(10);
+        column = m_taskTable.getColumnModel().getColumn(TaskTableModel.COLTYPE_PROJECT_ID);
+        column.setPreferredWidth(10);
+        column = m_taskTable.getColumnModel().getColumn(TaskTableModel.COLTYPE_CALL_SERVICE);
+        column.setPreferredWidth(120);
     }
 
     class TaskTable extends JTable {
 
         public TaskTable(TableModel dm) {
             super(dm);
+
             this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             ListSelectionModel selectionModel = this.getSelectionModel();
             selectionModel.addListSelectionListener(new ListSelectionListener() {
@@ -95,7 +111,7 @@ public class TaskListView extends JScrollPane {
         static final int COLTYPE_NB_TASK_PARALELLE = 8;
 
         private String[] _columnNames = {
-            "Task Number",
+            "Task N°",
             "Message Id",
             "Thread Name",
             "Call Service",
@@ -136,7 +152,7 @@ public class TaskListView extends JScrollPane {
                     return Integer.class;
                 }
                 case COLTYPE_STATUS: {
-                    return Enum.class;
+                    return String.class;
                 }
                 case COLTYPE_START_TIME: {
                     return String.class;
@@ -180,7 +196,15 @@ public class TaskListView extends JScrollPane {
                     return taskInfo.getProjectId();
                 }
                 case COLTYPE_STATUS: {
-                    return taskInfo.getStatus();
+                    STATUS s = taskInfo.getStatus();
+                    if (s == STATUS.FAILED) {
+                        return "<html><font color=\"red\">" + s + "</font></html>";
+                    } else if (s == STATUS.WARNING || s == STATUS.FINISHED_WARN) {
+                        return "<html><font color=\"orange\">" + s + "</font></html>";
+                    } else {
+                        return s.toString();
+                    }
+
                 }
                 case COLTYPE_START_TIME: {
                     return TimeFormat.formatTime(taskInfo.getStartTime());
