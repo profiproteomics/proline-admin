@@ -86,9 +86,8 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
                     publish(m_reader.getNewTrace());
                 }
             }
-
             m_logger.info("Analyse done. {} line, Total read time is {}", index, TimeFormat.formatDeltaTime(System.currentTimeMillis() - start));
-
+            m_reader.showNoTreatedLines();
         } catch (ProlineException ex) {
             if (ex.getCause() instanceof ParseException) {
                 JOptionPane.showMessageDialog(m_taskFlowTextPane, "Please veriry Data format, configuration is " + m_dateFormat + "\n" + ex.getMessage());

@@ -209,6 +209,7 @@ public class TaskView extends JPanel {
         m_deltaEndTimeInHourTextfield.setText("");
         m_startLineIndexLabel.setText("line index");
         m_stopLineIndexLabel.setText("line index");
+        m_paramPanel.removeAll();
         //TextField for main info
     }
 
