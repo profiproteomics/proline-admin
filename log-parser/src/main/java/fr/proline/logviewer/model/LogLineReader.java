@@ -233,7 +233,7 @@ public class LogLineReader {
                 pop();
                 return true;
             } else {
-                if (m_thread2Ignore.contains(line)) {
+                if (m_thread2Ignore.contains(threadName)) {
                     pop();
                     return true;
                 } else {
