@@ -70,8 +70,8 @@ public class LogApp {
                 System.err.println(" task register stop at line " + index);
                 throw ex;
             }
-            System.out.println("Analyse done. Total readl time is " + TimeFormat.formatDeltaTime(System.currentTimeMillis() - start));
-            // m_logger.debug(" task register is {}", m_msgId2TaskMap);
+            String info = String.format("Analyse done. %d line in total, %d lines no treated. Total read time is %s", index, m_reader.getNoTreatLineCount(), TimeFormat.formatDeltaTime(System.currentTimeMillis() - start));
+            System.out.println(info);
         } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
@@ -122,7 +122,7 @@ public class LogApp {
             System.out.println(".. Task Start Stop registered in File : " + logTaskBeginEndFileName);
             System.out.println("... Task List json object registered in File : " + logTaskListFileName);
 
-            DATE_FORMAT dFormat = DATE_FORMAT.NORMAL;
+            DATE_FORMAT dFormat = DATE_FORMAT.SHORT;
             LogApp mainApp = new LogApp(file2Anaylse, dFormat, logTaskBeginEndFileName, logTaskListFileName);
 
         } catch (Exception ex) {

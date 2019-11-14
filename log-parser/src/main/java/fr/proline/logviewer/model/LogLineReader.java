@@ -87,7 +87,14 @@ public class LogLineReader {
         m_noTreatLineIndex.pop();
     }
 
+    public int getNoTreatLineCount() {
+        return m_noTreatLine.size();
+    }
+
     public void showNoTreatedLines() {
+        if (m_noTreatLine.size() == 0) {
+            return;
+        }
         m_logger.debug("No treated lines List: size index stack= {}, lines stack ={} ", m_noTreatLine.size(), m_noTreatLineIndex.size());
         while (!m_noTreatLine.isEmpty()) {
             m_logger.debug("[" + m_noTreatLineIndex.pop() + "]," + m_noTreatLine.pop());
