@@ -8,6 +8,7 @@ package fr.proline.logviewer.gui;
 import fr.proline.logviewer.model.LogTask;
 import fr.proline.logviewer.model.LogTask.STATUS;
 import fr.proline.logviewer.model.TimeFormat;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,7 +20,9 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -60,15 +63,17 @@ public class TaskListView extends JScrollPane {
     }
 
     private void initColumnsize() {
+        String[] example = {"198", "853bda4a-10d9-11e8-9a85-d9411af38406", "[pool-2-thread-25]", "proline/dps/msi/ImportValidateGenerateSM",
+            "FINISHED_W", "104", "09:01:27.985 - 09 oct. 2019 ", "09:01:27.985 - 09 oct. 2019 ", "+10"};
         TableColumn column;
-        column = m_taskTable.getColumnModel().getColumn(TaskTableModel.COLTYPE_NB_TASK_PARALELLE);
-        column.setPreferredWidth(10);
-        column = m_taskTable.getColumnModel().getColumn(TaskTableModel.COLTYPE_ORDER_ID);
-        column.setPreferredWidth(10);
-        column = m_taskTable.getColumnModel().getColumn(TaskTableModel.COLTYPE_PROJECT_ID);
-        column.setPreferredWidth(10);
-        column = m_taskTable.getColumnModel().getColumn(TaskTableModel.COLTYPE_CALL_SERVICE);
-        column.setPreferredWidth(120);
+        int cellWidth;
+        for (int i = 0; i < m_taskTable.getColumnCount(); i++) {
+            column = m_taskTable.getColumnModel().getColumn(i);
+            TableCellRenderer renderer = m_taskTable.getDefaultRenderer(column.getClass());
+            Component comp = renderer.getTableCellRendererComponent(m_taskTable, example[i], false, false, 0, i);
+            cellWidth = comp.getPreferredSize().width;
+            column.setPreferredWidth(cellWidth);
+        }
     }
 
     class TaskTable extends JTable {
@@ -110,7 +115,7 @@ public class TaskListView extends JScrollPane {
 
         static final int COLTYPE_NB_TASK_PARALELLE = 8;
 
-        private String[] _columnNames = {
+        private String[] m_columnNames = {
             "Task N°",
             "Message Id",
             "Thread Name",
@@ -133,7 +138,7 @@ public class TaskListView extends JScrollPane {
 
         @Override
         public int getColumnCount() {
-            return this._columnNames.length;
+            return this.m_columnNames.length;
         }
 
         /**
@@ -179,7 +184,7 @@ public class TaskListView extends JScrollPane {
 
         @Override
         public String getColumnName(int column) {
-            return this._columnNames[column]; //To change body of generated methods, choose Tools | Templates.
+            return this.m_columnNames[column]; //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
