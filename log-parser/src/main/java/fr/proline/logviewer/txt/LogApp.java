@@ -72,10 +72,11 @@ public class LogApp {
             }
             String info = String.format("Analyse done. %d line in total, %d lines no treated. Total read time is %s", index, m_reader.getNoTreatLineCount(), TimeFormat.formatDeltaTime(System.currentTimeMillis() - start));
             System.out.println(info);
+             m_reader.showNoTreatedLines();
         } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
-            m_reader.showNoTreatedLines();
+           
             inputStream.close();
         }
         tasksFlowWriter.close();
@@ -95,23 +96,31 @@ public class LogApp {
         int count = args.length;
         if (count == 0) {
             System.out.println("Please give the log file to Analyse");
+            System.out.println("LogApp FileNameToAnalyse [dateformate(normal/short) [TaskFlowFileName] [TaskListJsonFileName]]");
             return;
         }
 
         String file2Anaylse = "";
         String logTaskBeginEndFileName = "";
         String logTaskListFileName = "";
-
+        DATE_FORMAT dFormat = DATE_FORMAT.SHORT;
+        String dateFormat = "";
         for (int i = 0; i < count; i++) {
             switch (i) {
                 case 0:
                     file2Anaylse = args[0];
                     break;
                 case 1:
-                    logTaskBeginEndFileName = args[1];
+                    dateFormat = args[1];
+                    if (dateFormat.equalsIgnoreCase("normal")) {
+                        dFormat = DATE_FORMAT.NORMAL;
+                    }
                     break;
                 case 2:
-                    logTaskListFileName = args[2];
+                    logTaskBeginEndFileName = args[2];
+                    break;
+                case 3:
+                    logTaskListFileName = args[3];
                     break;
                 default:
                     break;
@@ -122,7 +131,6 @@ public class LogApp {
             System.out.println(".. Task Start Stop registered in File : " + logTaskBeginEndFileName);
             System.out.println("... Task List json object registered in File : " + logTaskListFileName);
 
-            DATE_FORMAT dFormat = DATE_FORMAT.SHORT;
             LogApp mainApp = new LogApp(file2Anaylse, dFormat, logTaskBeginEndFileName, logTaskListFileName);
 
         } catch (Exception ex) {

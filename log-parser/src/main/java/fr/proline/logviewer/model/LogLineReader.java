@@ -471,7 +471,7 @@ public class LogLineReader {
             //m_logger.debug("date {}, Date is {}, time is {}", dateString, date, date.getTime());
             return date;
         } catch (ParseException ex) {
-            throw new ProlineException(" in log file date format is: " + dateString + ", dateFormat is " + m_dateFormat, ex);
+            throw new ProlineException("DataFormat Exception, in log file date format is: " + dateString + ", dateFormat is " + m_dateFormat, ex);
         }
     }
 
