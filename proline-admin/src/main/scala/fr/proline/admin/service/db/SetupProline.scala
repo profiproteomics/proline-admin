@@ -111,9 +111,9 @@ object SetupProline {
 
   // Parse config if it's not already done
   // TODO: rename to initialConfig
-  lazy val config = getUpdatedConfig()
+  lazy val config = _getUpdatedConfig()
 
-  def getUpdatedConfig() = _parseProlineSetupConfig(getConfigParams)
+  private def _getUpdatedConfig() = _parseProlineSetupConfig(getConfigParams)
 
   private def _parseProlineSetupConfig(config: Config): ProlineSetupConfig = {
 
