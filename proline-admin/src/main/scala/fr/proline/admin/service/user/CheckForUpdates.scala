@@ -62,6 +62,9 @@ class CheckForUpdates(
           "UDSdb",
           closeConnector = false)
         if (!undoneMigrationsUdsDb.isEmpty) undoneMigrationsByDb += ("UDSdb" -> undoneMigrationsUdsDb)
+        if (! undoneMigrationsByDb.isEmpty) logger.info("Need Update Migration:YES")
+        else
+          logger.info("Need Update Migration:NO")
         if (CheckDbUpdates.failedDbNameSet.isEmpty) logger.info("Check for updates has finished successfully!")
         else
           logger.warn(s"--- Check for updates has finished, but some databases cannot migrate: ${CheckDbUpdates.failedDbNameSet.mkString(",")}")
