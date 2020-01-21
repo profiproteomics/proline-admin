@@ -32,15 +32,16 @@ import javax.swing.JTextPane;
 public class LogConsolePane extends JScrollPane {
 
     JTextPane m_logTextPane;
-    StringBuilder m_stringBuilder;
+    StringBuffer m_stringBuiffer;
 
     public LogConsolePane() {
         this.setBorder(BorderFactory.createTitledBorder("Console"));
         this.setPreferredSize(new Dimension(600, 700));
-        m_stringBuilder = new StringBuilder("Log File Begin Here");
+        m_stringBuiffer = new StringBuffer("Log File Begin Here");
         m_logTextPane = new JTextPane();
         m_logTextPane.setContentType("text/html");
-        m_logTextPane.setText(m_stringBuilder.toString());
+        m_logTextPane.setText(m_stringBuiffer.toString());
+        m_logTextPane.getParagraphAttributes();
         this.getViewport().add(m_logTextPane);
     }
 
@@ -50,7 +51,8 @@ public class LogConsolePane extends JScrollPane {
             m_logTextPane.setText("");
             return;
         }
-        m_stringBuilder = new StringBuilder("<html><body>");
+        m_stringBuiffer.setLength(0);//reuse cretaed StringBuffer
+        m_stringBuiffer.append("<html><body>");
         for (LogLine item : trace) {
             String markerLine;
             String lindeIndex = "<font color=\"Gray\">[" + item.index + "]</font>:";
@@ -63,10 +65,10 @@ public class LogConsolePane extends JScrollPane {
                 markerLine = markerLine3;
             }
 
-            m_stringBuilder.append(lindeIndex + markerLine + "<br>");
+            m_stringBuiffer.append("<div>" + lindeIndex + markerLine + "</div>");
         }
-        m_stringBuilder.append("</body></html>");
-        m_logTextPane.setText(m_stringBuilder.toString());
+        m_stringBuiffer.append("</body></html>");
+        m_logTextPane.setText(m_stringBuiffer.toString());
         m_logTextPane.setCaretPosition(0);
     }
 
