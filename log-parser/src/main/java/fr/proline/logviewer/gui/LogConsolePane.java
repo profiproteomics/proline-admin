@@ -17,7 +17,9 @@
  */
 package fr.proline.logviewer.gui;
 
+import fr.proline.logviewer.model.Config;
 import fr.proline.logviewer.model.LogTask.LogLine;
+import fr.proline.logviewer.model.Utility;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
@@ -32,15 +34,17 @@ import javax.swing.JTextPane;
 public class LogConsolePane extends JScrollPane {
 
     JTextPane m_logTextPane;
-    StringBuffer m_stringBuiffer;
+    StringBuffer m_stringBuffer;
+    LogViewControlPanel m_ctrl;
 
-    public LogConsolePane() {
+    public LogConsolePane(LogViewControlPanel ctrl) {
+        m_ctrl = ctrl;
         this.setBorder(BorderFactory.createTitledBorder("Console"));
         this.setPreferredSize(new Dimension(600, 700));
-        m_stringBuiffer = new StringBuffer("Log File Begin Here");
+        m_stringBuffer = new StringBuffer("Log File Begin Here");
         m_logTextPane = new JTextPane();
         m_logTextPane.setContentType("text/html");
-        m_logTextPane.setText(m_stringBuiffer.toString());
+        m_logTextPane.setText(m_stringBuffer.toString());
         m_logTextPane.getParagraphAttributes();
         this.getViewport().add(m_logTextPane);
     }
@@ -51,25 +55,51 @@ public class LogConsolePane extends JScrollPane {
             m_logTextPane.setText("");
             return;
         }
-        m_stringBuiffer.setLength(0);//reuse cretaed StringBuffer
-        m_stringBuiffer.append("<html><body>");
-        for (LogLine item : trace) {
-            String markerLine;
-            String lindeIndex = "<font color=\"Gray\">[" + item.index + "]</font>:";
-            String markerLine1 = item.line.replaceAll("<", "&lt;");
-            String markerLine2 = markerLine1.replaceAll(">", "&gt;");
-            String markerLine3 = replaceLogLevelInColor(markerLine2);
-            if (markerLine3.contains("Calling service") || markerLine3.contains("Calling BytesMessage Service")) {
-                markerLine = "<font color=\"Blue\">" + markerLine3 + "</font>";
-            } else {
-                markerLine = markerLine3;
-            }
+        try {
+            m_stringBuffer.setLength(0);//reuse cretaed StringBuffer
+            m_stringBuffer.append("<html><body>");
+            int traceSize = trace.size();
+            int diffrent = 0;
 
-            m_stringBuiffer.append("<div>" + lindeIndex + markerLine + "</div>");
+            if (m_ctrl.isBigFile()) {
+                int maxLine = Config.getMaxLine2Show();
+                diffrent = traceSize - maxLine;
+                if (diffrent > 0) {
+                    traceSize = maxLine;
+                }
+            }
+            LogLine item;
+            for (int i = 0; i < traceSize; i++) {
+                item = trace.get(i);
+                String markerLine;
+                String lindeIndex = "<font color=\"Gray\">[" + item.index + "]</font>:";
+                String markerLine1 = item.line.replaceAll("<", "&lt;");
+                String markerLine2 = markerLine1.replaceAll(">", "&gt;");
+                String markerLine3 = replaceLogLevelInColor(markerLine2);
+                if (markerLine3.contains("Calling service") || markerLine3.contains("Calling BytesMessage Service")) {
+                    markerLine = "<font color=\"Blue\">" + markerLine3 + "</font>";
+                } else {
+                    markerLine = markerLine3;
+                }
+
+                m_stringBuffer.append("<div>" + lindeIndex + markerLine + "</div>");
+                m_stringBuffer.length();
+            }
+             m_stringBuffer.append("<div> </div><div>Au total "+traceSize+" lines shown. </div>");
+            if (diffrent > 0) {
+                String fileName = m_ctrl.getAnalysedTaskName();
+                m_stringBuffer.append("<div> ... </div><div> " + diffrent + " more lines, please refer to the file " + fileName);
+            }
+           
+            m_stringBuffer.append("</body></html>");
+            m_logTextPane.setText(m_stringBuffer.toString());
+
+            m_logTextPane.setCaretPosition(0);
+        } catch (OutOfMemoryError e) {
+            System.out.println(Utility.getMemory());
+            System.out.println(e.getMessage() + "\n" + e.getLocalizedMessage() + "\n" + e.getCause());
+            System.exit(1);
         }
-        m_stringBuiffer.append("</body></html>");
-        m_logTextPane.setText(m_stringBuiffer.toString());
-        m_logTextPane.setCaretPosition(0);
     }
 
     private String replaceLogLevelInColor(String srcString) {

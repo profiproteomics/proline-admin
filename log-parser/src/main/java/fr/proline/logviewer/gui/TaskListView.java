@@ -7,7 +7,7 @@ package fr.proline.logviewer.gui;
 
 import fr.proline.logviewer.model.LogTask;
 import fr.proline.logviewer.model.LogTask.STATUS;
-import fr.proline.logviewer.model.TimeFormat;
+import fr.proline.logviewer.model.Utility;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
@@ -22,9 +22,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -32,6 +33,7 @@ import javax.swing.table.TableRowSorter;
  */
 public class TaskListView extends JScrollPane {
 
+    protected static final Logger _logger = LoggerFactory.getLogger(TaskListView.class);
     private LogViewControlPanel m_ctrl;
     ArrayList<LogTask> m_taskList;//data model used by TableModel
     JTable m_taskTable;
@@ -40,7 +42,7 @@ public class TaskListView extends JScrollPane {
         super();
         m_ctrl = control;
         this.setBorder(BorderFactory.createTitledBorder("List of Task"));
-        this.setPreferredSize(new Dimension(800, 150));
+        this.setPreferredSize(new Dimension(800, 250));
         TaskTableModel model = new TaskTableModel();
 
         m_taskTable = new TaskTable(model);
@@ -86,15 +88,20 @@ public class TaskListView extends JScrollPane {
             selectionModel.addListSelectionListener(new ListSelectionListener() {
                 @Override
                 public void valueChanged(ListSelectionEvent e) {
+                    long begin = System.currentTimeMillis();
                     if (e.getValueIsAdjusting()) {
                         return;
                     }
-
+                    m_ctrl.setLoading(true);
                     ListSelectionModel lsm = (ListSelectionModel) e.getSource();
                     if (!lsm.isSelectionEmpty()) {
                         int sortedIndex = lsm.getMinSelectionIndex();
                         int selectedIndex = m_taskTable.convertRowIndexToModel(sortedIndex);
-                        m_ctrl.valueChanged(m_taskList.get(selectedIndex));
+                        LogTask task = m_taskList.get(selectedIndex);
+                        String taskOrder = (task == null) ? "" : "" + task.getTaskOrder();
+                        _logger.debug("get task {} {} ms", taskOrder, System.currentTimeMillis() - begin);
+                        m_ctrl.valueChanged(task);
+                        _logger.debug("show task {} {} ms", taskOrder, System.currentTimeMillis() - begin);
                     }
                 }
             });
@@ -212,10 +219,10 @@ public class TaskListView extends JScrollPane {
 
                 }
                 case COLTYPE_START_TIME: {
-                    return TimeFormat.formatTime(taskInfo.getStartTime());
+                    return Utility.formatTime(taskInfo.getStartTime());
                 }
                 case COLTYPE_STOP_TIME: {
-                    return TimeFormat.formatTime(taskInfo.getStopTime());
+                    return Utility.formatTime(taskInfo.getStopTime());
                 }
                 case COLTYPE_THREAD_NAME: {
                     return taskInfo.getThreadName();
@@ -243,7 +250,7 @@ public class TaskListView extends JScrollPane {
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(model);
         Comparator c1 = new Comparator<String>() {
             public int compare(String s1, String s2) {
-                long delta = TimeFormat.parseTime(s1) - TimeFormat.parseTime(s2);
+                long delta = Utility.parseTime(s1) - Utility.parseTime(s2);
                 if (delta == 0) {
                     return 0;
                 } else {

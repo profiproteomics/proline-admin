@@ -6,7 +6,7 @@
 package fr.proline.logviewer.gui;
 
 import fr.proline.logviewer.model.LogTask;
-import fr.proline.logviewer.model.TimeFormat;
+import fr.proline.logviewer.model.Utility;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -51,7 +51,7 @@ public class TaskView extends JPanel {
         m_ctrl = control;
         this.setBorder(BorderFactory.createTitledBorder("Task Detail"));
         initComponents();
-        this.setPreferredSize(new Dimension(800, 800));
+        this.setPreferredSize(new Dimension(800, 700));
     }
 
     void setData(LogTask selectedTask) {
@@ -84,11 +84,11 @@ public class TaskView extends JPanel {
         m_stopLineTextfield.setText(m_task.getStopLine().line);
         m_stopLineTextfield.setCaretPosition(0);
         m_stopLineIndexLabel.setText("L." + m_task.getStopLine().index);
-        m_startTimeTextfield.setText(TimeFormat.formatTime(m_task.getStartTime()));
-        m_endTimeTextfield.setText(TimeFormat.formatTime(m_task.getStopTime()));
+        m_startTimeTextfield.setText(Utility.formatTime(m_task.getStartTime()));
+        m_endTimeTextfield.setText(Utility.formatTime(m_task.getStopTime()));
 
-        m_deltaEndTimeTextfield.setText(TimeFormat.formatDeltaTime(m_task.getDuration()));
-        m_deltaEndTimeInHourTextfield.setText(TimeFormat.formatDurationInHour(m_task.getDuration()));
+        m_deltaEndTimeTextfield.setText(Utility.formatDeltaTime(m_task.getDuration()));
+        m_deltaEndTimeInHourTextfield.setText(Utility.formatDurationInHour(m_task.getDuration()));
         JTree tree = m_task.getParamTree();
         expandTreeAllNodes(tree, 0, tree.getRowCount());
         m_paramPanel.getViewport().add(tree);

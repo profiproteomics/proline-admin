@@ -25,6 +25,9 @@ public class LogTask {
     public enum STATUS {
         RUNNING, FINISHED, WARNING, FINISHED_WARN, FAILED
     }
+    /**
+     * unique id
+     */
     private String m_messageId;
     private String m_projectId;
     private String m_threadName;
@@ -39,6 +42,10 @@ public class LogTask {
     private int m_otherTasksInRun;
     private String m_dataSet;
     private int m_taskOrder;
+    /**
+     * import data set name
+     */
+    private String m_importDataSet;
 
     public int getTaskOrder() {
         return m_taskOrder;
@@ -53,7 +60,15 @@ public class LogTask {
         m_stopLine = new LogLine(-1, "");
         m_taskOrder = -1;
         m_projectId = "";
+        m_importDataSet = "";
+    }
 
+    public void setImportData(String filePath) {
+        this.m_importDataSet = filePath;
+    }
+
+    public String getImportData() {
+        return m_importDataSet;
     }
 
     public void setTaskOrder(int order) {
@@ -86,6 +101,13 @@ public class LogTask {
             m_stopTime = date.getTime();
             m_stopLine = ll;
         }//when date == null, don't add as stop line, because they are broken lines
+    }
+
+    /**
+     * in order to gain memory
+     */
+    public void emptyTrace() {
+        this.m_trace = null;
     }
 
     LogLine removeLastLine() {
@@ -169,10 +191,9 @@ public class LogTask {
         return tree;
     }
 
-    private final int STEP_LIMIT = 9000;//for recursion method
-
     private int createParameterTree(LinkedTreeMap params, DefaultMutableTreeNode parent, int childIndex) {
-        if (childIndex > STEP_LIMIT) {
+        final int PARMETER_STEP_LIMIT = 9000;//for recursion method
+        if (childIndex > PARMETER_STEP_LIMIT) {
             return childIndex;
         }
         if (params == null) {
@@ -227,14 +248,14 @@ public class LogTask {
     }
 
     public String getStartInfo() {
-        String time = TimeFormat.formatTime(m_startTime);
+        String time = Utility.formatTime(m_startTime);
         String projectId = (m_projectId.length() > 0) ? "project_id:" + m_projectId + ", " : "";
         String result = time + "[" + m_taskOrder + "]" + m_callService + " start (" + projectId + m_dataSet + " ID:" + m_messageId + ")";
         return result;
     }
 
     public String getStopInfo() {
-        String time = TimeFormat.formatTime(m_stopTime);
+        String time = Utility.formatTime(m_stopTime);
         String projectId = (m_projectId.length() > 1) ? "project_id:" + m_projectId + " " : "";
         String result = time + "[" + m_taskOrder + "]" + m_callService + " end (ID:" + m_messageId + ")";
         return result;

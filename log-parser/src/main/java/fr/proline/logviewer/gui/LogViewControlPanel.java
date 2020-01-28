@@ -6,6 +6,8 @@
 package fr.proline.logviewer.gui;
 
 import fr.proline.logviewer.model.LogTask;
+import fr.proline.logviewer.model.Utility;
+import fr.proline.logviewer.model.TaskInJsonCtrl;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -22,22 +24,28 @@ public class LogViewControlPanel extends JPanel {
     private LogConsolePane m_console;
     private TaskListView m_taskQueueView;
     private TaskView m_taskView;
+    private JSplitPane m_bottomPanel;
+    private LogGuiApp m_ctrl;
+    private LogTask m_selectedTask;
 
-    public LogViewControlPanel() {
+    public LogViewControlPanel(LogGuiApp ctrl) {
         super(new BorderLayout());
+        m_ctrl = ctrl;
         this.setBackground(Color.white);
-        m_console = new LogConsolePane();
+        m_console = new LogConsolePane(this);
         m_taskQueueView = new TaskListView(this);
         m_taskView = new TaskView(this);
 
         JSplitPane mainPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        JSplitPane bottomPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        bottomPanel.setLeftComponent(m_taskView);
-        bottomPanel.setRightComponent(m_console);
+
+        m_bottomPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        m_bottomPanel.setLeftComponent(m_taskView);
+        m_bottomPanel.setRightComponent(m_console);
         mainPanel.setTopComponent(m_taskQueueView);
-        mainPanel.setBottomComponent(bottomPanel);
+        mainPanel.setBottomComponent(m_bottomPanel);
         this.add(mainPanel, BorderLayout.CENTER);
         this.setSize(1200, 800);
+
     }
 
     public LogConsolePane getConsole() {
@@ -45,9 +53,30 @@ public class LogViewControlPanel extends JPanel {
     }
 
     public void valueChanged(LogTask selectedTask) {
-        m_taskView.setData(selectedTask);
-        m_console.setData(selectedTask.getTrace());
+        long begin = System.currentTimeMillis();
+        String order = "";
+        m_selectedTask = selectedTask;
+        if (selectedTask != null) {
+            order = "" + selectedTask.getTaskOrder();
+        }
+        System.out.println("task " + order + ": " + Utility.getMemory());
 
+        m_taskView.setData(selectedTask);
+        //System.out.println("task " + order + " view  show time " + (System.currentTimeMillis() - begin));
+        begin = System.currentTimeMillis();
+        if (selectedTask == null) {
+            m_console.setData(null);
+
+        } else {
+            ArrayList<LogTask.LogLine> trace = selectedTask.getTrace();
+            if (trace == null) {
+                LogTask task = TaskInJsonCtrl.getInstance().getCurrentTask(selectedTask.getTaskOrder());
+
+                m_console.setData(task.getTrace());
+            } else {
+                m_console.setData(trace);
+            }
+        }
     }
 
     public synchronized void setData(ArrayList<LogTask> tasks, String fileName) {
@@ -63,6 +92,19 @@ public class LogViewControlPanel extends JPanel {
         m_taskQueueView.setData(null, null);
         m_taskView.setData(null);
         m_console.setData(null);
+    }
+
+    public void setLoading(boolean b) {
+//        m_infoPane.setLoading(b);
+//        repaint();
+    }
+
+    boolean isBigFile() {
+        return m_ctrl.isBigFile();
+    }
+
+    public String getAnalysedTaskName() {
+        return TaskInJsonCtrl.getInstance().getCurrentFile().getPath();
     }
 
 }

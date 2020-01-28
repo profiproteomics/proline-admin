@@ -15,7 +15,7 @@
  * along with this program; If not, see <http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html>.
  * Create date : 4 nov. 2019
  */
-package fr.proline.logviewer.txt;
+package fr.proline.logviewer.model;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -27,16 +27,11 @@ import org.openide.util.Exceptions;
  */
 public class TasksFlowWriter {
 
-    String m_fileName;
     FileWriter m_outputFile;
     boolean m_stdout;
+    String FILE_NAME_HEAD = "TasksFlow";
 
-    public TasksFlowWriter(String fileName, boolean stdout) {
-        if (fileName == null || fileName.isEmpty()) {
-            m_fileName = "TasksFlow";
-        } else {
-            this.m_fileName = fileName;
-        }
+    public TasksFlowWriter(boolean stdout) {
         m_stdout = stdout;
     }
 
@@ -52,7 +47,7 @@ public class TasksFlowWriter {
 
     public void open(String file2Anaylse) {
         try {
-            m_outputFile = new FileWriter(m_fileName + "_" + file2Anaylse);
+            m_outputFile = new FileWriter(FILE_NAME_HEAD + "_" + file2Anaylse);
             String head = "Analyse " + file2Anaylse;
             m_outputFile.write(head);
             if (m_stdout) {
@@ -61,10 +56,6 @@ public class TasksFlowWriter {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-    public String getFileName() {
-        return m_fileName;
     }
 
     public void addLine(String s) {

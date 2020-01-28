@@ -17,8 +17,9 @@
  */
 package fr.proline.logviewer.gui;
 
-import fr.proline.logviewer.txt.TasksFlowWriter;
-import fr.proline.logviewer.model.LogLineReader.DATE_FORMAT;
+import fr.proline.logviewer.model.Config;
+import fr.proline.logviewer.model.TasksFlowWriter;
+import fr.proline.logviewer.model.Utility.DATE_FORMAT;
 import fr.proline.logviewer.model.LogLineReader;
 import java.awt.BorderLayout;
 import java.awt.Image;
@@ -56,22 +57,23 @@ public class LogGuiApp extends JFrame {
     private TasksFlowWriter m_tasksFlowWriter;
     private JFrame m_taskFlowFrame;
     private JTextPane m_taskFlowTextPane;
+    private boolean m_isBigFile = false;
 
     public LogGuiApp() {
         super("Log Analyser");
         m_fileChooser = new JFileChooser();
-        m_logPanel = new LogViewControlPanel();
+        m_logPanel = new LogViewControlPanel(this);
 //        m_path = ("D:\\programs\\Proline-Zero-2.1.0-SNAPSHOT\\Proline-Cortex-2.1.0-SNAPSHOT\\logs\\");
-//        m_path = "D:\\prolineBak\\cortexLog\\";
-//        String fileName = "proline_cortex_debug.txt";
+        m_path = "D:\\prolineBak\\cortexLog\\";
+        String fileName = "proline_cortex_debug.txt";
 //        //fileName = "proline_cortex_debug_.2019-09-15.0.txt";
-//        File defaultFile = new File(m_path, fileName);
-//        m_fileChooser.setSelectedFile(defaultFile);
+        File defaultFile = new File(m_path, fileName);
+        m_fileChooser.setSelectedFile(defaultFile);
         m_dateFormat = DATE_FORMAT.SHORT;
-        m_tasksFlowWriter = new TasksFlowWriter("TasksFlow", false);
+        m_tasksFlowWriter = new TasksFlowWriter(false);
 
         initComponents();
-        this.setLocation(100, 10);
+        this.setLocation(230, 2);
         pack();
         this.setVisible(true);
     }
@@ -199,19 +201,28 @@ public class LogGuiApp extends JFrame {
                 m_logPanel.clear();
                 m_file = m_fileChooser.getSelectedFile();
                 m_fileChooser.setSelectedFile(m_file);
+                m_isBigFile = false;
                 //This is where a real application would open the file.
                 m_logger.debug("");//empty line
                 m_logger.info("File to analyse: " + m_file.getName() + ".");
+                long fileLength = m_file.length();
+                long bigFileSize = Config.getBigFileSize();
+
+                if (fileLength > bigFileSize) {
+                    m_isBigFile = true;
+                }
+                m_logger.debug("fileLength {} compare to {}, isBigFile {} ", fileLength, bigFileSize, m_isBigFile);
                 String fileName = m_file.getName();
                 m_tasksFlowWriter.open(fileName);
-                logReader = new LogLineReader(m_tasksFlowWriter, m_dateFormat);
+                logReader = new LogLineReader(m_file.getName(), m_tasksFlowWriter, m_dateFormat, m_isBigFile);
+                m_logPanel.setLoading(true);
                 LogReaderWorker readWorker = new LogReaderWorker(m_taskFlowTextPane, m_file, m_dateFormat, logReader) {
                     @Override
                     protected void done() {
 
                         m_logPanel.setData(logReader.getTasks(), fileName);
-
-                        m_tasksFlowWriter.close();
+                        m_logPanel.setLoading(false);
+                        logReader.close();
                     }
                 };
 
@@ -242,4 +253,7 @@ public class LogGuiApp extends JFrame {
         });
     }
 
+    boolean isBigFile() {
+        return m_isBigFile;
+    }
 }

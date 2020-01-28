@@ -18,9 +18,9 @@
 package fr.proline.logviewer.gui;
 
 import fr.proline.logviewer.model.LogLineReader;
-import fr.proline.logviewer.model.LogLineReader.DATE_FORMAT;
+import fr.proline.logviewer.model.Utility.DATE_FORMAT;
 import fr.proline.logviewer.model.ProlineException;
-import fr.proline.logviewer.model.TimeFormat;
+import fr.proline.logviewer.model.Utility;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,7 +43,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
 
     protected static final Logger m_logger = LoggerFactory.getLogger(LogReaderWorker.class);
     File m_file;
-    private LogLineReader.DATE_FORMAT m_dateFormat;
+    private DATE_FORMAT m_dateFormat;
     Scanner m_fileScanner;
     JTextPane m_taskFlowTextPane;
     LogLineReader m_reader;
@@ -77,16 +77,17 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
             while (m_fileScanner.hasNextLine()) {
                 String line = m_fileScanner.nextLine();
                 index++;
-                if (index == 19163) {
-                    String s = "debug begin";
-                }
+//                if (index == 19163) {
+//                    String s = "debug begin";
+//                }
                 //m_logger.debug("{}, task register {}", index);
                 m_reader.registerTask(line, index);
                 if (m_reader.isHasNewTrace()) {
                     publish(m_reader.getNewTrace());
                 }
             }
-            m_logger.info("Analyse done. {} line in total, {} lines no treated. Total read time is {}", index, m_reader.getNoTreatLineCount(), TimeFormat.formatDeltaTime(System.currentTimeMillis() - start));
+            m_reader.memoryClean();
+            m_logger.info("Analyse done. {} line in total, {} lines no treated. Total read time is {}", index, m_reader.getNoTreatLineCount(), Utility.formatDeltaTime(System.currentTimeMillis() - start));
             m_reader.showNoTreatedLines();
         } catch (ProlineException ex) {
             if (ex.getCause() instanceof ParseException) {

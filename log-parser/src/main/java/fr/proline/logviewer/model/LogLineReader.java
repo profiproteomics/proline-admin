@@ -8,7 +8,7 @@ package fr.proline.logviewer.model;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import fr.proline.logviewer.model.LogTask.LogLine;
-import fr.proline.logviewer.txt.TasksFlowWriter;
+import fr.proline.logviewer.model.Utility.DATE_FORMAT;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,9 +33,19 @@ public class LogLineReader {
     protected static final Logger m_logger = LoggerFactory.getLogger(LogLineReader.class);
     private HashMap<String, LogTask> m_msgId2TaskMap;
     private HashMap<String, LogTask> m_thread2TaskMap;
+    /**
+     * List of thread name (ex pool-2-thread-3)
+     */
     private ArrayList<String> m_thread2Ignore;
+    /**
+     * All tasks, List to reused as data
+     */
     private ArrayList<LogTask> m_taskInOrder;
+    /**
+     * only no finished task
+     */
     private ArrayList<LogTask> m_taskInRun;
+
     private Matcher m_lastBeginMatch;
     private Stack<String> m_noTreatLine;
     private Stack<Long> m_noTreatLineIndex;
@@ -52,8 +62,11 @@ public class LogLineReader {
     LogTasksFlow m_flow;
     private boolean m_hasNewTrace;
     private TasksFlowWriter m_flowWriter;
+    private TaskInJsonCtrl m_taskInJsonCtrl;
+    private boolean m_isBigFile;
 
-    public LogLineReader(TasksFlowWriter flowWriter, DATE_FORMAT dateFormat) {
+    public LogLineReader(String fileName, TasksFlowWriter flowWriter, DATE_FORMAT dateFormat, boolean isBigFile) {
+        m_isBigFile = isBigFile;
         m_flow = new LogTasksFlow();
         m_hasNewTrace = false;
         m_flowWriter = flowWriter;
@@ -66,6 +79,11 @@ public class LogLineReader {
         m_taskInRun = new ArrayList<>();
         m_noTreatLine = new Stack();
         m_noTreatLineIndex = new Stack<>();
+        if (m_isBigFile) {
+            m_taskInJsonCtrl = TaskInJsonCtrl.getInstance().getInstance();
+            m_taskInJsonCtrl.init(fileName);
+        }
+
     }
 
     public String getNewTrace() {
@@ -253,7 +271,7 @@ public class LogLineReader {
     private void addTask(LogTask task) {
         task.setTaskOrder(m_taskInOrder.size());
         m_taskInOrder.add(task);
-        //a new task will to print after calling service, but not at the first JMS request
+        //a new task will be printed after calling service, but not at the first JMS request
     }
 
     private void newTask(LogTask task) {
@@ -262,6 +280,33 @@ public class LogLineReader {
             m_flowWriter.addLine(newLine);
         }
         m_hasNewTrace = true;
+    }
+
+    public void close() {
+        m_flow = null;
+        m_hasNewTrace = false;
+        m_flowWriter.close();
+        long start = 0;
+        m_dateFormat = null;
+        m_msgId2TaskMap = null;
+        m_thread2TaskMap = null;
+        m_thread2Ignore = null;
+        m_taskInOrder = null;
+        m_taskInRun = null;
+        m_noTreatLine = null;
+        m_noTreatLineIndex = null;
+    }
+
+    public void memoryClean() {
+        if (m_isBigFile) {
+            for (LogTask task : m_taskInRun) {
+                m_taskInJsonCtrl.WriteTask(task);
+                task.emptyTrace();
+            }
+        }
+        m_taskInRun = null;
+        m_msgId2TaskMap = null;
+        m_thread2TaskMap = null;
     }
 
     private void removeTask(LogTask task) {
@@ -273,7 +318,10 @@ public class LogLineReader {
             m_flowWriter.addLine(newLine);
         }
         this.m_hasNewTrace = true;
-
+        if (m_isBigFile) {
+            m_taskInJsonCtrl.WriteTask(task);
+            task.emptyTrace();
+        }
     }
 
     /**
@@ -344,6 +392,7 @@ public class LogLineReader {
         final String regex_projectId = "\"project_id\":([\\d]+)[,]?";
         final String regex_dataSet = "(\"result_summary_id\"|\"result_summary_ids\"|\"result_set_ids\"|\"result_set_id\"|\"dataset_id\")(:[\\[]?[\\d,]+[\\]]?)[,]?";
         //regex to reuse //("result_summary_id"|"result_summary_ids"|"result_set_ids"|"result_set_id"|"dataset_id")(:)([\[]?[\d,]+[\]]?)[,]?
+        final String regex_importDataFile = "\"(result_files)\":\\[\\{\"(path)\":\"([\\w|\\\\|\\/|.]+)\",";
         Pattern pattern = Pattern.compile(regex_projectId);
         Matcher matcher = pattern.matcher(line);
         String result;
@@ -356,6 +405,13 @@ public class LogLineReader {
                 result = matcher.group(1) + matcher.group(2);
                 task.setDataSet(result);
             }
+            pattern = Pattern.compile(regex_importDataFile);
+            matcher = pattern.matcher(line);
+            if (matcher.find()) {
+                result = matcher.group(1) + ":" + matcher.group(3);
+                task.setImportData(result);
+            }
+
         }
 
     }
@@ -444,10 +500,6 @@ public class LogLineReader {
         m_dateFormat = dateFormat;
     }
 
-    public enum DATE_FORMAT {
-        NORMAL, SHORT
-    };
-
     private Date getDate(Matcher matcher) throws ProlineException {
         final String LOG_DATE_FORMAT = "dd MMM yyyy HH:mm:ss.SSS";
 
@@ -531,8 +583,9 @@ public class LogLineReader {
                 m_taskList.remove(t);
             }
             m_taskList.add(task);
-            String newLine = (startMark + "\\" + m_lineEnd)
+            String newLine = (startMark + "\\" + "    " + task.getImportData() + m_lineEnd)
                     + (startMark + "|+" + task.getStartInfo() + m_lineEnd);
+
             m_newTrace.add(newLine);
             return newLine;
         }

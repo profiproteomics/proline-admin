@@ -5,6 +5,8 @@
  */
 package fr.proline.logviewer.model;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryUsage;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -14,7 +16,7 @@ import java.util.Date;
  *
  * @author Karine XUE at CEA
  */
-public class TimeFormat {
+public class Utility {
 
     static SimpleDateFormat sf = new SimpleDateFormat("HH:mm:ss.SSS");
     static SimpleDateFormat m_timestampFormat = new SimpleDateFormat("HH:mm:ss.SSS - dd MMM yyyy ");
@@ -26,10 +28,12 @@ public class TimeFormat {
         }
         return m_timestampFormat.format(new Date(timestamp));
     }
+
     /**
      * reverse of formatTime
+     *
      * @param time
-     * @return 
+     * @return
      */
     public static long parseTime(String time) {
         if (time.equals("N/A")) {
@@ -63,6 +67,18 @@ public class TimeFormat {
                 (duration % minute) / second,
                 (duration % second));
         return time;
+    }
+
+    public enum DATE_FORMAT {
+        NORMAL, SHORT
+    };
+
+    public static String getMemory() {
+        long MEGABYTE = (1024 * 1024);
+        MemoryUsage heapUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+        long maxMemory = heapUsage.getMax() / MEGABYTE;
+        long usedMemory = heapUsage.getUsed() / MEGABYTE;
+        return " : Memory Use :" + usedMemory + "M/" + maxMemory + "M";
     }
 
 }

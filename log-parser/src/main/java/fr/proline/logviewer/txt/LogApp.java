@@ -17,10 +17,11 @@
  */
 package fr.proline.logviewer.txt;
 
+import fr.proline.logviewer.model.TasksFlowWriter;
 import fr.proline.logviewer.model.LogLineReader;
-import fr.proline.logviewer.model.LogLineReader.DATE_FORMAT;
+import fr.proline.logviewer.model.Utility.DATE_FORMAT;
 import fr.proline.logviewer.model.ProlineException;
-import fr.proline.logviewer.model.TimeFormat;
+import fr.proline.logviewer.model.Utility;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -38,15 +39,15 @@ public class LogApp {
 
     LogLineReader m_reader;
 
-    public LogApp(String fileName, LogLineReader.DATE_FORMAT dateFormat, String logTaskBeginEndFileName, String logTaskListFileName) throws IOException, ProlineException {
-        TasksFlowWriter tasksFlowWriter = new TasksFlowWriter(logTaskBeginEndFileName, true);
+    public LogApp(String filePath, DATE_FORMAT dateFormat) throws IOException, ProlineException {
+        TasksFlowWriter tasksFlowWriter = new TasksFlowWriter(true);
 
-        LogLineReader reader = new LogLineReader(tasksFlowWriter, dateFormat);
-        m_reader = reader;
         long start = System.currentTimeMillis();
         InputStream inputStream = null;
 
-        File file = new File(fileName);
+        File file = new File(filePath);
+        LogLineReader reader = new LogLineReader(file.getName(), tasksFlowWriter, dateFormat, true);//anyway, isBigFile is true in order to write task in file.
+        m_reader = reader;
         try {
             String abPath = file.getAbsolutePath();
             tasksFlowWriter.open(file.getName());
@@ -70,18 +71,19 @@ public class LogApp {
                 System.err.println(" task register stop at line " + index);
                 throw ex;
             }
-            String info = String.format("Analyse done. %d line in total, %d lines no treated. Total read time is %s", index, m_reader.getNoTreatLineCount(), TimeFormat.formatDeltaTime(System.currentTimeMillis() - start));
+            m_reader.memoryClean();
+            String info = String.format("Analyse done. %d line in total, %d lines no treated. Total read time is %s", index, m_reader.getNoTreatLineCount(), Utility.formatDeltaTime(System.currentTimeMillis() - start));
             System.out.println(info);
-             m_reader.showNoTreatedLines();
+            m_reader.showNoTreatedLines();
         } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
-           
+
             inputStream.close();
         }
         tasksFlowWriter.close();
-        TasksJsonWriter taskListWriter = new TasksJsonWriter(logTaskListFileName);
-        taskListWriter.setData(reader.getTasks(), file.getName());
+        //TasksJsonWriter taskListWriter = new TasksJsonWriter(logTaskListFileName);
+        //taskListWriter.setData(reader.getTasks(), file.getName());
 
     }
 
@@ -96,13 +98,12 @@ public class LogApp {
         int count = args.length;
         if (count == 0) {
             System.out.println("Please give the log file to Analyse");
-            System.out.println("LogApp FileNameToAnalyse [dateformate(normal/short) [TaskFlowFileName] [TaskListJsonFileName]]");
+            System.out.println("LogApp FileNameToAnalyse [dateformate(normal/short)]");
             return;
         }
 
         String file2Anaylse = "";
         String logTaskBeginEndFileName = "";
-        String logTaskListFileName = "";
         DATE_FORMAT dFormat = DATE_FORMAT.SHORT;
         String dateFormat = "";
         for (int i = 0; i < count; i++) {
@@ -119,9 +120,7 @@ public class LogApp {
                 case 2:
                     logTaskBeginEndFileName = args[2];
                     break;
-                case 3:
-                    logTaskListFileName = args[3];
-                    break;
+
                 default:
                     break;
             }
@@ -129,9 +128,8 @@ public class LogApp {
         try {
             System.out.println(".File to Analyse: " + file2Anaylse);
             System.out.println(".. Task Start Stop registered in File : " + logTaskBeginEndFileName);
-            System.out.println("... Task List json object registered in File : " + logTaskListFileName);
 
-            LogApp mainApp = new LogApp(file2Anaylse, dFormat, logTaskBeginEndFileName, logTaskListFileName);
+            LogApp mainApp = new LogApp(file2Anaylse, dFormat);
 
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
