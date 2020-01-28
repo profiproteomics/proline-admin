@@ -31,13 +31,13 @@ import javax.swing.JTextPane;
  *
  * @author Karine XUE at CEA
  */
-public class LogConsolePane extends JScrollPane {
+public class TaskConsolePane extends JScrollPane {
 
     JTextPane m_logTextPane;
     StringBuffer m_stringBuffer;
     LogViewControlPanel m_ctrl;
 
-    public LogConsolePane(LogViewControlPanel ctrl) {
+    public TaskConsolePane(LogViewControlPanel ctrl) {
         m_ctrl = ctrl;
         this.setBorder(BorderFactory.createTitledBorder("Console"));
         this.setPreferredSize(new Dimension(600, 700));

@@ -21,7 +21,7 @@ import javax.swing.JSplitPane;
  */
 public class LogViewControlPanel extends JPanel {
 
-    private LogConsolePane m_console;
+    private TaskConsolePane m_console;
     private TaskListView m_taskQueueView;
     private TaskView m_taskView;
     private JSplitPane m_bottomPanel;
@@ -32,7 +32,7 @@ public class LogViewControlPanel extends JPanel {
         super(new BorderLayout());
         m_ctrl = ctrl;
         this.setBackground(Color.white);
-        m_console = new LogConsolePane(this);
+        m_console = new TaskConsolePane(this);
         m_taskQueueView = new TaskListView(this);
         m_taskView = new TaskView(this);
 
@@ -48,7 +48,7 @@ public class LogViewControlPanel extends JPanel {
 
     }
 
-    public LogConsolePane getConsole() {
+    public TaskConsolePane getConsole() {
         return m_console;
     }
 

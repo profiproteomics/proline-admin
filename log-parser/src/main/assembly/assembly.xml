@@ -43,6 +43,7 @@ Create date : 23 oct. 2019
         <include>*.exe</include>
         <include>*.xml</include>
         <include>*.png</include>
+        <include>*.config</include>
       </includes>
       <outputDirectory>\</outputDirectory>
     </fileSet>
