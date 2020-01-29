@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public class LogReaderWorker extends SwingWorker<Long, String> {
 
+    //SwingWorker<Long, String>: Long = number of line, Sting= a task begin/end info
     protected static final Logger m_logger = LoggerFactory.getLogger(LogReaderWorker.class);
     File m_file;
     private DATE_FORMAT m_dateFormat;
@@ -48,12 +49,14 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
     JTextPane m_taskFlowTextPane;
     LogLineReader m_reader;
     StringBuilder m_stringBuilder;
+    LogViewControlPanel m_logPanel;
 
-    LogReaderWorker(JTextPane taskFlowTextPane, File file, DATE_FORMAT dateFormat, LogLineReader reader) {
+    LogReaderWorker(LogViewControlPanel logPanel, JTextPane taskFlowTextPane, File file, DATE_FORMAT dateFormat, LogLineReader reader) {
         super();
         FileInputStream inputStream = null;
         try {
             m_taskFlowTextPane = taskFlowTextPane;
+            m_logPanel = logPanel;
             m_file = file;
             m_dateFormat = dateFormat;
             String abPath = file.getAbsolutePath();
@@ -113,7 +116,11 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
 
     @Override
     protected void process(List<String> trace) {
-        addTrace(trace);
+        //treat publish data
+        for (String line : trace) {
+            m_stringBuilder.append(line);
+        }
+        m_taskFlowTextPane.setText(m_stringBuilder.toString());
     }
 
     public void addTraceBegin(String fileName) {
@@ -121,10 +128,10 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         m_taskFlowTextPane.setText(m_stringBuilder.toString());
     }
 
-    void addTrace(List<String> trace) {
-        for (String line : trace) {
-            m_stringBuilder.append(line);
-        }
-        m_taskFlowTextPane.setText(m_stringBuilder.toString());
+    @Override
+    protected void done() {
+        m_logPanel.requestFocus();
+        m_logPanel.setData(m_reader.getTasks(), m_file.getName());
+        m_reader.close();
     }
 }

@@ -171,8 +171,7 @@ public class LogGuiApp extends JFrame {
         showTaskFlowItem.setText("Show Flow of the tasks");
         showTaskFlowItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showTaskFlowActionPerformed(evt);
-
+                m_taskFlowFrame.setVisible(true);
             }
 
         });
@@ -187,10 +186,6 @@ public class LogGuiApp extends JFrame {
         getContentPane().add(m_logPanel, BorderLayout.CENTER);
 
     }//
-
-    private void showTaskFlowActionPerformed(ActionEvent evt) {
-        m_taskFlowFrame.setVisible(true);
-    }
 
     private void analyseFileActionPerformed(ActionEvent evt) {
         LogLineReader logReader;
@@ -211,21 +206,12 @@ public class LogGuiApp extends JFrame {
                 if (fileLength > bigFileSize) {
                     m_isBigFile = true;
                 }
-                m_logger.debug("fileLength {} compare to {}, isBigFile {} ", fileLength, bigFileSize, m_isBigFile);
                 String fileName = m_file.getName();
                 m_tasksFlowWriter.open(fileName);
                 logReader = new LogLineReader(m_file.getName(), m_tasksFlowWriter, m_dateFormat, m_isBigFile);
-                m_logPanel.setLoading(true);
-                LogReaderWorker readWorker = new LogReaderWorker(m_taskFlowTextPane, m_file, m_dateFormat, logReader) {
-                    @Override
-                    protected void done() {
-
-                        m_logPanel.setData(logReader.getTasks(), fileName);
-                        m_logPanel.setLoading(false);
-                        logReader.close();
-                    }
-                };
-
+                LogReaderWorker readWorker = new LogReaderWorker(m_logPanel, m_taskFlowTextPane, m_file, m_dateFormat, logReader);
+                m_taskFlowFrame.setVisible(true);
+                m_taskFlowFrame.requestFocus();
                 readWorker.execute();
                 repaint();
 

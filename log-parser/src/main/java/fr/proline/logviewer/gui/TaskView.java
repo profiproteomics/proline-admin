@@ -20,7 +20,7 @@ import javax.swing.JTree;
 
 /**
  *
- * @author Karine XUE at CEA //copy from TaskDescriptionPanel @todo? extends
+ * @author Karine XUE at CEA 
  */
 public class TaskView extends JPanel {
 
@@ -51,7 +51,7 @@ public class TaskView extends JPanel {
         m_ctrl = control;
         this.setBorder(BorderFactory.createTitledBorder("Task Detail"));
         initComponents();
-        this.setPreferredSize(new Dimension(800, 700));
+        this.setPreferredSize(new Dimension(700, 700));
     }
 
     void setData(LogTask selectedTask) {

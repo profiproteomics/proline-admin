@@ -1,7 +1,6 @@
 /*
  * @cea 
  * @http://www.profiproteomics.fr
- * created date: 7 oct. 2019
  */
 package fr.proline.logviewer.gui;
 
@@ -24,8 +23,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -33,7 +30,6 @@ import org.slf4j.LoggerFactory;
  */
 public class TaskListView extends JScrollPane {
 
-    protected static final Logger _logger = LoggerFactory.getLogger(TaskListView.class);
     private LogViewControlPanel m_ctrl;
     ArrayList<LogTask> m_taskList;//data model used by TableModel
     JTable m_taskTable;
@@ -42,7 +38,7 @@ public class TaskListView extends JScrollPane {
         super();
         m_ctrl = control;
         this.setBorder(BorderFactory.createTitledBorder("List of Task"));
-        this.setPreferredSize(new Dimension(800, 250));
+        this.setPreferredSize(new Dimension(1400, 250));
         TaskTableModel model = new TaskTableModel();
 
         m_taskTable = new TaskTable(model);
@@ -52,7 +48,6 @@ public class TaskListView extends JScrollPane {
     }
 
     void setData(ArrayList<LogTask> tasks, String fileName) {
-        m_taskTable.setModel(new TaskTableModel());
         ((TitledBorder) this.getBorder()).setTitle("List of Tasks" + "     " + fileName);
         if (tasks == null) {
             m_taskList = new ArrayList<>();
@@ -92,16 +87,13 @@ public class TaskListView extends JScrollPane {
                     if (e.getValueIsAdjusting()) {
                         return;
                     }
-                    m_ctrl.setLoading(true);
                     ListSelectionModel lsm = (ListSelectionModel) e.getSource();
                     if (!lsm.isSelectionEmpty()) {
                         int sortedIndex = lsm.getMinSelectionIndex();
                         int selectedIndex = m_taskTable.convertRowIndexToModel(sortedIndex);
                         LogTask task = m_taskList.get(selectedIndex);
                         String taskOrder = (task == null) ? "" : "" + task.getTaskOrder();
-                        _logger.debug("get task {} {} ms", taskOrder, System.currentTimeMillis() - begin);
                         m_ctrl.valueChanged(task);
-                        _logger.debug("show task {} {} ms", taskOrder, System.currentTimeMillis() - begin);
                     }
                 }
             });
