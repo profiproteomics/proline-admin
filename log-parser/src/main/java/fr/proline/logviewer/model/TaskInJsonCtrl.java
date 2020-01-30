@@ -29,18 +29,11 @@ public class TaskInJsonCtrl {
     LogTask m_currentTask; //in order to reuse memory space
     File m_currentTaskFile;
 
-    public final static File WORKING_DIRECTORY = new File("").getAbsoluteFile();
-    public final static File WORKING_DATA_DIRECTORY = new File(WORKING_DIRECTORY + "/tmp");
     public File logFileDirectory;
 
     public static TaskInJsonCtrl getInstance() {
         if (m_instance == null) {
             m_instance = new TaskInJsonCtrl();
-        }
-        if (!WORKING_DATA_DIRECTORY.isDirectory()) {
-            boolean b;
-            b = WORKING_DATA_DIRECTORY.mkdir();
-            m_logger.info("create folder {} successful ={}", WORKING_DATA_DIRECTORY.getAbsolutePath(), b);
         }
         return m_instance;
     }
@@ -54,7 +47,7 @@ public class TaskInJsonCtrl {
      * @param CortexLogFileName : String can't be null
      */
     public void init(String CortexLogFileName) {
-        logFileDirectory = new File(WORKING_DATA_DIRECTORY + "/" + CortexLogFileName);
+        logFileDirectory = new File(Utility.WORKING_DATA_DIRECTORY + "/" + CortexLogFileName);
         if (!logFileDirectory.isDirectory()) {
             boolean b;
             b = logFileDirectory.mkdir();

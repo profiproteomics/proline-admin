@@ -53,7 +53,7 @@ public class LogViewControlPanel extends JPanel {
         if (selectedTask != null) {
             order = "" + selectedTask.getTaskOrder();
         }
-        System.out.println("task " + order + ": " + Utility.getMemory());
+        //System.out.println("task " + order + ": " + Utility.getMemory());
 
         m_taskView.setData(selectedTask);
         //System.out.println("task " + order + " view  show time " + (System.currentTimeMillis() - begin));

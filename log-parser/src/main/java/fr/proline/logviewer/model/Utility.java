@@ -5,6 +5,8 @@
  */
 package fr.proline.logviewer.model;
 
+import static fr.proline.logviewer.model.TaskInJsonCtrl.m_logger;
+import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryUsage;
 import java.text.DecimalFormat;
@@ -21,6 +23,16 @@ public class Utility {
     static SimpleDateFormat sf = new SimpleDateFormat("HH:mm:ss.SSS");
     static SimpleDateFormat m_timestampFormat = new SimpleDateFormat("HH:mm:ss.SSS - dd MMM yyyy ");
     static final DecimalFormat m_decimalFormat = new DecimalFormat("####0.000");
+    public final static File WORKING_DIRECTORY = new File("").getAbsoluteFile();
+    public final static File WORKING_DATA_DIRECTORY = new File(WORKING_DIRECTORY + "/data");
+
+    public static void init() {
+        if (!WORKING_DATA_DIRECTORY.isDirectory()) {
+            boolean b;
+            b = WORKING_DATA_DIRECTORY.mkdir();
+            m_logger.info("create folder {} successful ={}", WORKING_DATA_DIRECTORY.getAbsolutePath(), b);
+        }
+    }
 
     public static String formatTime(long timestamp) {
         if (timestamp == -1 || timestamp == 0) {

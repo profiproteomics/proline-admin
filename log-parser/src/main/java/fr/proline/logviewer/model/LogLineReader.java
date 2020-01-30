@@ -69,12 +69,12 @@ public class LogLineReader {
     private boolean m_isBigFile;
 
     public LogLineReader(String fileName, DATE_FORMAT dateFormat, boolean isBigFile, boolean stdout) {
+        Utility.init();//create data directory if necessary
         m_isBigFile = isBigFile;
         m_flow = new LogTasksFlow();
         m_hasNewTrace = false;
         m_flowWriter = new TasksFlowWriter(stdout);
         m_flowWriter.open(fileName);
-        long start = System.currentTimeMillis();
         m_dateFormat = dateFormat;
         m_msgId2TaskMap = new HashMap();
         m_thread2TaskMap = new HashMap<>();
@@ -286,6 +286,9 @@ public class LogLineReader {
         m_hasNewTrace = true;
     }
 
+    /**
+     * close & clean memory
+     */
     public void close() {
         m_flow.close();
         m_flow = null;
@@ -644,7 +647,7 @@ public class LogLineReader {
 
         public void open(String file2Anaylse) {
             try {
-                m_outputFile = new FileWriter(FILE_NAME_HEAD + "_" + file2Anaylse);
+                m_outputFile = new FileWriter(Utility.WORKING_DATA_DIRECTORY + "/" + FILE_NAME_HEAD + "_" + file2Anaylse);
                 String head = "Analyse " + file2Anaylse;
                 m_outputFile.write(head);
                 if (m_stdout) {
