@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.proline.logviewer.model;
+package fr.proline.logviewer.gui;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +13,8 @@ import java.util.Properties;
 /**
  *
  * @author Karine XUE at CEA
+ * 
+ * For Gui user, we need to know at which size, the Cortex Log File is a big file.
  */
 public class Config {
 

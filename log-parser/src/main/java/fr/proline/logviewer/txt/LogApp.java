@@ -17,7 +17,6 @@
  */
 package fr.proline.logviewer.txt;
 
-import fr.proline.logviewer.model.TasksFlowWriter;
 import fr.proline.logviewer.model.LogLineReader;
 import fr.proline.logviewer.model.Utility.DATE_FORMAT;
 import fr.proline.logviewer.model.ProlineException;
@@ -40,17 +39,15 @@ public class LogApp {
     LogLineReader m_reader;
 
     public LogApp(String filePath, DATE_FORMAT dateFormat) throws IOException, ProlineException {
-        TasksFlowWriter tasksFlowWriter = new TasksFlowWriter(true);
 
         long start = System.currentTimeMillis();
         InputStream inputStream = null;
 
         File file = new File(filePath);
-        LogLineReader reader = new LogLineReader(file.getName(), tasksFlowWriter, dateFormat, true);//anyway, isBigFile is true in order to write task in file.
+        LogLineReader reader = new LogLineReader(file.getName(), dateFormat, true, true);//anyway, isBigFile is true in order to write task in file.
         m_reader = reader;
         try {
             String abPath = file.getAbsolutePath();
-            tasksFlowWriter.open(file.getName());
             System.out.println("absolute path is " + abPath);
             inputStream = new FileInputStream(abPath);
             Scanner fileScanner = new Scanner(inputStream, StandardCharsets.UTF_8.name());
@@ -81,10 +78,7 @@ public class LogApp {
 
             inputStream.close();
         }
-        tasksFlowWriter.close();
-        //TasksJsonWriter taskListWriter = new TasksJsonWriter(logTaskListFileName);
-        //taskListWriter.setData(reader.getTasks(), file.getName());
-
+        m_reader.close();
     }
 
     /**

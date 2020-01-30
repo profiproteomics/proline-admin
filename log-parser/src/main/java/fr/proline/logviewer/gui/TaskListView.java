@@ -48,6 +48,7 @@ public class TaskListView extends JScrollPane {
     }
 
     void setData(ArrayList<LogTask> tasks, String fileName) {
+        m_taskTable.setModel(new TaskTableModel());//useful for init table in task order
         ((TitledBorder) this.getBorder()).setTitle("List of Tasks" + "     " + fileName);
         if (tasks == null) {
             m_taskList = new ArrayList<>();

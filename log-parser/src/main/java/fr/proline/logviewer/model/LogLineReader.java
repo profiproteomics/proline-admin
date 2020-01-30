@@ -9,6 +9,8 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import fr.proline.logviewer.model.LogTask.LogLine;
 import fr.proline.logviewer.model.Utility.DATE_FORMAT;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -19,6 +21,7 @@ import java.util.Locale;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.openide.util.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,11 +68,12 @@ public class LogLineReader {
     private TaskInJsonCtrl m_taskInJsonCtrl;
     private boolean m_isBigFile;
 
-    public LogLineReader(String fileName, TasksFlowWriter flowWriter, DATE_FORMAT dateFormat, boolean isBigFile) {
+    public LogLineReader(String fileName, DATE_FORMAT dateFormat, boolean isBigFile, boolean stdout) {
         m_isBigFile = isBigFile;
         m_flow = new LogTasksFlow();
         m_hasNewTrace = false;
-        m_flowWriter = flowWriter;
+        m_flowWriter = new TasksFlowWriter(stdout);
+        m_flowWriter.open(fileName);
         long start = System.currentTimeMillis();
         m_dateFormat = dateFormat;
         m_msgId2TaskMap = new HashMap();
@@ -283,6 +287,7 @@ public class LogLineReader {
     }
 
     public void close() {
+        m_flow.close();
         m_flow = null;
         m_hasNewTrace = false;
         m_flowWriter.close();
@@ -297,6 +302,9 @@ public class LogLineReader {
         m_noTreatLineIndex = null;
     }
 
+    /**
+     * register non end task in it's file. then force some data sturcture = null
+     */
     public void memoryClean() {
         if (m_isBigFile) {
             for (LogTask task : m_taskInRun) {
@@ -614,4 +622,49 @@ public class LogLineReader {
         }
     }
 
+    class TasksFlowWriter {
+
+        FileWriter m_outputFile;
+        boolean m_stdout;
+        String FILE_NAME_HEAD = "TasksFlow";
+
+        public TasksFlowWriter(boolean stdout) {
+            m_stdout = stdout;
+        }
+
+        public void close() {
+            try {
+                if (m_outputFile != null) {
+                    m_outputFile.close();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        public void open(String file2Anaylse) {
+            try {
+                m_outputFile = new FileWriter(FILE_NAME_HEAD + "_" + file2Anaylse);
+                String head = "Analyse " + file2Anaylse;
+                m_outputFile.write(head);
+                if (m_stdout) {
+                    System.out.println(head);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        public void addLine(String s) {
+            try {
+                m_outputFile.write(s);
+                if (m_stdout) {
+                    System.out.print(s);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    }
 }
