@@ -70,14 +70,7 @@ public class LogGuiApp extends JFrame {
         super("Log Analyser");
         m_fileChooser = new JFileChooser();
         m_logPanel = new LogViewControlPanel(this);
-//        m_path = ("D:\\programs\\Proline-Zero-2.1.0-SNAPSHOT\\Proline-Cortex-2.1.0-SNAPSHOT\\logs\\");
-        m_path = "D:\\prolineBak\\cortexLog\\";
-        String fileName = "proline_cortex_debug.txt";
-//        //fileName = "proline_cortex_debug_.2019-09-15.0.txt";
-        File defaultFile = new File(m_path, fileName);
-        m_fileChooser.setSelectedFile(defaultFile);
         m_dateFormat = DATE_FORMAT.SHORT;
-
         initComponents();
         this.setLocation(230, 2);
         pack();
