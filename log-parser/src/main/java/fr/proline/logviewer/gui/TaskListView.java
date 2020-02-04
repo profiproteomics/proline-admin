@@ -61,7 +61,7 @@ public class TaskListView extends JScrollPane {
     }
 
     private void initColumnsize() {
-        String[] example = {"198", "853bda4a-10d9-11e8-9a85-d9411af38406", "[pool-2-thread-25]", "proline/dps/msi/ImportValidateGenerateSM",
+        String[] example = {"198", "853bda4a-10d9-11e8-9a85-d9411af38406", "[pool-2-thread-25]", "proline/dps/msi/ImportValidateGenerateSM","dataSet ",
             "FINISHED_W", "104", "09:01:27.985 - 09 oct. 2019 ", "09:01:27.985 - 09 oct. 2019 ", "+10"};
         TableColumn column;
         int cellWidth;
@@ -108,18 +108,20 @@ public class TaskListView extends JScrollPane {
         static final int COLTYPE_MESSAGE_ID = 1;
         static final int COLTYPE_THREAD_NAME = 2;
         static final int COLTYPE_CALL_SERVICE = 3;
-        static final int COLTYPE_STATUS = 4;
-        static final int COLTYPE_PROJECT_ID = 5;
-        static final int COLTYPE_START_TIME = 6;
-        static final int COLTYPE_STOP_TIME = 7;
+        static final int COLTYPE_META_INFO = 4;
+        static final int COLTYPE_STATUS = 5;
+        static final int COLTYPE_PROJECT_ID = 6;
+        static final int COLTYPE_START_TIME = 7;
+        static final int COLTYPE_STOP_TIME = 8;
 
-        static final int COLTYPE_NB_TASK_PARALELLE = 8;
+        static final int COLTYPE_NB_TASK_PARALELLE = 9;
 
         private String[] m_columnNames = {
             "Task N°",
             "Message Id",
             "Thread Name",
             "Call Service",
+            "Meta Info",
             "Status",
             "Project Id",
             "Start Time",
@@ -174,6 +176,9 @@ public class TaskListView extends JScrollPane {
                 case COLTYPE_CALL_SERVICE: {
                     return String.class;
                 }
+                case COLTYPE_META_INFO :{
+                    return String.class;
+                }
                 case COLTYPE_NB_TASK_PARALELLE: {
                     return String.class;
                 }
@@ -225,6 +230,9 @@ public class TaskListView extends JScrollPane {
                 }
                 case COLTYPE_CALL_SERVICE: {
                     return taskInfo.getCallService();
+                }
+                case COLTYPE_META_INFO :{
+                    return taskInfo.getDataSet();
                 }
                 case COLTYPE_NB_TASK_PARALELLE: {
                     int nbTask = taskInfo.getNbParallelTask();

@@ -54,8 +54,7 @@ public class LogLineReader {
     private Stack<Long> m_noTreatLineIndex;
     private DATE_FORMAT m_dateFormat;
     public static final String regex_logLevel_9 = "(\\bDEBUG|\\bWARN |\\bERROR|\\bINFO )";
-    final static String ERROR_LOG = "ERROR";
-    final static String WARN_LOG = "WARN ";
+  
     final String regex_content_Task_ID = "ID:([\\w-]+)";
     final String regex_consumerTaskKey1 = "Consumer selector string:";
     final String regex_ignoreSource = "PeakelsDetector";
@@ -158,7 +157,7 @@ public class LogLineReader {
             if (threadName.equals("[main]") || threadName.equals("[Timer-PurgeTempDir]")) {//special task to ignore
                 existTask = m_thread2TaskMap.get(threadName);
                 if (existTask != null) {
-                    existTask.addLine(index, line, date);
+                    existTask.addLine(index, line, date, null);
                     pop();
                 } else {
                     createOtherTask(index, line, threadName, date);
@@ -171,16 +170,16 @@ public class LogLineReader {
                 if (existTask != null) {//task already created by "handling"
                     isNotMatch = !(matchTaskEnd(index, line, string2Analyse, date, threadName));
                     if (isNotMatch) {//task alreday exist but thread replaced by a new task begin
+                        //set status
                         isNotMatch = !matchTaskStart(index, line, string2Analyse, date, threadName);
                     }
-                    if (isNotMatch) {//@todo here, BUG possible: when a thread has not finished by end key word, pool match, but task don't mache, not match, 
+                    if (existTask.getTaskOrder() == 396) {
+                        m_logger.debug("396: " + line);
+                    }
+                    if (isNotMatch) {//@todo here, BUG possible: when a thread has not finished by end key word, pool match, but task don't mache 
                         pop();
-                        if (line.contains(ERROR_LOG)) {
-                            existTask.setStatus(LogTask.STATUS.FAILED);
-                        } else if (line.contains(WARN_LOG)) {
-                            existTask.setStatus(LogTask.STATUS.WARNING);
-                        }
-                        existTask.addLine(index, line, date);
+
+                        existTask.addLine(index, line, date, null);
                     }
                 } else {//task has not created/existed}
                     if (string2Analyse.contains(this.regex_consumerTaskKey1)
@@ -223,7 +222,7 @@ public class LogLineReader {
                 String threadName = m_lastBeginMatch.group(8);
                 LogTask task = m_thread2TaskMap.get(threadName);
                 if (task != null) {
-                    task.addLine(index, line, null);//don't set stop line, because they are break line
+                    task.addLine(index, line, null, null);//don't set stop line, because they are break line                    
                 } else {
                     push(index, line);
                     //throw new ProlineException("line can't link with a task. " + line);
@@ -240,7 +239,7 @@ public class LogLineReader {
         //don't add in this.m_taskInRun, because it has not end key word
         newTask.setThreadName(threadName);
         newTask.setStartLine(index, line, date);
-        newTask.addLine(index, line, date);
+        newTask.addLine(index, line, date, null);
         pop();
         m_thread2TaskMap.put(threadName, newTask);
         // addTask(newTask);
@@ -369,12 +368,11 @@ public class LogLineReader {
                 LogTask existTaskEnThread = m_thread2TaskMap.get(threadName);
                 if (existTaskEnThread != null) {
                     LogLine lastLine = existTaskEnThread.removeLastLine();
-                    task.addLine(index - 1, m_lastBeginMatch.group(), date);
-                    existTaskEnThread.setStatus(LogTask.STATUS.FINISHED_WARN);
+                    task.addLine(index - 1, m_lastBeginMatch.group(), date, LogTask.STATUS.FINISHED_WARN);
                     m_thread2TaskMap.remove(threadName);
                     m_taskInRun.remove(existTaskEnThread);
                 } else {
-                    task.addLine(index - 1, m_noTreatLine.pop(), date);//the head(time, thread) of break line which begin with calling service, suppose index is last index
+                    task.addLine(index - 1, m_noTreatLine.pop(), date, LogTask.STATUS.RUNNING);//the head(time, thread) of break line which begin with calling service, suppose index is last index
                     m_noTreatLineIndex.pop();
                 }
                 updateTaskInRun(task);
@@ -389,8 +387,7 @@ public class LogLineReader {
                 //end retrive
                 task.setRequestParam(paramMap);
             }
-            task.setStatus(LogTask.STATUS.RUNNING);
-            task.addLine(index, line, date);
+            task.addLine(index, line, date, LogTask.STATUS.RUNNING);
             //m_logger.debug("OK \"{}\" now is used ", m_lastLine);
             matchProjectId(parameter, task);
             newTask(task);
@@ -449,8 +446,7 @@ public class LogLineReader {
                 addTask(task);
             }
 
-            task.setStatus(LogTask.STATUS.FINISHED);
-            task.addLine(index, line2add, date);
+            task.addLine(index, line2add, date, LogTask.STATUS.FINISHED);
             task.setStopLine(index, line2Analyse);
             removeTask(task);
             pop();
@@ -459,8 +455,7 @@ public class LogLineReader {
             if (line2Analyse.contains(regex_task_end_no_client)) {
                 task = m_thread2TaskMap.get(threadName);
                 if (task != null) {
-                    task.setStatus(LogTask.STATUS.FINISHED_WARN);
-                    task.addLine(index, line2add, date);
+                    task.addLine(index, line2add, date, LogTask.STATUS.FINISHED_WARN);
                     task.setStopLine(index, line2Analyse);
                     removeTask(task);
                     pop();
@@ -498,7 +493,7 @@ public class LogLineReader {
                     m_taskInRun.remove(existTask);
                 }
             }
-            task.addLine(index, line2add, date);
+            task.addLine(index, line2add, date, LogTask.STATUS.RUNNING);
             pop();
             updateTaskInRun(task);
             return true;
