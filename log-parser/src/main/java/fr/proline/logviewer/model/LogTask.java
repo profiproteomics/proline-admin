@@ -42,10 +42,6 @@ public class LogTask {
     private int m_otherTasksInRun;
     private String m_dataSet;
     private int m_taskOrder;
-    /**
-     * import data set name
-     */
-    private String m_importDataSet;
     
     public int getTaskOrder() {
         return m_taskOrder;
@@ -60,17 +56,8 @@ public class LogTask {
         m_stopLine = new LogLine(-1, "");
         m_taskOrder = -1;
         m_projectId = "";
-        m_importDataSet = "";
     }
-    
-    public void setImportData(String filePath) {
-        this.m_importDataSet = filePath;
-    }
-    
-    public String getImportData() {
-        return m_importDataSet;
-    }
-    
+      
     public void setTaskOrder(int order) {
         m_taskOrder = order;
     }

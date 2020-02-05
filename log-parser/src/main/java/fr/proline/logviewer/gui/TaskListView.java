@@ -23,6 +23,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import org.jdesktop.swingx.JXTable;
 
 /**
  *
@@ -32,36 +33,40 @@ public class TaskListView extends JScrollPane {
 
     private LogViewControlPanel m_ctrl;
     ArrayList<LogTask> m_taskList;//data model used by TableModel
-    JTable m_taskTable;
+    JXTable m_taskTable;
+    TaskTableModel m_tableModel;
 
     TaskListView(LogViewControlPanel control) {
         super();
         m_ctrl = control;
         this.setBorder(BorderFactory.createTitledBorder("List of Task"));
         this.setPreferredSize(new Dimension(1400, 250));
-        TaskTableModel model = new TaskTableModel();
+        m_tableModel = new TaskTableModel();
 
-        m_taskTable = new TaskTable(model);
-        m_taskTable.setRowSorter(createSorter(model));
+        m_taskTable = new TaskTable(m_tableModel);
+        m_taskTable.setRowSorter(createSorter(m_tableModel));
         this.getViewport().add(m_taskTable);
 
     }
 
     void setData(ArrayList<LogTask> tasks, String fileName) {
-        m_taskTable.setModel(new TaskTableModel());//useful for init table in task order
+        m_tableModel = new TaskTableModel();
+        //m_taskTable.setModel();//useful for init table in task order
         ((TitledBorder) this.getBorder()).setTitle("List of Tasks" + "     " + fileName);
         if (tasks == null) {
             m_taskList = new ArrayList<>();
         } else {
             m_taskList = tasks;
         }
-        this.viewport.revalidate();
         initColumnsize();
-        this.repaint();
+        m_taskTable.packAll();
+        m_tableModel.fireTableDataChanged();
+        //this.getViewport().add(m_taskTable);
+        repaint();
     }
 
     private void initColumnsize() {
-        String[] example = {"198", "853bda4a-10d9-11e8-9a85-d9411af38406", "[pool-2-thread-25]", "proline/dps/msi/ImportValidateGenerateSM","dataSet ",
+        String[] example = {"198", "853bda4a-10d9-11e8-9a85-d9411af38406", "[pool-2-thread-25]", "proline/dps/msi/ImportValidateGenerateSM", "result_files: mascot_data/20200113/F136424.dat",
             "FINISHED_W", "104", "09:01:27.985 - 09 oct. 2019 ", "09:01:27.985 - 09 oct. 2019 ", "+10"};
         TableColumn column;
         int cellWidth;
@@ -74,11 +79,11 @@ public class TaskListView extends JScrollPane {
         }
     }
 
-    class TaskTable extends JTable {
+    class TaskTable extends JXTable {
 
         public TaskTable(TableModel dm) {
             super(dm);
-
+            this.setColumnControlVisible(true);
             this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             ListSelectionModel selectionModel = this.getSelectionModel();
             selectionModel.addListSelectionListener(new ListSelectionListener() {
@@ -176,7 +181,7 @@ public class TaskListView extends JScrollPane {
                 case COLTYPE_CALL_SERVICE: {
                     return String.class;
                 }
-                case COLTYPE_META_INFO :{
+                case COLTYPE_META_INFO: {
                     return String.class;
                 }
                 case COLTYPE_NB_TASK_PARALELLE: {
@@ -231,7 +236,7 @@ public class TaskListView extends JScrollPane {
                 case COLTYPE_CALL_SERVICE: {
                     return taskInfo.getCallService();
                 }
-                case COLTYPE_META_INFO :{
+                case COLTYPE_META_INFO: {
                     return taskInfo.getDataSet();
                 }
                 case COLTYPE_NB_TASK_PARALELLE: {

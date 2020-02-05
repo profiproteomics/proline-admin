@@ -54,7 +54,7 @@ public class LogLineReader {
     private Stack<Long> m_noTreatLineIndex;
     private DATE_FORMAT m_dateFormat;
     public static final String regex_logLevel_9 = "(\\bDEBUG|\\bWARN |\\bERROR|\\bINFO )";
-  
+
     final String regex_content_Task_ID = "ID:([\\w-]+)";
     final String regex_consumerTaskKey1 = "Consumer selector string:";
     final String regex_ignoreSource = "PeakelsDetector";
@@ -389,18 +389,20 @@ public class LogLineReader {
             }
             task.addLine(index, line, date, LogTask.STATUS.RUNNING);
             //m_logger.debug("OK \"{}\" now is used ", m_lastLine);
-            matchProjectId(parameter, task);
+            matchMetaInfo(parameter, task);
             newTask(task);
             return true;
         }
         return false;
     }
 
-    private void matchProjectId(String line, LogTask task) {
+    private void matchMetaInfo(String line, LogTask task) {
         final String regex_projectId = "\"project_id\":([\\d]+)[,]?";
-        final String regex_dataSet = "(\"result_summary_id\"|\"result_summary_ids\"|\"result_set_ids\"|\"result_set_id\"|\"dataset_id\")(:[\\[]?[\\d,]+[\\]]?)[,]?";
-        //regex to reuse //("result_summary_id"|"result_summary_ids"|"result_set_ids"|"result_set_id"|"dataset_id")(:)([\[]?[\d,]+[\]]?)[,]?
-        final String regex_importDataFile = "\"(result_files)\":\\[\\{\"(path)\":\"([\\w|\\\\|\\/|.]+)\",";
+        final String regex_dataSet = "(\"result_summary_id\"|\"result_summary_ids\"|\"result_set_ids\"|\"result_set_id\"|\"dataset_id\"|\"resultset_ids\"):([\\[]?[\\d,]+[\\]]?)[,]?";//group 1+3
+        //regex to reuse //("result_summary_id"|"result_summary_ids"|"result_set_ids"|"result_set_id"|"dataset_id"|"resultset_ids":[\[]?[\d,]+[\]]?)[,]?
+        final String regex_resultFile = "(\"result_files\"):\\[\\{\"(path)\":\"([\\w|\\d|\\\\|\\/|.|-|_| ]+)\",";
+        //regex to reuse //("result_files"):\[{"(path)":"([\w|\d|\\|\/|.|-|_| ]+)",
+
         Pattern pattern = Pattern.compile(regex_projectId);
         Matcher matcher = pattern.matcher(line);
         String result;
@@ -410,21 +412,65 @@ public class LogLineReader {
             pattern = Pattern.compile(regex_dataSet);
             matcher = pattern.matcher(line);
             if (matcher.find()) {
-                result = matcher.group(1) + matcher.group(2);
+                result = matcher.group(1)+":"+ matcher.group(2);
                 task.setDataSet(result);
+            } else {
+                pattern = Pattern.compile(regex_resultFile);
+                matcher = pattern.matcher(line);
+                if (matcher.find()) {
+                    result = matcher.group(1) + ":" + matcher.group(3);
+                    task.setDataSet(result);
+                } else {
+                    final String regex_name = "\"project_id\":[\\d]+,(\"[\\w|_]+\":\\d+,)*(\"name\":\"[\\w|\\d| |_|.|-]+\"),";//group 2
+                    //regex_name to reuse "project_id":[\d]+,("[\w|_]+":\d+,)*("name":"[\w| |_|.|-]+"),
+                    pattern = Pattern.compile(regex_name);
+                    matcher = pattern.matcher(line);
+                    if (matcher.find()) {
+                        result = matcher.group(2);
+                        task.setDataSet(result);
+                    } else {
+                        final String regex_quant_channel = "\"project_id\":[\\d]+,(\"master_quant_channel_id\":[\\d]+),";
+                        pattern = Pattern.compile(regex_quant_channel);
+                        matcher = pattern.matcher(line);
+                        if (matcher.find()) {
+                            result = matcher.group(1);
+                            task.setDataSet(result);
+                        } else {
+                            final String regex_export_rsm = "\"project_id\":\\d+,\"ds_id\":\\d+,\"rsm_id\":(\\d+)";
+                            pattern = Pattern.compile(regex_export_rsm);
+                            matcher = pattern.matcher(line);
+                            result = "\"rsm_id\": [";
+                            while (matcher.find()) {
+                                result += matcher.group(1) + ",";
+                            }
+                            result += "]";
+                            task.setDataSet(result);
+                        }
+                    }
+                }
             }
-            pattern = Pattern.compile(regex_importDataFile);
+        } else {
+            final String regex_login = "(\"login\":\"[\\w\\d]+\")";//group 1
+            pattern = Pattern.compile(regex_login);
             matcher = pattern.matcher(line);
             if (matcher.find()) {
-                result = matcher.group(1) + ":" + matcher.group(3);
-                task.setImportData(result);
-            }
+                result = matcher.group(1);
+                task.setDataSet(result);
+            } else {
+                final String regex_rowFile = "(\"raw_file_identifier\":\"[\\w| |_|.|-]+\"),";
+                pattern = Pattern.compile(regex_rowFile);
+                matcher = pattern.matcher(line);
+                if (matcher.find()) {
+                    result = matcher.group(1);
+                    task.setDataSet(result);
+                }
 
+            }
         }
 
     }
 
-    //
+//
     private boolean matchTaskEnd(long index, String line2add, String line2Analyse, Date date, String threadName) throws ProlineException {
         //final String regex_content_task_end = "JMS response to [\\w]+ sent \\(##Message##_" + regex_content_Task_ID + "\\)";
         final String regex_content_task_end_2format = "^JMS [r|R]esponse to [\\w\\W]+ID:([\\w-]+)";//group 1 = message id
@@ -538,6 +584,7 @@ public class LogLineReader {
         for (LogTask taskInRun : m_taskInRun) {
             if (taskInRun.getNbParallelTask() < size) {
                 taskInRun.setNbOtherTasksInRun(size);
+
             }
         }
     }
@@ -589,7 +636,7 @@ public class LogLineReader {
                 m_taskList.remove(t);
             }
             m_taskList.add(task);
-            String newLine = (startMark + "\\" + "    " + task.getImportData() + m_lineEnd)
+            String newLine = (startMark + "\\" + "    " + task.getDataSet() + m_lineEnd)
                     + (startMark + "|+" + task.getStartInfo() + m_lineEnd);
 
             m_newTrace.add(newLine);
