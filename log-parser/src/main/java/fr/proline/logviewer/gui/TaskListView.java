@@ -9,6 +9,7 @@ import fr.proline.logviewer.model.LogTask.STATUS;
 import fr.proline.logviewer.model.Utility;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import javax.swing.BorderFactory;
@@ -18,8 +19,10 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import org.jdesktop.swingx.JXTable;
@@ -40,18 +43,19 @@ public class TaskListView extends JScrollPane {
         m_ctrl = control;
         this.setBorder(BorderFactory.createTitledBorder("List of Task"));
         this.setPreferredSize(new Dimension(1400, 250));
+        m_taskList = new ArrayList();
         m_tableModel = new TaskTableModel();
 
         m_taskTable = new TaskTable(m_tableModel);
         m_taskTable.setRowSorter(createSorter(m_tableModel));
+        m_taskTable.setTableHeader(new TooltipsTableHeader(m_taskTable.getColumnModel(), m_columnNames));
         this.getViewport().add(m_taskTable);
 
     }
 
     void setData(ArrayList<LogTask> tasks, String fileName) {
-        m_tableModel = new TaskTableModel();
-        m_taskTable.setModel(m_tableModel);//useful for init table in task order
         ((TitledBorder) this.getBorder()).setTitle("List of Tasks" + "     " + fileName);
+        m_taskTable.removeAll();//must
         if (tasks == null) {
             m_taskList = new ArrayList<>();
         } else {
@@ -104,6 +108,18 @@ public class TaskListView extends JScrollPane {
 
     }
 
+    private String[] m_columnNames = {
+        "Task N°",
+        "Message Id",
+        "Thread Name",
+        "Call Service",
+        "Meta Info",
+        "Status",
+        "Project Id",
+        "Start Time",
+        "Stop Time",
+        "Nb Task Paralelle"};
+
     class TaskTableModel extends AbstractTableModel {
 
         static final int COLTYPE_ORDER_ID = 0;
@@ -115,24 +131,10 @@ public class TaskListView extends JScrollPane {
         static final int COLTYPE_PROJECT_ID = 6;
         static final int COLTYPE_START_TIME = 7;
         static final int COLTYPE_STOP_TIME = 8;
-
         static final int COLTYPE_NB_TASK_PARALELLE = 9;
-
-        private String[] m_columnNames = {
-            "Task N°",
-            "Message Id",
-            "Thread Name",
-            "Call Service",
-            "Meta Info",
-            "Status",
-            "Project Id",
-            "Start Time",
-            "Stop Time",
-            "Nb Task Paralelle"};
 
         public TaskTableModel() {
             m_taskList = new ArrayList();
-
         }
 
         @Override
@@ -142,7 +144,7 @@ public class TaskListView extends JScrollPane {
 
         @Override
         public int getColumnCount() {
-            return this.m_columnNames.length;
+            return m_columnNames.length;
         }
 
         /**
@@ -191,7 +193,7 @@ public class TaskListView extends JScrollPane {
 
         @Override
         public String getColumnName(int column) {
-            return this.m_columnNames[column]; //To change body of generated methods, choose Tools | Templates.
+            return m_columnNames[column]; //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
@@ -247,6 +249,23 @@ public class TaskListView extends JScrollPane {
             }
         }
 
+    }//end inner class TaskTableModel
+
+    class TooltipsTableHeader extends JTableHeader {
+
+        String[] tooltips;
+
+        TooltipsTableHeader(TableColumnModel columnModel, String[] columnTooltips) {
+            super(columnModel);//do everything a normal JTableHeader does
+            this.tooltips = columnTooltips;//plus extra data
+        }
+
+        public String getToolTipText(MouseEvent e) {
+            java.awt.Point p = e.getPoint();
+            int index = columnModel.getColumnIndexAtX(p.x);
+            int realIndex = columnModel.getColumn(index).getModelIndex();
+            return this.tooltips[realIndex];
+        }
     }
 
     private TableRowSorter<TableModel> createSorter(TaskTableModel model) {
@@ -279,4 +298,5 @@ public class TaskListView extends JScrollPane {
         sorter.setComparator(TaskTableModel.COLTYPE_NB_TASK_PARALELLE, c2);
         return sorter;
     }
+
 }
