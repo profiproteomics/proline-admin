@@ -244,7 +244,7 @@ public class TaskView extends JPanel {
         m_callServiceTextfield.setEditable(false);
         m_callServiceTextfield.setBackground(Color.white);
 
-        JLabel dataSetLabel = new JLabel("DataSet:");
+        JLabel dataSetLabel = new JLabel("Meta info:");
         m_dataSetTextField = new JTextField();
         m_dataSetTextField.setEditable(false);
         m_dataSetTextField.setBackground(Color.white);

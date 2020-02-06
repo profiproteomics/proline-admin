@@ -219,10 +219,12 @@ public class LogLineReader {
                 isNotMatch = !matchCallingService(regex_content_no_parame, index, line);
             }
             if (isNotMatch) {
-                String threadName = m_lastBeginMatch.group(8);
-                LogTask task = m_thread2TaskMap.get(threadName);
-                if (task != null) {
-                    task.addLine(index, line, null, null);//don't set stop line, because they are break line                    
+                if (m_lastBeginMatch != null) {
+                    String threadName = m_lastBeginMatch.group(8);
+                    LogTask task = m_thread2TaskMap.get(threadName);
+                    if (task != null) {
+                        task.addLine(index, line, null, null);//don't set stop line, because they are break line                    
+                    }
                 } else {
                     push(index, line);
                     //throw new ProlineException("line can't link with a task. " + line);
@@ -389,85 +391,106 @@ public class LogLineReader {
             }
             task.addLine(index, line, date, LogTask.STATUS.RUNNING);
             //m_logger.debug("OK \"{}\" now is used ", m_lastLine);
-            matchMetaInfo(parameter, task);
+            matchMetaInfo(service, parameter, task);
             newTask(task);
             return true;
         }
         return false;
     }
 
-    private void matchMetaInfo(String line, LogTask task) {
-        final String regex_projectId = "\"project_id\":([\\d]+)[,]?";
-        final String regex_dataSet = "(\"result_summary_id\"|\"result_summary_ids\"|\"result_set_ids\"|\"result_set_id\"|\"dataset_id\"|\"resultset_ids\"):([\\[]?[\\d,]+[\\]]?)[,]?";//group 1+3
-        //regex to reuse //("result_summary_id"|"result_summary_ids"|"result_set_ids"|"result_set_id"|"dataset_id"|"resultset_ids":[\[]?[\d,]+[\]]?)[,]?
-        final String regex_resultFile = "(\"result_files\"):\\[\\{\"(path)\":\"([\\w|\\d|\\\\|\\/|.|-|_| ]+)\",";
-        //regex to reuse //("result_files"):\[{"(path)":"([\w|\d|\\|\/|.|-|_| ]+)",
+    private void matchMetaInfo(String service, String parameter, LogTask task) {
+        final String regex_fileName = "\"[\\w|\\d| |_|.|-]+\"";
+        final String regex_filePath = "[\\w|\\d| |_|.|-|\\\\|\\/]+";
 
-        Pattern pattern = Pattern.compile(regex_projectId);
-        Matcher matcher = pattern.matcher(line);
+        Pattern pattern;
+        Matcher matcher;
         String result;
-        if (matcher.find()) {
-            result = matcher.group(1);
-            task.setProjectId(result);
-            pattern = Pattern.compile(regex_dataSet);
-            matcher = pattern.matcher(line);
-            if (matcher.find()) {
-                result = matcher.group(1)+":"+ matcher.group(2);
-                task.setDataSet(result);
-            } else {
-                pattern = Pattern.compile(regex_resultFile);
-                matcher = pattern.matcher(line);
-                if (matcher.find()) {
-                    result = matcher.group(1) + ":" + matcher.group(3);
-                    task.setDataSet(result);
-                } else {
-                    final String regex_name = "\"project_id\":[\\d]+,(\"[\\w|_]+\":\\d+,)*(\"name\":\"[\\w|\\d| |_|.|-]+\"),";//group 2
-                    //regex_name to reuse "project_id":[\d]+,("[\w|_]+":\d+,)*("name":"[\w| |_|.|-]+"),
-                    pattern = Pattern.compile(regex_name);
-                    matcher = pattern.matcher(line);
-                    if (matcher.find()) {
-                        result = matcher.group(2);
-                        task.setDataSet(result);
-                    } else {
-                        final String regex_quant_channel = "\"project_id\":[\\d]+,(\"master_quant_channel_id\":[\\d]+),";
-                        pattern = Pattern.compile(regex_quant_channel);
-                        matcher = pattern.matcher(line);
-                        if (matcher.find()) {
-                            result = matcher.group(1);
-                            task.setDataSet(result);
-                        } else {
-                            final String regex_export_rsm = "\"project_id\":\\d+,\"ds_id\":\\d+,\"rsm_id\":(\\d+)";
-                            pattern = Pattern.compile(regex_export_rsm);
-                            matcher = pattern.matcher(line);
-                            result = "\"rsm_id\": [";
-                            while (matcher.find()) {
-                                result += matcher.group(1) + ",";
-                            }
-                            result += "]";
-                            task.setDataSet(result);
-                        }
-                    }
-                }
-            }
-        } else {
+        if (service.contains("UserAccount")) {
             final String regex_login = "(\"login\":\"[\\w\\d]+\")";//group 1
             pattern = Pattern.compile(regex_login);
-            matcher = pattern.matcher(line);
+            matcher = pattern.matcher(parameter);
             if (matcher.find()) {
                 result = matcher.group(1);
                 task.setDataSet(result);
-            } else {
-                final String regex_rowFile = "(\"raw_file_identifier\":\"[\\w| |_|.|-]+\"),";
-                pattern = Pattern.compile(regex_rowFile);
-                matcher = pattern.matcher(line);
-                if (matcher.find()) {
-                    result = matcher.group(1);
-                    task.setDataSet(result);
-                }
-
             }
-        }
+        } else if (service.contains("RegisterRawFile")) {
 
+            final String regex_rowFile = "(\"raw_file_identifier\":" + regex_fileName + "),";
+            pattern = Pattern.compile(regex_rowFile);
+            matcher = pattern.matcher(parameter);
+            if (matcher.find()) {
+                result = matcher.group(1);
+                task.setDataSet(result);
+            }
+        } else if (service.contains("CreateProject")) {
+            pattern = Pattern.compile("(\"name\":" + regex_fileName + "),");
+            matcher = pattern.matcher(parameter);
+            if (matcher.find()) {
+                result = matcher.group(1);
+                task.setDataSet(result);
+            }
+        } else if (parameter.contains("ImportMaxQuantResults")) {//not sure, has not been tested
+            pattern = Pattern.compile("(\"result_files_dir\":" + regex_filePath + "),");
+            matcher = pattern.matcher(parameter);
+            if (matcher.find()) {
+                result = matcher.group(1);
+                task.setDataSet(result);
+            }
+        } else {
+            final String regex_projectId = "\"project_id\":([\\d]+)[,]?";
+            final String regex_dataSet = "(\"result_summary_id\"|\"result_summary_ids\"|\"result_set_ids\"|\"result_set_id\"|\"dataset_id\"|\"resultset_ids\"):([\\[]?[\\d,]+[\\]]?)[,]?";//group 1+3
+            //regex to reuse //("result_summary_id"|"result_summary_ids"|"result_set_ids"|"result_set_id"|"dataset_id"|"resultset_ids":[\[]?[\d,]+[\]]?)[,]?
+
+            final String regex_resultFile = "(\"result_files\"):\\[\\{\"(path)\":\"(" + regex_filePath + ")\",";
+            //regex to reuse //("result_files"):\[{"(path)":"([\w|\d|\\|\/|.|-|_| ]+)",
+            pattern = Pattern.compile(regex_projectId);
+            matcher = pattern.matcher(parameter);
+            if (matcher.find()) {
+                result = matcher.group(1);
+                task.setProjectId(result);
+                pattern = Pattern.compile(regex_dataSet);
+                matcher = pattern.matcher(parameter);
+                if (matcher.find()) {
+                    result = matcher.group(1) + ":" + matcher.group(2);
+                    task.setDataSet(result);
+                } else {
+                    pattern = Pattern.compile(regex_resultFile);
+                    matcher = pattern.matcher(parameter);
+                    if (matcher.find()) {
+                        //File file = new File(matcher.group(3));
+                        result = matcher.group(1) + ":" + matcher.group(3);
+                        task.setDataSet(result);
+                    } else {
+                        final String regex_name = "\"project_id\":[\\d]+,(\"[\\w|_]+\":\\d+,)*(\"name\":" + regex_fileName + "),";//group 2
+                        //regex_name to reuse "project_id":[\d]+,("[\w|_]+":\d+,)*("name":"[\w| |_|.|-]+"),
+                        pattern = Pattern.compile(regex_name);
+                        matcher = pattern.matcher(parameter);
+                        if (matcher.find()) {
+                            result = matcher.group(2);
+                            task.setDataSet(result);
+                        } else {
+                            final String regex_quant_channel = "\"project_id\":[\\d]+,(\"master_quant_channel_id\":[\\d]+),";
+                            pattern = Pattern.compile(regex_quant_channel);
+                            matcher = pattern.matcher(parameter);
+                            if (matcher.find()) {
+                                result = matcher.group(1);
+                                task.setDataSet(result);
+                            } else {
+                                final String regex_export_rsm = "\"project_id\":\\d+,\"ds_id\":\\d+,\"rsm_id\":(\\d+)";
+                                pattern = Pattern.compile(regex_export_rsm);
+                                matcher = pattern.matcher(parameter);
+                                result = "\"rsm_id\": [";
+                                while (matcher.find()) {
+                                    result += matcher.group(1) + ",";
+                                }
+                                result += "]";
+                                task.setDataSet(result);
+                            }
+                        }
+                    }
+                }
+            }//has project_id
+        }
     }
 
 //

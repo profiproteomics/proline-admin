@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -33,7 +32,7 @@ public class TaskListView extends JScrollPane {
 
     private LogViewControlPanel m_ctrl;
     ArrayList<LogTask> m_taskList;//data model used by TableModel
-    JXTable m_taskTable;
+    TaskTable m_taskTable;
     TaskTableModel m_tableModel;
 
     TaskListView(LogViewControlPanel control) {
@@ -51,7 +50,7 @@ public class TaskListView extends JScrollPane {
 
     void setData(ArrayList<LogTask> tasks, String fileName) {
         m_tableModel = new TaskTableModel();
-        //m_taskTable.setModel();//useful for init table in task order
+        m_taskTable.setModel(m_tableModel);//useful for init table in task order
         ((TitledBorder) this.getBorder()).setTitle("List of Tasks" + "     " + fileName);
         if (tasks == null) {
             m_taskList = new ArrayList<>();
@@ -59,14 +58,12 @@ public class TaskListView extends JScrollPane {
             m_taskList = tasks;
         }
         initColumnsize();
-        m_taskTable.packAll();
         m_tableModel.fireTableDataChanged();
-        //this.getViewport().add(m_taskTable);
         repaint();
     }
 
     private void initColumnsize() {
-        String[] example = {"198", "853bda4a-10d9-11e8-9a85-d9411af38406", "[pool-2-thread-25]", "proline/dps/msi/ImportValidateGenerateSM", "result_files: mascot_data/20200113/F136424.dat",
+        String[] example = {"198", "853bda4a-10d9-11e8-9a85-d9411af38406", "[pool-2-thread-25]", "proline/dps/msi/ImportValidateGenerateSM", " result_files :  mascot_data/20200113/F136424.dat ",
             "FINISHED_W", "104", "09:01:27.985 - 09 oct. 2019 ", "09:01:27.985 - 09 oct. 2019 ", "+10"};
         TableColumn column;
         int cellWidth;
