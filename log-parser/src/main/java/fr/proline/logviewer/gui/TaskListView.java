@@ -7,6 +7,7 @@ package fr.proline.logviewer.gui;
 import fr.proline.logviewer.model.LogTask;
 import fr.proline.logviewer.model.LogTask.STATUS;
 import fr.proline.logviewer.model.Utility;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
@@ -15,6 +16,7 @@ import java.util.Comparator;
 import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.SortOrder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -26,6 +28,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import org.jdesktop.swingx.JXTable;
+import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 /**
  *
@@ -86,6 +89,10 @@ public class TaskListView extends JScrollPane {
             super(dm);
             this.setColumnControlVisible(true);
             this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            // highlight one line of two
+            addHighlighter(HighlighterFactory.createSimpleStriping());
+            setGridColor(Color.lightGray);
+
             ListSelectionModel selectionModel = this.getSelectionModel();
             selectionModel.addListSelectionListener(new ListSelectionListener() {
                 @Override
