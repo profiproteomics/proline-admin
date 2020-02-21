@@ -5,11 +5,11 @@
     <parent>
         <artifactId>profi-pom</artifactId>
         <groupId>fr.proline</groupId>
-        <version>0.6.0-SNAPSHOT</version>  <!-- Snapshot Trunk version -->
+        <version>1.0.0-SNAPSHOT</version>  <!-- Snapshot Trunk version -->
     </parent>
 
     <artifactId>proline-parent-admin</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>2.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Proline-Parent-Admin</name>
@@ -22,6 +22,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <core.version>2.2.0-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
+        <commons.version>1.0.0-SNAPSHOT</commons.version>
     </properties>
     <scm>
         <connection>scm:git:https://github.com/profiproteomics/proline-admin.git</connection>
@@ -37,12 +38,12 @@
             <dependency>
                 <groupId>fr.profi.util</groupId>
                 <artifactId>profi-commons-scala_${scala.version}</artifactId>
-                <version>0.10.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
+                <version>${commons.version}</version> <!-- Snapshot Trunk version -->
             </dependency>
             <dependency>
                 <groupId>fr.profi.util</groupId>
                 <artifactId>profi-commons-java</artifactId>
-                <version>0.9.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
+                <version>${commons.version}</version> <!-- Snapshot Trunk version -->
             </dependency>
 
         </dependencies>
