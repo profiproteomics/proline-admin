@@ -2,28 +2,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-
 	<parent>
-		<artifactId>profi-pom</artifactId>
+		<artifactId>proline-parent-admin</artifactId>
 		<groupId>fr.proline</groupId>
-		<version>0.5.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>proline-admin-gui</artifactId>
-	<version>0.9.0-SNAPSHOT</version>
 
 	<name>Proline-Admin-GUI</name>
 	<description>A GUI for Proline Administration</description>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<core.version>2.1.0-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
-		<admin.version>0.9.0-SNAPSHOT</admin.version> <!-- Snapshot Trunk version -->
 		<version.path>${basedir}/src/main/scala/fr/proline/admin/gui</version.path>
 	</properties>
-	<scm>
-		<connection>scm:svn:https://bioproj.extra.cea.fr/svn/proline/Proline-Admin-GUI/trunk</connection>
-	</scm>
 
 	<dependencies>
 
@@ -31,7 +23,7 @@
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
-			<!-- Version inherited from ProFI-Pom ${scala-library.version} -->
+			<!-- Version inherited from parent Pom -->
 		</dependency>
 
 		<!-- Scala FX -->
@@ -45,19 +37,19 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<!-- Compile scope (Proline-Admin can be used as a stand-alone program) -->
+			<!-- Version inherited from parent Pom -->
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.scala-logging</groupId>
 			<artifactId>scala-logging_${scala.version}</artifactId>
-			<!-- Version inherited from ProFI-Pom -->
+			<!-- Version inherited from parent Pom -->
 		</dependency>
 
 		<!-- Configuration -->
 		<dependency>
 			<groupId>com.typesafe</groupId>
 			<artifactId>config</artifactId>
-			<version>1.3.1</version>
+			<!-- Version inherited from parent Pom -->
 		</dependency>
 
 		<!-- Database drivers -->
@@ -72,7 +64,6 @@
 		<dependency>
 			<groupId>fr.profi.util</groupId>
 			<artifactId>profi-commons-scala_${scala.version}</artifactId>
-			<version>0.9.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
 		</dependency>
 
 		<dependency>
@@ -84,7 +75,7 @@
 		<dependency>
 			<groupId>fr.proline</groupId>
 			<artifactId>proline-admin</artifactId>
-			<version>${admin.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Tests -->
@@ -198,11 +189,7 @@
 					<mainClass>fr.proline.admin.gui.Main</mainClass>
 					<jfxAppOutputDir>${project.build.directory}</jfxAppOutputDir> <!-- produce JFX jar in target folder -->
 					<jfxMainAppJarName>${project.build.finalName}.jar</jfxMainAppJarName> <!-- override non-jfx jar -->
-
-					<!-- <jvmArg>-Dlogback.configurationFile=config/logback.xml</jvmArg> -->
-					<permissions>
-						<permission>all-permissions</permission>
-					</permissions>
+					<allPermissions>true</allPermissions>
 				</configuration>
 
 			</plugin>
