@@ -321,7 +321,10 @@ public class LogLineReader {
         m_thread2TaskMap = null;
     }
 
-    private void removeTask(LogTask task) {
+    private void removeTask(long time, LogTask task) {
+        for (LogTask t : m_taskInRun) {
+            t.updateNbTask(time, m_taskInRun.size()-1);
+        }
         m_taskInRun.remove(task);
         m_msgId2TaskMap.remove(task.getMessageId());
         m_thread2TaskMap.remove(task.getThreadName());
@@ -377,7 +380,7 @@ public class LogLineReader {
                     task.addLine(index - 1, m_noTreatLine.pop(), date, LogTask.STATUS.RUNNING);//the head(time, thread) of break line which begin with calling service, suppose index is last index
                     m_noTreatLineIndex.pop();
                 }
-                updateTaskInRun(task);
+                updateTaskInRun(task, date.getTime());
                 m_thread2TaskMap.put(threadName, task);
             }
             task.setCallService(service);
@@ -517,7 +520,7 @@ public class LogLineReader {
 
             task.addLine(index, line2add, date, LogTask.STATUS.FINISHED);
             task.setStopLine(index, line2Analyse);
-            removeTask(task);
+            removeTask(date.getTime(), task);
             pop();
             return true;
         } else {
@@ -526,7 +529,7 @@ public class LogLineReader {
                 if (task != null) {
                     task.addLine(index, line2add, date, LogTask.STATUS.FINISHED_WARN);
                     task.setStopLine(index, line2Analyse);
-                    removeTask(task);
+                    removeTask(date.getTime(), task);
                     pop();
                     return true;
                 }
@@ -564,13 +567,13 @@ public class LogLineReader {
             }
             task.addLine(index, line2add, date, LogTask.STATUS.RUNNING);
             pop();
-            updateTaskInRun(task);
+            updateTaskInRun(task, date.getTime());
             return true;
         }
         return false;
 
     }
-
+    
     public void setDateFormat(DATE_FORMAT dateFormat) {
         m_dateFormat = dateFormat;
     }
@@ -602,13 +605,10 @@ public class LogLineReader {
         }
     }
 
-    private void updateTaskInRun(LogTask task) {
+    private void updateTaskInRun(LogTask task, long time) {
         int size = m_taskInRun.size() - 1;//don't count itself
         for (LogTask taskInRun : m_taskInRun) {
-            if (taskInRun.getNbParallelTask() < size) {
-                taskInRun.setNbOtherTasksInRun(size);
-
-            }
+            taskInRun.updateNbTask(time, size);
         }
     }
 

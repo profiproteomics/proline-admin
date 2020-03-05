@@ -71,6 +71,12 @@ public class LogGuiApp extends JFrame {
         m_fileChooser = new JFileChooser();
         m_logPanel = new LogViewControlPanel(this);
         m_dateFormat = DATE_FORMAT.SHORT;
+//        m_path = ("D:\\programs\\Proline-Zero-2.1.0-SNAPSHOT\\Proline-Cortex-2.1.0-SNAPSHOT\\logs\\");
+//        m_path = "D:\\prolineBak\\cortexLog\\";
+//        //m_path = "D:\\programs\\Proline-Zero-2.1.0-SNAPSHOT-PTM-02072019\\Proline-Cortex-2.1.0-SNAPSHOT\\logs\\proline_cortex_log.2020-02-05.txt";
+//        File defaultFile = new File(m_path);
+//        m_fileChooser.setSelectedFile(defaultFile);
+//
         initComponents();
         this.setLocation(230, 2);
         pack();
@@ -85,7 +91,8 @@ public class LogGuiApp extends JFrame {
         m_taskFlowTextPane = new JTextPane();
         m_taskFlowFrame = new JFrame("Log Task Flow");
         m_taskFlowFrame.add(new JScrollPane(m_taskFlowTextPane));
-        m_taskFlowFrame.setSize(700, 800);
+        m_taskFlowFrame.setSize(700, 750);
+        m_taskFlowFrame.setLocation(950,250);
         m_taskFlowFrame.setVisible(true);
         m_taskFlowFrame.setIconImage(icon);
 
