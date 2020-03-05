@@ -15,11 +15,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -70,7 +72,7 @@ public class TaskListView extends JScrollPane {
 
     private void initColumnsize() {
         String[] example = {"198", "853bda4a-10d9-11e8-9a85-d9411af38406", "[pool-2-thread-25]", "proline/dps/msi/ImportValidateGenerateSM", " result_files :  mascot_data/20200113/F136424.dat ",
-            "FINISHED_W", "104", "09:01:27.985 - 09 oct. 2019 ", "09:01:27.985 - 09 oct. 2019 ", "+10"};
+            "FINISHED_W", "104", "09:01:27.985 - 09 oct. 2019 ", "09:01:27.985 - 09 oct. 2019 ", "+10                     "};
         TableColumn column;
         int cellWidth;
         for (int i = 0; i < m_taskTable.getColumnCount(); i++) {
@@ -110,6 +112,15 @@ public class TaskListView extends JScrollPane {
                     }
                 }
             });
+        }
+
+        @Override
+        public TableCellRenderer getCellRenderer(int row, int column) {
+            if (column == TaskTableModel.COLTYPE_NB_TASK_PARALELLE) {
+                return new TaskNbCellRenderer();
+            } else {
+                return super.getCellRenderer(row, column);
+            }
         }
 
     }
@@ -153,6 +164,10 @@ public class TaskListView extends JScrollPane {
             return m_columnNames.length;
         }
 
+        public LogTask getTask(int row) {
+            return m_taskList.get(row);
+        }
+
         /**
          * useful for compare, sort
          *
@@ -190,7 +205,7 @@ public class TaskListView extends JScrollPane {
                     return String.class;
                 }
                 case COLTYPE_NB_TASK_PARALELLE: {
-                    return String.class;
+                    return Integer.class;
                 }
                 default:
                     return null;
@@ -245,10 +260,7 @@ public class TaskListView extends JScrollPane {
                     return taskInfo.getDataSet();
                 }
                 case COLTYPE_NB_TASK_PARALELLE: {
-                    int nbTask = taskInfo.getNbParallelTask();
-                    if (nbTask > 0) {
-                        return "+" + nbTask;
-                    }
+                    return taskInfo.getNbParallelTask();
                 }
                 default:
                     return null;
@@ -256,6 +268,25 @@ public class TaskListView extends JScrollPane {
         }
 
     }//end inner class TaskTableModel
+
+    public class TaskNbCellRenderer extends DefaultTableCellRenderer {
+
+        private TaskExecutionPanel m_valuePanel;
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (m_valuePanel == null) {
+                m_valuePanel = new TaskExecutionPanel(1, -1);
+            }
+            int modelIndex = table.convertRowIndexToModel(row);
+            TaskTableModel model = (TaskTableModel) table.getModel();
+            LogTask task = model.getTask(modelIndex);
+            String toShow = ((int) value == 0) ? "" : "+" + value;
+            m_valuePanel.setData(task.getTimeStamp(), task.getNbOtherTaskMoment(), toShow);
+            return m_valuePanel;
+        }
+
+    }
 
     class TooltipsTableHeader extends JTableHeader {
 
@@ -287,21 +318,9 @@ public class TaskListView extends JScrollPane {
             }
 
         };
-        Comparator c2 = new Comparator<String>() {
-            public int compare(String s1, String s2) {
-                long delta = Integer.parseInt(s1) - Integer.parseInt(s2);
-                if (delta == 0) {
-                    return 0;
-                } else {
-                    return (delta) > 0 ? 1 : -1;
-                }
-            }
-
-        };
 
         sorter.setComparator(TaskTableModel.COLTYPE_START_TIME, c1);
         sorter.setComparator(TaskTableModel.COLTYPE_STOP_TIME, c1);
-        sorter.setComparator(TaskTableModel.COLTYPE_NB_TASK_PARALELLE, c2);
         return sorter;
     }
 

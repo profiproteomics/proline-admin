@@ -9,10 +9,8 @@ import fr.proline.logviewer.model.LogTask;
 import fr.proline.logviewer.model.Utility;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -91,7 +89,7 @@ public class TaskView extends JPanel {
             expandTreeAllNodes(tree, 0, tree.getRowCount());
             m_paramPanel.getViewport().add(tree);
             //_parameterTextArea.setText(m_task.getRequestParam());
-            m_executionPanel.setData(m_task.getTimeStamp(), m_task.getNbOtherTaskMoment());
+            m_executionPanel.setData(m_task.getTimeStamp(), m_task.getNbOtherTaskMoment(), "");
             repaint();
         }
     }
@@ -216,6 +214,7 @@ public class TaskView extends JPanel {
         m_stopLineIndexLabel.setText("line index");
         m_paramPanel.getViewport().removeAll();
         //TextField for main info
+        m_executionPanel.init();
     }
 
     public JPanel createMainInfoPanel() {
@@ -380,99 +379,10 @@ public class TaskView extends JPanel {
     }
 
     private TaskExecutionPanel createExecutionPanel() {
-        TaskExecutionPanel pane = new TaskExecutionPanel();
+        TaskExecutionPanel pane = new TaskExecutionPanel(15, 12);
         pane.setSize(this.getWidth(), 40);
         pane.setBorder(BorderFactory.createTitledBorder("Exexution situation & Parallel task"));
         return pane;
     }
 
-    class TaskExecutionPanel extends JPanel {
-
-        /**
-         * time stamp
-         */
-        private ArrayList<Long> m_xValues;
-        /**
-         * nomber of task
-         */
-        private ArrayList<Integer> m_yValues;
-
-        /**
-         * number of time stamps
-         */
-        private int m_size;
-        /**
-         * time lenght
-         */
-        private long m_length;
-
-        private int m_maxNbOtherTask;
-
-        void setData(ArrayList<Long> xValues, ArrayList<Integer> yValues) {
-            this.m_xValues = xValues;
-            this.m_yValues = yValues;
-            this.m_size = xValues.size();
-            this.m_length = m_xValues.get(m_size - 1);
-            if (m_length == 0) {
-                m_length = 1;
-            }
-            //System.out.println(m_task.getTaskOrder() + " : duree " + m_length + "," + this.toString());
-        }
-
-        public void paint(Graphics g) {
-            if (m_xValues == null || m_size < 1) {
-                super.paint(g);
-                return;
-            }
-            setOpaque(true);
-            super.paint(g);
-            long maxLength = getWidth() - 10;
-            int start, w;
-            Color color;
-            for (int i = 0; i < m_size; i++) {
-                long predTimeStamp = (i == 0) ? 0 : m_xValues.get(i - 1);
-                start = Math.round(5l + (predTimeStamp * maxLength / m_length));
-                w = Math.round((m_xValues.get(i) - predTimeStamp) * maxLength / m_length);
-                color = pickColor((int) m_yValues.get(i));
-                g.setColor(color);
-                g.fillRect(start, 20, w, height - 12);
-                //System.out.println("(|" + start + "->" + w + " panel width=" + maxLength + " color=" + m_yValues.get(i));
-            }
-        }
-
-        private Color pickColor(int nbTask) {
-            int i = (nbTask >= colorSize) ? colorSize - 1 : nbTask;
-            Color color = INTENSITY_PALETTE[i];
-            return color;
-        }
-
-        public String toString() {
-            String s = "" + m_xValues.size() + " ";
-            for (int i = 0; i < m_xValues.size(); i++) {
-                s += ",[" + m_xValues.get(i) + "," + m_yValues.get(i) + "]";
-            }
-            return s;
-        }
-
-        final Color[] INTENSITY_PALETTE = {
-            Color.getHSBColor(0, 0, 1),//while        
-            Color.getHSBColor(0.55f, 0.1f, 1.0f),//bleu-white1
-            Color.getHSBColor(0.55f, 0.2f, 1.0f),//bleu-white2
-            Color.getHSBColor(0.55f, 0.3f, 1.0f),//bleu-white3
-            Color.getHSBColor(0.3f, 0.4f, 1.0f),//green1
-            Color.getHSBColor(0.3f, 0.5f, 1.0f),//green2
-            Color.getHSBColor(0.18f, 0.6f, 1.0f),//yellow1
-            Color.getHSBColor(0.16f, 0.7f, 1.0f),//yellow2
-            Color.getHSBColor(0.11f, 0.8f, 1.0f),//yellow-orange1
-            Color.getHSBColor(0.10f, 0.9f, 1.0f),//orange2
-            Color.getHSBColor(0.08f, 1.0f, 1.0f),//orange3
-            Color.getHSBColor(1, 1.0f, 1.0f),//red
-            Color.getHSBColor(0.9f, 0.6f, 0.8f),//bordeau
-            Color.getHSBColor(0.8f, 0.4f, 0.6f),//purple
-            Color.getHSBColor(0.8f, 0.2f, 0.4f),//Grey->Dark3
-            Color.getHSBColor(0, 1.0f, 0)//Dark
-        };
-        final int colorSize = INTENSITY_PALETTE.length;
-        final int height = 20;
-    }
 }
