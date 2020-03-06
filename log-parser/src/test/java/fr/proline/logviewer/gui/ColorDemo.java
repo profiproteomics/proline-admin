@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.proline.logviewer.model;
+package fr.proline.logviewer.gui;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -29,18 +29,18 @@ public class ColorDemo extends JFrame {
                 for (int i = 0; i < colorSize; i++) {
                     start = 10 + i * 40;
                     g.setColor(Color.BLACK);
-                    g.drawString(""+i, start+16, 18);
+                    g.drawString("" + i, start + 16, 18);
                     color = pickColor(i);
                     g.setColor(color);
                     g.fillRect(start, 20, 40, height);
-                    
+
                 }
 
             }
 
         });
         this.setLocation(230, 120);
-       
+
         this.setVisible(true);
     }
 
@@ -50,7 +50,7 @@ public class ColorDemo extends JFrame {
         return color;
     }
 
-    final Color[] INTENSITY_PALETTE = {
+    final Color[] INTENSITY_PALETTE1 = {
         Color.getHSBColor(0, 0, 1),//while        
         Color.getHSBColor(0.55f, 0.1f, 1.0f),//bleu-white1
         Color.getHSBColor(0.55f, 0.2f, 1.0f),//bleu-white2
@@ -68,8 +68,33 @@ public class ColorDemo extends JFrame {
         Color.getHSBColor(0.8f, 0.2f, 0.4f),//red->Dark3
         Color.getHSBColor(0, 1.0f, 0)//Dark
     };
-    final int colorSize = INTENSITY_PALETTE.length;
+
     final int height = 20;
+
+    final Color[] INTENSITY_PALETTE = {
+        Color.getHSBColor(0, 0, 1),//while        
+        Color.getHSBColor(0.55f, 0.1f, 1.0f),//bleu-white1
+        Color.getHSBColor(0.55f, 0.2f, 1.0f),//bleu-white2
+        Color.getHSBColor(0.55f, 0.3f, 1.0f),//bleu-white3
+        Color.getHSBColor(0.55f, 0.4f, 1.0f),//bleu-white2
+        Color.getHSBColor(0.55f, 0.5f, 1.0f),//bleu-white3
+        Color.getHSBColor(0.30f, 0.2f, 1.0f),//green1
+        Color.getHSBColor(0.30f, 0.3f, 1.0f),//green2
+        Color.getHSBColor(0.30f, 0.5f, 1.0f),//green3
+        Color.getHSBColor(0.30f, 0.7f, 1.0f),//green4
+        Color.getHSBColor(0.30f, 0.9f, 1.0f),//green5
+          Color.getHSBColor(0.20f, 0.4f, 1.0f),//yellow1
+        Color.getHSBColor(0.18f, 0.5f, 1.0f),//yellow1
+        Color.getHSBColor(0.16f, 0.6f, 1.0f),//yellow2
+        Color.getHSBColor(0.14f, 0.6f, 1.0f),//yellow-orange1
+        Color.getHSBColor(0.12f, 0.7f, 1.0f),//yellow-orange1
+        Color.getHSBColor(0.10f, 0.8f, 1.0f),//orange2
+        Color.getHSBColor(0.07f, 0.7f, 1.0f),//orange3
+        Color.getHSBColor(0.05f, 0.6f, 1.0f),//red
+        Color.getHSBColor(0.03f, 0.8f, 1.0f),//red
+        Color.getHSBColor(0, 1.0f, 1.0f)//red
+    };
+    final int colorSize = INTENSITY_PALETTE.length;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {

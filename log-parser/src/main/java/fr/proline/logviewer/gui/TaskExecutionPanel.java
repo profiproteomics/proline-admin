@@ -6,7 +6,6 @@
 package fr.proline.logviewer.gui;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
@@ -90,13 +89,13 @@ public class TaskExecutionPanel extends JPanel {
             }
             g.fillRect(start, m_y0, w, m_height);
         }
-        
+
         FontMetrics fm = g.getFontMetrics(g.getFont());
         Rectangle2D fb = fm.getStringBounds(m_value, g);
         int px = (int) (maxLength - fb.getWidth()) / 2;
         int py = (int) fb.getHeight();
-        g.setColor(Color.white);
-        g.fillRect(px, 1, (int)fb.getWidth(), py);
+        //g.setColor(Color.white);
+        //g.fillRect(px, 1, (int) fb.getWidth(), py);
         g.setColor(Color.BLACK);
         g.drawString(m_value, px, py);
         //System.out.println("(|" + start + "->" + w + " panel width=" + maxLength + " color=" + m_yValues.get(i));
@@ -122,18 +121,23 @@ public class TaskExecutionPanel extends JPanel {
         Color.getHSBColor(0.55f, 0.1f, 1.0f),//bleu-white1
         Color.getHSBColor(0.55f, 0.2f, 1.0f),//bleu-white2
         Color.getHSBColor(0.55f, 0.3f, 1.0f),//bleu-white3
-        Color.getHSBColor(0.3f, 0.4f, 1.0f),//green1
-        Color.getHSBColor(0.3f, 0.5f, 1.0f),//green2
-        Color.getHSBColor(0.18f, 0.6f, 1.0f),//yellow1
-        Color.getHSBColor(0.16f, 0.7f, 1.0f),//yellow2
-        Color.getHSBColor(0.11f, 0.8f, 1.0f),//yellow-orange1
-        Color.getHSBColor(0.10f, 0.9f, 1.0f),//orange2
-        Color.getHSBColor(0.08f, 1.0f, 1.0f),//orange3
-        Color.getHSBColor(1, 1.0f, 1.0f),//red
-        Color.getHSBColor(0.9f, 0.6f, 0.8f),//bordeau
-        Color.getHSBColor(0.8f, 0.4f, 0.6f),//purple
-        Color.getHSBColor(0.8f, 0.2f, 0.4f),//Grey->Dark3
-        Color.getHSBColor(0, 1.0f, 0)//Dark
+        Color.getHSBColor(0.55f, 0.4f, 1.0f),//bleu-white2
+        Color.getHSBColor(0.55f, 0.5f, 1.0f),//bleu-white3
+        Color.getHSBColor(0.30f, 0.2f, 1.0f),//green1
+        Color.getHSBColor(0.30f, 0.3f, 1.0f),//green2
+        Color.getHSBColor(0.30f, 0.5f, 1.0f),//green3
+        Color.getHSBColor(0.30f, 0.7f, 1.0f),//green4
+        Color.getHSBColor(0.30f, 0.9f, 1.0f),//green5
+        Color.getHSBColor(0.20f, 0.4f, 1.0f),//yellow1
+        Color.getHSBColor(0.18f, 0.5f, 1.0f),//yellow1
+        Color.getHSBColor(0.16f, 0.6f, 1.0f),//yellow2
+        Color.getHSBColor(0.14f, 0.6f, 1.0f),//yellow-orange1
+        Color.getHSBColor(0.12f, 0.7f, 1.0f),//yellow-orange1
+        Color.getHSBColor(0.10f, 0.8f, 1.0f),//orange2
+        Color.getHSBColor(0.07f, 0.7f, 1.0f),//orange3
+        Color.getHSBColor(0.05f, 0.6f, 1.0f),//red1
+        Color.getHSBColor(0.03f, 0.8f, 1.0f),//red2
+        Color.getHSBColor(0, 1.0f, 1.0f)//red3
     };
     final int colorSize = INTENSITY_PALETTE.length;
 }
