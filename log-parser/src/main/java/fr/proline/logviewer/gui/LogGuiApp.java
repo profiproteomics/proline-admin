@@ -22,7 +22,10 @@ import fr.proline.logviewer.model.LogLineReader;
 import fr.proline.logviewer.model.ProlineException;
 import fr.proline.logviewer.model.Utility;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +35,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Scanner;
 import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -65,18 +69,19 @@ public class LogGuiApp extends JFrame {
     private JFrame m_taskFlowFrame;
     private JTextPane m_taskFlowTextPane;
     private boolean m_isBigFile = false;
+    private ColorPalette m_colorPalette;
 
     public LogGuiApp() {
         super("Log Analyser");
         m_fileChooser = new JFileChooser();
         m_logPanel = new LogViewControlPanel(this);
         m_dateFormat = DATE_FORMAT.SHORT;
-//        m_path = ("D:\\programs\\Proline-Zero-2.1.0-SNAPSHOT\\Proline-Cortex-2.1.0-SNAPSHOT\\logs\\");
-//        m_path = "D:\\prolineBak\\cortexLog\\";
-//        //m_path = "D:\\programs\\Proline-Zero-2.1.0-SNAPSHOT-PTM-02072019\\Proline-Cortex-2.1.0-SNAPSHOT\\logs\\proline_cortex_log.2020-02-05.txt";
-//        File defaultFile = new File(m_path);
-//        m_fileChooser.setSelectedFile(defaultFile);
-//
+        m_path = ("D:\\programs\\Proline-Zero-2.1.0-SNAPSHOT\\Proline-Cortex-2.1.0-SNAPSHOT\\logs\\");
+        m_path = "D:\\prolineBak\\cortexLog\\";
+        //m_path = "D:\\programs\\Proline-Zero-2.1.0-SNAPSHOT-PTM-02072019\\Proline-Cortex-2.1.0-SNAPSHOT\\logs\\proline_cortex_log.2020-02-05.txt";
+        File defaultFile = new File(m_path);
+        m_fileChooser.setSelectedFile(defaultFile);
+
         initComponents();
         this.setLocation(230, 2);
         pack();
@@ -92,106 +97,128 @@ public class LogGuiApp extends JFrame {
         m_taskFlowFrame = new JFrame("Log Task Flow");
         m_taskFlowFrame.add(new JScrollPane(m_taskFlowTextPane));
         m_taskFlowFrame.setSize(700, 750);
-        m_taskFlowFrame.setLocation(950,250);
+        m_taskFlowFrame.setLocation(950, 250);
         m_taskFlowFrame.setVisible(true);
         m_taskFlowFrame.setIconImage(icon);
-
-        JMenuItem analyseFileMenuItem;
-        JMenuItem exitMunuItem;
-        JMenuItem showTaskFlowItem;
-        JMenu fileMenu, dataFormatMenu, taskMenu;
-        JRadioButtonMenuItem shortMonthMenuItem;
-        JRadioButtonMenuItem normalMonthMenuItem;
-        JMenuBar jMenuBar;
-        ButtonGroup group = new ButtonGroup();//one choice one time
-        jMenuBar = new JMenuBar();
-        fileMenu = new JMenu();
-
-        fileMenu.setText(
-                "File");
-
-        dataFormatMenu = new JMenu();
-
-        dataFormatMenu.setText(
-                "Date Format");
-
-        analyseFileMenuItem = new JMenuItem();
-        exitMunuItem = new JMenuItem();
-
-        shortMonthMenuItem = new JRadioButtonMenuItem("Short Month: like (18 Sep 2019) ");
-        normalMonthMenuItem = new JRadioButtonMenuItem("Normal Month: like (18 sep. 2019)");
-
-        shortMonthMenuItem.setSelected(
-                true);
-        shortMonthMenuItem.addActionListener(
-                new java.awt.event.ActionListener() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent evt
-            ) {
-                m_dateFormat = DATE_FORMAT.SHORT;
-                m_logger.debug("m_dataFormat is {}", m_dateFormat);
-            }
-        }
-        );
-
-        normalMonthMenuItem.addActionListener(
-                new java.awt.event.ActionListener() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent evt
-            ) {
-                m_dateFormat = DATE_FORMAT.NORMAL;
-                m_logger.debug("m_dataFormat is {}", m_dateFormat);
-            }
-        }
-        );
-        dataFormatMenu.add(shortMonthMenuItem);
-
-        dataFormatMenu.add(normalMonthMenuItem);
-
-        group.add(shortMonthMenuItem);
-
-        group.add(normalMonthMenuItem);
-
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-        analyseFileMenuItem.setText(
-                "Analyse File");
-        analyseFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                analyseFileActionPerformed(evt);
-            }
-        }
-        );
-        fileMenu.add(analyseFileMenuItem);
-
-        exitMunuItem.setText("Exit"); // NOI18N
-        exitMunuItem.addActionListener((java.awt.event.ActionEvent evt) -> {
-            dispose();
-            System.exit(0);
-        });
-        fileMenu.add(exitMunuItem);
-        taskMenu = new JMenu();
-        taskMenu.setText("Tasks");
-        showTaskFlowItem = new JMenuItem();
-        showTaskFlowItem.setText("Show Flow of the tasks");
-        showTaskFlowItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                m_taskFlowFrame.setVisible(true);
-            }
-
-        });
-        taskMenu.add(showTaskFlowItem);
-
-        jMenuBar.add(fileMenu);
-        jMenuBar.add(dataFormatMenu);
-        jMenuBar.add(taskMenu);
+        m_colorPalette = new ColorPalette();
+        this.setGlassPane(m_colorPalette);
+        JMenuBar jMenuBar = initMenuBar();
         setJMenuBar(jMenuBar);
-
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(m_logPanel, BorderLayout.CENTER);
 
     }//
+
+    private JMenuBar initMenuBar() {
+        JMenu fileMenu, dataFormatMenu, taskMenu;
+
+        {//fileMenu
+            fileMenu = new JMenu("File");
+            JMenuItem analyseFileMenuItem = new JMenuItem("Analyse File");
+            analyseFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
+
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    analyseFileActionPerformed(evt);
+                }
+            });
+            fileMenu.add(analyseFileMenuItem);
+            JMenuItem exitMunuItem = new JMenuItem("Exit"); // NOI18N
+            exitMunuItem.addActionListener((java.awt.event.ActionEvent evt) -> {
+                dispose();
+                System.exit(0);
+            });
+            fileMenu.add(exitMunuItem);
+        }
+        {//dataFormatMenu
+            ButtonGroup group = new ButtonGroup();//one choice one time
+            dataFormatMenu = new JMenu("Date Format");
+            JRadioButtonMenuItem shortMonthMenuItem = new JRadioButtonMenuItem("Short Month: like (18 Sep 2019) ");
+            JRadioButtonMenuItem normalMonthMenuItem = new JRadioButtonMenuItem("Normal Month: like (18 sep. 2019)");
+            shortMonthMenuItem.setSelected(true);
+            shortMonthMenuItem.addActionListener(new java.awt.event.ActionListener() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent evt
+                ) {
+                    m_dateFormat = DATE_FORMAT.SHORT;
+                    m_logger.debug("m_dataFormat is {}", m_dateFormat);
+                }
+            });
+
+            normalMonthMenuItem.addActionListener(new java.awt.event.ActionListener() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent evt
+                ) {
+                    m_dateFormat = DATE_FORMAT.NORMAL;
+                    m_logger.debug("m_dataFormat is {}", m_dateFormat);
+                }
+            });
+            dataFormatMenu.add(shortMonthMenuItem);
+            dataFormatMenu.add(normalMonthMenuItem);
+            group.add(shortMonthMenuItem);
+            group.add(normalMonthMenuItem);
+        }
+        {//Task menu
+            taskMenu = new JMenu("Tasks");
+            JMenuItem showTaskFlowItem = new JMenuItem("Show Flow of the tasks");
+
+            showTaskFlowItem.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    m_taskFlowFrame.setVisible(true);
+                }
+
+            }
+            );
+            JRadioButtonMenuItem showNBTaskItem = new JRadioButtonMenuItem("Show Color Palette of Parallel Tasks Numbers");
+            showNBTaskItem.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    m_colorPalette.setVisible(showNBTaskItem.isSelected());
+                }
+
+            });
+            taskMenu.add(showTaskFlowItem);
+            taskMenu.add(showNBTaskItem);
+        }
+        //main menuBar
+        JMenuBar jMenuBar = new JMenuBar();
+        jMenuBar.add(fileMenu);
+        jMenuBar.add(dataFormatMenu);
+        jMenuBar.add(taskMenu);
+        return jMenuBar;
+    }
+
+    class ColorPalette extends JComponent {
+
+        private int x0, y0;
+
+        public ColorPalette() {
+            Rectangle bound = m_logPanel.getBounds();
+            x0 = bound.x + bound.width / 2;
+            y0 = bound.y + 2;
+
+        }
+
+        @Override
+        public void paintComponent(Graphics g) {
+            Color color;
+            int start;
+            for (int i = 0; i < colorSize; i++) {
+                start = x0 + i * 30;
+                color = pickColor(i);
+                g.setColor(color);
+                g.fillRect(start, y0, 30, 18);
+                g.setColor(Color.BLACK);
+                g.drawString("" + i, start + 12, y0 + 16);
+            }
+        }
+
+        private Color pickColor(int nbTask) {
+            int i = (nbTask >= colorSize) ? colorSize : nbTask;
+            Color color = TaskExecutionPanel.INTENSITY_PALETTE[i];
+            return color;
+        }
+        final int colorSize = TaskExecutionPanel.INTENSITY_PALETTE.length;
+    }
 
     private void analyseFileActionPerformed(ActionEvent evt) {
         LogLineReader logReader;
@@ -246,6 +273,7 @@ public class LogGuiApp extends JFrame {
 
     boolean isBigFile() {
         return m_isBigFile;
+
     }
 
     class LogReaderWorker extends SwingWorker<Long, String> {
