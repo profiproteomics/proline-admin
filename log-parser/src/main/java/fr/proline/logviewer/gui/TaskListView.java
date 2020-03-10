@@ -13,7 +13,9 @@ import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -30,6 +32,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
+import org.jdesktop.swingx.table.TableColumnExt;
 
 /**
  *
@@ -49,12 +52,9 @@ public class TaskListView extends JScrollPane {
         this.setPreferredSize(new Dimension(1400, 250));
         m_taskList = new ArrayList();
         m_tableModel = new TaskTableModel();
-
         m_taskTable = new TaskTable(m_tableModel);
-        m_taskTable.setRowSorter(createSorter(m_tableModel));
-        m_taskTable.setTableHeader(new TooltipsTableHeader(m_taskTable.getColumnModel(), m_columnNames));
+        m_taskTable.init();
         this.getViewport().add(m_taskTable);
-
     }
 
     void setData(ArrayList<LogTask> tasks, String fileName) {
@@ -72,13 +72,14 @@ public class TaskListView extends JScrollPane {
 
     private void initColumnsize() {
         String[] example = {"198", "853bda4a-10d9-11e8-9a85-d9411af38406", "[pool-2-thread-25]", "proline/dps/msi/ImportValidateGenerateSM", " result_files :  mascot_data/20200113/F136424.dat ",
-            "FINISHED_W", "104", "09:01:27.985 - 09 oct. 2019 ", "09:01:27.985 - 09 oct. 2019 ", "+10                     "};
+            "FINISHED_W", "104", "09:01:27.985 - 09 oct. 2019 ", "09:01:27.985 - 09 oct. 2019 ", "111:59:59.999", "+10                     "};
         TableColumn column;
         int cellWidth;
         for (int i = 0; i < m_taskTable.getColumnCount(); i++) {
             column = m_taskTable.getColumnModel().getColumn(i);
+            int modelIndex = m_taskTable.convertColumnIndexToModel(i);
             TableCellRenderer renderer = m_taskTable.getDefaultRenderer(column.getClass());
-            Component comp = renderer.getTableCellRendererComponent(m_taskTable, example[i], false, false, 0, i);
+            Component comp = renderer.getTableCellRendererComponent(m_taskTable, example[modelIndex], false, false, 0, i);
             cellWidth = comp.getPreferredSize().width;
             column.setPreferredWidth(cellWidth);
         }
@@ -86,8 +87,8 @@ public class TaskListView extends JScrollPane {
 
     class TaskTable extends JXTable {
 
-        public TaskTable(TableModel dm) {
-            super(dm);
+        public TaskTable(TaskTableModel tModel) {
+            super(tModel);
             this.setColumnControlVisible(true);
             this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             // highlight one line of two
@@ -112,17 +113,71 @@ public class TaskListView extends JScrollPane {
                     }
                 }
             });
+
+        }
+
+        public void init() {
+            this.setRowSorter(createSorter((TaskTableModel) this.getModel()));
+            this.setTableHeader(new TooltipsTableHeader(m_taskTable.getColumnModel(), m_columnNames));
+            this.setColumnsVisibility();
         }
 
         @Override
         public TableCellRenderer getCellRenderer(int row, int column) {
-            if (column == TaskTableModel.COLTYPE_NB_TASK_PARALELLE) {
-                return new TaskNbCellRenderer();
-            } else {
-                return super.getCellRenderer(row, column);
+            int columnM = this.convertColumnIndexToModel(column);
+            switch (columnM) {
+                case TaskTableModel.COLTYPE_NB_TASK_PARALELLE:
+                    return new TaskNbCellRenderer();
+                case TaskTableModel.COLTYPE_DURATION:
+                    return new DurationCellRenderer();
+                default:
+                    return super.getCellRenderer(row, columnM);
             }
         }
 
+        private void setColumnsVisibility() {
+            List<TableColumn> columns = getColumns(true);
+            TableColumnExt columnExt = (TableColumnExt) columns.get(TaskTableModel.COLTYPE_MESSAGE_ID);
+            if (columnExt != null) {
+                columnExt.setVisible(false);
+            }
+        }
+
+        private TableRowSorter<TableModel> createSorter(TaskTableModel model) {
+            TableRowSorter<TableModel> sorter = new TableRowSorter<>(model);
+            Comparator c1 = new Comparator<String>() {
+                public int compare(String s1, String s2) {
+                    long delta = Utility.parseTime(s1) - Utility.parseTime(s2);
+                    if (delta == 0) {
+                        return 0;
+                    } else {
+                        return (delta) > 0 ? 1 : -1;
+                    }
+                }
+
+            };
+
+            sorter.setComparator(TaskTableModel.COLTYPE_START_TIME, c1);
+            sorter.setComparator(TaskTableModel.COLTYPE_STOP_TIME, c1);
+            return sorter;
+        }
+
+        class TooltipsTableHeader extends JTableHeader {
+
+            String[] tooltips;
+
+            TooltipsTableHeader(TableColumnModel columnModel, String[] columnTooltips) {
+                super(columnModel);//do everything a normal JTableHeader does
+                this.tooltips = columnTooltips;//plus extra data
+            }
+
+            public String getToolTipText(MouseEvent e) {
+                java.awt.Point p = e.getPoint();
+                int index = columnModel.getColumnIndexAtX(p.x);
+                int realIndex = columnModel.getColumn(index).getModelIndex();
+                return this.tooltips[realIndex];
+            }
+        }
     }
 
     private String[] m_columnNames = {
@@ -135,6 +190,7 @@ public class TaskListView extends JScrollPane {
         "Project Id",
         "Start Time",
         "Stop Time",
+        "Duration",
         "Nb Task Paralelle"};
 
     class TaskTableModel extends AbstractTableModel {
@@ -148,7 +204,8 @@ public class TaskListView extends JScrollPane {
         static final int COLTYPE_PROJECT_ID = 6;
         static final int COLTYPE_START_TIME = 7;
         static final int COLTYPE_STOP_TIME = 8;
-        static final int COLTYPE_NB_TASK_PARALELLE = 9;
+        static final int COLTYPE_DURATION = 9;
+        static final int COLTYPE_NB_TASK_PARALELLE = 10;
 
         public TaskTableModel() {
             m_taskList = new ArrayList();
@@ -204,6 +261,9 @@ public class TaskListView extends JScrollPane {
                 case COLTYPE_META_INFO: {
                     return String.class;
                 }
+                case COLTYPE_DURATION: {
+                    return Long.class;
+                }
                 case COLTYPE_NB_TASK_PARALELLE: {
                     return Integer.class;
                 }
@@ -239,13 +299,6 @@ public class TaskListView extends JScrollPane {
                     } else {
                         return s.toString();
                     }
-
-                }
-                case COLTYPE_START_TIME: {
-                    return Utility.formatTime(taskInfo.getStartTime());
-                }
-                case COLTYPE_STOP_TIME: {
-                    return Utility.formatTime(taskInfo.getStopTime());
                 }
                 case COLTYPE_THREAD_NAME: {
                     return taskInfo.getThreadName();
@@ -259,6 +312,15 @@ public class TaskListView extends JScrollPane {
                 case COLTYPE_META_INFO: {
                     return taskInfo.getDataSet();
                 }
+                case COLTYPE_START_TIME: {
+                    return Utility.formatTime(taskInfo.getStartTime());
+                }
+                case COLTYPE_STOP_TIME: {
+                    return Utility.formatTime(taskInfo.getStopTime());
+                }
+                case COLTYPE_DURATION: {
+                    return taskInfo.getDuration();
+                }
                 case COLTYPE_NB_TASK_PARALELLE: {
                     return taskInfo.getNbParallelTask();
                 }
@@ -268,6 +330,21 @@ public class TaskListView extends JScrollPane {
         }
 
     }//end inner class TaskTableModel
+
+    public class DurationCellRenderer extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JLabel lb = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            int modelIndex = table.convertRowIndexToModel(row);
+            TaskTableModel model = (TaskTableModel) table.getModel();
+            LogTask task = model.getTask(modelIndex);
+            //we don't use value in order to avoid exception
+            String toShow = Utility.formatDurationInHour(task.getDuration());
+            lb.setText(toShow);
+            return lb;
+        }
+    }
 
     public class TaskNbCellRenderer extends DefaultTableCellRenderer {
 
@@ -286,42 +363,6 @@ public class TaskListView extends JScrollPane {
             return m_valuePanel;
         }
 
-    }
-
-    class TooltipsTableHeader extends JTableHeader {
-
-        String[] tooltips;
-
-        TooltipsTableHeader(TableColumnModel columnModel, String[] columnTooltips) {
-            super(columnModel);//do everything a normal JTableHeader does
-            this.tooltips = columnTooltips;//plus extra data
-        }
-
-        public String getToolTipText(MouseEvent e) {
-            java.awt.Point p = e.getPoint();
-            int index = columnModel.getColumnIndexAtX(p.x);
-            int realIndex = columnModel.getColumn(index).getModelIndex();
-            return this.tooltips[realIndex];
-        }
-    }
-
-    private TableRowSorter<TableModel> createSorter(TaskTableModel model) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(model);
-        Comparator c1 = new Comparator<String>() {
-            public int compare(String s1, String s2) {
-                long delta = Utility.parseTime(s1) - Utility.parseTime(s2);
-                if (delta == 0) {
-                    return 0;
-                } else {
-                    return (delta) > 0 ? 1 : -1;
-                }
-            }
-
-        };
-
-        sorter.setComparator(TaskTableModel.COLTYPE_START_TIME, c1);
-        sorter.setComparator(TaskTableModel.COLTYPE_STOP_TIME, c1);
-        return sorter;
     }
 
 }
