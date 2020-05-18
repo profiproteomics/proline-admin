@@ -61,7 +61,7 @@ public class TaskExecutionPanel extends JPanel {
 
     }
 
-    void setData(ArrayList<Long> xValues, ArrayList<Integer> yValues, String value) {
+    public void setData(ArrayList<Long> xValues, ArrayList<Integer> yValues, String value) {
         this.m_xValues = xValues;
         this.m_yValues = yValues;
         this.m_size = xValues.size();
@@ -93,7 +93,7 @@ public class TaskExecutionPanel extends JPanel {
             long predTimeStamp = (i == 0) ? 0 : m_xValues.get(i - 1);
             start = Math.round(5l + (predTimeStamp * maxLength / m_length));
             w = Math.round((m_xValues.get(i) - predTimeStamp) * maxLength / m_length);
-            color = pickColor((int) m_yValues.get(i));
+            color = ColorPalette.pickColor((int) m_yValues.get(i));
             g.setColor(color);
             if (m_height == -1) {
                 m_height = getHeight() - 2;
@@ -113,42 +113,12 @@ public class TaskExecutionPanel extends JPanel {
 
     }
 
-    private Color pickColor(int nbTask) {
-        int i = (nbTask >= colorSize) ? colorSize - 1 : nbTask;
-        Color color = INTENSITY_PALETTE[i];
-        return color;
-    }
-
-    public String toString() {
+     public String toString() {
         String s = "" + m_xValues.size() + " ";
         for (int i = 0; i < m_xValues.size(); i++) {
             s += ",[" + m_xValues.get(i) + "," + m_yValues.get(i) + "]";
         }
         return s;
     }
-
-    public static final Color[] INTENSITY_PALETTE = {
-        Color.getHSBColor(0, 0, 1),//while        
-        Color.getHSBColor(0.55f, 0.1f, 1.0f),//bleu-white1
-        Color.getHSBColor(0.55f, 0.2f, 1.0f),//bleu-white2
-        Color.getHSBColor(0.55f, 0.3f, 1.0f),//bleu-white3
-        Color.getHSBColor(0.55f, 0.4f, 1.0f),//bleu-white2
-        Color.getHSBColor(0.55f, 0.5f, 1.0f),//bleu-white3
-        Color.getHSBColor(0.30f, 0.2f, 1.0f),//green1
-        Color.getHSBColor(0.30f, 0.3f, 1.0f),//green2
-        Color.getHSBColor(0.30f, 0.5f, 1.0f),//green3
-        Color.getHSBColor(0.30f, 0.7f, 1.0f),//green4
-        Color.getHSBColor(0.30f, 0.9f, 1.0f),//green5
-        Color.getHSBColor(0.20f, 0.4f, 1.0f),//yellow1
-        Color.getHSBColor(0.18f, 0.5f, 1.0f),//yellow1
-        Color.getHSBColor(0.16f, 0.6f, 1.0f),//yellow2
-        Color.getHSBColor(0.14f, 0.6f, 1.0f),//yellow-orange1
-        Color.getHSBColor(0.12f, 0.7f, 1.0f),//yellow-orange1
-        Color.getHSBColor(0.10f, 0.8f, 1.0f),//orange2
-        Color.getHSBColor(0.07f, 0.7f, 1.0f),//orange3
-        Color.getHSBColor(0.05f, 0.6f, 1.0f),//red1
-        Color.getHSBColor(0.03f, 0.8f, 1.0f),//red2
-        Color.getHSBColor(0, 1.0f, 1.0f)//red3
-    };
-    final int colorSize = INTENSITY_PALETTE.length;
+    
 }

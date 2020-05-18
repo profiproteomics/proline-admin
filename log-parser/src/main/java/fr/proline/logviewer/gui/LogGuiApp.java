@@ -19,23 +19,11 @@ package fr.proline.logviewer.gui;
 
 import fr.proline.logviewer.model.Utility.DATE_FORMAT;
 import fr.proline.logviewer.model.LogLineReader;
-import fr.proline.logviewer.model.ProlineException;
-import fr.proline.logviewer.model.Utility;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.util.List;
-import java.util.Scanner;
 import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -46,9 +34,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,14 +87,14 @@ public class LogGuiApp extends JFrame {
         m_taskFlowFrame.setVisible(true);
         m_taskFlowFrame.setIconImage(icon);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        m_colorPalette = new ColorPalette();
+        m_colorPalette = new ColorPalette(m_logPanel);
         this.setGlassPane(m_colorPalette);
         JMenuBar jMenuBar = initMenuBar();
         setJMenuBar(jMenuBar);
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(m_logPanel, BorderLayout.CENTER);
 
-    }//
+    }
 
     private JMenuBar initMenuBar() {
         JMenu fileMenu, dataFormatMenu, taskMenu;
@@ -187,39 +173,6 @@ public class LogGuiApp extends JFrame {
         return jMenuBar;
     }
 
-    class ColorPalette extends JComponent {
-
-        private int x0, y0;
-
-        public ColorPalette() {
-            Rectangle bound = m_logPanel.getBounds();
-            x0 = bound.x + bound.width / 2;
-            y0 = bound.y + 2;
-
-        }
-
-        @Override
-        public void paintComponent(Graphics g) {
-            Color color;
-            int start;
-            for (int i = 0; i < colorSize; i++) {
-                start = x0 + i * 30;
-                color = pickColor(i);
-                g.setColor(color);
-                g.fillRect(start, y0, 30, 18);
-                g.setColor(Color.BLACK);
-                g.drawString("" + i, start + 12, y0 + 16);
-            }
-        }
-
-        private Color pickColor(int nbTask) {
-            int i = (nbTask >= colorSize) ? colorSize : nbTask;
-            Color color = TaskExecutionPanel.INTENSITY_PALETTE[i];
-            return color;
-        }
-        final int colorSize = TaskExecutionPanel.INTENSITY_PALETTE.length;
-    }
-
     private void analyseFileActionPerformed(ActionEvent evt) {
         LogLineReader logReader;
         int returnVal = m_fileChooser.showOpenDialog(LogGuiApp.this);
@@ -274,101 +227,5 @@ public class LogGuiApp extends JFrame {
     boolean isBigFile() {
         return m_isBigFile;
 
-    }
-
-    class LogReaderWorker extends SwingWorker<Long, String> {
-
-        //SwingWorker<Long, String>: Long = number of line, Sting= a task begin/end info
-        File m_file;
-        private DATE_FORMAT m_dateFormat;
-        Scanner m_fileScanner;
-        JTextPane m_taskFlowTextPane;
-        LogLineReader m_reader;
-        StringBuilder m_stringBuilder;
-        LogViewControlPanel m_logPanel;
-
-        LogReaderWorker(LogViewControlPanel logPanel, JTextPane taskFlowTextPane, File file, DATE_FORMAT dateFormat, LogLineReader reader) {
-            super();
-            FileInputStream inputStream = null;
-            try {
-                m_taskFlowTextPane = taskFlowTextPane;
-                m_logPanel = logPanel;
-                m_file = file;
-                m_dateFormat = dateFormat;
-                String abPath = file.getAbsolutePath();
-                m_logger.debug("absolute path is {}", abPath);
-                inputStream = new FileInputStream(abPath);
-                m_fileScanner = new Scanner(inputStream, StandardCharsets.UTF_8.name());
-                m_reader = reader;
-                m_stringBuilder = new StringBuilder();
-            } catch (FileNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        @Override
-        protected Long doInBackground() {
-            long start = System.currentTimeMillis();
-            long index = 0;
-            try {
-                addTraceBegin(m_file.getName());
-                m_logger.debug("Analyse begin...");
-                while (m_fileScanner.hasNextLine()) {
-                    String line = m_fileScanner.nextLine();
-                    index++;
-//                if (index == 19163) {
-//                    String s = "debug begin";
-//                }
-                    //m_logger.debug("{}, task register {}", index);
-                    m_reader.registerTask(line, index);
-                    if (m_reader.isHasNewTrace()) {
-                        publish(m_reader.getNewTrace());
-                    }
-                }
-                m_reader.memoryClean();
-                m_logger.info("Analyse done. {} line in total, {} lines no treated. Total read time is {}", index, m_reader.getNoTreatLineCount(), Utility.formatDeltaTime(System.currentTimeMillis() - start));
-                m_reader.showNoTreatedLines();
-            } catch (ProlineException ex) {
-                if (ex.getCause() instanceof ParseException) {
-                    JOptionPane.showMessageDialog(m_taskFlowTextPane, "Please veriry Data format, configuration is " + m_dateFormat + "\n" + ex.getMessage());
-                    m_logger.error("Stop by date ParseException" + "Please veriry Data format, configuration is " + m_dateFormat + "\n" + ex.getMessage());
-                } else {
-                    JOptionPane.showMessageDialog(m_taskFlowTextPane, ex + "\n" + ex.getStackTrace()[0], "Exception", JOptionPane.ERROR_MESSAGE);
-                    StackTraceElement[] trace = ex.getStackTrace();
-                    String result = "";
-                    for (StackTraceElement el : trace) {
-                        result += el.toString() + "\n";
-                    }
-                    m_logger.error(ex + "\n" + result);
-                }
-
-                m_logger.error(" ProlineException, task register stop at line {}", index);
-            } catch (Exception ex) {
-                m_logger.error(" Exception task register stop at line {}", index);
-                ex.printStackTrace();
-            }
-            return index;
-        }
-
-        @Override
-        protected void process(List<String> trace) {
-            //treat publish data
-            for (String line : trace) {
-                m_stringBuilder.append(line);
-            }
-            m_taskFlowTextPane.setText(m_stringBuilder.toString());
-        }
-
-        public void addTraceBegin(String fileName) {
-            m_stringBuilder = new StringBuilder("Analyse File: " + fileName + "\n");
-            m_taskFlowTextPane.setText(m_stringBuilder.toString());
-        }
-
-        @Override
-        protected void done() {
-            m_logPanel.requestFocus();
-            m_logPanel.setData(m_reader.getTasks(), m_file.getName());
-            m_reader.close();
-        }
     }
 }

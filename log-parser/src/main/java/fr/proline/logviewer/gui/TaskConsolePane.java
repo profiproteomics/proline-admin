@@ -30,10 +30,8 @@ public class TaskConsolePane extends JScrollPane {
 
     JTextPane m_logTextPane;
     StringBuffer m_stringBuffer;
-    LogViewControlPanel m_ctrl;
 
-    public TaskConsolePane(LogViewControlPanel ctrl) {
-        m_ctrl = ctrl;
+    public TaskConsolePane() {
         this.setBorder(BorderFactory.createTitledBorder("Console"));
         this.setPreferredSize(new Dimension(700, 700));
         m_stringBuffer = new StringBuffer("Log File Begin Here");
@@ -44,8 +42,8 @@ public class TaskConsolePane extends JScrollPane {
         this.getViewport().add(m_logTextPane);
     }
 
-    void setData(String trace) {
-        m_logTextPane.setText(trace);
+    public void setData(String trace) {
+        m_logTextPane.setText("<html>"+trace+"</html>");
         m_logTextPane.setCaretPosition(0);
     }
 }

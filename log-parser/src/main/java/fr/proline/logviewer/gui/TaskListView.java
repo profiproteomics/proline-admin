@@ -94,26 +94,18 @@ public class TaskListView extends JScrollPane {
             // highlight one line of two
             addHighlighter(HighlighterFactory.createSimpleStriping());
             setGridColor(Color.lightGray);
+        }
 
-            ListSelectionModel selectionModel = this.getSelectionModel();
-            selectionModel.addListSelectionListener(new ListSelectionListener() {
-                @Override
-                public void valueChanged(ListSelectionEvent e) {
-                    long begin = System.currentTimeMillis();
-                    if (e.getValueIsAdjusting()) {
-                        return;
-                    }
-                    ListSelectionModel lsm = (ListSelectionModel) e.getSource();
-                    if (!lsm.isSelectionEmpty()) {
-                        int sortedIndex = lsm.getMinSelectionIndex();
-                        int selectedIndex = m_taskTable.convertRowIndexToModel(sortedIndex);
-                        LogTask task = m_taskList.get(selectedIndex);
-                        String taskOrder = (task == null) ? "" : "" + task.getTaskOrder();
-                        m_ctrl.valueChanged(task);
-                    }
-                }
-            });
-
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            ListSelectionModel lsm = (ListSelectionModel) e.getSource();
+            if (!lsm.isSelectionEmpty()) {
+                int sortedIndex = lsm.getMinSelectionIndex();
+                int selectedIndex = m_taskTable.convertRowIndexToModel(sortedIndex);
+                LogTask task = m_taskList.get(selectedIndex);
+                String taskOrder = (task == null) ? "" : "" + task.getTaskOrder();
+                m_ctrl.valueChanged(task);
+            }
         }
 
         public void init() {

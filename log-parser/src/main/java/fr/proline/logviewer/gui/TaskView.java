@@ -44,18 +44,16 @@ public class TaskView extends JPanel {
     //private JTextArea m_parameterTextArea;
     JScrollPane m_paramPanel;
     TaskExecutionPanel m_executionPanel;
-    private LogViewControlPanel m_ctrl;
     private LogTask m_task;
 
-    public TaskView(LogViewControlPanel control) {
+    public TaskView() {
         super();
-        m_ctrl = control;
         this.setBorder(BorderFactory.createTitledBorder("Task Detail"));
         initComponents();
         this.setPreferredSize(new Dimension(700, 700));
     }
 
-    void setData(LogTask selectedTask) {
+    public void setData(LogTask selectedTask) {
         m_task = selectedTask;
         if (m_task == null) {
             reinit();
