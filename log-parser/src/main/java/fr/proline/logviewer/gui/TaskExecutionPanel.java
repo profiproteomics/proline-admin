@@ -79,6 +79,7 @@ public class TaskExecutionPanel extends JPanel {
         m_xValues = null;
     }
 
+    @Override
     public void paint(Graphics g) {
         if (m_xValues == null || m_size < 1) {
             super.paint(g);

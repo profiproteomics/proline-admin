@@ -26,6 +26,7 @@ import java.io.File;
 import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -55,7 +56,7 @@ public class LogGuiApp extends JFrame {
     private JFrame m_taskFlowFrame;
     private JTextPane m_taskFlowTextPane;
     private boolean m_isBigFile = false;
-    private ColorPalette m_colorPalette;
+    private ColorPalette m_colorPanel;
 
     public LogGuiApp() {
         super("Log Analyser");
@@ -87,13 +88,16 @@ public class LogGuiApp extends JFrame {
         m_taskFlowFrame.setVisible(true);
         m_taskFlowFrame.setIconImage(icon);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        m_colorPalette = new ColorPalette(m_logPanel);
-        this.setGlassPane(m_colorPalette);
+
         JMenuBar jMenuBar = initMenuBar();
         setJMenuBar(jMenuBar);
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(m_logPanel, BorderLayout.CENTER);
-
+        m_colorPanel = new ColorPalette();
+        m_colorPanel.setSize(m_colorPanel.getPreferredSize());
+        m_colorPanel.setLocation(750, 1);
+        //this.setGlassPane(m_colorPalette);
+        this.getLayeredPane().add(m_colorPanel, JLayeredPane.PALETTE_LAYER);
     }
 
     private JMenuBar initMenuBar() {
@@ -158,7 +162,7 @@ public class LogGuiApp extends JFrame {
             JRadioButtonMenuItem showNBTaskItem = new JRadioButtonMenuItem("Show Color Palette of Parallel Tasks Numbers");
             showNBTaskItem.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    m_colorPalette.setVisible(showNBTaskItem.isSelected());
+                    m_colorPanel.setVisible(showNBTaskItem.isSelected());
                 }
 
             });
