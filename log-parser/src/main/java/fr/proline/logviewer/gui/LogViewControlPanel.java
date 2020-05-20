@@ -29,7 +29,7 @@ import javax.swing.JSplitPane;
  *
  * @author Karine XUE at CEA
  */
-public class LogViewControlPanel extends JPanel implements ControlInterface{
+public class LogViewControlPanel extends JPanel implements ControlInterface {
 
     private TaskConsolePane m_taskConsole;
     private TaskListView m_taskQueueView;
@@ -104,8 +104,9 @@ public class LogViewControlPanel extends JPanel implements ControlInterface{
         return m_ctrl.isBigFile();
     }
 
-    public String getAnalysedTaskName() {
-        return TaskInJsonCtrl.getInstance().getCurrentFile().getPath();
+    @Override
+    public int getMaxLine2Show() {
+        return Config.getMaxLine2Show();
     }
 
 }

@@ -71,7 +71,7 @@ public class TaskListView extends JScrollPane {
     void setData(ArrayList<LogTask> tasks, String fileName) {
         ((TitledBorder) this.getBorder()).setTitle("List of Tasks" + "     " + fileName);
         m_taskTable.removeAll();//must
-        if (tasks == null) {
+        if (tasks == null || tasks.isEmpty()) {
             m_taskList = new ArrayList<>();
         } else {
             m_taskList = tasks;

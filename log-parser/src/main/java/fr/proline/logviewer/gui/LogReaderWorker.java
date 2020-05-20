@@ -45,18 +45,23 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
     File m_file;
     private Utility.DATE_FORMAT m_dateFormat;
     Scanner m_fileScanner;
-    JTextPane m_taskFlowTextPane;
+    TaskFlowPane m_taskFlowPane;
     LogLineReader m_reader;
     StringBuilder m_stringBuilder;
     ControlInterface m_logPanel;
+    private long m_fileSize;
+    private int m_loadingPercent;
+    private long m_loadingLength;
 
-    public LogReaderWorker(ControlInterface logPanel, JTextPane taskFlowTextPane, File file, Utility.DATE_FORMAT dateFormat, LogLineReader reader) {
+    public LogReaderWorker(ControlInterface logPanel, TaskFlowPane taskFlowTextPane, File file, Utility.DATE_FORMAT dateFormat, LogLineReader reader) {
         super();
         FileInputStream inputStream = null;
         try {
-            m_taskFlowTextPane = taskFlowTextPane;
+            m_taskFlowPane = taskFlowTextPane;
             m_logPanel = logPanel;
             m_file = file;
+            m_fileSize = m_file.length();
+            m_loadingLength = 0;
             m_dateFormat = dateFormat;
             String abPath = file.getAbsolutePath();
             m_logger.debug("absolute path is {}", abPath);
@@ -77,6 +82,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
             m_logger.debug("Analyse begin...");
             while (m_fileScanner.hasNextLine()) {
                 String line = m_fileScanner.nextLine();
+                m_loadingLength += line.length();
                 index++;
 //                if (index == 19163) {
 //                    String s = "debug begin";
@@ -92,10 +98,10 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
             m_reader.showNoTreatedLines();
         } catch (ProlineException ex) {
             if (ex.getCause() instanceof ParseException) {
-                JOptionPane.showMessageDialog(m_taskFlowTextPane, "Please veriry Data format, configuration is " + m_dateFormat + "\n" + ex.getMessage());
+                JOptionPane.showMessageDialog(m_taskFlowPane, "Please veriry Data format, configuration is " + m_dateFormat + "\n" + ex.getMessage());
                 m_logger.error("Stop by date ParseException" + "Please veriry Data format, configuration is " + m_dateFormat + "\n" + ex.getMessage());
             } else {
-                JOptionPane.showMessageDialog(m_taskFlowTextPane, ex + "\n" + ex.getStackTrace()[0], "Exception", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(m_taskFlowPane, ex + "\n" + ex.getStackTrace()[0], "Exception", JOptionPane.ERROR_MESSAGE);
                 StackTraceElement[] trace = ex.getStackTrace();
                 String result = "";
                 for (StackTraceElement el : trace) {
@@ -118,17 +124,20 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         for (String line : trace) {
             m_stringBuilder.append(line);
         }
-        m_taskFlowTextPane.setText(m_stringBuilder.toString());
+        m_loadingPercent = (int) Math.floorDiv(m_loadingLength * 100, m_fileSize)+1;
+        m_taskFlowPane.setFlow(m_stringBuilder.toString());
+        m_taskFlowPane.setProgress(m_loadingPercent);
     }
 
     public void addTraceBegin(String fileName) {
         m_stringBuilder = new StringBuilder("Analyse File: " + fileName + "\n");
-        m_taskFlowTextPane.setText(m_stringBuilder.toString());
+        m_taskFlowPane.setFlow(m_stringBuilder.toString());
     }
 
     @Override
     protected void done() {
-        
+        m_loadingPercent = (int) Math.floorDiv(m_loadingLength * 100, m_fileSize)+1;
+        m_taskFlowPane.setProgress(m_loadingPercent);
         m_logger.debug("done, {} tasks for {}", m_reader.getTasks(), m_file.getName());
         m_logPanel.setData(m_reader.getTasks(), m_file.getName());
         m_reader.close();

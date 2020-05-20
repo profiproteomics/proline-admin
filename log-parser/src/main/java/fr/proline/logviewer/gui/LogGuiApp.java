@@ -19,10 +19,12 @@ package fr.proline.logviewer.gui;
 
 import fr.proline.logviewer.model.Utility.DATE_FORMAT;
 import fr.proline.logviewer.model.LogLineReader;
+import fr.proline.logviewer.model.Utility;
 import java.awt.BorderLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -31,12 +33,15 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbPreferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +59,7 @@ public class LogGuiApp extends JFrame {
     private String m_path;
     private File m_file;
     private JFrame m_taskFlowFrame;
-    private JTextPane m_taskFlowTextPane;
+    private TaskFlowPane m_taskFlowPane;
     private boolean m_isBigFile = false;
     private ColorPalette m_colorPanel;
 
@@ -63,9 +68,7 @@ public class LogGuiApp extends JFrame {
         m_fileChooser = new JFileChooser();
         m_logPanel = new LogViewControlPanel(this);
         m_dateFormat = DATE_FORMAT.SHORT;
-        m_path = ("D:\\programs\\Proline-Zero-2.1.0-SNAPSHOT\\Proline-Cortex-2.1.0-SNAPSHOT\\logs\\");
-        m_path = "D:\\prolineBak\\cortexLog\\";
-        //m_path = "D:\\programs\\Proline-Zero-2.1.0-SNAPSHOT-PTM-02072019\\Proline-Cortex-2.1.0-SNAPSHOT\\logs\\proline_cortex_log.2020-02-05.txt";
+        m_path = initParameters();//load path
         File defaultFile = new File(m_path);
         m_fileChooser.setSelectedFile(defaultFile);
 
@@ -80,9 +83,9 @@ public class LogGuiApp extends JFrame {
         Image icon = ImageUtilities.loadImage(path);
         this.setIconImage(icon);
 
-        m_taskFlowTextPane = new JTextPane();
+        m_taskFlowPane = new TaskFlowPane();
         m_taskFlowFrame = new JFrame("Log Task Flow");
-        m_taskFlowFrame.add(new JScrollPane(m_taskFlowTextPane));
+        m_taskFlowFrame.add(m_taskFlowPane);
         m_taskFlowFrame.setSize(700, 750);
         m_taskFlowFrame.setLocation(950, 250);
         m_taskFlowFrame.setVisible(true);
@@ -185,6 +188,7 @@ public class LogGuiApp extends JFrame {
             try {
                 m_logPanel.clear();
                 m_file = m_fileChooser.getSelectedFile();
+                saveParameters(m_file.getPath());
                 m_fileChooser.setSelectedFile(m_file);
                 m_isBigFile = false;
                 //This is where a real application would open the file.
@@ -198,7 +202,7 @@ public class LogGuiApp extends JFrame {
                 }
                 String fileName = m_file.getName();
                 logReader = new LogLineReader(m_file.getName(), m_dateFormat, m_isBigFile, false);
-                LogReaderWorker readWorker = new LogReaderWorker(m_logPanel, m_taskFlowTextPane, m_file, m_dateFormat, logReader);
+                LogReaderWorker readWorker = new LogReaderWorker(m_logPanel, m_taskFlowPane, m_file, m_dateFormat, logReader);
                 m_taskFlowFrame.setVisible(true);
                 m_taskFlowFrame.requestFocus();
                 readWorker.execute();
@@ -216,6 +220,19 @@ public class LogGuiApp extends JFrame {
         } else {
             m_logger.debug("Open command cancelled by user.");
         }
+    }
+
+    static String KEY_LOG_FILE_PATH = "Server_log_file_path";
+
+    public void saveParameters(String path) {
+        Preferences preferences = NbPreferences.root();
+
+        preferences.put(KEY_LOG_FILE_PATH, path);
+    }
+
+    public String initParameters() {
+        Preferences preferences = NbPreferences.root();
+        return preferences.get(KEY_LOG_FILE_PATH, "");
     }
 
     public static void main(String[] args) {

@@ -27,9 +27,9 @@ public interface ControlInterface {
 
     public boolean isBigFile();
 
-    public String getAnalysedTaskName();
-
     public void setData(ArrayList<LogTask> tasks, String fileName);
 
     public TaskConsolePane getConsole();
+
+    public int getMaxLine2Show();
 }

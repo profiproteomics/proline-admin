@@ -24,8 +24,9 @@ import java.util.Properties;
 /**
  *
  * @author Karine XUE at CEA
- * 
- * For Gui user, we need to know at which size, the Cortex Log File is a big file.
+ *
+ * For Gui user, we need to know at which size, the Cortex Log File is a big
+ * file.
  */
 public class Config {
 
@@ -35,24 +36,20 @@ public class Config {
     private static int DEFALT_FILE_SIZE = 4; //mega 
     private static int DEFALT_SHOW_LINE = 5000; //mega 
 
-    private static void init() {
+    private static void init() throws IOException {
         if (m_properties == null) {
-            try {
-                m_properties = new Properties();
-                File configFile = new File("log_parse.config");
-                m_properties.load(new FileInputStream(configFile));
-            } catch (IOException t) {
-               t.printStackTrace();
-            }
+            m_properties = new Properties();
+            File configFile = new File("log_parse.config");
+            m_properties.load(new FileInputStream(configFile));
         }
     }
 
     public static long getBigFileSize() {
-        init();
         int K = 1024;
         long M = 1024 * K;
-        long memory = DEFALT_FILE_SIZE * M;;
+        long memory = DEFALT_FILE_SIZE * M;
         try {
+            init();
             String requestedMemory = m_properties.getProperty(BIG_LOG_FILE_SIZE);
             int iMemory = Integer.parseInt(requestedMemory.trim().replaceAll("[kmgtKMGT]$", ""));
             String unit = requestedMemory.trim().replaceAll("\\d", "");
@@ -73,12 +70,11 @@ public class Config {
     }
 
     public static int getMaxLine2Show() {
-        init();
         try {
-            String result = m_properties.getProperty(ONE_TASK_TRACE_MAX_SHOW_LINE);
+            init();
+            String result = m_properties.getProperty(ONE_TASK_TRACE_MAX_SHOW_LINE, "" + DEFALT_FILE_SIZE);
             return Integer.parseInt(result);
         } catch (Exception e) {
-            e.printStackTrace();
             return DEFALT_SHOW_LINE;
         }
     }

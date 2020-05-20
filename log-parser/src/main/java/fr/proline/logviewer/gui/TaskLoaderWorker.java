@@ -17,6 +17,7 @@
 package fr.proline.logviewer.gui;
 
 import fr.proline.logviewer.model.LogTask;
+import fr.proline.logviewer.model.TaskInJsonCtrl;
 import fr.proline.logviewer.model.Utility;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -45,7 +46,7 @@ public class TaskLoaderWorker extends SwingWorker<String, Void> {
         int diffrent = 0;
 
         if (m_ctrl.isBigFile()) {
-            int maxLine = Config.getMaxLine2Show();
+            int maxLine = m_ctrl.getMaxLine2Show();
             diffrent = traceSize - maxLine;
             if (diffrent > 0) {
                 traceSize = maxLine;
@@ -71,7 +72,7 @@ public class TaskLoaderWorker extends SwingWorker<String, Void> {
             }
             m_stringBuffer.append("<div> </div><div>Au total " + traceSize + " lines shown. </div>");
             if (diffrent > 0) {
-                String fileName = m_ctrl.getAnalysedTaskName();
+                String fileName = TaskInJsonCtrl.getInstance().getCurrentFile().getPath();
                 m_stringBuffer.append("<div> ... </div><div> " + diffrent + " more lines, please refer to the file " + fileName);
             }
             return m_stringBuffer.toString();
