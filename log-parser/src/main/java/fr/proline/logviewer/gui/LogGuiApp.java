@@ -21,6 +21,7 @@ import fr.proline.logviewer.model.Utility.DATE_FORMAT;
 import fr.proline.logviewer.model.LogLineReader;
 import fr.proline.logviewer.model.Utility;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -33,10 +34,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -55,13 +54,15 @@ public class LogGuiApp extends JFrame {
     JFileChooser m_fileChooser;
     DATE_FORMAT m_dateFormat;
     LogViewControlPanel m_logPanel;
-
+    LogLineReader m_logReader;
+    LogReaderWorker m_readWorker;
     private String m_path;
     private File m_file;
     private JFrame m_taskFlowFrame;
-    private TaskFlowPane m_taskFlowPane;
+    private JTextPane m_taskFlowPane;
     private boolean m_isBigFile = false;
     private ColorPalette m_colorPanel;
+    private JProgressBar m_progressBar;
 
     public LogGuiApp() {
         super("Log Analyser");
@@ -83,9 +84,9 @@ public class LogGuiApp extends JFrame {
         Image icon = ImageUtilities.loadImage(path);
         this.setIconImage(icon);
 
-        m_taskFlowPane = new TaskFlowPane();
+        m_taskFlowPane = new JTextPane();
         m_taskFlowFrame = new JFrame("Log Task Flow");
-        m_taskFlowFrame.add(m_taskFlowPane);
+        m_taskFlowFrame.getContentPane().add(m_taskFlowPane);
         m_taskFlowFrame.setSize(700, 750);
         m_taskFlowFrame.setLocation(950, 250);
         m_taskFlowFrame.setVisible(true);
@@ -99,8 +100,15 @@ public class LogGuiApp extends JFrame {
         m_colorPanel = new ColorPalette();
         m_colorPanel.setSize(m_colorPanel.getPreferredSize());
         m_colorPanel.setLocation(750, 1);
-        //this.setGlassPane(m_colorPalette);
-        this.getLayeredPane().add(m_colorPanel, JLayeredPane.PALETTE_LAYER);
+        this.getLayeredPane().add(m_colorPanel, JLayeredPane.DRAG_LAYER);
+        //
+        m_progressBar = new JProgressBar(0, 100);
+        m_progressBar.setValue(0);
+        m_progressBar.setStringPainted(true);
+        m_progressBar.setSize(400, 50);
+        m_progressBar.setVisible(false);
+        m_progressBar.setLocation(200, 200);
+        this.getLayeredPane().add(m_progressBar, JLayeredPane.PALETTE_LAYER);
     }
 
     private JMenuBar initMenuBar() {
@@ -200,14 +208,7 @@ public class LogGuiApp extends JFrame {
                 if (fileLength > bigFileSize) {
                     m_isBigFile = true;
                 }
-                String fileName = m_file.getName();
-                logReader = new LogLineReader(m_file.getName(), m_dateFormat, m_isBigFile, false);
-                LogReaderWorker readWorker = new LogReaderWorker(m_logPanel, m_taskFlowPane, m_file, m_dateFormat, logReader);
-                m_taskFlowFrame.setVisible(true);
-                m_taskFlowFrame.requestFocus();
-                readWorker.execute();
-                repaint();
-
+                parseFile();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex + "\n" + ex.getStackTrace()[0], "Exception", JOptionPane.ERROR_MESSAGE);
                 StackTraceElement[] trace = ex.getStackTrace();
@@ -220,6 +221,14 @@ public class LogGuiApp extends JFrame {
         } else {
             m_logger.debug("Open command cancelled by user.");
         }
+    }
+
+    private void parseFile() {
+        m_logReader = new LogLineReader(m_file.getName(), m_dateFormat, m_isBigFile, false);
+        m_readWorker = new LogReaderWorker(m_logPanel, m_taskFlowPane, m_file, m_dateFormat, m_logReader);
+        m_taskFlowFrame.setVisible(true);
+        m_taskFlowFrame.requestFocus();
+        m_readWorker.execute();
     }
 
     static String KEY_LOG_FILE_PATH = "Server_log_file_path";
@@ -249,4 +258,22 @@ public class LogGuiApp extends JFrame {
         return m_isBigFile;
 
     }
+
+    void redo() {
+        if (m_dateFormat.equals(Utility.DATE_FORMAT.NORMAL)) {
+            m_dateFormat = Utility.DATE_FORMAT.SHORT;
+        } else {
+            m_dateFormat = Utility.DATE_FORMAT.NORMAL;
+        }
+        parseFile();
+    }
+
+    public void setProgress(int percent) {
+        m_progressBar.setValue(percent);
+    }
+
+    public void setProgressBarVisible(boolean b) {
+        m_progressBar.setVisible(b);
+    }
+
 }

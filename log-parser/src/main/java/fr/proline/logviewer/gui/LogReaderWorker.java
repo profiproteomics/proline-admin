@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingWorker;
@@ -35,30 +36,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * SwingWorker<Long, String>: Long = number of line, Sting= a task begin/end
+ * info
  *
  * @author Karine XUE at CEA
  */
 public class LogReaderWorker extends SwingWorker<Long, String> {
 
     protected static final Logger m_logger = LoggerFactory.getLogger(LogReaderWorker.class);
-    //SwingWorker<Long, String>: Long = number of line, Sting= a task begin/end info
+
     File m_file;
     private Utility.DATE_FORMAT m_dateFormat;
     Scanner m_fileScanner;
-    TaskFlowPane m_taskFlowPane;
+    JTextPane m_taskFlowPane;
     LogLineReader m_reader;
     StringBuilder m_stringBuilder;
-    ControlInterface m_logPanel;
+    LogControlPanel m_ctrlLogPanel;
     private long m_fileSize;
     private int m_loadingPercent;
     private long m_loadingLength;
 
-    public LogReaderWorker(ControlInterface logPanel, TaskFlowPane taskFlowTextPane, File file, Utility.DATE_FORMAT dateFormat, LogLineReader reader) {
+    public LogReaderWorker(LogControlPanel logPanel, JTextPane taskFlowTextPane, File file, Utility.DATE_FORMAT dateFormat, LogLineReader reader) {
         super();
         FileInputStream inputStream = null;
         try {
             m_taskFlowPane = taskFlowTextPane;
-            m_logPanel = logPanel;
+            m_ctrlLogPanel = logPanel;
             m_file = file;
             m_fileSize = m_file.length();
             m_loadingLength = 0;
@@ -80,6 +83,8 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         try {
             addTraceBegin(m_file.getName());
             m_logger.debug("Analyse begin...");
+            m_ctrlLogPanel.setProgress(0);
+            m_ctrlLogPanel.setProgressBarVisible(true);
             while (m_fileScanner.hasNextLine()) {
                 String line = m_fileScanner.nextLine();
                 m_loadingLength += line.length();
@@ -98,8 +103,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
             m_reader.showNoTreatedLines();
         } catch (ProlineException ex) {
             if (ex.getCause() instanceof ParseException) {
-                JOptionPane.showMessageDialog(m_taskFlowPane, "Please veriry Data format, configuration is " + m_dateFormat + "\n" + ex.getMessage());
-                m_logger.error("Stop by date ParseException" + "Please veriry Data format, configuration is " + m_dateFormat + "\n" + ex.getMessage());
+                return -1L;
             } else {
                 JOptionPane.showMessageDialog(m_taskFlowPane, ex + "\n" + ex.getStackTrace()[0], "Exception", JOptionPane.ERROR_MESSAGE);
                 StackTraceElement[] trace = ex.getStackTrace();
@@ -124,22 +128,32 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         for (String line : trace) {
             m_stringBuilder.append(line);
         }
-        m_loadingPercent = (int) Math.floorDiv(m_loadingLength * 100, m_fileSize)+1;
-        m_taskFlowPane.setFlow(m_stringBuilder.toString());
-        m_taskFlowPane.setProgress(m_loadingPercent);
+        m_loadingPercent = (int) Math.floorDiv(m_loadingLength * 100, m_fileSize) + 1;
+        m_taskFlowPane.setText(m_stringBuilder.toString());
+        m_ctrlLogPanel.setProgress(m_loadingPercent);
     }
 
     public void addTraceBegin(String fileName) {
         m_stringBuilder = new StringBuilder("Analyse File: " + fileName + "\n");
-        m_taskFlowPane.setFlow(m_stringBuilder.toString());
+        m_taskFlowPane.setText(m_stringBuilder.toString());
     }
 
     @Override
     protected void done() {
-        m_loadingPercent = (int) Math.floorDiv(m_loadingLength * 100, m_fileSize)+1;
-        m_taskFlowPane.setProgress(m_loadingPercent);
-        m_logger.debug("done, {} tasks for {}", m_reader.getTasks(), m_file.getName());
-        m_logPanel.setData(m_reader.getTasks(), m_file.getName());
-        m_reader.close();
+        try {
+            if (get() == -1) {
+                m_reader.close();
+                m_ctrlLogPanel.redo();
+            } else {
+                m_ctrlLogPanel.setProgressBarVisible(false);
+                m_logger.debug("done, {} tasks for {}", m_reader.getTasks(), m_file.getName());
+                m_ctrlLogPanel.setData(m_reader.getTasks(), m_file.getName());
+                m_reader.close();
+            }
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

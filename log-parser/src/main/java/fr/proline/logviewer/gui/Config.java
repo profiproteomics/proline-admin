@@ -63,7 +63,6 @@ public class Config {
                 memory = DEFALT_FILE_SIZE * M;//don't accept G, T byte
             }
         } catch (Exception e) {
-            e.printStackTrace();
             memory = DEFALT_FILE_SIZE * M;
         }
         return memory;
