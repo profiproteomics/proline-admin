@@ -71,7 +71,7 @@ public class Config {
     public static int getMaxLine2Show() {
         try {
             init();
-            String result = m_properties.getProperty(ONE_TASK_TRACE_MAX_SHOW_LINE, "" + DEFALT_FILE_SIZE);
+            String result = m_properties.getProperty(ONE_TASK_TRACE_MAX_SHOW_LINE, "" + DEFALT_SHOW_LINE);
             return Integer.parseInt(result);
         } catch (Exception e) {
             return DEFALT_SHOW_LINE;

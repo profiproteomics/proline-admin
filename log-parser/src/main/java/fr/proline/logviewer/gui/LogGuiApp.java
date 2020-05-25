@@ -36,6 +36,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -86,7 +87,7 @@ public class LogGuiApp extends JFrame {
 
         m_taskFlowPane = new JTextPane();
         m_taskFlowFrame = new JFrame("Log Task Flow");
-        m_taskFlowFrame.getContentPane().add(m_taskFlowPane);
+        m_taskFlowFrame.getContentPane().add(new JScrollPane(m_taskFlowPane));
         m_taskFlowFrame.setSize(700, 750);
         m_taskFlowFrame.setLocation(950, 250);
         m_taskFlowFrame.setVisible(true);
