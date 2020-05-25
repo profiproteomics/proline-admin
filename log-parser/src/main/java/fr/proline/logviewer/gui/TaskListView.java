@@ -49,7 +49,7 @@ import org.jdesktop.swingx.table.TableColumnExt;
  *
  * @author Karine XUE at CEA
  */
-public class TaskListView extends JScrollPane {
+public class TaskListView extends JScrollPane implements TaskListInterface {
 
     private LogViewControlPanel m_ctrl;
     ArrayList<LogTask> m_taskList;//data model used by TableModel
@@ -68,7 +68,7 @@ public class TaskListView extends JScrollPane {
         this.getViewport().add(m_taskTable);
     }
 
-    void setData(ArrayList<LogTask> tasks, String fileName) {
+    public void setData(ArrayList<LogTask> tasks, String fileName) {
         ((TitledBorder) this.getBorder()).setTitle("List of Tasks" + "     " + fileName);
         m_taskTable.removeAll();//must
         if (tasks == null || tasks.isEmpty()) {

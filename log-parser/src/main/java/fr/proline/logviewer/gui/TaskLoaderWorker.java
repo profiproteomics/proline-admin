@@ -31,9 +31,9 @@ public class TaskLoaderWorker extends SwingWorker<String, Void> {
 
     ArrayList<LogTask.LogLine> m_traces;
     StringBuffer m_stringBuffer;
-    ControlInterface m_ctrl;
+    LogControlPanel m_ctrl;
 
-    public TaskLoaderWorker(ArrayList<LogTask.LogLine> traces, ControlInterface ctrl) {
+    public TaskLoaderWorker(ArrayList<LogTask.LogLine> traces, LogControlPanel ctrl) {
         m_ctrl = ctrl;
         m_traces = traces;
         m_stringBuffer = new StringBuffer();
