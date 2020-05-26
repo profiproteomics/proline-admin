@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fr.proline</groupId>
-    <artifactId>LogViewer</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <!-- ProFI Master Pom -->
+    <parent>
+        <artifactId>profi-pom</artifactId>
+        <groupId>fr.proline</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>LogParser</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <!--<packaging>jar</packaging>-->
-    <name>ProlineLogViewer</name>
-    <description>Proline Cortex Log Observator</description>
+    <name>ProlineLogParser</name>
+    <description>Proline Server Log Parser and Viewer</description>
     <dependencies>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -17,18 +23,11 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.0.13</version>
-        </dependency>
-        <dependency><!--dependency for json write to file-->
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-            <version>1.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -57,7 +56,7 @@
                             <addClasspath>true</addClasspath>
                             <classpathLayoutType>custom</classpathLayoutType>
                             <customClasspathLayout>lib/${artifact.artifactId}-${artifact.baseVersion}${dashClassifier?}.${artifact.extension}</customClasspathLayout>
-                            <mainClass>fr.proline.logviewer.gui.LogGuiApp</mainClass>
+                            <mainClass>fr.proline.logparser.gui.LogGuiApp</mainClass>
                         </manifest>
                     </archive>
                     <argLine>-Djava.library.path=./lib</argLine>
