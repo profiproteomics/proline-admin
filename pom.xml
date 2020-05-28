@@ -13,10 +13,11 @@
     <packaging>pom</packaging>
 
     <name>Proline-Parent-Admin</name>
-    <description>Common pom for Proline Administration modules : Admin process (proline-admin) anr Admin GUI (proline-admin-gui)</description>
+    <description>Common pom for Proline Administration modules : Admin process (proline-admin) and Admin GUI (proline-admin-gui).</description>
     <modules>
         <module>proline-admin</module>
         <module>proline-admin-gui</module>
+        <module>log-parser</module>
     </modules>
 
     <properties>
