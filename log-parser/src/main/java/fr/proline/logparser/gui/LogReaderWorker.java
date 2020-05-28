@@ -21,10 +21,9 @@ import fr.proline.logparser.model.LogLineReader;
 import fr.proline.logparser.model.ProlineException;
 import fr.proline.logparser.model.Utility;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
@@ -45,7 +44,9 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
 
     protected static final Logger m_logger = LoggerFactory.getLogger(LogReaderWorker.class);
 
-    File m_file;
+    ArrayList<File> m_fileList;
+
+    File m_currentFile;
     private Utility.DATE_FORMAT m_dateFormat;
     Scanner m_fileScanner;
     JTextPane m_taskFlowPane;
@@ -56,24 +57,20 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
     private int m_loadingPercent;
     private long m_loadingLength;
 
-    public LogReaderWorker(LogControlPanel logPanel, JTextPane taskFlowTextPane, File file, Utility.DATE_FORMAT dateFormat, LogLineReader reader) {
+    public LogReaderWorker(LogControlPanel logPanel, JTextPane taskFlowTextPane, ArrayList<File> fileList, Utility.DATE_FORMAT dateFormat, LogLineReader reader) {
         super();
-        FileInputStream inputStream = null;
-        try {
-            m_taskFlowPane = taskFlowTextPane;
-            m_ctrlLogPanel = logPanel;
-            m_file = file;
-            m_fileSize = m_file.length();
-            m_loadingLength = 0;
-            m_dateFormat = dateFormat;
-            String abPath = file.getAbsolutePath();
-            m_logger.debug("absolute path is {}", abPath);
-            m_fileScanner = new Scanner(file, StandardCharsets.UTF_8.name());
-            m_reader = reader;
-            m_stringBuilder = new StringBuilder();
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+        m_taskFlowPane = taskFlowTextPane;
+        m_ctrlLogPanel = logPanel;
+        m_fileList = fileList;
+        for (File file : m_fileList) {
+            m_fileSize += file.length();
         }
+        m_loadingLength = 0;
+        m_dateFormat = dateFormat;
+        String abPath = m_fileList.get(0).getAbsolutePath();
+        m_logger.debug("absolute path is {}", abPath);
+        m_reader = reader;
+        m_stringBuilder = new StringBuilder();
     }
 
     @Override
@@ -81,21 +78,26 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         long start = System.currentTimeMillis();
         long index = 0;
         try {
-            addTraceBegin(m_file.getName());
+            addTraceBegin(m_fileList.get(0).getName());
             m_logger.debug("Analyse begin...");
             m_ctrlLogPanel.setProgress(0);
             m_ctrlLogPanel.setProgressBarVisible(true);
-            while (m_fileScanner.hasNextLine()) {
-                String line = m_fileScanner.nextLine();
-                m_loadingLength += line.length();
-                index++;
+            for (File file : m_fileList) {
+                m_currentFile = file;
+                index = 0;
+                m_fileScanner = new Scanner(file, StandardCharsets.UTF_8.name());
+                while (m_fileScanner.hasNextLine()) {
+                    String line = m_fileScanner.nextLine();
+                    m_loadingLength += line.length();
+                    index++;
 //                if (index == 19163) {
 //                    String s = "debug begin";
 //                }
-                //m_logger.debug("{}, task register {}", index);
-                m_reader.registerTask(line, index);
-                if (m_reader.isHasNewTrace()) {
-                    publish(m_reader.getNewTrace());
+                    //m_logger.debug("{}, task register {}", index);
+                    m_reader.registerTask(line, index);
+                    if (m_reader.isHasNewTrace()) {
+                        publish(m_reader.getNewTrace());
+                    }
                 }
             }
             m_reader.memoryClean();
@@ -114,7 +116,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
                 m_logger.error(ex + "\n" + result);
             }
 
-            m_logger.error(" ProlineException, task register stop at line {}", index);
+            m_logger.error(" ProlineException, task register stop at file {}, line {}", m_currentFile.getName(), index);
         } catch (Exception ex) {
             m_logger.error(" Exception task register stop at line {}", index);
             ex.printStackTrace();
@@ -146,8 +148,9 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
                 m_ctrlLogPanel.redo();
             } else {
                 m_ctrlLogPanel.setProgressBarVisible(false);
-                m_logger.debug("done, {} tasks for {}", m_reader.getTasks(), m_file.getName());
-                m_ctrlLogPanel.setData(m_reader.getTasks(), m_file.getName());
+                m_logger.debug("done, {} tasks for {}", m_reader.getTasks(), m_fileList.get(0).getName());
+                String addition = (m_fileList.size() > 1) ? " " + m_fileList.size() + " debug files" : "";
+                m_ctrlLogPanel.setData(m_reader.getTasks(), m_fileList.get(0).getName() + addition);
                 m_reader.close();
             }
         } catch (InterruptedException ex) {

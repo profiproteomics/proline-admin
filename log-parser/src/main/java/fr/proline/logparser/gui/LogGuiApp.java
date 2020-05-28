@@ -21,10 +21,10 @@ import fr.proline.logparser.model.Utility.DATE_FORMAT;
 import fr.proline.logparser.model.LogLineReader;
 import fr.proline.logparser.model.Utility;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
@@ -226,7 +226,9 @@ public class LogGuiApp extends JFrame {
 
     private void parseFile() {
         m_logReader = new LogLineReader(m_file.getName(), m_dateFormat, m_isBigFile, false);
-        m_readWorker = new LogReaderWorker(m_logPanel, m_taskFlowPane, m_file, m_dateFormat, m_logReader);
+        ArrayList<File> fileList = new ArrayList();
+        fileList.add(m_file);
+        m_readWorker = new LogReaderWorker(m_logPanel, m_taskFlowPane, fileList, m_dateFormat, m_logReader);
         m_taskFlowFrame.setVisible(true);
         m_taskFlowFrame.requestFocus();
         m_readWorker.execute();
