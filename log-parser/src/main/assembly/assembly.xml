@@ -28,7 +28,7 @@ Create date : 23 oct. 2019
   <fileSets>
     <fileSet>
       <directory>${project.build.directory}/lib</directory>     
-      <outputDirectory>/lib</outputDirectory>
+      <outputDirectory>./lib</outputDirectory>
       <includes>
         <include>*.jar</include>
       </includes>
