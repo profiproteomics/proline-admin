@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<!--
+Copyright (C) 2019
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the CeCILL FREE SOFTWARE LICENSE AGREEMENT
+; either version 2.1 
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+CeCILL License V2.1 for more details.
+
+You should have received a copy of the CeCILL License 
+along with this program; If not, see <http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html>.
+Create date : 23 oct. 2019
+-->
+
+
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+  <id>bin</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <directory>${project.build.directory}/lib</directory>     
+      <outputDirectory>/lib</outputDirectory>
+      <includes>
+        <include>*.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <includes>
+        <include>*.sh</include>
+        <include>*.bat</include>
+        <include>*.jar</include>
+        <include>*.exe</include>
+        <include>*.xml</include>
+        <include>*.png</include>
+        <include>*.config</include>
+      </includes>
+      <outputDirectory>\</outputDirectory>
+    </fileSet>
+
+  </fileSets>
+</assembly>
