@@ -26,7 +26,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
-import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
@@ -132,34 +131,7 @@ public class LogGuiApp extends JFrame {
             });
             fileMenu.add(exitMunuItem);
         }
-        {//dataFormatMenu
-            ButtonGroup group = new ButtonGroup();//one choice one time
-            dataFormatMenu = new JMenu("Date Format");
-            JRadioButtonMenuItem shortMonthMenuItem = new JRadioButtonMenuItem("Short Month: like (18 Sep 2019) ");
-            JRadioButtonMenuItem normalMonthMenuItem = new JRadioButtonMenuItem("Normal Month: like (18 sep. 2019)");
-            shortMonthMenuItem.setSelected(true);
-            shortMonthMenuItem.addActionListener(new java.awt.event.ActionListener() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent evt
-                ) {
-                    m_dateFormat = DATE_FORMAT.SHORT;
-                    m_logger.debug("m_dataFormat is {}", m_dateFormat);
-                }
-            });
 
-            normalMonthMenuItem.addActionListener(new java.awt.event.ActionListener() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent evt
-                ) {
-                    m_dateFormat = DATE_FORMAT.NORMAL;
-                    m_logger.debug("m_dataFormat is {}", m_dateFormat);
-                }
-            });
-            dataFormatMenu.add(shortMonthMenuItem);
-            dataFormatMenu.add(normalMonthMenuItem);
-            group.add(shortMonthMenuItem);
-            group.add(normalMonthMenuItem);
-        }
         {//Task menu
             taskMenu = new JMenu("Tasks");
             JMenuItem showTaskFlowItem = new JMenuItem("Show Flow of the tasks");
@@ -184,7 +156,6 @@ public class LogGuiApp extends JFrame {
         //main menuBar
         JMenuBar jMenuBar = new JMenuBar();
         jMenuBar.add(fileMenu);
-        jMenuBar.add(dataFormatMenu);
         jMenuBar.add(taskMenu);
         return jMenuBar;
     }
