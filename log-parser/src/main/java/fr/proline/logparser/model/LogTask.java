@@ -23,7 +23,22 @@ public class LogTask {
     protected static final Logger m_logger = LoggerFactory.getLogger(LogTask.class.getName());
 
     public enum STATUS {
-        RUNNING, FINISHED, WARNING, FINISHED_WARN, FAILED
+        RUNNING("RUNNING"),
+        FINISHED("FINISHED"),
+        WARNING("<html><font color=\"orange\">WARNING</font></html>"),
+        FINISHED_WARN("<html><font color=\"orange\">WARNING</font></html>"),
+        FAILED("<html><font color=\"red\">FAILED</font></html>");
+        private String _labelTxt;
+
+        private STATUS(String txt) {
+            this._labelTxt = txt;
+        }
+
+        public String getLabelTxt() {
+            return _labelTxt;
+        }
+        
+
     }
     /**
      * unique id
@@ -49,7 +64,7 @@ public class LogTask {
 
     public void updateNbTask(long instant, int nbTask) {
         long from = instant - m_startTime;
-        int index = m_nbOtherTaskMoment.size()-1;
+        int index = m_nbOtherTaskMoment.size() - 1;
         if (index >= 0 && nbTask == m_nbOtherTaskMoment.get(index)) {//compact same size 
             m_timeStamp.remove(index);
             m_nbOtherTaskMoment.remove(index);

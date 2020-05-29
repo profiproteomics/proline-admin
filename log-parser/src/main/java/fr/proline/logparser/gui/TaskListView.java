@@ -296,14 +296,7 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
                     return taskInfo.getProjectId();
                 }
                 case COLTYPE_STATUS: {
-                    STATUS s = taskInfo.getStatus();
-                    if (s == STATUS.FAILED) {
-                        return "<html><font color=\"red\">" + s + "</font></html>";
-                    } else if (s == STATUS.WARNING || s == STATUS.FINISHED_WARN) {
-                        return "<html><font color=\"orange\">" + s + "</font></html>";
-                    } else {
-                        return s.toString();
-                    }
+                    return taskInfo.getStatus().getLabelTxt();
                 }
                 case COLTYPE_THREAD_NAME: {
                     return taskInfo.getThreadName();
