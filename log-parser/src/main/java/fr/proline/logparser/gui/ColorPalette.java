@@ -81,7 +81,7 @@ public class ColorPalette extends JPanel {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        String legend = "Color-Task number : ";
+        String legend = "Color-Nb tasks : ";
         Rectangle2D bounds = g.getFontMetrics().getStringBounds(legend, g);
         int cx = new Double(bounds.getWidth()).intValue();
         Color color;
