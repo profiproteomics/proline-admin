@@ -152,7 +152,7 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
             TableRowSorter<TableModel> sorter = new TableRowSorter<>(model);
             Comparator c1 = new Comparator<String>() {
                 public int compare(String s1, String s2) {
-                    long delta = Utility.parseTime(s1) - Utility.parseTime(s2);
+                    long delta = Utility.parseTime(s1).getTime() - Utility.parseTime(s2).getTime();
                     if (delta == 0) {
                         return 0;
                     } else {

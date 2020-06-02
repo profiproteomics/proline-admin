@@ -34,11 +34,11 @@ public class Utility {
         }
     }
 
-    public static String formatTime(long timestamp) {
-        if (timestamp == -1 || timestamp == 0) {
+    public static String formatTime(Date timestamp) {
+        if (timestamp == null) {
             return "N/A";
         }
-        return m_timestampFormat.format(new Date(timestamp));
+        return m_timestampFormat.format(timestamp);
     }
 
     /**
@@ -47,14 +47,14 @@ public class Utility {
      * @param time
      * @return
      */
-    public static long parseTime(String time) {
+    public static Date parseTime(String time) {
         if (time.equals("N/A")) {
-            return 0;
+            return null;
         } else {
             try {
-                return m_timestampFormat.parse(time).getTime();
+                return m_timestampFormat.parse(time);
             } catch (ParseException ex) {
-                return 0;
+                return null;
             }
 
         }

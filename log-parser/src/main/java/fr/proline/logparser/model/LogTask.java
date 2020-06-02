@@ -7,6 +7,7 @@ package fr.proline.logparser.model;
 
 import com.google.gson.internal.LinkedTreeMap;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.JTree;
@@ -47,8 +48,8 @@ public class LogTask {
     private String m_projectId;
     private String m_threadName;
     private STATUS m_status;
-    private long m_startTime;
-    private long m_stopTime;
+    private Date m_startTime;
+    private Date m_stopTime;
     private String m_callService;
     private LogLine m_startLine;
     private LogLine m_stopLine;
@@ -63,7 +64,7 @@ public class LogTask {
     private ArrayList<Integer> m_nbOtherTaskMoment;
 
     public void updateNbTask(long instant, int nbTask) {
-        long from = instant - m_startTime;
+        long from = instant - m_startTime.getTime();
         int index = m_nbOtherTaskMoment.size() - 1;
         if (index >= 0 && nbTask == m_nbOtherTaskMoment.get(index)) {//compact same size 
             m_timeStamp.remove(index);
@@ -92,7 +93,7 @@ public class LogTask {
 
         m_timeStamp = new ArrayList();
         m_nbOtherTaskMoment = new ArrayList();
-        m_startTime = System.currentTimeMillis();//provisoire
+        m_startTime = Calendar.getInstance().getTime();
 
     }
 
@@ -136,7 +137,7 @@ public class LogTask {
         LogLine ll = new LogLine(index, line);
         m_trace.add(ll);
         if (date != null) {
-            m_stopTime = date.getTime();
+            m_stopTime = date;
             m_stopLine = ll;
         }//when date == null, don't add as stop line, because they are broken lines
     }
@@ -175,7 +176,7 @@ public class LogTask {
 
     public void setStartLine(long index, String startLine, Date date) {
         this.m_startLine = new LogLine(index, startLine);
-        this.m_startTime = date.getTime();
+        this.m_startTime = date;
     }
 
 //    public void setStopLine(long index, String stopLine) {
@@ -205,16 +206,16 @@ public class LogTask {
         return m_status;
     }
 
-    public long getStopTime() {
+    public Date getStopTime() {
         return m_stopTime;
     }
 
-    public long getStartTime() {
+    public Date getStartTime() {
         return m_startTime;
     }
 
     public long getDuration() {
-        return m_stopTime - m_startTime;
+        return m_stopTime.getTime() - m_startTime.getTime();
     }
 
     public String getCallService() {
