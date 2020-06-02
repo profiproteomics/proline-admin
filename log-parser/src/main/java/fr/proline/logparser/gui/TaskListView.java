@@ -73,14 +73,13 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
         m_taskTable.removeAll();//must
         if (tasks == null || tasks.isEmpty()) {
             m_taskList = new ArrayList<>();
+            m_tableModel.fireTableDataChanged();
         } else {
             m_taskList = tasks;
+            m_tableModel.fireTableDataChanged();
             m_taskTable.getSelectionModel().setSelectionInterval(0, 0);
         }
         initColumnsize();
-        m_tableModel.fireTableDataChanged();
-
-        repaint();
     }
 
     private void initColumnsize() {
