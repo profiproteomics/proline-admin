@@ -17,7 +17,6 @@
 package fr.proline.logparser.gui;
 
 import fr.proline.logparser.model.LogTask;
-import fr.proline.logparser.model.LogTask.STATUS;
 import fr.proline.logparser.model.Utility;
 import java.awt.Color;
 import java.awt.Component;
@@ -26,6 +25,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Date;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -122,7 +122,7 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
         }
 
         public void init() {
-            this.setRowSorter(createSorter((TaskTableModel) this.getModel()));
+            this.setRowSorter(new TableRowSorter(this.getModel()));
             this.setTableHeader(new TooltipsTableHeader(m_taskTable.getColumnModel(), m_columnNames));
             this.setColumnsVisibility();
         }
@@ -131,10 +131,36 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
         public TableCellRenderer getCellRenderer(int row, int column) {
             int columnM = this.convertColumnIndexToModel(column);
             switch (columnM) {
+                case TaskTableModel.COLTYPE_STATUS:
+                    return new DefaultTableCellRenderer() {
+                        @Override
+                        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                            String toShow = ((LogTask.STATUS) value).getLabelTxt();
+                            JLabel lb = (JLabel) super.getTableCellRendererComponent(table, toShow, isSelected, hasFocus, row, column);
+                            return lb;
+                        }
+                    };
                 case TaskTableModel.COLTYPE_NB_TASK_PARALELLE:
                     return new TaskNbCellRenderer();
+                case TaskTableModel.COLTYPE_START_TIME:
+                case TaskTableModel.COLTYPE_STOP_TIME:
+                    return new DefaultTableCellRenderer() {
+                        @Override
+                        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                            String toShow = Utility.formatTime((Date) value);
+                            JLabel lb = (JLabel) super.getTableCellRendererComponent(table, toShow, isSelected, hasFocus, row, column);
+                            return lb;
+                        }
+                    };
                 case TaskTableModel.COLTYPE_DURATION:
-                    return new DurationCellRenderer();
+                    return new DefaultTableCellRenderer() {
+                        @Override
+                        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                            String toShow = Utility.formatDurationInHour((Long) value);
+                            JLabel lb = (JLabel) super.getTableCellRendererComponent(table, toShow, isSelected, hasFocus, row, column);
+                            return lb;
+                        }
+                    };
                 default:
                     return super.getCellRenderer(row, columnM);
             }
@@ -146,25 +172,6 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
             if (columnExt != null) {
                 columnExt.setVisible(false);
             }
-        }
-
-        private TableRowSorter<TableModel> createSorter(TaskTableModel model) {
-            TableRowSorter<TableModel> sorter = new TableRowSorter<>(model);
-            Comparator c1 = new Comparator<String>() {
-                public int compare(String s1, String s2) {
-                    long delta = Utility.parseTime(s1).getTime() - Utility.parseTime(s2).getTime();
-                    if (delta == 0) {
-                        return 0;
-                    } else {
-                        return (delta) > 0 ? 1 : -1;
-                    }
-                }
-
-            };
-
-            sorter.setComparator(TaskTableModel.COLTYPE_START_TIME, c1);
-            sorter.setComparator(TaskTableModel.COLTYPE_STOP_TIME, c1);
-            return sorter;
         }
 
         class TooltipsTableHeader extends JTableHeader {
@@ -246,13 +253,13 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
                     return Integer.class;
                 }
                 case COLTYPE_STATUS: {
-                    return String.class;
+                    return LogTask.STATUS.class;
                 }
                 case COLTYPE_START_TIME: {
-                    return String.class;
+                    return Date.class;
                 }
                 case COLTYPE_STOP_TIME: {
-                    return String.class;
+                    return Date.class;
                 }
                 case COLTYPE_THREAD_NAME: {
                     return String.class;
@@ -296,7 +303,7 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
                     return taskInfo.getProjectId();
                 }
                 case COLTYPE_STATUS: {
-                    return taskInfo.getStatus().getLabelTxt();
+                    return taskInfo.getStatus();
                 }
                 case COLTYPE_THREAD_NAME: {
                     return taskInfo.getThreadName();
@@ -311,10 +318,10 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
                     return taskInfo.getDataSet();
                 }
                 case COLTYPE_START_TIME: {
-                    return Utility.formatTime(taskInfo.getStartTime());
+                    return taskInfo.getStartTime();
                 }
                 case COLTYPE_STOP_TIME: {
-                    return Utility.formatTime(taskInfo.getStopTime());
+                    return taskInfo.getStopTime();
                 }
                 case COLTYPE_DURATION: {
                     return taskInfo.getDuration();
@@ -328,21 +335,6 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
         }
 
     }//end inner class TaskTableModel
-
-    public class DurationCellRenderer extends DefaultTableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JLabel lb = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            int modelIndex = table.convertRowIndexToModel(row);
-            TaskTableModel model = (TaskTableModel) table.getModel();
-            LogTask task = model.getTask(modelIndex);
-            //we don't use value in order to avoid exception
-            String toShow = Utility.formatDurationInHour(task.getDuration());
-            lb.setText(toShow);
-            return lb;
-        }
-    }
 
     public class TaskNbCellRenderer extends DefaultTableCellRenderer {
 
