@@ -24,21 +24,26 @@ public class LogTask {
     protected static final Logger m_logger = LoggerFactory.getLogger(LogTask.class.getName());
 
     public enum STATUS {
-        RUNNING("RUNNING"),
-        FINISHED("FINISHED"),
-        WARNING("<html><font color=\"orange\">WARNING</font></html>"),
-        FINISHED_WARN("<html><font color=\"orange\">WARNING</font></html>"),
-        FAILED("<html><font color=\"red\">FAILED</font></html>");
+        RUNNING(0, "RUNNING"),
+        FINISHED(1, "FINISHED"),
+        WARNING(2, "<html><font color=\"orange\">WARNING</font></html>"),
+        FINISHED_WARN(3, "<html><font color=\"orange\">WARNING</font></html>"),
+        FAILED(4, "<html><font color=\"red\">FAILED</font></html>");
         private String _labelTxt;
+        private int _index;
 
-        private STATUS(String txt) {
+        private STATUS(int index, String txt) {
+            this._index = index;
             this._labelTxt = txt;
         }
 
         public String getLabelTxt() {
             return _labelTxt;
         }
-        
+
+        public int getIndex() {
+            return _index;
+        }
 
     }
     /**
