@@ -148,7 +148,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
                 m_ctrlLogPanel.redo();
             } else {
                 m_ctrlLogPanel.setProgressBarVisible(false);
-                m_logger.debug("done, {} tasks for {}", m_reader.getTasks(), m_fileList.get(0).getName());
+                //m_logger.debug("done, {} tasks for {}", m_reader.getTasks(), m_fileList.get(0).getName());
                 String addition = (m_fileList.size() > 1) ? " " + m_fileList.size() + " debug files" : "";
                 m_ctrlLogPanel.setData(m_reader.getTasks(), m_fileList.get(0).getName() + addition);
                 m_reader.close();

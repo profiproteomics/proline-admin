@@ -9,6 +9,9 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import fr.proline.logparser.model.LogTask.LogLine;
 import fr.proline.logparser.model.Utility.DATE_FORMAT;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormatSymbols;
@@ -66,14 +69,16 @@ public class LogLineReader {
     private TasksFlowWriter m_flowWriter;
     private TaskInJsonCtrl m_taskInJsonCtrl;
     private boolean m_isBigFile;
+    private String m_fileName;
 
     public LogLineReader(String fileName, DATE_FORMAT dateFormat, boolean isBigFile, boolean stdout) {
         Utility.init();//create data directory if necessary
+        m_fileName = fileName.replace(".txt", "");//remove .txt
         m_isBigFile = isBigFile;
         m_flow = new LogTasksFlow();
         m_hasNewTrace = false;
         m_flowWriter = new TasksFlowWriter(stdout);
-        m_flowWriter.open(fileName);
+        m_flowWriter.open(m_fileName);
         m_dateFormat = dateFormat;
         m_msgId2TaskMap = new HashMap();
         m_thread2TaskMap = new HashMap<>();
@@ -116,10 +121,22 @@ public class LogLineReader {
         if (m_noTreatLine.size() == 0) {
             return;
         }
-        m_logger.debug("No treated lines List: size index stack= {}, lines stack ={} ", m_noTreatLine.size(), m_noTreatLineIndex.size());
-        while (!m_noTreatLine.isEmpty()) {
-            m_logger.debug("[" + m_noTreatLineIndex.pop() + "]," + m_noTreatLine.pop());
+        File nonTreatedLineFile = new File(Utility.WORKING_DATA_DIRECTORY + "/"  + m_fileName+ "_NoTreatedLine.txt");
+        m_logger.debug("No treated lines  : size index stack= {}, lines stack ={}, {} ",
+                m_noTreatLine.size(), m_noTreatLineIndex.size(), nonTreatedLineFile.getName());
+        try {
+            BufferedWriter bWriter = new BufferedWriter(new FileWriter(nonTreatedLineFile));
+            while (!m_noTreatLine.isEmpty()) {
+                bWriter.write("[" + m_noTreatLineIndex.pop() + "]," + m_noTreatLine.pop());
+                bWriter.newLine();
+            }
+            bWriter.close();
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
+
     }
 
     public ArrayList<LogTask> getTasks() {
@@ -172,9 +189,6 @@ public class LogLineReader {
                     if (isNotMatch) {//task alreday exist but thread replaced by a new task begin
                         //set status
                         isNotMatch = !matchTaskStart(index, line, string2Analyse, date, threadName);
-                    }
-                    if (existTask.getTaskOrder() == 396) {
-                        m_logger.debug("396: " + line);
                     }
                     if (isNotMatch) {//@todo here, BUG possible: when a thread has not finished by end key word, pool match, but task don't mache 
                         pop();
@@ -323,7 +337,7 @@ public class LogLineReader {
 
     private void removeTask(long time, LogTask task) {
         for (LogTask t : m_taskInRun) {
-            t.updateNbTask(time, m_taskInRun.size()-1);
+            t.updateNbTask(time, m_taskInRun.size() - 1);
         }
         m_taskInRun.remove(task);
         m_msgId2TaskMap.remove(task.getMessageId());
@@ -573,7 +587,7 @@ public class LogLineReader {
         return false;
 
     }
-    
+
     public void setDateFormat(DATE_FORMAT dateFormat) {
         m_dateFormat = dateFormat;
     }
@@ -694,7 +708,7 @@ public class LogLineReader {
 
         FileWriter m_outputFile;
         boolean m_stdout;
-        String FILE_NAME_HEAD = "TasksFlow";
+        String FILE_NAME_END = "_TasksFlow.txt";
 
         public TasksFlowWriter(boolean stdout) {
             m_stdout = stdout;
@@ -712,7 +726,7 @@ public class LogLineReader {
 
         public void open(String file2Anaylse) {
             try {
-                m_outputFile = new FileWriter(Utility.WORKING_DATA_DIRECTORY + "/" + FILE_NAME_HEAD + "_" + file2Anaylse);
+                m_outputFile = new FileWriter(Utility.WORKING_DATA_DIRECTORY + "/" + file2Anaylse + FILE_NAME_END );
                 String head = "Analyse " + file2Anaylse;
                 m_outputFile.write(head);
                 if (m_stdout) {
