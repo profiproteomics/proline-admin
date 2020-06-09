@@ -86,13 +86,13 @@ public class LogTask {
         return m_taskOrder;
     }
 
-    public LogTask(String messageId) {
+    public LogTask(int fileIndex, String messageId) {
         this.m_messageId = messageId;
         m_trace = new ArrayList();
         m_otherTasksInRun = 0;
         m_dataSet = "";
-        m_startLine = new LogLine(-1, "");
-        m_stopLine = new LogLine(-1, "");
+        m_startLine = new LogLine(fileIndex, -1, "");
+        m_stopLine = new LogLine(fileIndex, -1, "");
         m_taskOrder = -1;
         m_projectId = "";
 
@@ -125,7 +125,7 @@ public class LogTask {
     final static String ERROR_LOG = "ERROR";
     final static String WARN_LOG = "WARN ";
 
-    public void addLine(long index, String line, Date date, STATUS status) {
+    public void addLine(int fileIndex, long index, String line, Date date, STATUS status) {
         if (status == null) {
             if (line.contains(ERROR_LOG)) {
                 setStatus(LogTask.STATUS.FAILED);
@@ -139,7 +139,7 @@ public class LogTask {
         if (m_taskOrder > 0 && date != null && !line.contains(this.m_threadName) && !line.contains("Calling")) {
             m_logger.error("XXX thread name different {}, index = {}", this, index);
         }
-        LogLine ll = new LogLine(index, line);
+        LogLine ll = new LogLine(fileIndex, index, line);
         m_trace.add(ll);
         if (date != null) {
             m_stopTime = date;
@@ -162,8 +162,8 @@ public class LogTask {
         }
     }
 
-    public void setStopLine(long index, String line) {
-        LogLine ll = new LogLine(index, line);
+    public void setStopLine(int fileIndex, long index, String line) {
+        LogLine ll = new LogLine(fileIndex, index, line);
         m_stopLine = ll;
     }
 
@@ -179,8 +179,8 @@ public class LogTask {
         }
     }
 
-    public void setStartLine(long index, String startLine, Date date) {
-        this.m_startLine = new LogLine(index, startLine);
+    public void setStartLine(int fileIndex, long index, String startLine, Date date) {
+        this.m_startLine = new LogLine(fileIndex, index, startLine);
         this.m_startTime = date;
     }
 
@@ -323,14 +323,27 @@ public class LogTask {
 
         public long index;
         public String line;
+        public int fileIndex;
 
-        public LogLine(long index, String line) {
+        /**
+         *
+         * @param index
+         * @param line
+         * @param fIndex , index of the debug log file
+         */
+        public LogLine(int fIndex, long index, String line) {
+            this.fileIndex = fIndex;
             this.index = index;
             this.line = line;
         }
 
         public String toString() {
-            return "[" + this.index + "]" + this.line;
+            if (fileIndex == -1) {
+                return "[" + this.index + "]" + this.line;
+            } else {
+                return "[" + fileIndex + "." + this.index + "]" + this.line;
+            }
+
         }
 
     }

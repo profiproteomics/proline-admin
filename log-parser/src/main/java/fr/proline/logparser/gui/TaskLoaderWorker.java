@@ -57,7 +57,13 @@ public class TaskLoaderWorker extends SwingWorker<String, Void> {
             for (int i = 0; i < traceSize; i++) {
                 item = m_traces.get(i);
                 String markerLine;
-                String lindeIndex = "<font color=\"Gray\">[" + item.index + "]</font>:";
+                String index;
+                if (item.fileIndex != -1) {
+                    index = item.fileIndex + "." + item.index;
+                } else {
+                    index = "" + item.index;
+                }
+                String lindeIndex = "<font color=\"Gray\">[" + index + "]</font>:";
                 String markerLine1 = item.line.replaceAll("<", "&lt;");
                 String markerLine2 = markerLine1.replaceAll(">", "&gt;");
                 String markerLine3 = replaceLogLevelInColor(markerLine2);

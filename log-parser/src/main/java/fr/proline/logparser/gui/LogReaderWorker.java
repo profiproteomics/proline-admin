@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingWorker;
@@ -77,6 +79,10 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
     protected Long doInBackground() {
         long start = System.currentTimeMillis();
         long index = 0;
+        final String regex = "\\d.(\\d+).txt";
+        final Pattern pattern = Pattern.compile(regex);
+        int fileIndex = -1;
+        Matcher matcher;
         try {
             addTraceBegin(m_fileList.get(0).getName());
             m_logger.debug("Analyse begin...");
@@ -84,6 +90,14 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
             m_ctrlLogPanel.setProgressBarVisible(true);
             for (File file : m_fileList) {
                 m_currentFile = file;
+                //retrive debug log file index
+                if (m_fileList.size() > 1) {
+                    String fName = m_currentFile.getName();
+                    matcher = pattern.matcher(fName);
+                    if (matcher.find()) {
+                        fileIndex = Integer.valueOf(matcher.group(1));
+                    }
+                }
                 index = 0;
                 m_fileScanner = new Scanner(file, StandardCharsets.UTF_8.name());
                 while (m_fileScanner.hasNextLine()) {
@@ -94,7 +108,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
 //                    String s = "debug begin";
 //                }
                     //m_logger.debug("{}, task register {}", index);
-                    m_reader.registerTask(line, index);
+                    m_reader.registerTask(fileIndex, line, index);
                     if (m_reader.isHasNewTrace()) {
                         publish(m_reader.getNewTrace());
                     }
@@ -125,7 +139,8 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
     }
 
     @Override
-    protected void process(List<String> trace) {
+    protected void process(List<String> trace
+    ) {
         //treat publish data
         for (String line : trace) {
             m_stringBuilder.append(line);

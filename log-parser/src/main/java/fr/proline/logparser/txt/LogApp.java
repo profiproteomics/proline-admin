@@ -62,7 +62,7 @@ public class LogApp {
 //                    }
 
                     //m_logger.debug("{}, task register {}", index);
-                    m_reader.registerTask(line, index);
+                    m_reader.registerTask(-1, line, index);
                 }
             } catch (ProlineException ex) {
                 System.err.println(" task register stop at line " + index);
