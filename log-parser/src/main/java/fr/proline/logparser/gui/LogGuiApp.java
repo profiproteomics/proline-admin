@@ -25,6 +25,10 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -39,6 +43,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.filechooser.FileFilter;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 import org.slf4j.Logger;
@@ -57,7 +62,7 @@ public class LogGuiApp extends JFrame {
     LogLineReader m_logReader;
     LogReaderWorker m_readWorker;
     private String m_path;
-    private File m_file;
+    private List<File> m_fileList;
     private JFrame m_taskFlowFrame;
     private JTextPane m_taskFlowPane;
     private boolean m_isBigFile = false;
@@ -67,11 +72,15 @@ public class LogGuiApp extends JFrame {
     public LogGuiApp() {
         super("Log Analyser");
         m_fileChooser = new JFileChooser();
+        m_fileChooser.setFileFilter(new CortexLogFileFilter());
+        m_fileChooser.setMultiSelectionEnabled(true);
         m_logPanel = new LogViewControlPanel(this);
         m_dateFormat = DATE_FORMAT.SHORT;
         m_path = initParameters();//load path
         File defaultFile = new File(m_path);
+        m_fileList = new ArrayList();
         m_fileChooser.setSelectedFile(defaultFile);
+        m_fileList.add(defaultFile);
 
         initComponents();
         this.setLocation(230, 2);
@@ -167,19 +176,14 @@ public class LogGuiApp extends JFrame {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             try {
                 m_logPanel.clear();
-                m_file = m_fileChooser.getSelectedFile();
-                saveParameters(m_file.getPath());
-                m_fileChooser.setSelectedFile(m_file);
+                File f = m_fileChooser.getSelectedFile();
+                saveParameters(f.getPath());//register the first selectedFile, in order to memory the path
+                //m_fileChooser.setSelectedFile(m_file);
                 m_isBigFile = false;
                 //This is where a real application would open the file.
                 m_logger.debug("");//empty line
-                m_logger.info("File to analyse: " + m_file.getName() + ".");
-                long fileLength = m_file.length();
-                long bigFileSize = Config.getBigFileSize();
-
-                if (fileLength > bigFileSize) {
-                    m_isBigFile = true;
-                }
+                m_logger.info("Analyse begin with: " + f.getName());
+                prepareFileList();
                 parseFile();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex + "\n" + ex.getStackTrace()[0], "Exception", JOptionPane.ERROR_MESSAGE);
@@ -194,18 +198,52 @@ public class LogGuiApp extends JFrame {
             m_logger.debug("Open command cancelled by user.");
         }
     }
+    final static String TodayDebugFileName = "proline_cortex_debug.txt";
+
+    /**
+     * sort m_fileList, calculate m_isBigFile
+     */
+    private void prepareFileList() {
+        File[] files = m_fileChooser.getSelectedFiles();
+        m_fileList = Arrays.asList(files);
+        Comparator<File> FileNameComparator = new Comparator<File>() {
+
+            public int compare(File f1, File f2) {
+                String fileName1 = f1.getName();
+                String fileName2 = f2.getName();
+
+                if (fileName1.equals(TodayDebugFileName)) //ascending order
+                {
+                    return -1;
+                } else if (fileName2.equals(TodayDebugFileName)) {
+                    return -1;
+                } else {
+                    return fileName1.compareTo(fileName2);
+                }
+            }
+        };
+        Collections.sort(m_fileList, FileNameComparator);
+
+        long fileLength = 0;
+        for (File f : m_fileList) {
+            fileLength += f.length();
+        }
+        long bigFileSize = Config.getBigFileSize();
+        if (fileLength > bigFileSize) {
+            m_isBigFile = true;
+        }
+    }
 
     private void parseFile() {
-        m_logReader = new LogLineReader(m_file.getName(), m_dateFormat, m_isBigFile, false);
-        ArrayList<File> fileList = new ArrayList();
-        fileList.add(m_file);
-        m_readWorker = new LogReaderWorker(m_logPanel, m_taskFlowPane, fileList, m_dateFormat, m_logReader);
+        File firstFile = m_fileList.get(0);
+        m_logReader = new LogLineReader(firstFile.getName(), m_dateFormat, m_isBigFile, false);
+        m_readWorker = new LogReaderWorker(m_logPanel, m_taskFlowPane, m_fileList, m_dateFormat, m_logReader);
         m_taskFlowFrame.setVisible(true);
         m_taskFlowFrame.requestFocus();
         m_readWorker.execute();
     }
 
-    static String KEY_LOG_FILE_PATH = "Server_log_file_path";
+    public static String KEY_LOG_FILE_PATH = "Server_log_file_path";
 
     public void saveParameters(String path) {
         Preferences preferences = NbPreferences.root();
@@ -248,6 +286,29 @@ public class LogGuiApp extends JFrame {
 
     public void setProgressBarVisible(boolean b) {
         m_progressBar.setVisible(b);
+
     }
 
+    class CortexLogFileFilter extends FileFilter {
+
+        @Override
+        public boolean accept(File f) {
+            if (f.isDirectory()) {
+                return true;
+            }
+            String name = f.getName();
+            if ((name.startsWith("proline_cortex_log") || name.startsWith("proline_cortex_debug_"))
+                    && name.endsWith(".txt") || name.equals(TodayDebugFileName)) {
+                return true;
+            } else {
+                return false;
+
+            }
+        }
+
+        @Override
+        public String getDescription() {
+            return "Only proline_cortex_log(debug_).*.txt";
+        }
+    }
 }

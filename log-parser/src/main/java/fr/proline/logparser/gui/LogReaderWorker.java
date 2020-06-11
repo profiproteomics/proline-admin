@@ -23,7 +23,6 @@ import fr.proline.logparser.model.Utility;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
@@ -46,7 +45,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
 
     protected static final Logger m_logger = LoggerFactory.getLogger(LogReaderWorker.class);
 
-    ArrayList<File> m_fileList;
+    List<File> m_fileList;
 
     File m_currentFile;
     private Utility.DATE_FORMAT m_dateFormat;
@@ -59,7 +58,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
     private int m_loadingPercent;
     private long m_loadingLength;
 
-    public LogReaderWorker(LogControlPanel logPanel, JTextPane taskFlowTextPane, ArrayList<File> fileList, Utility.DATE_FORMAT dateFormat, LogLineReader reader) {
+    public LogReaderWorker(LogControlPanel logPanel, JTextPane taskFlowTextPane, List<File> fileList, Utility.DATE_FORMAT dateFormat, LogLineReader reader) {
         super();
         m_taskFlowPane = taskFlowTextPane;
         m_ctrlLogPanel = logPanel;
@@ -85,11 +84,13 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         Matcher matcher;
         try {
             addTraceBegin(m_fileList.get(0).getName());
-            m_logger.debug("Analyse begin...");
+
             m_ctrlLogPanel.setProgress(0);
             m_ctrlLogPanel.setProgressBarVisible(true);
             for (File file : m_fileList) {
+
                 m_currentFile = file;
+                m_logger.debug("Analyse begin...{}", file.getName());
                 //retrive debug log file index
                 if (m_fileList.size() > 1) {
                     String fName = m_currentFile.getName();
@@ -139,8 +140,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
     }
 
     @Override
-    protected void process(List<String> trace
-    ) {
+    protected void process(List<String> trace) {
         //treat publish data
         for (String line : trace) {
             m_stringBuilder.append(line);
