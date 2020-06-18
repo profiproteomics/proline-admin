@@ -23,7 +23,7 @@ public class Utility {
     static SimpleDateFormat sf = new SimpleDateFormat("HH:mm:ss.SSS");
     static SimpleDateFormat m_timestampFormat = new SimpleDateFormat("HH:mm:ss.SSS - dd MMM yyyy ");
     static final DecimalFormat m_decimalFormat = new DecimalFormat("####0.000");
-    public final static File WORKING_DIRECTORY = new File("").getAbsoluteFile();
+    public final static File WORKING_DIRECTORY = new File(".").getAbsoluteFile();
     public final static File WORKING_DATA_DIRECTORY = new File(WORKING_DIRECTORY + "/parseServerLogData");
 
     public static void init() {
