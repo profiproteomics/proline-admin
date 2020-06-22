@@ -57,6 +57,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
     private long m_fileSize;
     private int m_loadingPercent;
     private long m_loadingLength;
+    private boolean m_isStandalon;
 
     public LogReaderWorker(LogControlPanel logPanel, JTextPane taskFlowTextPane, List<File> fileList, Utility.DATE_FORMAT dateFormat, LogLineReader reader) {
         super();
@@ -72,6 +73,16 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         m_logger.debug("absolute path is {}", abPath);
         m_reader = reader;
         m_stringBuilder = new StringBuilder();
+        m_isStandalon = false;
+    }
+
+    /**
+     * In Standalon mode, we don't treat file number
+     *
+     * @param b
+     */
+    public void setStandalon(boolean b) {
+        m_isStandalon = b;
     }
 
     @Override
@@ -92,7 +103,7 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
                 m_currentFile = file;
                 m_logger.debug("Analyse begin...{}", file.getName());
                 //retrive debug log file index
-                if (m_fileList.size() > 1) {
+                if (m_fileList.size() > 1 && !m_isStandalon) {
                     String fName = m_currentFile.getName();
                     matcher = pattern.matcher(fName);
                     if (matcher.find()) {

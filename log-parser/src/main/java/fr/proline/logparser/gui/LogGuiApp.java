@@ -238,6 +238,7 @@ public class LogGuiApp extends JFrame {
         File firstFile = m_fileList.get(0);
         m_logReader = new LogLineReader(firstFile.getName(), m_dateFormat, m_isBigFile, false);
         m_readWorker = new LogReaderWorker(m_logPanel, m_taskFlowPane, m_fileList, m_dateFormat, m_logReader);
+        m_readWorker.setStandalon(true);//don't treat file number
         m_taskFlowFrame.setVisible(true);
         m_taskFlowFrame.requestFocus();
         m_readWorker.execute();

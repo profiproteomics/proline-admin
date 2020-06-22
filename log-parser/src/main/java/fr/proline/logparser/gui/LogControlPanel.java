@@ -57,6 +57,7 @@ public abstract class LogControlPanel extends JPanel {
             m_taskView.setData(null);
             m_taskConsole.setData("");
         }
+        this.repaint();//force title change
         this.requestFocus();
     }
 
