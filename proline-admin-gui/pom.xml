@@ -2,18 +2,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
-		<artifactId>proline-parent-admin</artifactId>
+		<artifactId>profi-pom</artifactId>
 		<groupId>fr.proline</groupId>
-		<version>2.2.0-SNAPSHOT</version>
+		<version>0.5.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
 	</parent>
 
 	<artifactId>proline-admin-gui</artifactId>
+	<version>0.9.0-SNAPSHOT</version>
 
 	<name>Proline-Admin-GUI</name>
 	<description>A GUI for Proline Administration</description>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<core.version>2.1.0-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
+		<admin.version>0.9.0-SNAPSHOT</admin.version> <!-- Snapshot Trunk version -->
 		<version.path>${basedir}/src/main/scala/fr/proline/admin/gui</version.path>
 	</properties>
 
@@ -23,7 +28,7 @@
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
-			<!-- Version inherited from parent Pom -->
+			<!-- Version inherited from ProFI-Pom ${scala-library.version} -->
 		</dependency>
 
 		<!-- Scala FX -->
@@ -37,19 +42,19 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<!-- Version inherited from parent Pom -->
+			<!-- Compile scope (Proline-Admin can be used as a stand-alone program) -->
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.scala-logging</groupId>
 			<artifactId>scala-logging_${scala.version}</artifactId>
-			<!-- Version inherited from parent Pom -->
+			<!-- Version inherited from ProFI-Pom -->
 		</dependency>
 
 		<!-- Configuration -->
 		<dependency>
 			<groupId>com.typesafe</groupId>
 			<artifactId>config</artifactId>
-			<!-- Version inherited from parent Pom -->
+			<version>1.3.1</version>
 		</dependency>
 
 		<!-- Database drivers -->
@@ -64,6 +69,7 @@
 		<dependency>
 			<groupId>fr.profi.util</groupId>
 			<artifactId>profi-commons-scala_${scala.version}</artifactId>
+			<version>0.9.0-SNAPSHOT</version> <!-- Snapshot Trunk version -->
 		</dependency>
 
 		<dependency>
@@ -75,7 +81,7 @@
 		<dependency>
 			<groupId>fr.proline</groupId>
 			<artifactId>proline-admin</artifactId>
-			<version>${project.version}</version>
+			<version>${admin.version}</version>
 		</dependency>
 
 		<!-- Tests -->
