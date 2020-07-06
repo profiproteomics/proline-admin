@@ -47,7 +47,7 @@ public class TaskInJsonCtrl {
      * @param CortexLogFileName : String can't be null
      */
     public void init(String CortexLogFileName) {
-        logFileDirectory = new File(Utility.WORKING_DATA_DIRECTORY + "/" + CortexLogFileName);
+        logFileDirectory = new File(Utility.WORKING_DATA_DIRECTORY + File.separator + CortexLogFileName);
         if (!logFileDirectory.isDirectory()) {
             boolean b;
             b = logFileDirectory.mkdir();
@@ -57,7 +57,7 @@ public class TaskInJsonCtrl {
     }
 
     private File getFile(int taskOrder) {
-        return new File(logFileDirectory + "/" + taskOrder + ".json");
+        return new File(logFileDirectory + File.separator + taskOrder + ".json");
     }
 
     public void WriteTask(LogTask task) {

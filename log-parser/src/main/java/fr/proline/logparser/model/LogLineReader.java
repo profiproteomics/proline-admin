@@ -122,7 +122,7 @@ public class LogLineReader {
         if (m_noTreatLine.size() == 0) {
             return;
         }
-        File nonTreatedLineFile = new File(Utility.WORKING_DATA_DIRECTORY + "/" + m_fileName + "_NoTreatedLine.txt");
+        File nonTreatedLineFile = new File(Utility.WORKING_DATA_DIRECTORY + File.separator + m_fileName + "_NoTreatedLine.txt");
         m_logger.debug("No treated lines  : size index stack= {}, lines stack ={}, {} ",
                 m_noTreatLine.size(), m_noTreatLineIndex.size(), nonTreatedLineFile.getName());
         try {
@@ -736,7 +736,7 @@ public class LogLineReader {
 
         public void open(String file2Anaylse) {
             try {
-                m_outputFile = new FileWriter(Utility.WORKING_DATA_DIRECTORY + "/" + file2Anaylse + FILE_NAME_END);
+                m_outputFile = new FileWriter(Utility.WORKING_DATA_DIRECTORY + File.separator + file2Anaylse + FILE_NAME_END);
                 String head = "Analyse " + file2Anaylse;
                 m_outputFile.write(head);
                 if (m_stdout) {
