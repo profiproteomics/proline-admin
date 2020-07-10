@@ -23,7 +23,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Date;
 import javax.swing.BorderFactory;
@@ -39,7 +38,6 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
@@ -202,7 +200,7 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
         "Start Time",
         "Stop Time",
         "Duration",
-        "Nb Task Paralelle"};
+        "Parallel tasks Nb"};
 
     class TaskTableModel extends AbstractTableModel {
 
