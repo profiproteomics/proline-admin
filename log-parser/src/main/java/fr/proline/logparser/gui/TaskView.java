@@ -68,6 +68,7 @@ public class TaskView extends JPanel {
         m_task = selectedTask;
         if (m_task == null) {
             reinit();
+            repaint();
         } else {
             reinit();
             m_threadNameTextfield.setText(m_task.getThreadName());
