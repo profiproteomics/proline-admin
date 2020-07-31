@@ -1,8 +1,4 @@
-/proline-admin/target/
-/proline-admin-gui/target/
-/proline-parent-admin.iml
-/proline-admin-gui/proline-admin-gui.iml
-/proline-admin-gui/logs/
-/proline-admin/proline-admin.iml
-/log-parser/log-parser.iml
-/.idea
+**/target/
+/.idea/
+*.iml
+.flattened-pom.xml

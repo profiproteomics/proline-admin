@@ -3,7 +3,6 @@ package fr.proline.admin.gui.install.model
 import com.typesafe.scalalogging.LazyLogging
 
 import fr.proline.admin.gui.Install
-import fr.proline.repository.DriverType
 import fr.proline.admin.gui.process.PostgreSQLUtils
 import java.io.File
 
