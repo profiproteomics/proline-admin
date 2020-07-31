@@ -1,17 +1,12 @@
 package fr.proline.admin.gui.install
 
-import org.junit.Rule
 import java.io.File
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
-import com.typesafe.config.ConfigFactory
-import com.typesafe.scalalogging.LazyLogging
-import org.junit.Before
 import java.util.Date
-import fr.proline.admin.gui.process.config.AdminConfigFile
-import fr.proline.admin.gui.process.config.AdminConfig
+
+import com.typesafe.scalalogging.LazyLogging
 import fr.profi.util.scala.ScalaUtils
-import fr.proline.repository.DriverType
+import fr.proline.admin.gui.process.config.{AdminConfig, AdminConfigFile}
+import org.junit.{Before, Test}
 
 class InstallTest extends LazyLogging {
   var tmpDir, serverDir, dataDir, confFile: File = null

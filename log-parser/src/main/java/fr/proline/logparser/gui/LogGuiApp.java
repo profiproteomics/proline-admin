@@ -30,21 +30,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.prefs.Preferences;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLayeredPane;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +77,7 @@ public class LogGuiApp extends JFrame {
 
     private void initComponents() {
         String path = "prolineLogo32x32.png";
-        Image icon = ImageUtilities.loadImage(path);
+        Image icon = new ImageIcon(path).getImage();
         this.setIconImage(icon);
 
         m_taskFlowPane = new JTextPane();

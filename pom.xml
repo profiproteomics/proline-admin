@@ -5,14 +5,14 @@
     <parent>
         <artifactId>profi-pom</artifactId>
         <groupId>fr.proline</groupId>
-        <version>1.0.0-SNAPSHOT</version>  <!-- Snapshot Trunk version -->
+        <version>1.0.0_jdk11-SNAPSHOT</version>  <!-- Snapshot Trunk version -->
     </parent>
 
-    <artifactId>proline-parent-admin</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <artifactId>proline-admin-parent</artifactId>
+    <version>2.2.0_jdk11-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Proline-Parent-Admin</name>
+    <name>Proline-Admin-Parent</name>
     <description>Common pom for Proline Administration modules : Admin process (proline-admin) and Admin GUI (proline-admin-gui).</description>
     <modules>
         <module>proline-admin</module>
@@ -22,8 +22,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <core.version>2.2.0-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
-        <commons.version>1.0.0-SNAPSHOT</commons.version>
+        <core.version>2.2.0_jdk11-SNAPSHOT</core.version> <!-- Snapshot Trunk version -->
+        <commons.version>1.0.0_jdk11-SNAPSHOT</commons.version>
     </properties>
     <scm>
         <connection>scm:git:https://github.com/profiproteomics/proline-admin.git</connection>
@@ -38,7 +38,7 @@
             </dependency>
             <dependency>
                 <groupId>fr.profi.util</groupId>
-                <artifactId>profi-commons-scala_${scala.version}</artifactId>
+                <artifactId>profi-commons-scala_${scala.compat.version}</artifactId>
                 <version>${commons.version}</version> <!-- Snapshot Trunk version -->
             </dependency>
             <dependency>
