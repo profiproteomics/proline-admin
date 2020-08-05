@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 public class LogLineReader {
 
     protected static final Logger m_logger = LoggerFactory.getLogger(LogLineReader.class);
+    private static final int MAX_LINE = 1000;
     private HashMap<String, LogTask> m_msgId2TaskMap;
     private HashMap<String, LogTask> m_thread2TaskMap;
     /**
@@ -110,9 +111,10 @@ public class LogLineReader {
     }
 
     private void push(long i, String line) {
-        if (m_noTreatLine.size() > 100) {
+        if (m_noTreatLine.size() > MAX_LINE) {//in order to empty memo
             showNoTreatedLines();
         }
+
         m_noTreatLine.push(line);
         m_noTreatLineIndex.push(i);
     }
@@ -319,6 +321,9 @@ public class LogLineReader {
         if (m_flowWriter != null) {
             m_flowWriter.addLine(newLine);
         }
+        if (m_isBigFile) {
+            m_taskInJsonCtrl.initTaskFile(task);
+        }
         m_hasNewTrace = true;
     }
 
@@ -326,8 +331,10 @@ public class LogLineReader {
      * close & clean memory
      */
     public void close() {
-        m_flow.close();
-        m_flow = null;
+        if (m_flow != null) {
+            m_flow.close();
+            m_flow = null;
+        }
         m_hasNewTrace = false;
         m_flowWriter.close();
         long start = 0;
@@ -346,9 +353,11 @@ public class LogLineReader {
      */
     public void memoryClean() {
         if (m_isBigFile) {
-            for (LogTask task : m_taskInRun) {
-                m_taskInJsonCtrl.WriteTask(task);
-                task.emptyTrace();
+            for (LogTask task : m_taskInOrder) {
+                if (task.getTrace() != null) {
+                    m_taskInJsonCtrl.writeTaskTrace(task);
+                    task.emptyTrace();
+                }
             }
         }
         m_taskInRun = null;
@@ -369,7 +378,7 @@ public class LogLineReader {
         }
         this.m_hasNewTrace = true;
         if (m_isBigFile) {
-            m_taskInJsonCtrl.WriteTask(task);
+            m_taskInJsonCtrl.writeTaskTrace(task);
             task.emptyTrace();
         }
     }

@@ -183,6 +183,9 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
             Exceptions.printStackTrace(ex);
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            m_reader.close();
+            
         }
     }
 }

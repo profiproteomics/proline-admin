@@ -7,12 +7,15 @@ package fr.proline.logparser.model;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import org.openide.util.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,15 +63,29 @@ public class TaskInJsonCtrl {
         return new File(logFileDirectory + File.separator + taskOrder + ".json");
     }
 
-    public void WriteTask(LogTask task) {
+    /**
+     * delete the old file
+     *
+     * @param task
+     */
+    public void initTaskFile(LogTask task) {
+        //String taskId = task.getMessageId();
+        int taskOrder = task.getTaskOrder();
+        File taskFile = getFile(taskOrder);
+        if (taskFile.isFile()) {//file already exist 
+            taskFile.delete();
+        }
+    }
+
+    public void writeTaskTrace(LogTask task) {
         try {
             //String taskId = task.getMessageId();
             int taskOrder = task.getTaskOrder();
             File taskFile = getFile(taskOrder);
             FileWriter outputFile = null;
             try {
-                outputFile = new FileWriter(taskFile);
-                String jsonOutput = m_gson.toJson(task);
+                outputFile = new FileWriter(taskFile, true);//append mode
+                String jsonOutput = m_gson.toJson(task.getTrace());//regist only trace
                 outputFile.write(jsonOutput);
             } catch (IOException iex) {
 
@@ -83,12 +100,27 @@ public class TaskInJsonCtrl {
         }
     }
 
-    public LogTask getCurrentTask(int taskOrder) {
+//    public LogTask getCurrentTask(int taskOrder) {
+//        try {
+//            m_currentTaskFile = getFile(taskOrder);
+//            JsonReader reader = new JsonReader(new FileReader(m_currentTaskFile));
+//            m_currentTask = m_gson.fromJson(reader, LogTask.class);
+//            return m_currentTask;
+//        } catch (FileNotFoundException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//        return null;
+//    }
+    public ArrayList<LogTask.LogLine> getCurrentTaskTrace(int taskOrder) {
         try {
             m_currentTaskFile = getFile(taskOrder);
             JsonReader reader = new JsonReader(new FileReader(m_currentTaskFile));
-            m_currentTask = m_gson.fromJson(reader, LogTask.class);
-            return m_currentTask;
+            ArrayList<LogTask.LogLine> traceList = null;
+            Type type = new TypeToken<ArrayList<LogTask.LogLine>>() {
+            }.getType();;
+            traceList = m_gson.fromJson(reader, type);//Json can load only 1001 object
+
+            return traceList;
         } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }

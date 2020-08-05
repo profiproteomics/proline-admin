@@ -30,12 +30,14 @@ import javax.swing.SwingWorker;
 public class TaskLoaderWorker extends SwingWorker<String, Void> {
 
     ArrayList<LogTask.LogLine> m_traces;
+    int m_nbLine;
     StringBuffer m_stringBuffer;
     LogControlPanel m_ctrl;
 
-    public TaskLoaderWorker(ArrayList<LogTask.LogLine> traces, LogControlPanel ctrl) {
+    public TaskLoaderWorker(LogTask task, LogControlPanel ctrl) {
         m_ctrl = ctrl;
-        m_traces = traces;
+        m_traces = task.getTrace();
+        m_nbLine = task.getNbLine();
         m_stringBuffer = new StringBuffer();
     }
 
@@ -77,8 +79,10 @@ public class TaskLoaderWorker extends SwingWorker<String, Void> {
                 m_stringBuffer.length();
             }
             m_stringBuffer.append("<div> </div><div>Au total " + traceSize + " lines shown. </div>");
-            if (diffrent > 0) {
+            
+            if (m_nbLine > traceSize) {
                 String fileName = TaskInJsonCtrl.getInstance().getCurrentFile().getPath();
+                diffrent = m_nbLine - m_traces.size();
                 m_stringBuffer.append("<div> ... </div><div> " + diffrent + " more lines, please refer to the file " + fileName);
             }
             return m_stringBuffer.toString();
