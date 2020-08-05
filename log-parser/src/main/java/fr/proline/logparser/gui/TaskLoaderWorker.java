@@ -34,10 +34,10 @@ public class TaskLoaderWorker extends SwingWorker<String, Void> {
     StringBuffer m_stringBuffer;
     LogControlPanel m_ctrl;
 
-    public TaskLoaderWorker(LogTask task, LogControlPanel ctrl) {
+    public TaskLoaderWorker(ArrayList<LogTask.LogLine> trace, int nbLine, LogControlPanel ctrl) {
         m_ctrl = ctrl;
-        m_traces = task.getTrace();
-        m_nbLine = task.getNbLine();
+        m_traces = trace;
+        m_nbLine = nbLine;
         m_stringBuffer = new StringBuffer();
     }
 
@@ -82,7 +82,7 @@ public class TaskLoaderWorker extends SwingWorker<String, Void> {
             
             if (m_nbLine > traceSize) {
                 String fileName = TaskInJsonCtrl.getInstance().getCurrentFile().getPath();
-                diffrent = m_nbLine - m_traces.size();
+                diffrent = m_nbLine - traceSize;
                 m_stringBuffer.append("<div> ... </div><div> " + diffrent + " more lines, please refer to the file " + fileName);
             }
             return m_stringBuffer.toString();

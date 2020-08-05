@@ -355,7 +355,7 @@ public class LogLineReader {
         if (m_isBigFile) {
             for (LogTask task : m_taskInOrder) {
                 if (task.getTrace() != null) {
-                    m_taskInJsonCtrl.writeTaskTrace(task);
+                    m_taskInJsonCtrl.writeTaskTrace(task, task.isFirstWrite(), true);
                     task.emptyTrace();
                 }
             }
@@ -378,7 +378,7 @@ public class LogLineReader {
         }
         this.m_hasNewTrace = true;
         if (m_isBigFile) {
-            m_taskInJsonCtrl.writeTaskTrace(task);
+            m_taskInJsonCtrl.writeTaskTrace(task, task.isFirstWrite(),true);
             task.emptyTrace();
         }
     }

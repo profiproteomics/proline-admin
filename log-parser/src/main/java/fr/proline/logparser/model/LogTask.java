@@ -67,6 +67,7 @@ public class LogTask {
     private int m_otherTasksInRun;
     private String m_dataSet;
     private int m_nbLine;
+    private boolean m_firstTraceWrite;
 
     private ArrayList<Long> m_timeStamp;
 
@@ -104,7 +105,7 @@ public class LogTask {
         m_nbOtherTaskMoment = new ArrayList();
         m_startTime = Calendar.getInstance().getTime();
         m_nbLine = 0;
-
+        m_firstTraceWrite = true;
     }
 
     public void setTaskOrder(int order) {
@@ -144,15 +145,20 @@ public class LogTask {
         LogLine ll = new LogLine(fileIndex, index, line);
         m_trace.add(ll);
         m_nbLine++;
-        if (m_trace.size() > MAX_LINE) {//more than 1000 line
-            //write in Json
-            TaskInJsonCtrl.getInstance().writeTaskTrace(this);
+        if (m_trace.size() >= MAX_LINE) {//more than 1000 line
+            //write in Json            
+            TaskInJsonCtrl.getInstance().writeTaskTrace(this, m_firstTraceWrite, false);
             m_trace = new ArrayList<>();//empty it
+            m_firstTraceWrite = false;
         }
         if (date != null) {
             m_stopTime = date;
             m_stopLine = ll;
         }//when date == null, don't add as stop line, because they are broken lines
+    }
+
+    public boolean isFirstWrite() {
+        return m_firstTraceWrite;
     }
 
     /**
@@ -184,7 +190,6 @@ public class LogTask {
         this.m_trace = trace;
     }
 
-    
     public int getNbLine() {
         return m_nbLine;
     }

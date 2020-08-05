@@ -81,8 +81,8 @@ public abstract class LogControlPanel extends JPanel {
             if (trace == null) {
                 trace = TaskInJsonCtrl.getInstance().getCurrentTaskTrace(selectedTask.getTaskOrder());
             }
-            selectedTask.setTrace(trace);
-            TaskLoaderWorker taskLoader = new TaskLoaderWorker(selectedTask, this);
+            //in order to remain minimun memory space, we don't set trace in the task
+            TaskLoaderWorker taskLoader = new TaskLoaderWorker(trace, selectedTask.getNbLine(), this);
             taskLoader.execute();
         }
     }

@@ -77,7 +77,7 @@ public class TaskInJsonCtrl {
         }
     }
 
-    public void writeTaskTrace(LogTask task) {
+    public void writeTaskTrace(LogTask task, boolean isFirstTime, boolean isLastTime) {
         try {
             //String taskId = task.getMessageId();
             int taskOrder = task.getTaskOrder();
@@ -85,7 +85,18 @@ public class TaskInJsonCtrl {
             FileWriter outputFile = null;
             try {
                 outputFile = new FileWriter(taskFile, true);//append mode
+
                 String jsonOutput = m_gson.toJson(task.getTrace());//regist only trace
+                if (jsonOutput.equals("[]")) {
+                    jsonOutput = "]";
+                } else {
+                    String j1 = (isFirstTime) ? jsonOutput : "," + jsonOutput.substring(1);
+                    int i = j1.lastIndexOf("]");
+                    jsonOutput = j1.substring(0, i);
+                    if (isLastTime) {
+                        jsonOutput += "]";
+                    }
+                }
                 outputFile.write(jsonOutput);
             } catch (IOException iex) {
 
@@ -118,7 +129,7 @@ public class TaskInJsonCtrl {
             ArrayList<LogTask.LogLine> traceList = null;
             Type type = new TypeToken<ArrayList<LogTask.LogLine>>() {
             }.getType();;
-            traceList = m_gson.fromJson(reader, type);//Json can load only 1001 object
+            traceList = m_gson.fromJson(reader, type);
 
             return traceList;
         } catch (FileNotFoundException ex) {
