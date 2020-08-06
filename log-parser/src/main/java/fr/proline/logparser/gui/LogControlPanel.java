@@ -79,7 +79,7 @@ public abstract class LogControlPanel extends JPanel {
             m_taskConsole.setData("In loading...");
             ArrayList<LogTask.LogLine> trace = selectedTask.getTrace();
             if (trace == null) {
-                trace = TaskInJsonCtrl.getInstance().getCurrentTaskTrace(selectedTask.getTaskOrder());
+                trace = TaskInJsonCtrl.getInstance().loadTrace(selectedTask.getTaskOrder(), Config.getMaxLine2Show());
             }
             //in order to remain minimun memory space, we don't set trace in the task
             TaskLoaderWorker taskLoader = new TaskLoaderWorker(trace, selectedTask.getNbLine(), this);
