@@ -161,6 +161,10 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         m_ctrlLogPanel.setProgress(m_loadingPercent);
     }
 
+    public int getLoadingPercent() {
+        return m_loadingPercent;
+    }
+
     public void addTraceBegin(String fileName) {
         m_stringBuilder = new StringBuilder("Analyse File: " + fileName + "\n");
         m_taskFlowPane.setText(m_stringBuilder.toString());
@@ -183,6 +187,9 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
             Exceptions.printStackTrace(ex);
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            m_reader.close();
+
         }
     }
 }

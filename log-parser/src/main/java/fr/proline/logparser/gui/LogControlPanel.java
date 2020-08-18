@@ -66,16 +66,12 @@ public abstract class LogControlPanel extends JPanel {
     }
 
     public void valueChanged(LogTask selectedTask) {
-        long begin = System.currentTimeMillis();
         String order = "";
         if (selectedTask != null) {
             order = "" + selectedTask.getTaskOrder();
         }
-        //System.out.println("task " + order + ": " + Utility.getMemory());
 
         m_taskView.setData(selectedTask);
-        //System.out.println("task " + order + " view  show time " + (System.currentTimeMillis() - begin));
-        begin = System.currentTimeMillis();
         if (selectedTask == null) {
             m_taskConsole.setData("");
 
@@ -83,9 +79,10 @@ public abstract class LogControlPanel extends JPanel {
             m_taskConsole.setData("In loading...");
             ArrayList<LogTask.LogLine> trace = selectedTask.getTrace();
             if (trace == null) {
-                trace = TaskInJsonCtrl.getInstance().getCurrentTask(selectedTask.getTaskOrder()).getTrace();
+                trace = TaskInJsonCtrl.getInstance().loadTrace(selectedTask.getTaskOrder(), Config.getMaxLine2Show());
             }
-            TaskLoaderWorker taskLoader = new TaskLoaderWorker(trace, this);
+            //in order to remain minimun memory space, we don't set trace in the task
+            TaskLoaderWorker taskLoader = new TaskLoaderWorker(trace, selectedTask.getNbLine(), this);
             taskLoader.execute();
         }
     }

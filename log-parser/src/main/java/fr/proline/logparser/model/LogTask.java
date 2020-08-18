@@ -22,6 +22,9 @@ import org.slf4j.LoggerFactory;
 public class LogTask {
 
     protected static final Logger m_logger = LoggerFactory.getLogger(LogTask.class.getName());
+    private static final int MAX_LINE = 1000;
+    final static String ERROR_LOG = "ERROR";
+    final static String WARN_LOG = "WARN ";
 
     public enum STATUS {
         RUNNING(0, "RUNNING"),
@@ -50,6 +53,7 @@ public class LogTask {
      * unique id
      */
     private String m_messageId;
+    private int m_taskOrder;
     private String m_projectId;
     private String m_threadName;
     private STATUS m_status;
@@ -62,7 +66,8 @@ public class LogTask {
     private ArrayList<LogLine> m_trace;
     private int m_otherTasksInRun;
     private String m_dataSet;
-    private int m_taskOrder;
+    private int m_nbLine;
+    private boolean m_firstTraceWrite;
 
     private ArrayList<Long> m_timeStamp;
 
@@ -99,7 +104,8 @@ public class LogTask {
         m_timeStamp = new ArrayList();
         m_nbOtherTaskMoment = new ArrayList();
         m_startTime = Calendar.getInstance().getTime();
-
+        m_nbLine = 0;
+        m_firstTraceWrite = true;
     }
 
     public void setTaskOrder(int order) {
@@ -122,9 +128,6 @@ public class LogTask {
         this.m_projectId = projectId;
     }
 
-    final static String ERROR_LOG = "ERROR";
-    final static String WARN_LOG = "WARN ";
-
     public void addLine(int fileIndex, long index, String line, Date date, STATUS status) {
         if (status == null) {
             if (line.contains(ERROR_LOG)) {
@@ -141,10 +144,21 @@ public class LogTask {
         }
         LogLine ll = new LogLine(fileIndex, index, line);
         m_trace.add(ll);
+        m_nbLine++;
+        if (m_trace.size() >= MAX_LINE) {//more than 1000 line
+            //write in Json            
+            TaskInJsonCtrl.getInstance().writeTaskTrace(this, m_firstTraceWrite, false);
+            m_trace = new ArrayList<>();//empty it
+            m_firstTraceWrite = false;
+        }
         if (date != null) {
             m_stopTime = date;
             m_stopLine = ll;
         }//when date == null, don't add as stop line, because they are broken lines
+    }
+
+    public boolean isFirstWrite() {
+        return m_firstTraceWrite;
     }
 
     /**
@@ -156,6 +170,7 @@ public class LogTask {
 
     LogLine removeLastLine() {
         if (m_trace.size() > 0) {
+            m_nbLine--;
             return m_trace.remove(m_trace.size() - 1);//@todo how restore last time
         } else {
             return null;
@@ -169,6 +184,14 @@ public class LogTask {
 
     public ArrayList<LogLine> getTrace() {
         return m_trace;
+    }
+
+    public void setTrace(ArrayList<LogLine> trace) {
+        this.m_trace = trace;
+    }
+
+    public int getNbLine() {
+        return m_nbLine;
     }
 
     public void setStatus(STATUS status) {
@@ -315,7 +338,8 @@ public class LogTask {
 
     @Override
     public String toString() {
-        return "LogTask{" + "m_messageId=" + m_messageId + ", m_threadName=" + m_threadName + ", m_status=" + m_status + ", m_taskOrder=" + m_taskOrder + '}';
+        return "LogTask{" + "m_messageId=" + m_messageId + ", m_threadName=" + m_threadName + ", m_status=" + m_status + ", m_taskOrder=" + m_taskOrder
+                + ", m_nbLine=" + m_nbLine + '}';
 
     }
 

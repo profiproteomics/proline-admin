@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 public class LogLineReader {
 
     protected static final Logger m_logger = LoggerFactory.getLogger(LogLineReader.class);
+    private static final int MAX_LINE = 1000;
     private HashMap<String, LogTask> m_msgId2TaskMap;
     private HashMap<String, LogTask> m_thread2TaskMap;
     /**
@@ -71,6 +72,7 @@ public class LogLineReader {
     private boolean m_isBigFile;
     private String m_fileName;
     private int m_fileIndex;
+    File m_nonTreatedLineFile;
 
     public LogLineReader(String fileName, DATE_FORMAT dateFormat, boolean isBigFile, boolean stdout) {
         Utility.init();//create data directory if necessary
@@ -92,6 +94,10 @@ public class LogLineReader {
             m_taskInJsonCtrl = TaskInJsonCtrl.getInstance().getInstance();
             m_taskInJsonCtrl.init(fileName);
         }
+        m_nonTreatedLineFile = new File(Utility.WORKING_DATA_DIRECTORY + File.separator + m_fileName + "_NoTreatedLine.txt");
+        if (m_nonTreatedLineFile.isFile()) {
+            m_nonTreatedLineFile.delete();
+        }
 
     }
 
@@ -105,6 +111,10 @@ public class LogLineReader {
     }
 
     private void push(long i, String line) {
+        if (m_noTreatLine.size() > MAX_LINE) {//in order to empty memo
+            showNoTreatedLines();
+        }
+
         m_noTreatLine.push(line);
         m_noTreatLineIndex.push(i);
     }
@@ -118,15 +128,18 @@ public class LogLineReader {
         return m_noTreatLine.size();
     }
 
+    /**
+     * each call will clean m_noTreatLine
+     */
     public void showNoTreatedLines() {
         if (m_noTreatLine.size() == 0) {
             return;
         }
         File nonTreatedLineFile = new File(Utility.WORKING_DATA_DIRECTORY + File.separator + m_fileName + "_NoTreatedLine.txt");
-        m_logger.debug("No treated lines  : size index stack= {}, lines stack ={}, {} ",
-                m_noTreatLine.size(), m_noTreatLineIndex.size(), nonTreatedLineFile.getName());
+//        m_logger.debug("No treated lines  : size index stack= {}, lines stack ={}, {} ",
+//                m_noTreatLine.size(), m_noTreatLineIndex.size(), nonTreatedLineFile.getName());
         try {
-            BufferedWriter bWriter = new BufferedWriter(new FileWriter(nonTreatedLineFile));
+            BufferedWriter bWriter = new BufferedWriter(new FileWriter(nonTreatedLineFile, true));//mode append
             while (!m_noTreatLine.isEmpty()) {
                 bWriter.write("[" + m_noTreatLineIndex.pop() + "]," + m_noTreatLine.pop());
                 bWriter.newLine();
@@ -308,6 +321,9 @@ public class LogLineReader {
         if (m_flowWriter != null) {
             m_flowWriter.addLine(newLine);
         }
+        if (m_isBigFile) {
+            m_taskInJsonCtrl.initTaskFile(task);
+        }
         m_hasNewTrace = true;
     }
 
@@ -315,8 +331,10 @@ public class LogLineReader {
      * close & clean memory
      */
     public void close() {
-        m_flow.close();
-        m_flow = null;
+        if (m_flow != null) {
+            m_flow.close();
+            m_flow = null;
+        }
         m_hasNewTrace = false;
         m_flowWriter.close();
         long start = 0;
@@ -335,9 +353,11 @@ public class LogLineReader {
      */
     public void memoryClean() {
         if (m_isBigFile) {
-            for (LogTask task : m_taskInRun) {
-                m_taskInJsonCtrl.WriteTask(task);
-                task.emptyTrace();
+            for (LogTask task : m_taskInOrder) {
+                if (task.getTrace() != null) {
+                    m_taskInJsonCtrl.writeTaskTrace(task, task.isFirstWrite(), true);
+                    task.emptyTrace();
+                }
             }
         }
         m_taskInRun = null;
@@ -358,7 +378,7 @@ public class LogLineReader {
         }
         this.m_hasNewTrace = true;
         if (m_isBigFile) {
-            m_taskInJsonCtrl.WriteTask(task);
+            m_taskInJsonCtrl.writeTaskTrace(task, task.isFirstWrite(),true);
             task.emptyTrace();
         }
     }
