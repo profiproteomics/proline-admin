@@ -20,6 +20,9 @@ package fr.proline.logparser.gui;
 import fr.proline.logparser.model.LogLineReader;
 import fr.proline.logparser.model.ProlineException;
 import fr.proline.logparser.model.Utility;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -41,7 +44,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karine XUE at CEA
  */
-public class LogReaderWorker extends SwingWorker<Long, String> {
+public class LogReaderWorker extends SwingWorker<Long, String> implements PropertyChangeListener {
 
     protected static final Logger m_logger = LoggerFactory.getLogger(LogReaderWorker.class);
 
@@ -74,6 +77,9 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         m_reader = reader;
         m_stringBuilder = new StringBuilder();
         m_isStandalon = false;
+
+        // to follow the progression
+        addPropertyChangeListener(this);
     }
 
     /**
@@ -96,8 +102,8 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         try {
             addTraceBegin(m_fileList.get(0).getName());
 
-            m_ctrlLogPanel.setProgress(0);
-            m_ctrlLogPanel.setProgressBarVisible(true);
+            setProgress(0);
+
             for (File file : m_fileList) {
 
                 m_currentFile = file;
@@ -158,7 +164,9 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
         }
         m_loadingPercent = (int) Math.floorDiv(m_loadingLength * 100, m_fileSize) + 1;
         m_taskFlowPane.setText(m_stringBuilder.toString());
-        m_ctrlLogPanel.setProgress(m_loadingPercent);
+
+        setProgress(m_loadingPercent);
+
     }
 
     public int getLoadingPercent() {
@@ -189,6 +197,23 @@ public class LogReaderWorker extends SwingWorker<Long, String> {
             Exceptions.printStackTrace(ex);
         } finally {
             m_reader.close();
+
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+
+        String propertyName = evt.getPropertyName();
+
+        if (propertyName.equals("state")) {
+            if (evt.getNewValue().toString().equals("STARTED")) {
+                m_ctrlLogPanel.setProgressBarVisible(true);
+            }
+
+        } else if (propertyName.equals("progress")) {
+            Integer progress = ((Integer) evt.getNewValue());
+            m_ctrlLogPanel.setProgress(progress);
 
         }
     }
