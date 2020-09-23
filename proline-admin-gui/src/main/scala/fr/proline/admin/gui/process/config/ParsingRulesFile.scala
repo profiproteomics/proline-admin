@@ -1,23 +1,15 @@
 package fr.proline.admin.gui.process.config
 
-import com.typesafe.scalalogging.LazyLogging
-import com.typesafe.config.Config
+import java.io.{File, FileWriter}
+
 import com.typesafe.config.ConfigFactory
-import com.typesafe.config.ConfigRenderOptions
-
-import scala.util.matching.Regex
-import scala.collection.JavaConversions._
-import scala.collection.mutable.StringBuilder
-import scala.io.Source
-import scala.collection.mutable.Map
-import scala.collection.mutable.ListBuffer
-
+import com.typesafe.scalalogging.LazyLogging
 import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scala.TypesafeConfigWrapper._
 
-import java.io.File
-import java.io.FileWriter
+import scala.collection.JavaConversions._
+import scala.collection.mutable.{ListBuffer, StringBuilder}
 
 /**
  * ParsingRulesFile Build a model to update, to add or to remove parsing rules from sequence repository parsing-rules.conf file.

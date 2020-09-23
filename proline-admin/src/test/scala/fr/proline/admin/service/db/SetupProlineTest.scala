@@ -1,14 +1,13 @@
 package fr.proline.admin.service.db
 
 import java.io.File
-import scala.collection.JavaConversions.mapAsJavaMap
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import java.util.Date
+
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
-import org.junit.Before
-import java.util.Date
+import org.junit.{Before, Test}
+
+import scala.collection.JavaConversions.mapAsJavaMap
 
 class SetupProlineTest extends LazyLogging {
 

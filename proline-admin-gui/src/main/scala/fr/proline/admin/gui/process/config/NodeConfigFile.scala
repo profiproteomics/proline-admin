@@ -1,15 +1,10 @@
 package fr.proline.admin.gui.process.config
 
+import java.io.{File, FileWriter}
+
+import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
-
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import com.typesafe.config.ConfigRenderOptions
 import fr.profi.util.scala.TypesafeConfigWrapper._
-import fr.profi.util.scala.ScalaUtils
-
-import java.io.File
-import java.io.FileWriter
 
 /**
  * Jms-node configuration file

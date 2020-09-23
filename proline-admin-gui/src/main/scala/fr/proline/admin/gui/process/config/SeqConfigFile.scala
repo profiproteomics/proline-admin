@@ -1,17 +1,11 @@
 package fr.proline.admin.gui.wizard.process.config
 
-import com.typesafe.scalalogging.LazyLogging
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import com.typesafe.config.ConfigRenderOptions
+import java.io.{File, FileNotFoundException, FileWriter, IOException}
 
+import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.scalalogging.LazyLogging
 import fr.profi.util.scala.TypesafeConfigWrapper._
 import fr.proline.repository.DriverType
-import fr.profi.util.scala.ScalaUtils
-import java.io.File
-import java.io.FileWriter
-import java.io.FileNotFoundException
-import java.io.IOException
 
 /**
  * Sequence Repository configuration file

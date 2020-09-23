@@ -1,15 +1,10 @@
 package fr.proline.admin.gui.install.model
 
 import com.typesafe.scalalogging.LazyLogging
-
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
 import fr.proline.admin.gui.Install
-import fr.proline.repository.DriverType
-import fr.proline.admin.gui.process.config._
-import fr.profi.util.scala.TypesafeConfigWrapper._
 import fr.proline.admin.gui.process.DatabaseConnection
-import java.io.File
+import fr.proline.admin.gui.process.config._
+import fr.proline.repository.DriverType
 
 /**
  * The Proline web extension model view. Defines UI actions: read and write configurations from configuration file.

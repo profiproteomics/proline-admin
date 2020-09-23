@@ -1,13 +1,10 @@
 package fr.proline.admin.service.db.setup
 
 import java.io.File
-import scala.collection.JavaConversions.collectionAsScalaIterable
-import com.typesafe.config.{ Config, ConfigFactory, ConfigList }
+
+import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
-import fr.proline.core.orm.uds.{
-  ExternalDb => UdsExternalDb,
-  ExternalDbPropertiesSerializer => UdsExtDbPropsSerializer
-}
+import fr.proline.core.orm.uds.{ExternalDb => UdsExternalDb, ExternalDbPropertiesSerializer => UdsExtDbPropsSerializer}
 import fr.proline.repository._
 
 /** Configuration settings for Proline setup */

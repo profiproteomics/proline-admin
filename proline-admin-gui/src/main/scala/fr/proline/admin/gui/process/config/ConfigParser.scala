@@ -1,24 +1,17 @@
 package fr.proline.admin.gui.process.config
 
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import com.typesafe.config.ConfigRenderOptions
+import java.io.{File, FileNotFoundException, FileWriter, IOException}
+
+import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
+import fr.profi.util.StringUtils.LINE_SEPARATOR
+import fr.profi.util.scala.ScalaUtils
+import fr.profi.util.scala.TypesafeConfigWrapper._
+import fr.proline.repository.DriverType
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.StringBuilder
 import scala.io.Source
-import java.io.File
-import java.io.FileWriter
-import java.io.FileNotFoundException
-
-import java.io.IOException
-import fr.proline.admin.gui.util.ShowPopupWindow
-import fr.proline.repository.DriverType
-
-import fr.profi.util.StringUtils.LINE_SEPARATOR
-import fr.profi.util.scala.ScalaUtils
-import fr.profi.util.scala.TypesafeConfigWrapper._
 
 ////////////////////////////////////////////////////////////////
 // FIXME! write/set methods in this file are incredibly ugly. //
