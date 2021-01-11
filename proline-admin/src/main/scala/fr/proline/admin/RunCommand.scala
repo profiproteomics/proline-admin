@@ -120,7 +120,7 @@ object RunCommand extends App with LazyLogging {
   private object DeleteObsoleteDatabasesCommand extends JCommandReflection
 
   /** archive project command */
-  @Parameters(commandNames = Array("archive_project"), commandDescription = "Archive project", separators = "=")
+/**  @Parameters(commandNames = Array("archive_project"), commandDescription = "Archive project", separators = "=")
   private object ArchiveProjectCommand extends JCommandReflection {
 
     @Parameter(names = Array("--project_id", "-pid"), description = "The project id to archive", required = true)
@@ -132,7 +132,7 @@ object RunCommand extends App with LazyLogging {
     @Parameter(names = Array("--archive_directory_path", "-ad"), description = "The path of archive directory where the project will be archived", required = true)
     var archiveProjectDirPath: String = ""
   }
-
+**/
   /** change project state command */
   @Parameters(commandNames = Array("change_project_state"), commandDescription = "Change project state", separators = "=")
   private object ChangeProjectStateCommand extends JCommandReflection {
@@ -153,7 +153,7 @@ object RunCommand extends App with LazyLogging {
     var userId: Int = 0
   }
   /** restore project command */
-  @Parameters(commandNames = Array("restore_project"), commandDescription = "Restore project", separators = "=")
+ /** @Parameters(commandNames = Array("restore_project"), commandDescription = "Restore project", separators = "=")
   private object RestoreProjectCommand extends JCommandReflection {
 
     @Parameter(names = Array("--name", "-n"), description = "Rename project", required = false)
@@ -167,7 +167,7 @@ object RunCommand extends App with LazyLogging {
 
     @Parameter(names = Array("--project_directory_path", "-pd"), description = "The path of the project directory from where the project will be restored", required = true)
     var projectDirectoryPath: String = ""
-  }
+  }**/
 
   /** reset  command */
   @Parameters(commandNames = Array("change_password"), commandDescription = "Change user password", separators = "=")
@@ -223,8 +223,8 @@ object RunCommand extends App with LazyLogging {
     //jCmd.addCommand(DeleteObsoleteDatabasesCommand)
     jCmd.addCommand(ExportDbUnitDTDsCommand)
     jCmd.addCommand(ExportMsiDbStatsCommand)
-    jCmd.addCommand(ArchiveProjectCommand)
-    jCmd.addCommand(RestoreProjectCommand)
+//    jCmd.addCommand(ArchiveProjectCommand)
+//    jCmd.addCommand(RestoreProjectCommand)
 
     // Try to parse the command line
     var parsedCommand = ""
@@ -263,28 +263,28 @@ object RunCommand extends App with LazyLogging {
             ChangeProjectOwnerCommand.userId)
         }
         
-        case ArchiveProjectCommand.Parameters.firstName => {
-          import fr.proline.admin.service.user.ArchiveProject
-          ArchiveProject(
-            SetupProline.config.udsDBConfig.userName,
-            ArchiveProjectCommand.projectId,
-            ArchiveProjectCommand.binDirPath,
-            ArchiveProjectCommand.archiveProjectDirPath)
-        }
+//        case ArchiveProjectCommand.Parameters.firstName => {
+//          import fr.proline.admin.service.user.ArchiveProject
+//          ArchiveProject(
+//            SetupProline.config.udsDBConfig.userName,
+//            ArchiveProjectCommand.projectId,
+//            ArchiveProjectCommand.binDirPath,
+//            ArchiveProjectCommand.archiveProjectDirPath)
+//        }
         case ChangeProjectStateCommand.Parameters.firstName => {
           ChangeProjectState(
             Set(ChangeProjectStateCommand.projectId),
             ChangeProjectStateCommand.isActive)
         }
-        case RestoreProjectCommand.Parameters.firstName => {
-          import fr.proline.admin.service.user.RestoreProject
-          RestoreProject(
-            SetupProline.config.udsDBConfig.userName,
-            RestoreProjectCommand.ownerId,
-            RestoreProjectCommand.BinDirectoryPath,
-            RestoreProjectCommand.projectDirectoryPath,
-            Option(RestoreProjectCommand.name))
-        }
+//        case RestoreProjectCommand.Parameters.firstName => {
+//          import fr.proline.admin.service.user.RestoreProject
+//          RestoreProject(
+//            SetupProline.config.udsDBConfig.userName,
+//            RestoreProjectCommand.ownerId,
+//            RestoreProjectCommand.BinDirectoryPath,
+//            RestoreProjectCommand.projectDirectoryPath,
+//            Option(RestoreProjectCommand.name))
+//        }
         case CreateUserCommand.Parameters.firstName => {
           val pswd = if (CreateUserCommand.userPassword.isEmpty()) None else Some(CreateUserCommand.userPassword)
           CreateUser(CreateUserCommand.userLogin, pswd, Option(CreateUserCommand.groupUser), Option(false))

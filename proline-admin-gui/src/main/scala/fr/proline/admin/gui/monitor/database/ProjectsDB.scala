@@ -103,21 +103,21 @@ object ProjectsDB extends LazyLogging {
   }
 
   /** Archive Proline project */
-  def archive(projectId: Long, binDirPath: String, archiveLocationPath: String) {
-    run {
-      val userName = UdsRepository.getUdsDbConfig().userName
-      new ArchiveProject(udsDbCtx, userName, projectId, binDirPath, archiveLocationPath).run()
-    }
-
-  }
-
-  /** Restore Proline project */
-  def restore(ownerId: Long, binDirPath: String, archivedProjDirPath: String, projectName: Option[String]) {
-    run {
-      val userName = UdsRepository.getUdsDbConfig().userName
-      new RestoreProject(udsDbCtx, userName, ownerId, binDirPath, archivedProjDirPath, projectName).doWork()
-    }
-  }
+//  def archive(projectId: Long, binDirPath: String, archiveLocationPath: String) {
+//    run {
+//      val userName = UdsRepository.getUdsDbConfig().userName
+//      new ArchiveProject(udsDbCtx, userName, projectId, binDirPath, archiveLocationPath).run()
+//    }
+//
+//  }
+//
+//  /** Restore Proline project */
+//  def restore(ownerId: Long, binDirPath: String, archivedProjDirPath: String, projectName: Option[String]) {
+//    run {
+//      val userName = UdsRepository.getUdsDbConfig().userName
+//      new RestoreProject(udsDbCtx, userName, ownerId, binDirPath, archivedProjDirPath, projectName).doWork()
+//    }
+//  }
 
   /** Compute LCMS database size */
   def computeLcmsSize(projectId: Long): Option[String] = {

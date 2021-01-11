@@ -157,55 +157,55 @@ class ProjectViewModel extends LazyLogging {
   }
 
   /** Archive a Proline project */
-  def onArchive() {
-    val result = ArchiveProjectDialog.showAndWait(Monitor.stage)
-    result match {
-      case Some(archiveProject) =>
-        taskRunner.run(
-          caption = s"Archiving project with id= #${selectedItems.headOption.map(_.id.value).get}",
-          op = {
-            // Archiving project 
-            logger.info(s"Archiving project with id= #${selectedItems.headOption.map(_.id.value).get}")
-            projectsDB.archive(selectedItems.headOption.map(_.id.value).get, archiveProject.binDirPath, archiveProject.archiveLocationPath)
-
-            // Return items from database            
-            val updatedItems = projectsDB.queryProjectsAsView()
-            // Update items on FX thread          
-            Platform.runLater {
-              updateItems(updatedItems)
-            }
-          })
-      case _ =>
-
-    }
-
-  }
-
-  /** Restore a Proline project */
-  def onRestore() {
-    val result = RestoreProjectDialog.showAndWait(Monitor.stage)
-    result match {
-      case Some(restoreProject) =>
-        taskRunner.run(
-          caption = s"Restoring project",
-          op = {
-            // Restore project 
-            logger.info(s"Restoring project")
-            projectsDB.restore(restoreProject.ownerId,
-              restoreProject.binDirPath,
-              restoreProject.archivedProjDirPath,
-              restoreProject.projectName)
-            // Return items from database
-            val updatedItems = projectsDB.queryProjectsAsView()
-
-            // Update items on FX thread
-            Platform.runLater {
-              updateItems(updatedItems)
-            }
-          })
-      case _ =>
-    }
-  }
+// def onArchive() {
+  //    val result = ArchiveProjectDialog.showAndWait(Monitor.stage)
+  //    result match {
+  //      case Some(archiveProject) =>
+  //        taskRunner.run(
+  //          caption = s"Archiving project with id= #${selectedItems.headOption.map(_.id.value).get}",
+  //          op = {
+  //            // Archiving project
+  //            logger.info(s"Archiving project with id= #${selectedItems.headOption.map(_.id.value).get}")
+  //            projectsDB.archive(selectedItems.headOption.map(_.id.value).get, archiveProject.binDirPath, archiveProject.archiveLocationPath)
+  //
+  //            // Return items from database
+  //            val updatedItems = projectsDB.queryProjectsAsView()
+  //            // Update items on FX thread
+  //            Platform.runLater {
+  //              updateItems(updatedItems)
+  //            }
+  //          })
+  //      case _ =>
+  //
+  //    }
+  //
+  //  }
+  //
+  //  /** Restore a Proline project */
+  //  def onRestore() {
+  //    val result = RestoreProjectDialog.showAndWait(Monitor.stage)
+  //    result match {
+  //      case Some(restoreProject) =>
+  //        taskRunner.run(
+  //          caption = s"Restoring project",
+  //          op = {
+  //            // Restore project
+  //            logger.info(s"Restoring project")
+  //            projectsDB.restore(restoreProject.ownerId,
+  //              restoreProject.binDirPath,
+  //              restoreProject.archivedProjDirPath,
+  //              restoreProject.projectName)
+  //            // Return items from database
+  //            val updatedItems = projectsDB.queryProjectsAsView()
+  //
+  //            // Update items on FX thread
+  //            Platform.runLater {
+  //              updateItems(updatedItems)
+  //            }
+  //          })
+  //      case _ =>
+  //    }
+  //  }
 
   /** show more info about the the slected project */
   def onMoreInfo() {
