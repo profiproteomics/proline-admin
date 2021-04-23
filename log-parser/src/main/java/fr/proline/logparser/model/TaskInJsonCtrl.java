@@ -50,8 +50,8 @@ public class TaskInJsonCtrl {
      *
      * @param CortexLogFileName : String can't be null
      */
-    public void init(String CortexLogFileName) {
-        logFileDirectory = new File(Utility.WORKING_DATA_DIRECTORY + File.separator + CortexLogFileName);
+    public void initFileSystem(String CortexLogFileName) {
+        logFileDirectory = new File(Utility.WORKING_DATA_DIRECTORY + File.separator + CortexLogFileName+".jsons");
         if (!logFileDirectory.isDirectory()) {
             boolean b;
             b = logFileDirectory.mkdir();
