@@ -24,7 +24,6 @@ import java.util.Locale;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.openide.util.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,10 +143,9 @@ public class LogLineReader {
             }
             bWriter.close();
         } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            m_logger.error(ex.getMessage(), ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+            m_logger.error(ex.getMessage(), ex);        }
 
     }
 
@@ -748,7 +746,7 @@ public class LogLineReader {
                     m_outputFile.close();
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                m_logger.error(ex.getMessage(), ex);
             }
         }
 
@@ -761,7 +759,7 @@ public class LogLineReader {
                     System.out.println(head);
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                m_logger.error(ex.getMessage(), ex);
             }
         }
 
@@ -772,7 +770,7 @@ public class LogLineReader {
                     System.out.print(s);
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                m_logger.error(ex.getMessage(), ex);
             }
         }
 

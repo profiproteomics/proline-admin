@@ -21,6 +21,9 @@ import fr.proline.logparser.model.LogLineReader;
 import fr.proline.logparser.model.Utility.DATE_FORMAT;
 import fr.proline.logparser.model.ProlineException;
 import fr.proline.logparser.model.Utility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -36,6 +38,7 @@ import org.openide.util.Exceptions;
  */
 public class LogApp {
 
+    protected static final Logger m_logger = LoggerFactory.getLogger(LogApp.class);
     LogLineReader m_reader;
 
     public LogApp(String filePath, DATE_FORMAT dateFormat) throws IOException, ProlineException {
@@ -73,7 +76,7 @@ public class LogApp {
             System.out.println(info);
             m_reader.showNoTreatedLines();
         } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            m_logger.error(ex.getMessage(),ex);
         } finally {
 
             inputStream.close();
@@ -126,7 +129,7 @@ public class LogApp {
             LogApp mainApp = new LogApp(file2Anaylse, dFormat);
 
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            m_logger.error(ex.getMessage(),ex);
         }
     }
 
