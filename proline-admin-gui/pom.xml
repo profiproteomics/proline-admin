@@ -57,7 +57,7 @@
 			<version>14</version>
 		</dependency>
 
-		<!-- Logging  -->
+		<!-- Logback -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
