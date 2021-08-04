@@ -36,7 +36,6 @@
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-controls</artifactId>
-			<classifier></classifier>
 			<version>14</version>
 		</dependency>
 
