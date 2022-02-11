@@ -24,28 +24,15 @@ import java.awt.BorderLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.prefs.Preferences;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLayeredPane;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbPreferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,9 +76,17 @@ public class LogGuiApp extends JFrame {
     }
 
     private void initComponents() {
-        String path = "prolineLogo32x32.png";
-        Image icon = ImageUtilities.loadImage(path);
-        this.setIconImage(icon);
+        Image icon = null;
+        try {
+            String path = "prolineLogo32x32.png";
+            ImageIcon ic = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource(path)));
+            icon = ic.getImage();
+            this.setIconImage(icon);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         m_taskFlowPane = new JTextPane();
         m_taskFlowFrame = new JFrame("Log Task Flow");
@@ -177,7 +172,7 @@ public class LogGuiApp extends JFrame {
             try {
                 m_logPanel.clear();
                 File f = m_fileChooser.getSelectedFile();
-                saveParameters(f.getPath());//register the first selectedFile, in order to memory the path
+//                saveParameters(f.getPath());//register the first selectedFile, in order to memory the path
                 //m_fileChooser.setSelectedFile(m_file);
                 m_isBigFile = false;
                 //This is where a real application would open the file.
@@ -246,15 +241,17 @@ public class LogGuiApp extends JFrame {
 
     public static String KEY_LOG_FILE_PATH = "Server_log_file_path";
 
-    public void saveParameters(String path) {
-        Preferences preferences = NbPreferences.root();
-
-        preferences.put(KEY_LOG_FILE_PATH, path);
-    }
-
+// VDS: TODO Si on veut conserver, mettre dans Java Preference
+//    public void saveParameters(String path) {
+//        Preferences preferences = NbPreferences.root();
+//
+//        preferences.put(KEY_LOG_FILE_PATH, path);
+//    }
+//
     public String initParameters() {
-        Preferences preferences = NbPreferences.root();
-        return preferences.get(KEY_LOG_FILE_PATH, "");
+//        Preferences preferences = NbPreferences.root();
+//        return preferences.get(KEY_LOG_FILE_PATH, "");
+        return "";
     }
 
     public static void main(String[] args) {

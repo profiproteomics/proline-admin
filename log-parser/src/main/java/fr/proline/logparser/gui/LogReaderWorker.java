@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingWorker;
-import org.openide.util.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -192,9 +191,9 @@ public class LogReaderWorker extends SwingWorker<Long, String> implements Proper
                 m_reader.close();
             }
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            m_logger.error(ex.getMessage(), ex);
         } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
+            m_logger.error(ex.getMessage(), ex);
         } finally {
             m_reader.close();
 

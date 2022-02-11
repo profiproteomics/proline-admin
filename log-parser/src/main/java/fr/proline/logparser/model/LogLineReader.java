@@ -24,7 +24,6 @@ import java.util.Locale;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.openide.util.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +68,7 @@ public class LogLineReader {
     private boolean m_hasNewTrace;
     private TasksFlowWriter m_flowWriter;
     private TaskInJsonCtrl m_taskInJsonCtrl;
-    private boolean m_isBigFile;
+    private boolean m_useJsonCtrl;
     private String m_fileName;
     private int m_fileIndex;
     File m_nonTreatedLineFile;
@@ -77,7 +76,7 @@ public class LogLineReader {
     public LogLineReader(String fileName, DATE_FORMAT dateFormat, boolean isBigFile, boolean stdout) {
         Utility.init();//create data directory if necessary
         m_fileName = fileName.replace(".txt", "");//remove .txt
-        m_isBigFile = isBigFile;
+        m_useJsonCtrl = isBigFile;
         m_flow = new LogTasksFlow();
         m_hasNewTrace = false;
         m_flowWriter = new TasksFlowWriter(stdout);
@@ -90,10 +89,8 @@ public class LogLineReader {
         m_taskInRun = new ArrayList<>();
         m_noTreatLine = new Stack<>();
         m_noTreatLineIndex = new Stack<>();
-        if (m_isBigFile) {
-            m_taskInJsonCtrl = TaskInJsonCtrl.getInstance().getInstance();
-            m_taskInJsonCtrl.init(fileName);
-        }
+        m_taskInJsonCtrl = TaskInJsonCtrl.getInstance();
+        m_taskInJsonCtrl.initFileSystem(fileName);
         m_nonTreatedLineFile = new File(Utility.WORKING_DATA_DIRECTORY + File.separator + m_fileName + "_NoTreatedLine.txt");
         if (m_nonTreatedLineFile.isFile()) {
             m_nonTreatedLineFile.delete();
@@ -146,10 +143,9 @@ public class LogLineReader {
             }
             bWriter.close();
         } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            m_logger.error(ex.getMessage(), ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+            m_logger.error(ex.getMessage(), ex);        }
 
     }
 
@@ -162,7 +158,7 @@ public class LogLineReader {
      *
      * @param line
      * @param index
-     * @param fileInde
+     * @param fileIndex
      * @throws ProlineException
      */
     public void registerTask(int fileIndex, String line, long index) throws ProlineException {
@@ -197,7 +193,7 @@ public class LogLineReader {
             if (threadName.equals("[main]") || threadName.equals("[Timer-PurgeTempDir]")) {//special task to ignore
                 existTask = m_thread2TaskMap.get(threadName);
                 if (existTask != null) {
-                    existTask.addLine(m_fileIndex, index, line, date, null);
+                    existTask.addLine(m_fileIndex, index, line, date, null);  // Specify if bigfile ?!
                     pop();
                 } else {
                     createOtherTask(index, line, threadName, date);
@@ -274,7 +270,7 @@ public class LogLineReader {
     }
 
     private void createOtherTask(long index, String line, String threadName, Date date) {
-        LogTask newTask = new LogTask(m_fileIndex, threadName + "_" + Math.random());
+        LogTask newTask = new LogTask(m_fileIndex, threadName + "_" + Math.random(), m_useJsonCtrl);
         //don't add in this.m_taskInRun, because it has not end key word
         newTask.setThreadName(threadName);
         newTask.setStartLine(m_fileIndex, index, line, date);
@@ -321,7 +317,7 @@ public class LogLineReader {
         if (m_flowWriter != null) {
             m_flowWriter.addLine(newLine);
         }
-        if (m_isBigFile) {
+        if (m_useJsonCtrl) {
             m_taskInJsonCtrl.initTaskFile(task);
         }
         m_hasNewTrace = true;
@@ -352,7 +348,7 @@ public class LogLineReader {
      * register non end task in it's file. then force some data sturcture = null
      */
     public void memoryClean() {
-        if (m_isBigFile) {
+        if (m_useJsonCtrl) {
             for (LogTask task : m_taskInOrder) {
                 if (task.getTrace() != null) {
                     m_taskInJsonCtrl.writeTaskTrace(task, task.isFirstWrite(), true);
@@ -377,7 +373,7 @@ public class LogLineReader {
             m_flowWriter.addLine(newLine);
         }
         this.m_hasNewTrace = true;
-        if (m_isBigFile) {
+        if (m_useJsonCtrl) {
             m_taskInJsonCtrl.writeTaskTrace(task, task.isFirstWrite(),true);
             task.emptyTrace();
         }
@@ -406,7 +402,7 @@ public class LogLineReader {
             LogTask task = m_msgId2TaskMap.get(messageId);
             Date date = getDate(m_lastBeginMatch);//can verify if  pool name in this match is the same in m_msgId2TaskMap
             if (task == null) {
-                task = new LogTask(m_fileIndex, messageId);
+                task = new LogTask(m_fileIndex, messageId, m_useJsonCtrl);
                 m_msgId2TaskMap.put(messageId, task);
                 String threadName = m_lastBeginMatch.group(8);
                 addTask(task);
@@ -555,7 +551,7 @@ public class LogLineReader {
             task = m_msgId2TaskMap.get(messageId);
             //m_logger.debug("GGGGGGGGGGGGGGGGGG getTask {} for msgId={}", task, messageId);
             if (task == null) {
-                task = new LogTask(m_fileIndex, messageId);
+                task = new LogTask(m_fileIndex, messageId, m_useJsonCtrl);
                 task.setThreadName(threadName);
                 task.setStartLine(m_fileIndex, index, line2add, date);
                 m_msgId2TaskMap.put(messageId, task);
@@ -590,7 +586,7 @@ public class LogLineReader {
         LogTask task;
         if (matcher.find()) {
             String messageId = matcher.group(1);
-            task = new LogTask(m_fileIndex, messageId);
+            task = new LogTask(m_fileIndex, messageId, m_useJsonCtrl);
             m_msgId2TaskMap.put(messageId, task);
             addTask(task);
             m_taskInRun.add(task);
@@ -750,7 +746,7 @@ public class LogLineReader {
                     m_outputFile.close();
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                m_logger.error(ex.getMessage(), ex);
             }
         }
 
@@ -763,7 +759,7 @@ public class LogLineReader {
                     System.out.println(head);
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                m_logger.error(ex.getMessage(), ex);
             }
         }
 
@@ -774,7 +770,7 @@ public class LogLineReader {
                     System.out.print(s);
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                m_logger.error(ex.getMessage(), ex);
             }
         }
 

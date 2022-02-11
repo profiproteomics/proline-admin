@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 public class LogTask {
 
     protected static final Logger m_logger = LoggerFactory.getLogger(LogTask.class.getName());
-    private static final int MAX_LINE = 1000;
+    //private static final int MAX_LINE = 1000; //VDS ==> Not max line in task but big file !!
     final static String ERROR_LOG = "ERROR";
     final static String WARN_LOG = "WARN ";
 
@@ -68,6 +68,7 @@ public class LogTask {
     private String m_dataSet;
     private int m_nbLine;
     private boolean m_firstTraceWrite;
+    private boolean m_useJSONFiles;
 
     private ArrayList<Long> m_timeStamp;
 
@@ -91,8 +92,9 @@ public class LogTask {
         return m_taskOrder;
     }
 
-    public LogTask(int fileIndex, String messageId) {
+    public LogTask(int fileIndex, String messageId, boolean useJSONFiles) {
         this.m_messageId = messageId;
+        this.m_useJSONFiles = useJSONFiles;
         m_trace = new ArrayList();
         m_otherTasksInRun = 0;
         m_dataSet = "";
@@ -145,7 +147,7 @@ public class LogTask {
         LogLine ll = new LogLine(fileIndex, index, line);
         m_trace.add(ll);
         m_nbLine++;
-        if (m_trace.size() >= MAX_LINE) {//more than 1000 line
+        if (m_useJSONFiles) {//more than 1000 line => m_trace.size() >= MAX_LINE
             //write in Json            
             TaskInJsonCtrl.getInstance().writeTaskTrace(this, m_firstTraceWrite, false);
             m_trace = new ArrayList<>();//empty it

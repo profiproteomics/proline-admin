@@ -17,7 +17,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import org.openide.util.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +49,8 @@ public class TaskInJsonCtrl {
      *
      * @param CortexLogFileName : String can't be null
      */
-    public void init(String CortexLogFileName) {
-        logFileDirectory = new File(Utility.WORKING_DATA_DIRECTORY + File.separator + CortexLogFileName);
+    public void initFileSystem(String CortexLogFileName) {
+        logFileDirectory = new File(Utility.WORKING_DATA_DIRECTORY + File.separator + CortexLogFileName+".jsons");
         if (!logFileDirectory.isDirectory()) {
             boolean b;
             b = logFileDirectory.mkdir();
@@ -138,7 +137,7 @@ public class TaskInJsonCtrl {
 
             return traceList;
         } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            m_logger.error(ex.getMessage(), ex);
         }
         return null;
     }
@@ -166,7 +165,7 @@ public class TaskInJsonCtrl {
             return traces;
 
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            m_logger.error(ex.getMessage(), ex);
         }
         return null;
     }
