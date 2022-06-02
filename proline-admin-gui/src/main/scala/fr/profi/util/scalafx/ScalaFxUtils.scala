@@ -5,7 +5,6 @@ import scala.reflect.ClassTag
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.Button
-import scalafx.scene.control.Label
 import scalafx.scene.control.ComboBox
 import scalafx.scene.control.TableView
 import scalafx.scene.control.TextField
@@ -114,13 +113,15 @@ object ScalaFxUtils extends LazyLogging {
   /** Conversions from/to ObservableBuffer **/
   implicit def seq2obsBuff[T](seq: Seq[T]): ObservableBuffer[T] = {
     if (seq == null) null
-    else ObservableBuffer[T](seq)
+    else ObservableBuffer.from(seq)
   }
   implicit def seq2array[T: ClassTag](seq: Seq[T]): Array[T] = {
     Array[T](seq: _*)
   }
   implicit def array2seq[T: ClassTag](arr: Array[T]): Seq[T] = {
-    Seq[T](arr: _*)
+    val s = Seq.empty[T]
+    s ++= (arr: scala.collection.mutable.ArrayOps[T]).toSeq
+
   }
   implicit def array2obsBuff[T: ClassTag](arr: Array[T]): ObservableBuffer[T] = {
     array2seq(arr) //array to seq to obs buff

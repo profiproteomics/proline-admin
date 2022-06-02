@@ -32,11 +32,6 @@
         <dependencies>
             <!-- Configuration -->
             <dependency>
-                <groupId>com.typesafe</groupId>
-                <artifactId>config</artifactId>
-                <version>1.4.1</version>
-            </dependency>
-            <dependency>
                 <groupId>fr.profi.util</groupId>
                 <artifactId>profi-commons-scala_${scala.compat.version}</artifactId>
                 <version>${commons.version}</version> <!-- Snapshot Trunk version -->
