@@ -1,5 +1,6 @@
 package fr.proline.admin.service.db.migration
 
+import scala.collection.JavaConverters._
 import com.typesafe.scalalogging.LazyLogging
 import fr.profi.util.StringUtils
 import fr.proline.context.DatabaseConnectionContext
@@ -7,7 +8,6 @@ import fr.proline.core.orm.uds.{ObjectTreeSchema => UdsObjectTreeSchema}
 import fr.proline.core.orm.uds.{PeaklistSoftware => UdsPeaklistSoftware}
 import fr.proline.core.orm.uds.{SpectrumTitleParsingRule => UdsSpectrumTitleParsingRule}
 
-import scala.collection.JavaConversions._
 
 /**
  * @author David Bouyssie
@@ -30,20 +30,20 @@ class UpgradeUdsDbDefinitions(
     // Index parsing rules by corresponding peaklist software
     val parsingRuleByPeaklistSoft = UdsSpectrumTitleParsingRule.ParsingRule.values().view.map { parsingRule =>
       parsingRule.getPeaklistSoftware -> parsingRule
-    } toMap
+    }.toMap
     
     // Load existing peaklist software
     val oldPklSofts = udsEM.createQuery("SELECT s FROM fr.proline.core.orm.uds.PeaklistSoftware s", classOf[UdsPeaklistSoftware]).getResultList
     
     // Index existing peaklist software by their name
-    val oldPklSoftByName = oldPklSofts.view.map { soft =>
+    val oldPklSoftByName = oldPklSofts.asScala.view.map { soft =>
       val version = soft.getVersion
       
 			val fullSoftName = if (StringUtils.isEmpty(version)) soft.getName
 			else soft.getName + ' ' + soft.getVersion 
 				
 			fullSoftName-> soft
-    } toMap
+    }.toMap
     
     // Iterate over the enumeration of Scoring Types
     for (softRelease <- UdsPeaklistSoftware.SoftwareRelease.values()) {
@@ -120,9 +120,9 @@ class UpgradeUdsDbDefinitions(
     val oldSchemas = udsEM.createQuery("SELECT s FROM fr.proline.core.orm.uds.ObjectTreeSchema s", classOf[UdsObjectTreeSchema]).getResultList
 
     // Index schemas by their name
-    val oldSchemaByName = oldSchemas.view.map { schema =>
+    val oldSchemaByName = oldSchemas.asScala.view.map { schema =>
       schema.getName -> schema
-    } toMap
+    }.toMap
     
     // Iterate over the enumeration of ObjectTree SchemaNames
     for (schemaName <- UdsObjectTreeSchema.SchemaName.values()) {

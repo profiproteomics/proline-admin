@@ -121,7 +121,7 @@ class SeqReposPgPanel(model: SeqReposModelView) extends VBox {
   private val testDbConnectionButton = new Button {
     graphic = FxUtils.newImageView(IconResource.CONNECTION)
     text = "Test connection"
-    onAction = handle {
+    onAction = _ => {
       model.onTestDbConn(
         driverType,
         user,

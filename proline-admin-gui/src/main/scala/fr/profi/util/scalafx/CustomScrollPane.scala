@@ -10,10 +10,10 @@ import scalafx.stage.Stage
 
 class CustomScrollPane(
     contentNode: Node = null,
-    hBarPolicy: ScrollBarPolicy = ScrollBarPolicy.NEVER) extends ScrollPane {
+    hBarPolicy: ScrollBarPolicy = ScrollBarPolicy.Never) extends ScrollPane {
 
   hbarPolicy = hBarPolicy
-  vbarPolicy = ScrollBarPolicy.AS_NEEDED
+  vbarPolicy = ScrollBarPolicy.AsNeeded
   val SCROLL_BAR_PUTATIVE_WIDTH = 40
 
   val contentPane = new VBox {

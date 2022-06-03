@@ -155,7 +155,7 @@ package object sql extends LazyLogging {
         
         //this.disableForeignKeyConstraints(sqlContext)
         
-        DoJDBCWork.withEzDBC(sqlContext, { ezDBC =>
+        DoJDBCWork.withEzDBC(sqlContext) { ezDBC =>
           
           //for( tableName <- sortedTableNames; if recordsByTableName.contains(tableName) ) {
           //  val records = recordsByTableName(tableName)
@@ -226,7 +226,7 @@ package object sql extends LazyLogging {
             }
           }
   
-        }) // END OF DoJDBCWork.withEzDBC
+        } // END OF DoJDBCWork.withEzDBC
         
       } // END OF tryInTransaction
       
@@ -483,8 +483,8 @@ package object sql extends LazyLogging {
       var createdDbCount = 0
 
       // Iterate over projects
-      import scala.collection.JavaConversions._
-      projectIds.foreach { projectId =>
+      import scala.collection.JavaConverters._
+      projectIds.asScala.foreach { projectId =>
         
         // Create MSIdb if it does not exist
         if ( _checkDbExists(pgConnTemplateStatement, s"msi_db_project_$projectId") == false) {
@@ -534,7 +534,7 @@ package object sql extends LazyLogging {
     
   def enableForeignKeyConstraints( dbContext: DatabaseConnectionContext ) {
     
-    DoJDBCWork.withEzDBC(dbContext, { ezDBC =>
+    DoJDBCWork.withEzDBC(dbContext) { ezDBC =>
       val driverType = dbContext.getDriverType
       
       driverType match {
@@ -542,7 +542,7 @@ package object sql extends LazyLogging {
         case DriverType.POSTGRESQL => ()
         case DriverType.SQLITE => ezDBC.execute("PRAGMA foreign_keys = ON;")
       }
-    })
+    } //End of DoJDBCWork
     
   }
   

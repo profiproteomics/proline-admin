@@ -10,6 +10,11 @@ import fr.proline.admin.service.db.migration.UpgradeAllDatabases
 import fr.proline.admin.service.user._
 import fr.proline.repository.UncachedDataStoreConnectorFactory
 
+/**
+ * Warning : main deprecated. see App :
+ * It should also be noted that the `main` method should not be overridden:
+ *  the whole class body becomes the “main method”.
+ */
 object RunCommand extends App with LazyLogging {
 
   trait JCommandReflection {
@@ -202,7 +207,6 @@ object RunCommand extends App with LazyLogging {
     dsConnectorFactory
   }
 
-  override def main(args: Array[String]): Unit = {
     Thread.currentThread.setUncaughtExceptionHandler(new ThreadLogger(logger.underlying.getName()))
 
     // Instantiate a JCommander object and affect some commands
@@ -368,7 +372,5 @@ object RunCommand extends App with LazyLogging {
     } finally {
       if (hasDsConnectorFactory) dsConnectorFactory.closeAll()
     }
-
-  }
 
 }

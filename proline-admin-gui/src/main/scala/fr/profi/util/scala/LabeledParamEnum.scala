@@ -1,5 +1,6 @@
 package fr.profi.util.scala
 
+import scala.language.implicitConversions
 /** 
  * **************************************** *
  * Enumeration with labeled values (params) *

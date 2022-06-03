@@ -77,8 +77,8 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   // Help icon
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
-    alignmentInParent = Pos.BASELINE_RIGHT
-    onAction = handle {
+    alignmentInParent = Pos.BaselineRight
+    onAction =  _ => {
       model.openAdminGuide()
     }
   }
@@ -178,13 +178,13 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   }
   val editServerButton = new Button(" Edit ") {
     graphic = FxUtils.newImageView(IconResource.EDITSMALL)
-    onAction = handle {
+    onAction =  _ => {
       enableServerConfig()
     }
   }
   val saveServerButton = new Button(" Save ") {
     graphic = FxUtils.newImageView(IconResource.SAVE)
-    onAction = handle {
+    onAction =  _ => {
       if (saveServerConfig()) {
         disableServerConfig()
       }
@@ -218,7 +218,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
             spacing = H_SPACING * 3
             children = List(pgPasswordLabel, pgPasswordField)
           }, new HBox {
-            alignment = Pos.BOTTOM_RIGHT;
+            alignment = Pos.BottomRight;
             spacing = H_SPACING * 1
             children = List(editServerButton, saveServerButton)
           })
@@ -250,14 +250,14 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   // To close PRoline-Admin GUI application
   val exitButton = new Button("Exit") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
-    onAction = handle {
+    onAction =  _ => {
       model.exit()
     }
   }
   // To start
   val goButton = new Button(" Go ") {
     graphic = FxUtils.newImageView(IconResource.EXECUTE)
-    onAction = handle {
+    onAction =  _ => {
       go()
     }
   }
@@ -342,11 +342,11 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   }
 
   // Monitor panel
-  alignment = Pos.CENTER
-  alignmentInParent = Pos.CENTER
+  alignment = Pos.Center
+  alignmentInParent = Pos.Center
   spacing = 1
   hgrow = Priority.Always
-  vgrow = Priority.ALWAYS
+  vgrow = Priority.Always
   children = Seq(
     mainPane)
 
@@ -419,7 +419,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
 
     val splitPane = new SplitPane {
       dividerPositions_=(0.70, 0.30)
-      orientation = (Orientation.VERTICAL)
+      orientation = (Orientation.Vertical)
     }
 
     splitPane.getItems().addAll(stckPane, tabPane)

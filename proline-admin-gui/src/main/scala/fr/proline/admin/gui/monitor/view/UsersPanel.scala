@@ -63,7 +63,7 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
     text = "Refresh"
     tooltip = "Refresh the table view of users."
     graphic = FxUtils.newImageView(IconResource.REFERESH)
-    onAction = handle {
+    onAction =  _ => {
       model.onRefresh()
     }
   }
@@ -71,7 +71,7 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
     text = " Add "
     tooltip = "Add a new Proline user."
     graphic = FxUtils.newImageView(IconResource.PLUS)
-    onAction = handle {
+    onAction =  _ => {
       model.onAddUser()
     }
   }
@@ -80,7 +80,7 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
     text = "Disable"
     tooltip = "Disable the selected user."
     graphic = FxUtils.newImageView(IconResource.DISABLE)
-    onAction = handle {
+    onAction =  _ => {
       if (!model.selectedItems.isEmpty) {
         val confirmed = GetConfirmation(s"Are you sure that you want to disable the user with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ",
           "Confirm your action",
@@ -96,7 +96,7 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
     text = "Activate"
     tooltip = "Activate the selected user."
     graphic = FxUtils.newImageView(IconResource.TICK)
-    onAction = handle {
+    onAction =  _ => {
       if (!model.selectedItems.isEmpty) {
         val confirmed = GetConfirmation(s"Are you sure that you want to activate the user with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
         if (confirmed) model.onActivate()
@@ -108,7 +108,7 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
     text = "Reset Password"
     tooltip = "Reset the selected user's password."
     graphic = FxUtils.newImageView(IconResource.UNLOCK)
-    onAction = handle {
+    onAction =  _ => {
       if (!model.selectedItems.isEmpty) {
         model.onResetPwd()
       }
@@ -118,7 +118,7 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
     text = "Add to user group"
     tooltip = "Add the selected user to user group."
     graphic = FxUtils.newImageView(IconResource.USER)
-    onAction = handle {
+    onAction =  _ => {
       if (!model.selectedItems.isEmpty) {
         val confirmed = GetConfirmation(s"Are you sure that you want to add the user with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")} to user group? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
         if (confirmed) model.onAddToUserGrp()
@@ -129,7 +129,7 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
     text = "Add to admin group"
     tooltip = "Add the selected user to admin group."
     graphic = FxUtils.newImageView(IconResource.ADMIN)
-    onAction = handle {
+    onAction =  _ => {
       if (!model.selectedItems.isEmpty) {
         val confirmed = GetConfirmation(s"Are you sure that you want to add the user with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")} to admin group? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
         if (confirmed) model.onAddToAdminGrp()
@@ -150,7 +150,7 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
     }
   val buttonsPanel = new HBox {
     spacing = 20
-    alignment_=(Pos.BOTTOM_CENTER)
+    alignment_=(Pos.BottomCenter)
     children = Seq(
       refreshButton,
       addUserButton,

@@ -67,7 +67,7 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
     minWidth = 80
     maxWidth = 80
     graphic = FxUtils.newImageView(IconResource.RESET)
-    onAction = handle {
+    onAction = _ => {
       defaultProteinAccessionField.setText(">(\\S+)")
     }
   }
@@ -87,7 +87,7 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
   val localFastaDirs = new ArrayBuffer[FastaDirectory]()
   val addLocalFastaDirectory = new Button("Add") {
     graphic = FxUtils.newImageView(IconResource.PLUS)
-    onAction = handle {
+    onAction = _ => {
       _addFastaDirectory()
     }
   }
@@ -97,7 +97,7 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
   val localRules = new ArrayBuffer[Rules]()
   val addRuleButton = new Button("Add") {
     graphic = FxUtils.newImageView(IconResource.PLUS)
-    onAction = handle {
+    onAction = _ => {
       _addRule()
     }
   }
@@ -317,7 +317,7 @@ class FastaDirectory(
     minWidth = 80
     maxWidth = 80
     graphic = FxUtils.newImageView(IconResource.LOAD)
-    onAction = handle {
+    onAction = _ => {
       val dir = FileBrowsing.browseDirectory(
         dcTitle = "Select local fasta directory",
         dcInitialDir = valueField.text(),
@@ -329,7 +329,7 @@ class FastaDirectory(
     minWidth = 80
     maxWidth = 80
     graphic = FxUtils.newImageView(IconResource.TRASH)
-    onAction = handle { onDeleteAction(thisFastaDir) }
+    onAction = _ => { onDeleteAction(thisFastaDir) }
   }
   /* Layout */
 
@@ -408,7 +408,7 @@ class Rules(
     minWidth = 80
     maxWidth = 80
     graphic = FxUtils.newImageView(IconResource.TRASH)
-    onAction = handle { onDeleteAction(thisrule) }
+    onAction = _ => { onDeleteAction(thisrule) }
   }
 
   Seq(nameLabel, fastaNameLabel, fastaVersionLabel, proteinAccessionLabel).foreach(_.minWidth = 150)
@@ -426,7 +426,7 @@ class Rules(
     })
 
   spacing = 10
-  alignment = Pos.CENTER
+  alignment = Pos.Center
   children = List(ruleBox, removeButton)
   def checkForm(): Boolean = {
     val isValidatedFields = Seq(nameText, fastaNameText, fastaVersionText, proteinAccessionText).forall(!_.getText.trim.isEmpty())

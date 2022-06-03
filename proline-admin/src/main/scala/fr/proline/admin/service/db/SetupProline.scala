@@ -160,7 +160,7 @@ object SetupProline {
 
       // Build the database setup configuration object
       (dbType -> DatabaseSetupConfig(db, driver, dataDirOpt, fullConnConfig))
-    } toMap
+    }.toMap
 
     ProlineSetupConfig(
       dataDirectoryOpt = dataDirOpt,

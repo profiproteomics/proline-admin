@@ -35,7 +35,7 @@ public class LogTask {
         private String _labelTxt;
         private int _index;
 
-        private STATUS(int index, String txt) {
+        STATUS(int index, String txt) {
             this._index = index;
             this._labelTxt = txt;
         }
@@ -95,7 +95,7 @@ public class LogTask {
     public LogTask(int fileIndex, String messageId, boolean useJSONFiles) {
         this.m_messageId = messageId;
         this.m_useJSONFiles = useJSONFiles;
-        m_trace = new ArrayList();
+        m_trace = new ArrayList<>();
         m_otherTasksInRun = 0;
         m_dataSet = "";
         m_startLine = new LogLine(fileIndex, -1, "");
@@ -103,8 +103,8 @@ public class LogTask {
         m_taskOrder = -1;
         m_projectId = "";
 
-        m_timeStamp = new ArrayList();
-        m_nbOtherTaskMoment = new ArrayList();
+        m_timeStamp = new ArrayList<>();
+        m_nbOtherTaskMoment = new ArrayList<>();
         m_startTime = Calendar.getInstance().getTime();
         m_nbLine = 0;
         m_firstTraceWrite = true;

@@ -83,7 +83,7 @@ public class ColorPalette extends JPanel {
         super.paint(g);
         String legend = "Color-Nb tasks : ";
         Rectangle2D bounds = g.getFontMetrics().getStringBounds(legend, g);
-        int cx = new Double(bounds.getWidth()).intValue();
+        int cx = Double.valueOf(bounds.getWidth()).intValue();
         Color color;
         g.setColor(Color.BLACK);
         g.drawString(legend, GAP*2, EDGE - 2);
@@ -97,7 +97,7 @@ public class ColorPalette extends JPanel {
             g.fillRect(start, GAP, EDGE, EDGE-1);
             g.setColor(Color.BLACK);
             bounds = g.getFontMetrics().getStringBounds("" + i, g);
-            cx = new Double(bounds.getCenterX()).intValue();
+            cx = Double.valueOf(bounds.getCenterX()).intValue();
             g.drawString("" + i, start + (EDGE / 2 - cx), y0);
         }
     }

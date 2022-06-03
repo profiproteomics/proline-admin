@@ -138,6 +138,10 @@
 				<artifactId>scala-maven-plugin</artifactId>
 				<!-- Version inherited from ProFI-Pom -->
 				<configuration>
+					<args>
+						<arg>-deprecation</arg>
+						<arg>-feature</arg>
+					</args>
 					<launchers>
 						<launcher>
 							<id>GUI</id>

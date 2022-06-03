@@ -33,7 +33,7 @@ class PostgresDataDirPanel(onSelectionChange: String => Boolean = null)(implicit
    */
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
-    onAction = handle { _openHelpDialog() }
+    onAction = _ => { _openHelpDialog() }
   }
 
   val headerLabel = new Label("Full path to PostgreSQL data directory :")
@@ -49,7 +49,7 @@ class PostgresDataDirPanel(onSelectionChange: String => Boolean = null)(implicit
   }
 
   val browseButton = new Button("Browse...") {
-    onAction = handle { _browseDataDir() }
+    onAction = _ => { _browseDataDir() }
   }
 
   val warningLabel = new Label() {

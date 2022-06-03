@@ -9,7 +9,6 @@ import fr.proline.core.orm.uds.{ ExternalDb => UdsExternalDb }
 import fr.proline.admin.gui.monitor.database.ProjectsDB
 import scala.util.Try
 import scala.collection.JavaConverters._
-import scala.collection.JavaConversions._
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 
@@ -26,10 +25,10 @@ package object AdapterModel {
     val pwdHash = new ObjectProperty(this, "pwdHash", udsUserAccount.getPasswordHash)
     val mode = new ObjectProperty(this, "mode", udsUserAccount.getCreationMode())
     val group = new ObjectProperty(this, "group", Try {
-      new JsonParser().parse(udsUserAccount.getSerializedProperties).getAsJsonObject.get("user_group").getAsString
+      JsonParser.parseString(udsUserAccount.getSerializedProperties).getAsJsonObject.get("user_group").getAsString
     }.getOrElse("USER"))
     val isActivated = new ObjectProperty(this, "isActivated", Try {
-      if (!new JsonParser().parse(udsUserAccount.getSerializedProperties).getAsJsonObject.get("is_active").getAsBoolean) "Disabled" else "Active"
+      if (!JsonParser.parseString(udsUserAccount.getSerializedProperties).getAsJsonObject.get("is_active").getAsBoolean) "Disabled" else "Active"
     }.getOrElse("Active"))
   }
 
@@ -43,13 +42,13 @@ package object AdapterModel {
     val id = new ObjectProperty(this, "id", udsProject.getId)
     val ownerLogin = new ObjectProperty(this, "owner", udsProject.getOwner.getLogin)
     val name = new ObjectProperty(this, "name", udsProject.getName)
-    val databases = new ObjectProperty(this, "databases", s"${Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.LCMS).get.getDbName() }.getOrElse("not.found")} -" +
-      s"${Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.MSI).get.getDbName() }.getOrElse("not.found")}")
+    val databases = new ObjectProperty(this, "databases", s"${Try { udsProject.getExternalDatabases.asScala.find(_.getType == ProlineDatabaseType.LCMS).get.getDbName() }.getOrElse("not.found")} -" +
+      s"${Try { udsProject.getExternalDatabases.asScala.find(_.getType == ProlineDatabaseType.MSI).get.getDbName() }.getOrElse("not.found")}")
     val description = new ObjectProperty(this, "description", udsProject.getDescription)
-    val lcmsDbVersion = new ObjectProperty(this, "lcmsDbVersion", Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.LCMS).get.getDbVersion }.getOrElse("no.version"))
-    val msiDbVersion = new ObjectProperty(this, "msiDbVersion", Try { udsProject.getExternalDatabases.find(_.getType == ProlineDatabaseType.MSI).get.getDbVersion }.getOrElse("no.version"))
+    val lcmsDbVersion = new ObjectProperty(this, "lcmsDbVersion", Try { udsProject.getExternalDatabases.asScala.find(_.getType == ProlineDatabaseType.LCMS).get.getDbVersion }.getOrElse("no.version"))
+    val msiDbVersion = new ObjectProperty(this, "msiDbVersion", Try { udsProject.getExternalDatabases.asScala.find(_.getType == ProlineDatabaseType.MSI).get.getDbVersion }.getOrElse("no.version"))
     val isActivated = new ObjectProperty(this, "isActivated", Try {
-      if (!new JsonParser().parse(udsProject.getSerializedProperties).getAsJsonObject.get("is_active").getAsBoolean) "Disabled" else "Active"
+      if (!JsonParser.parseString(udsProject.getSerializedProperties).getAsJsonObject.get("is_active").getAsBoolean) "Disabled" else "Active"
     }.getOrElse("Active"))
     lazy val lcmsSize = new ObjectProperty(this, "lcmsSize", ProjectsDB.computeLcmsSize(udsProject.getId))
     lazy val msiSize = new ObjectProperty(this, "msiSize", ProjectsDB.computeMsiSize(udsProject.getId))

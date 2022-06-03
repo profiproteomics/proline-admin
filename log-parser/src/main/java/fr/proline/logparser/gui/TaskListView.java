@@ -59,7 +59,7 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
         m_ctrl = control;
         this.setBorder(BorderFactory.createTitledBorder("List of Task"));
         this.setPreferredSize(new Dimension(1400, 250));
-        m_taskList = new ArrayList();
+        m_taskList = new ArrayList<>();
         m_tableModel = new TaskTableModel();
         m_taskTable = new TaskTable(m_tableModel);
         m_taskTable.init();
@@ -119,7 +119,7 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
         }
 
         public void init() {
-            this.setRowSorter(new TableRowSorter(this.getModel()));
+            this.setRowSorter(new TableRowSorter<>(this.getModel()));
             this.setTableHeader(new TooltipsTableHeader(m_taskTable.getColumnModel(), m_columnNames));
             this.setColumnsVisibility();
         }
@@ -217,7 +217,7 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
         static final int COLTYPE_NB_TASK_PARALELLE = 10;
 
         public TaskTableModel() {
-            m_taskList = new ArrayList();
+            m_taskList = new ArrayList<>();
         }
 
         @Override

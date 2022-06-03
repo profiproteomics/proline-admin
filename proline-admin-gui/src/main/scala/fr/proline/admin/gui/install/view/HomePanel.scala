@@ -111,8 +111,8 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   // Help icon
   private val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
-    alignmentInParent = Pos.BASELINE_RIGHT
-    onAction = handle {
+    alignmentInParent = Pos.BaselineRight
+    onAction = _ => {
       model.openAdminGuide()
     }
   }
@@ -121,7 +121,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   private val serverChBox = new CheckBox("Proline Server Configuration File") {
     underline = true
     font = Font.font("SanSerif", FontWeight.Bold, 12)
-    onAction = handle {
+    onAction = _ => {
       checkServerConfigItem()
     }
   }
@@ -142,7 +142,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   private val serverBrowseButton = new Button("Browse...") {
     graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !serverChBox.selected
-    onAction = handle {
+    onAction = _ => {
       model.browseServerConfigFile(serverTxtField.getText, serverTxtField)
     }
   }
@@ -151,7 +151,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   private val prolineModulesChBox = new CheckBox("Proline Modules") {
     underline = true
     font = Font.font("SanSerif", FontWeight.Bold, 12)
-    onAction = handle {
+    onAction = _ => {
       bindToChild()
     }
   }
@@ -159,7 +159,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   // Sequence repository
   private val seqReposChBox = new CheckBox("Sequence Repository Configuration File") {
     underline = true
-    onAction = handle {
+    onAction = _ => {
       bindToParent()
       checkSeqReposConfigItem()
     }
@@ -182,7 +182,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   private val seqReposBrowseButton = new Button("Browse ...") {
     graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !seqReposChBox.selected
-    onAction = handle {
+    onAction = _ => {
       model.browseSeqReposConfigFile(seqReposTxtField.getText, seqReposTxtField)
     }
   }
@@ -190,7 +190,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   // Proline Web Extension
   private val pwxChBox = new CheckBox("Proline Web Configuration File") {
     underline = true
-    onAction = handle {
+    onAction = _ => {
       bindToParent()
       checkPwxConfigItem()
     }
@@ -209,7 +209,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   private val pwxBrowseButton = new Button("Browse...") {
     graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !pwxChBox.selected
-    onAction = handle {
+    onAction = _ => {
       model.browsePwxConfigFile(pwxTxtField.getText, pwxTxtField)
     }
   }
@@ -218,7 +218,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   private val pgChBox = new CheckBox("PostgreSQL Server Data Directory") {
     underline = true
     font = Font.font("SanSerif", FontWeight.Bold, 12)
-    onAction = handle {
+    onAction = _ => {
       checkPgConfigItem()
     }
   }
@@ -236,7 +236,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   private val pgDataDirBrowseButton = new Button("Browse...") {
     graphic = FxUtils.newImageView(IconResource.LOAD)
     disable <== !pgChBox.selected
-    onAction = handle {
+    onAction = _ => {
       model.browseDataDir(pgDataDirTxtField.getText, pgDataDirTxtField)
     }
   }
@@ -264,7 +264,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   // Exit and close Proline-Admin GUI
   val exitButton = new Button("Exit") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
-    onAction = handle {
+    onAction = _ => {
       model.exit()
     }
   }
@@ -272,20 +272,20 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   val nextButton = new Button("Next") {
     graphic = FxUtils.newImageView(IconResource.ARROWRIGHT)
     contentDisplay = ContentDisplay.RIGHT
-    onAction = handle {
+    onAction = _ => {
       onNext()
     }
   }
   val prevButton = new Button("Previous") {
     graphic = FxUtils.newImageView(IconResource.ARROWLEFT)
-    onAction = handle {
+    onAction = _ => {
       onPrevious()
     }
   }
   val validateButton = new Button("Apply") {
     disable = true
     graphic = FxUtils.newImageView(IconResource.SAVE)
-    onAction = handle {
+    onAction = _ => {
       // Valid and save modifications
       val confirmed = GetConfirmation("Are you sure you want to save the new Proline configurations?", "Confirm your action", "Yes", "Cancel", Install.stage)
       if (confirmed) {
@@ -437,7 +437,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
 
   //TODO Disable go button on error item selection?
   // Go button action
-  goButton.onAction = handle {
+  goButton.onAction = _ => {
     if ((ConfigItemPanel.configItemMap.size > 1) && (isSelectedItemsOk())) {
       onGo()
     }

@@ -150,6 +150,12 @@
 				<artifactId>scala-maven-plugin</artifactId>
 				<!-- Version inherited from ProFI-Pom -->
 				<configuration>
+<!--					<displayCmd>true</displayCmd>-->
+					<args>
+						<arg>-deprecation</arg>
+						<arg>-feature</arg>
+					</args>
+<!--					<javacArgs>-deprecation</javacArgs>-->
 					<launchers>
 						<launcher>
 							<id>RunCommand</id>

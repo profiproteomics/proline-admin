@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
-import scala.util.control.Breaks._
+import scala.language.implicitConversions
 
 import java.io.File
 import java.io.FileWriter
@@ -170,7 +170,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
   val ipv4Label = new BoldLabel("IPv4 :", upperCase = false)
   val addIPv4LineButton = new Button("Add") {
     style = "-fx-inner-border : black;"
-    onAction = handle { _addIPv4Line() }
+    onAction = _ => { _addIPv4Line() }
   }
   val ipv4LinesBox = new VBox { spacing = 10 }
 
@@ -179,7 +179,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
   val ipv6Label = new BoldLabel("IPv6 :", upperCase = false)
   val addIPv6LineButton = new Button("Add") {
     style = "-fx-inner-border : black;"
-    onAction = handle { _addIPv6Line() }
+    onAction = _ => { _addIPv6Line() }
   }
   val ipv6LinesBox = new VBox { spacing = 10 }
 
@@ -512,7 +512,7 @@ case class PgHbaLine(
 
   val databaseDialogIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.EDIT)
-    onAction = handle {
+    onAction = _ => {
       databaseField.text = NewDatabaseNameDialog(databaseField.text())
     }
     //disable <== !commentedBox.selected
@@ -535,7 +535,7 @@ case class PgHbaLine(
   }
   val adressDialogIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.EDIT)
-    onAction = handle {
+    onAction = _ => {
       import NewAdressDialog._
       addressField.text = NewAdressDialog(addressField.text())
     }
@@ -557,7 +557,7 @@ case class PgHbaLine(
   val removeButton = new Button("Remove") {
     minWidth = 59
     style = "-fx-inner-border : black;"
-    onAction = handle { onDeleteAction(thisLine) }
+    onAction = _ => { onDeleteAction(thisLine) }
   }
 
   /* 
@@ -733,10 +733,10 @@ class DatabaseNameDialog(
   }
 
   val applyButton = new Button("Apply") {
-    onAction = handle { _onApplyPressed() }
+    onAction = _ => { _onApplyPressed() }
   }
   val cancelButton = new Button("Cancel") {
-    onAction = handle { thisDialog.close() }
+    onAction = _ => { thisDialog.close() }
   }
 
   /*
@@ -894,10 +894,10 @@ class AdressDialog(
   }
 
   val applyButton = new Button("Apply") {
-    onAction = handle { _onApplyPressed() }
+    onAction = _ => { _onApplyPressed() }
   }
   val cancelButton = new Button("Cancel") {
-    onAction = handle {
+    onAction = _ => {
       thisDialog.close()
     }
   }

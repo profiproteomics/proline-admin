@@ -82,10 +82,10 @@ public class LogLineReader {
         m_flowWriter = new TasksFlowWriter(stdout);
         m_flowWriter.open(m_fileName);
         m_dateFormat = dateFormat;
-        m_msgId2TaskMap = new HashMap();
+        m_msgId2TaskMap = new HashMap<>();
         m_thread2TaskMap = new HashMap<>();
-        m_thread2Ignore = new ArrayList();
-        m_taskInOrder = new ArrayList();
+        m_thread2Ignore = new ArrayList<>();
+        m_taskInOrder = new ArrayList<>();
         m_taskInRun = new ArrayList<>();
         m_noTreatLine = new Stack<>();
         m_noTreatLineIndex = new Stack<>();
@@ -659,13 +659,13 @@ public class LogLineReader {
         String m_lineEnd = "\n";
 
         public LogTasksFlow() {
-            this.m_taskList = new ArrayList();
-            m_newTrace = new ArrayList();
+            this.m_taskList = new ArrayList<>();
+            m_newTrace = new ArrayList<>();
         }
 
         public void close() {
             m_taskList = null;
-            m_newTrace = new ArrayList();
+            m_newTrace = new ArrayList<>();
         }
 
         private String getNewTrace() {

@@ -64,7 +64,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
     text = "Refresh"
     tooltip = "Refresh the table view of external databases."
     graphic = FxUtils.newImageView(IconResource.REFERESH)
-    onAction = handle {
+    onAction =  _ => {
       model.onRefresh()
     }
   }
@@ -74,7 +74,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
     text = "Change database parameters"
     tooltip = "Change external database configuration parameters."
     graphic = FxUtils.newImageView(IconResource.EDITSMALL)
-    onAction = handle {
+    onAction =  _ => {
       model.onChange()
     }
   }
@@ -84,7 +84,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
     text = "Upgrade all databases"
     tooltip = "Upgrade all Proline databases to the last version. This action can take a while."
     graphic = FxUtils.newImageView(IconResource.UPGRADE)
-    onAction = handle {
+    onAction =  _ => {
       val confirmed = GetConfirmation(s"Are you sure that you want to upgrade all Proline databases to the last version. This action can take a while.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
       if (confirmed) model.onUpgradeAllDbs()
     }
@@ -95,7 +95,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
     text = "Check for updates"
     tooltip = "Check for updates for all Proline databases."
     graphic = FxUtils.newImageView(IconResource.TICK)
-    onAction = handle {
+    onAction =  _ => {
       val confirmed = GetConfirmation(s"Are you sure that you want to check for updates. This action can take a while.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
       if (confirmed) model.onCheckForUpdates()
     }
@@ -106,7 +106,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
     tooltip = "Delete obsolete Proline databases. Make sure that all Proline databases are upgraded before to procede!"
     graphic = FxUtils.newImageView(IconResource.TRASH)
     disable = true
-    onAction = handle {
+    onAction =  _ => {
       val confirmed = GetConfirmation(s"Are you sure that you want to delete obsolete Proline databases. Make sure that all databases are upgraded before to procede.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
       if (confirmed) model.onDeleteObsoleteDbs()
     }
@@ -124,7 +124,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
     }
   val buttonsPanel = new HBox {
     spacing = 40
-    alignment_=(Pos.BOTTOM_CENTER)
+    alignment_=(Pos.BottomCenter)
     children = Seq(refreshButton, editDbEntry, deleteObsoleDbsButton, checkUpdatesButton, upgradeButton)
   }
   val contentNode = new VBox {

@@ -26,19 +26,19 @@ class ExitPopup(
     isResizable: Boolean = false) extends Stage {
   val popup = this
   title = wTitle
-  initModality(Modality.WINDOW_MODAL)
+  initModality(Modality.WindowModal)
   if (wParent.isDefined) initOwner(wParent.get)
   popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
   val yesButton = new Button("Yes") {
     graphic = FxUtils.newImageView(IconResource.TICK)
-    onAction = handle {
+    onAction =  _ => {
       Platform.exit()
       System.exit(0)
     }
   }
   val noButton = new Button("No") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
-    onAction = handle {
+    onAction =  _ => {
       popup.close()
     }
   }

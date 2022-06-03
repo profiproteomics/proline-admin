@@ -2,6 +2,7 @@ package fr.profi.util.scalafx
 
 import com.typesafe.scalalogging.LazyLogging
 import scala.reflect.ClassTag
+import scala.language.implicitConversions
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.Button
@@ -50,10 +51,10 @@ object ScalaFxUtils extends LazyLogging {
 
   /** Close a stage, fire a button **/
   def closeIfEscapePressed(stage: Stage, ke: KeyEvent) {
-    if (ke.code == KeyCode.ESCAPE) stage.close()
+    if (ke.code == KeyCode.Escape) stage.close()
   }
   def fireIfEnterPressed(button: Button, ke: KeyEvent) {
-    if (ke.code == KeyCode.ENTER) button.fire()
+    if (ke.code == KeyCode.Enter) button.fire()
   }
 
   /** Grid content formatting utilities **/

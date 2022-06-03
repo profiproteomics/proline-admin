@@ -15,7 +15,7 @@ trait IConfigFilesForm extends Node {
 
   /* Apply utilities */
   val applyButton = new Button("Apply") {
-    onAction = handle {
+    onAction = _ => {
       try {
         if (checkForm()) saveForm()
       } catch {

@@ -18,7 +18,6 @@ import fr.proline.context._
 import fr.proline.core.dal.context._
 import fr.proline.repository._
 import fr.proline.core.dal.DoJDBCWork
-import fr.proline.core.dal.DoJDBCReturningWork
 import javax.persistence.EntityManager
 import scala.util.Try
 import scala.collection.mutable.Map
@@ -34,10 +33,10 @@ import play.api.libs.json._
  * Restore a Proline project. It restore the databases msi_db_project ,lcms_db_project and the project properties from the project_properties.json file.
  * @author aromdhani
  *
- * @param udsDbContext The connection context to UDSDb to restore project into.
+ * @param udsDbCtx The connection context to UDSDb to restore project into.
  * @param ownerId The owner id of the project.
  * @param binDirPath The PostgreSQL bin directory path. It should contains pg_retsore file.
- * @param archivedProjPath The path of the archived project directory.
+ * @param archivedProjDirPath The path of the archived project directory.
  * @param projectName To rename the project to restore. It's advised when the project name already defined for the same user.
  *
  */
@@ -80,7 +79,6 @@ class RestoreProject(
       val projPropFile = projFilesAsMap("projPropFile").get
       val jsValuesMap = readJsonFile(projPropFile.getAbsolutePath)
       require(!jsValuesMap.isEmpty, "The json values must not be empty!")
-      var parser = new JsonParser()
       var array: JsonObject = null
       var udsProject: Project = null
       projectId = (jsValuesMap("project").as[JsObject] \ "id").as[Long]
@@ -108,7 +106,7 @@ class RestoreProject(
         udsEM.persist(udsProject)
         newProjectId = udsProject.getId()
         val properties = udsProject.getSerializedProperties()
-        array = Try { parser.parse(properties).getAsJsonObject() } getOrElse { parser.parse("{}").getAsJsonObject() }
+        array = Try { JsonParser.parseString(properties).getAsJsonObject() } getOrElse { JsonParser.parseString("{}").getAsJsonObject() }
 
         // load external_db properties 
         logger.info("Loading external_db rows from project_properties.json file ....")
@@ -435,7 +433,7 @@ class RestoreProject(
 
   /**
    * logger debug
-   * @param err
+   * @param out
    */
   private def stdout(out: String) {
     logger.debug(out)
