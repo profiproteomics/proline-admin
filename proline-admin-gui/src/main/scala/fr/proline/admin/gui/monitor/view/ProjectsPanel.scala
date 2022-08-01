@@ -127,24 +127,24 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
       }
     }
   }
-  val archiveProjButton = new Button {
-    text = "Archive"
-    tooltip = "Archive the selected project."
-    graphic = FxUtils.newImageView(IconResource.SAVE)
-    onAction =  _ => {
-      if (!model.selectedItems.isEmpty) {
-        model.onArchive()
-      }
-    }
-  }
-  val restoreProjButton = new Button {
-    text = "Restore"
-    tooltip = "Restore a Proline project."
-    graphic = FxUtils.newImageView(IconResource.LOAD)
-    onAction =  _ => {
-      model.onRestore()
-    }
-  }
+//  val archiveProjButton = new Button {
+//    text = "Archive"
+//    tooltip = "Archive the selected project."
+//    graphic = FxUtils.newImageView(IconResource.SAVE)
+//    onAction =  _ => {
+//      if (!model.selectedItems.isEmpty) {
+//        model.onArchive()
+//      }
+//    }
+//  }
+//  val restoreProjButton = new Button {
+//    text = "Restore"
+//    tooltip = "Restore a Proline project."
+//    graphic = FxUtils.newImageView(IconResource.LOAD)
+//    onAction =  _ => {
+//      model.onRestore()
+//    }
+//  }
   val infosButton = new Button {
     tooltip = "Show more informations about the selected project."
     text = "More Info..."
@@ -162,8 +162,8 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     deleteProjButton,
     activeProjButton,
     changeProjOwnerButton,
-    archiveProjButton,
-    restoreProjButton,
+//    archiveProjButton,
+//    restoreProjButton,
     infosButton).foreach { b =>
       b.prefHeight = 20
       b.prefWidth = 140
@@ -178,8 +178,8 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
       disableProjButton,
       changeProjOwnerButton,
       deleteProjButton,
-      archiveProjButton,
-      restoreProjButton,
+//      archiveProjButton,
+//      restoreProjButton,
       infosButton)
   }
 
