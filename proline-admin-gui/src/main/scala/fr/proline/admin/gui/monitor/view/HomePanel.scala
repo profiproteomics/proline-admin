@@ -3,30 +3,30 @@ package fr.proline.admin.gui.monitor.view
 import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
 import scalafx.stage.Stage
-import scalafx.geometry.{ Pos, Insets, Orientation }
-import scalafx.scene.layout.{ VBox, HBox, StackPane, Priority }
+import scalafx.geometry.{Insets, Orientation, Pos}
+import scalafx.scene.layout.{HBox, Priority, StackPane, VBox}
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
 import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Button
 import scalafx.scene.control.SplitPane
-import scalafx.scene.text.{ Font, FontWeight }
+import scalafx.scene.text.{Font, FontWeight}
 import scalafx.scene.control.ProgressIndicator
 import scalafx.beans.property.BooleanProperty
 import scalafx.scene.control.TabPane
 import scalafx.scene.control.Tab
-
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.task.TaskRunner
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.util.WindowSize
 import fr.proline.admin.gui.monitor.model.HomePanelViewModel
-import fr.proline.admin.gui.process.config.AdminConfigFile
-import fr.profi.util.scalafx.{ BoldLabel, TitledBorderPane }
+import fr.proline.admin.gui.process.config.{AdminConfig, AdminConfigFile}
+import fr.profi.util.scalafx.{BoldLabel, TitledBorderPane}
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
+
 import java.io.File
 
 /**
@@ -55,20 +55,20 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     managed <== visible
   }
   val serverConfigWarningLabel = new Label {
-    text = "Proline server is not setup."
+    text = "Proline server configuration file path is invalid."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
     managed <== visible
   }
   val seqReposWarningLabel = new Label {
-    text = "Proline sequence repository is not setup."
+    text = "Proline sequence repository configuration file path is invalid."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
     managed <== visible
   }
 
   val dataDirWarningLabel = new Label {
-    text = "The path of Proline data directory is not found."
+    text = "PostgreSQL data path is invalid."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
     managed <== visible
@@ -353,8 +353,8 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   // Show error and warning labels 
   val isConnectionEstablished = BooleanProperty(!model.isConnectionEstablished(model.adminConfigOpt()))
   connectionErrorLabel.visible <== isConnectionEstablished
-  val isUdsDbSetup = BooleanProperty(!model.isUdsDbReachable())
-  udsDbErrorLabel.visible <== isUdsDbSetup
+  val isUdsDbSetupError = BooleanProperty(!model.isUdsDbReachable())
+  udsDbErrorLabel.visible <== isUdsDbSetupError
   serverConfigWarningLabel.visible <== !BooleanProperty(model.isServerConfigFileOK())
   seqReposWarningLabel.visible <== !BooleanProperty(model.isSeqRepoConfigFileOK())
   dataDirWarningLabel.visible <== !BooleanProperty(model.isPgSQLDataDirOK())
@@ -433,6 +433,6 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   }
 
   // Disable go button when connection to UDS database failed or UDS database is not setup.
-  goButton.disable <== BooleanProperty(isConnectionEstablished.value || isUdsDbSetup.value)
+  goButton.disable <== BooleanProperty(isConnectionEstablished.value || isUdsDbSetupError.value)
 
 }
