@@ -60,18 +60,8 @@
 
 		<!-- Logging  -->
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>com.typesafe.scala-logging</groupId>
 			<artifactId>scala-logging_${scala.compat.version}</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
 		</dependency>
 
 		<!-- Configuration -->
@@ -83,12 +73,6 @@
 		<dependency>
 			<groupId>fr.profi.util</groupId>
 			<artifactId>profi-commons-java</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.9.0</version>
 		</dependency>
 
 		<!-- Proline -->
@@ -119,13 +103,6 @@
 			<groupId>fr.proline</groupId>
 			<artifactId>proline-admin</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-
-		<!-- Tests -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
