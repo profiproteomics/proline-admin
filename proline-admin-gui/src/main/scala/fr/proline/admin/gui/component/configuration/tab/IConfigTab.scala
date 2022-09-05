@@ -49,7 +49,7 @@ trait IConfigTab extends Tab {
  * to wrap them in a ScrollPane																	 *
  * ************************************************************* *
  */
-abstract class AbstractConfigTabContent extends CustomScrollPane(hBarPolicy = ScrollBarPolicy.AS_NEEDED) {
+abstract class AbstractConfigTabContent extends CustomScrollPane(hBarPolicy = ScrollBarPolicy.AsNeeded) {
 
   padding = Insets(10, 0, 5, 0)
 
@@ -81,10 +81,10 @@ trait IConfigTabContent extends AbstractConfigTabContent {
   protected def configFilesPanel: IConfigFilesPanel
 
   protected val applyWorkingFileButton = new Button("Apply") {
-    onAction = handle { onApplyWorkingFilesPressed() }
+    onAction = _ => { onApplyWorkingFilesPressed() }
   }
   protected val cancelWorkingFileButton = new Button("Cancel") {
-    onAction = handle { onCancelWorkingFilesPressed() }
+    onAction = _ => { onCancelWorkingFilesPressed() }
   }
 
   // Form is defined by AbstractConfigTabContent

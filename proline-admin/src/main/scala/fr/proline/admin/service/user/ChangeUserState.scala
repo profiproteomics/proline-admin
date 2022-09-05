@@ -34,9 +34,8 @@ class ChangeUserState(
         case (userId, index) =>
           val udsUser = udsEM.find(classOf[UdsUser], userId)
           require(udsUser != null, s"The user with id= ${userId} does not exist.")
-          var parser = new JsonParser()
           val properties = udsUser.getSerializedProperties()
-          var array: JsonObject = Try(parser.parse(properties).getAsJsonObject()).getOrElse(parser.parse("{}").getAsJsonObject())
+          val array: JsonObject = Try(JsonParser.parseString(properties).getAsJsonObject()).getOrElse(JsonParser.parseString("{}").getAsJsonObject())
           array.addProperty("is_active", isActive)
           udsUser.setSerializedProperties(array.toString())
           udsEM.merge(udsUser)
@@ -59,7 +58,7 @@ object ChangeUserState extends LazyLogging {
 
   /**
    * Change a Proline user(s) state .
-   * @param userIdSet The set of user(s) id to activate or to disable.
+   * @param userId The set of user(s) id to activate or to disable.
    * @param isActive specify if the user is active or disabled.
    * @return <code>true</code> if the user(s) state has been changed successfully.
    */

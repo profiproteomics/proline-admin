@@ -1,9 +1,8 @@
 package fr.proline.admin.service.db.migration
 
-import scala.collection.JavaConversions._
-import com.typesafe.scalalogging.LazyLogging
+import scala.collection.JavaConverters._
 import fr.proline.context.DatabaseConnectionContext
-import fr.proline.core.dal.context._
+
 import fr.proline.core.orm.msi.ObjectTreeSchema
 import fr.proline.core.orm.msi.Scoring
 
@@ -25,9 +24,9 @@ class UpgradeMsiDbDefinitions(
     val oldScorings = msiEM.createQuery("SELECT s FROM fr.proline.core.orm.msi.Scoring s", classOf[Scoring]).getResultList
 
     // Index scorings by their type
-    val oldScoringByType = oldScorings.view.map { scoring =>
+    val oldScoringByType = oldScorings.asScala.view.map { scoring =>
       scoring.getSearchEngine + ':' + scoring.getName -> scoring
-    } toMap
+    }.toMap
     
     // Iterate over the enumeration of Scoring Types
     for (scoringType <- Scoring.Type.values()) {
@@ -59,9 +58,9 @@ class UpgradeMsiDbDefinitions(
     val oldSchemas = msiEM.createQuery("SELECT s FROM fr.proline.core.orm.msi.ObjectTreeSchema s", classOf[ObjectTreeSchema]).getResultList
 
     // Index schemas by their name
-    val oldSchemaByName = oldSchemas.view.map { schema =>
+    val oldSchemaByName = oldSchemas.asScala.view.map { schema =>
       schema.getName -> schema
-    } toMap
+    }.toMap
     
     // Iterate over the enumeration of ObjectTree SchemaNames
     for (schemaName <- ObjectTreeSchema.SchemaName.values()) {

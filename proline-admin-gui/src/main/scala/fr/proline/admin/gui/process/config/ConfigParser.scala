@@ -9,7 +9,7 @@ import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scala.TypesafeConfigWrapper._
 import fr.proline.repository.DriverType
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable.StringBuilder
 import scala.io.Source
 
@@ -349,7 +349,7 @@ class ServerConfigFile(val path: String) extends LazyLogging {
 
       /* Retrieve mount points */
       def getMountPoints(key: String): Map[String, String] = {
-        config.getObject(s"mount_points.$key").map { case (k, v) => k -> v.unwrapped().toString() }.toMap
+        config.getObject(s"mount_points.$key").asScala.map { case (k, v) => k -> v.unwrapped().toString() }.toMap
       }
 
       val rawFilesMp = getMountPoints("raw_files")
@@ -492,7 +492,7 @@ class PwxConfigFile(val path: String) extends LazyLogging {
 
       /* Retrieve mount points */
       def getMountPoints(key: String): Map[String, String] = {
-        config.getObject(s"mount_points.$key").map { case (k, v) => k -> v.unwrapped().toString() }.toMap
+        config.getObject(s"mount_points.$key").asScala.map { case (k, v) => k -> v.unwrapped().toString() }.toMap
       }
 
       val rawFilesMp = getMountPoints("raw_files")

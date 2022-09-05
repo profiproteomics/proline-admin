@@ -76,7 +76,7 @@ object ChangeExtDbParamsDialog extends LazyLogging {
     Seq(hostTextField,
       portTextField).foreach { node =>
         node.prefWidth = 200
-        node.hgrow_=(Priority.ALWAYS)
+        node.hgrow_=(Priority.Always)
       }
 
     Seq(hostLabel,

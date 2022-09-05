@@ -1,16 +1,15 @@
 package fr.proline.admin.gui.monitor.model
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scalafx.Includes._
 import fr.proline.admin.gui.Monitor
-
 import fr.proline.admin.gui.process.config.AdminConfig
 import fr.proline.admin.gui.process.config.AdminConfigFile
-import fr.proline.admin.gui.process.config.{ NodeConfig, ParsingRule }
-import fr.proline.admin.gui.process.config.{ NodeConfigFile, ParsingRulesFile }
-import fr.proline.admin.gui.process.{ UdsRepository, ProlineAdminConnection, DatabaseConnection }
-import fr.proline.admin.gui.util.{ AdminGuide, ExitPopup }
+import fr.proline.admin.gui.process.config.{NodeConfig, ParsingRule}
+import fr.proline.admin.gui.process.config.{NodeConfigFile, ParsingRulesFile}
+import fr.proline.admin.gui.process.{DatabaseConnection, ProlineAdminConnection, UdsRepository}
+import fr.proline.admin.gui.util.{AdminGuide, ExitPopup}
+
 import java.io.File
 
 /**
@@ -79,11 +78,11 @@ class HomePanelViewModel(monitorConfPath: String) extends LazyLogging {
     case _ => false
   }
   def isPgSQLDataDirOK(): Boolean = adminConfigOpt() match {
-    case Some(AdminConfig(_, _, pgsqlDataDir, _, _, _, _, _, _, _, _)) if (pgsqlDataDir.isDefined && (new File(pgsqlDataDir.get).exists)) => true
+    case Some(AdminConfig(_, _, _, pgsqlDataDir, _, _, _, _, _, _, _)) if (pgsqlDataDir.isDefined && (new File(pgsqlDataDir.get).exists)) => true
     case _ => false
   }
   def isSeqRepoConfigFileOK(): Boolean = adminConfigOpt() match {
-    case Some(AdminConfig(_, _, _, seqRepoConfigFilePath, _, _, _, _, _, _, _)) if (!seqRepoConfigFilePath.isDefined || !(new File(seqRepoConfigFilePath.get).exists)) => true
+    case Some(AdminConfig(_, _, _, _, seqRepoConfigFilePath, _, _, _, _, _, _)) if (seqRepoConfigFilePath.isDefined && (new File(seqRepoConfigFilePath.get).exists)) => true
     case _ => false
   }
 

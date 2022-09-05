@@ -1,44 +1,32 @@
 package fr.proline.admin.helper
 
-import java.sql.Connection
-import java.sql.DriverManager
-import java.sql.SQLException
-import java.sql.Types
+import java.sql.{Connection, DriverManager}
 import java.util.Collection
 
-import javax.persistence.EntityManager
-import javax.persistence.EntityTransaction
-
-import scala.util.Try
-
 import com.typesafe.scalalogging.LazyLogging
-
-import org.dbunit.DataSourceDatabaseTester
-import org.dbunit.database.DatabaseConfig
-import org.dbunit.database.IDatabaseConnection
-import org.dbunit.dataset.AbstractDataSet
-import org.dbunit.dataset.datatype.DataType
-import org.dbunit.dataset.datatype.DefaultDataTypeFactory
-import org.dbunit.dataset.xml.FlatXmlDataSetBuilder
-import org.dbunit.ext.h2.H2DataTypeFactory
-import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory
-import org.dbunit.operation.DatabaseOperation
-import org.postgresql.Driver
-
 import fr.profi.util.StringUtils
 import fr.profi.util.dbunit._
 import fr.profi.util.primitives.castToTimestamp
-import fr.profi.util.resources._
 import fr.proline.admin.service.db.setup.DatabaseSetupConfig
 import fr.proline.context.DatabaseConnectionContext
-import fr.proline.core.dal.BuildDbConnectionContext
-import fr.proline.core.dal.DoJDBCWork
+import fr.proline.core.dal.{BuildDbConnectionContext, DoJDBCWork}
 import fr.proline.core.dal.context._
 import fr.proline.core.dal.tables.lcms.LcmsDb
 import fr.proline.core.dal.tables.msi.MsiDb
 import fr.proline.core.dal.tables.uds.UdsDb
 import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.repository._
+import javax.persistence.{EntityManager, EntityTransaction}
+import org.dbunit.DataSourceDatabaseTester
+import org.dbunit.database.{DatabaseConfig, IDatabaseConnection}
+import org.dbunit.dataset.AbstractDataSet
+import org.dbunit.dataset.datatype.{DataType, DefaultDataTypeFactory}
+import org.dbunit.dataset.xml.FlatXmlDataSetBuilder
+import org.dbunit.ext.h2.H2DataTypeFactory
+import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory
+import org.dbunit.operation.DatabaseOperation
+
+import scala.util.Try
 
 /**
  * @author David Bouyssie
@@ -167,7 +155,7 @@ package object sql extends LazyLogging {
         
         //this.disableForeignKeyConstraints(sqlContext)
         
-        DoJDBCWork.withEzDBC(sqlContext, { ezDBC =>
+        DoJDBCWork.withEzDBC(sqlContext) { ezDBC =>
           
           //for( tableName <- sortedTableNames; if recordsByTableName.contains(tableName) ) {
           //  val records = recordsByTableName(tableName)
@@ -238,7 +226,7 @@ package object sql extends LazyLogging {
             }
           }
   
-        }) // END OF DoJDBCWork.withEzDBC
+        } // END OF DoJDBCWork.withEzDBC
         
       } // END OF tryInTransaction
       
@@ -495,8 +483,8 @@ package object sql extends LazyLogging {
       var createdDbCount = 0
 
       // Iterate over projects
-      import scala.collection.JavaConversions._
-      projectIds.foreach { projectId =>
+      import scala.collection.JavaConverters._
+      projectIds.asScala.foreach { projectId =>
         
         // Create MSIdb if it does not exist
         if ( _checkDbExists(pgConnTemplateStatement, s"msi_db_project_$projectId") == false) {
@@ -546,7 +534,7 @@ package object sql extends LazyLogging {
     
   def enableForeignKeyConstraints( dbContext: DatabaseConnectionContext ) {
     
-    DoJDBCWork.withEzDBC(dbContext, { ezDBC =>
+    DoJDBCWork.withEzDBC(dbContext) { ezDBC =>
       val driverType = dbContext.getDriverType
       
       driverType match {
@@ -554,7 +542,7 @@ package object sql extends LazyLogging {
         case DriverType.POSTGRESQL => ()
         case DriverType.SQLITE => ezDBC.execute("PRAGMA foreign_keys = ON;")
       }
-    })
+    } //End of DoJDBCWork
     
   }
   

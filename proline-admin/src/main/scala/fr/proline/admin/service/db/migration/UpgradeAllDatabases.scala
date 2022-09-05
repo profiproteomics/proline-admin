@@ -9,17 +9,13 @@ import fr.proline.core.dal.ProlineEzDBC
 import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.core.orm.uds.repository.ProjectRepository
 import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
-import fr.proline.core.orm.uds.ExternalDb
 import fr.proline.repository._
 import scala.collection.mutable.Set
 import scala.collection.mutable.Map
-import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import java.io.{ ByteArrayOutputStream, PrintStream }
 import java.sql.Connection
-import scala.util.Try
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
+
 /**
  *
  * Upgrades all Proline Databases (UDS and all projects MSI and LCMS Dbs).
@@ -51,7 +47,7 @@ class UpgradeAllDatabases(
 
       if ((projectIds != null) && !projectIds.isEmpty) {
 
-        for (projectId <- projectIds) {
+        for (projectId <- projectIds.asScala) {
           logger.debug(s"Upgrading databases of Project #$projectId")
 
           /* Upgrade MSI Db */

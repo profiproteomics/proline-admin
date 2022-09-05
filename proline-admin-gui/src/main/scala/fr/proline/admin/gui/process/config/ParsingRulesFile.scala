@@ -8,7 +8,7 @@ import fr.profi.util.StringUtils.LINE_SEPARATOR
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scala.TypesafeConfigWrapper._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable.{ListBuffer, StringBuilder}
 
 /**
@@ -36,7 +36,7 @@ class ParsingRulesFile(val path: String) extends LazyLogging {
         var listFastaDir: ListBuffer[String] = ListBuffer()
         val listLocalFastaDirs = parsing.getStringList("local-fasta-directories")
         if ((listLocalFastaDirs != null) && (!listLocalFastaDirs.isEmpty)) {
-          listLocalFastaDirs.foreach(dir =>
+          listLocalFastaDirs.asScala.foreach(dir =>
             listFastaDir += dir)
         } else {
           logger.warn("Local Fasta Directories must not be empty")
@@ -50,14 +50,14 @@ class ParsingRulesFile(val path: String) extends LazyLogging {
         var parsingRulesList: ListBuffer[Rule] = ListBuffer()
         val parsingList = parsing.getObjectList("parsing-rules")
         if ((parsingList != null) && (!parsingList.isEmpty)) {
-          parsing.getObjectList("parsing-rules").foreach(
+          parsing.getObjectList("parsing-rules").asScala.foreach(
             rule => {
               var listfastaNames: ListBuffer[String] = ListBuffer()
               val name = rule.toConfig.getString("name")
               val fastaVersion = rule.toConfig.getString("fasta-version")
               val fastaNames = rule.toConfig.getStringList("fasta-name")
               val proteinAccession = rule.toConfig.getString("protein-accession")
-              if ((fastaNames != null) && (!fastaNames.isEmpty)) { fastaNames.foreach(fastName => listfastaNames += fastName) }
+              if ((fastaNames != null) && (!fastaNames.isEmpty)) { fastaNames.asScala.foreach(fastName => listfastaNames += fastName) }
               else {
                 logger.warn("Fasta Names must not be empty")
               }
@@ -188,7 +188,7 @@ case class Rule(name: String,
     proteinAccession: String) {
   require(name != null && name.isEmpty() == false, "Id must not be null nor empty in Parsing rule")
   require(fastaVersion != null && fastaVersion.isEmpty() == false, "Fasta version must not be null nor empty in Parsing rule")
-  require(fastaNames != null && fastaNames.size() > 0, "Fasta Names must not be null nor empty in Parsing rule")
+  require(fastaNames != null && fastaNames.size > 0, "Fasta Names must not be null nor empty in Parsing rule")
   require(proteinAccession != null && proteinAccession.isEmpty() == false, "Protein Accession must not be null nor empty in Parsing rule")
 
   def toTypeSafeRuleString(): String = {

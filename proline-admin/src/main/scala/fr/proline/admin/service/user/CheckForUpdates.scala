@@ -5,13 +5,10 @@ import com.typesafe.scalalogging.StrictLogging
 import fr.proline.admin.service.ICommandWork
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.ProlineEzDBC
-import fr.proline.core.orm.uds.repository.ExternalDbRepository
 import fr.proline.core.orm.uds.repository.ProjectRepository
-import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
 import fr.proline.repository._
 import fr.proline.core.dal.context._
-import javax.persistence.EntityManager
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import collection.mutable.{ Map, Set }
 import java.io.{ ByteArrayOutputStream, PrintStream }
 import java.sql.Connection
@@ -40,7 +37,7 @@ class CheckForUpdates(
         val projectIds = ProjectRepository.findAllProjectIds(udsEM)
         if ((projectIds != null) && !projectIds.isEmpty) {
 
-          for (projectId <- projectIds) {
+          for (projectId <- projectIds.asScala) {
             logger.debug(s"Checking for available updates for the project with id= #$projectId")
             /* Check for available updates for MSI Db */
             val msiDbConnector = dsConnectorFactory.getMsiDbConnector(projectId)
@@ -130,7 +127,7 @@ object CheckDbUpdates extends StrictLogging {
             if (undoneMigrationsAsMap.isEmpty) {
               logger.info(s"There are no available scripts to apply for: $dbShortName")
             } else {
-              undoneMigrationsAsMap.foreach {
+              undoneMigrationsAsMap.asScala.foreach {
                 case (script, state) => {
                   undoneMigrations += (script -> state.toString)
                   logger.warn(s"The script $script is $state. To apply undone migration(s), please upgrade Proline databases.")

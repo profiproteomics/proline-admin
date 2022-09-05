@@ -3,30 +3,30 @@ package fr.proline.admin.gui.monitor.view
 import com.typesafe.scalalogging.LazyLogging
 import scalafx.Includes._
 import scalafx.stage.Stage
-import scalafx.geometry.{ Pos, Insets, Orientation }
-import scalafx.scene.layout.{ VBox, HBox, StackPane, Priority }
+import scalafx.geometry.{Insets, Orientation, Pos}
+import scalafx.scene.layout.{HBox, Priority, StackPane, VBox}
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
 import scalafx.scene.control.Hyperlink
 import scalafx.scene.control.Button
 import scalafx.scene.control.SplitPane
-import scalafx.scene.text.{ Font, FontWeight }
+import scalafx.scene.text.{Font, FontWeight}
 import scalafx.scene.control.ProgressIndicator
 import scalafx.beans.property.BooleanProperty
 import scalafx.scene.control.TabPane
 import scalafx.scene.control.Tab
-
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.task.TaskRunner
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.util.WindowSize
 import fr.proline.admin.gui.monitor.model.HomePanelViewModel
-import fr.proline.admin.gui.process.config.AdminConfigFile
-import fr.profi.util.scalafx.{ BoldLabel, TitledBorderPane }
+import fr.proline.admin.gui.process.config.{AdminConfig, AdminConfigFile}
+import fr.profi.util.scalafx.{BoldLabel, TitledBorderPane}
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
+
 import java.io.File
 
 /**
@@ -55,20 +55,20 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     managed <== visible
   }
   val serverConfigWarningLabel = new Label {
-    text = "Proline server is not setup."
+    text = "Proline server configuration file path is invalid."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
     managed <== visible
   }
   val seqReposWarningLabel = new Label {
-    text = "Proline sequence repository is not setup."
+    text = "Proline sequence repository configuration file path is invalid."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
     managed <== visible
   }
 
   val dataDirWarningLabel = new Label {
-    text = "The path of Proline data directory is not found."
+    text = "PostgreSQL data path is invalid."
     graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
     style = TextStyle.ORANGE_ITALIC
     managed <== visible
@@ -77,8 +77,8 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   // Help icon
   val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
-    alignmentInParent = Pos.BASELINE_RIGHT
-    onAction = handle {
+    alignmentInParent = Pos.BaselineRight
+    onAction =  _ => {
       model.openAdminGuide()
     }
   }
@@ -178,13 +178,13 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   }
   val editServerButton = new Button(" Edit ") {
     graphic = FxUtils.newImageView(IconResource.EDITSMALL)
-    onAction = handle {
+    onAction =  _ => {
       enableServerConfig()
     }
   }
   val saveServerButton = new Button(" Save ") {
     graphic = FxUtils.newImageView(IconResource.SAVE)
-    onAction = handle {
+    onAction =  _ => {
       if (saveServerConfig()) {
         disableServerConfig()
       }
@@ -218,7 +218,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
             spacing = H_SPACING * 3
             children = List(pgPasswordLabel, pgPasswordField)
           }, new HBox {
-            alignment = Pos.BOTTOM_RIGHT;
+            alignment = Pos.BottomRight;
             spacing = H_SPACING * 1
             children = List(editServerButton, saveServerButton)
           })
@@ -250,14 +250,14 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   // To close PRoline-Admin GUI application
   val exitButton = new Button("Exit") {
     graphic = FxUtils.newImageView(IconResource.CANCEL)
-    onAction = handle {
+    onAction =  _ => {
       model.exit()
     }
   }
   // To start
   val goButton = new Button(" Go ") {
     graphic = FxUtils.newImageView(IconResource.EXECUTE)
-    onAction = handle {
+    onAction =  _ => {
       go()
     }
   }
@@ -342,19 +342,19 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   }
 
   // Monitor panel
-  alignment = Pos.CENTER
-  alignmentInParent = Pos.CENTER
+  alignment = Pos.Center
+  alignmentInParent = Pos.Center
   spacing = 1
   hgrow = Priority.Always
-  vgrow = Priority.ALWAYS
+  vgrow = Priority.Always
   children = Seq(
     mainPane)
 
   // Show error and warning labels 
   val isConnectionEstablished = BooleanProperty(!model.isConnectionEstablished(model.adminConfigOpt()))
   connectionErrorLabel.visible <== isConnectionEstablished
-  val isUdsDbSetup = BooleanProperty(!model.isUdsDbReachable())
-  udsDbErrorLabel.visible <== isUdsDbSetup
+  val isUdsDbSetupError = BooleanProperty(!model.isUdsDbReachable())
+  udsDbErrorLabel.visible <== isUdsDbSetupError
   serverConfigWarningLabel.visible <== !BooleanProperty(model.isServerConfigFileOK())
   seqReposWarningLabel.visible <== !BooleanProperty(model.isSeqRepoConfigFileOK())
   dataDirWarningLabel.visible <== !BooleanProperty(model.isPgSQLDataDirOK())
@@ -419,7 +419,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
 
     val splitPane = new SplitPane {
       dividerPositions_=(0.70, 0.30)
-      orientation = (Orientation.VERTICAL)
+      orientation = (Orientation.Vertical)
     }
 
     splitPane.getItems().addAll(stckPane, tabPane)
@@ -433,6 +433,6 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   }
 
   // Disable go button when connection to UDS database failed or UDS database is not setup.
-  goButton.disable <== BooleanProperty(isConnectionEstablished.value || isUdsDbSetup.value)
+  goButton.disable <== BooleanProperty(isConnectionEstablished.value || isUdsDbSetupError.value)
 
 }

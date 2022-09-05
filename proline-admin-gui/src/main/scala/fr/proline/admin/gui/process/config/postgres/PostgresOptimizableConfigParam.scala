@@ -23,7 +23,7 @@ object PostgresOptimizableParamEnum extends LabeledParamEnum {
   val EFFECTIVE_CACHE_SIZE = Param("EFFECTIVE_CACHE_SIZE", "Effective cache size")
 
   def getParamConfigKey(param: PostgresOptimizableParamEnum.Param): String = {
-    param.name toLowerCase
+    param.name.toLowerCase
     //    param match {
     //      case MAX_CONNECTIONS => "max_connections"
     //      case TCP_KEEPALIVES_IDLE =>

@@ -30,8 +30,8 @@ object TabsPanel extends VBox {
   //Help Icon 
   private val headerHelpIcon = new Hyperlink {
     graphic = FxUtils.newImageView(IconResource.HELP)
-    alignmentInParent = Pos.BASELINE_RIGHT
-    onAction = handle {
+    alignmentInParent = Pos.BaselineRight
+    onAction =  _ => {
       openAdminGuide()
     }
   }
@@ -76,7 +76,7 @@ object TabsPanel extends VBox {
       content_=(externalDbsPanel)
     }
   val tabPane = new TabPane {
-    vgrow = Priority.ALWAYS
+    vgrow = Priority.Always
   }
 
   //TODO add tasks panel

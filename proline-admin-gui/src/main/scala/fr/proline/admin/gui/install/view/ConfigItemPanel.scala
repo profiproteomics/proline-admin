@@ -93,7 +93,7 @@ object PgServerConfigPanel extends ConfigItemPanel {
     // Update
     components = Option((postgresModelView, postgresConfigPanel, pgHbaConfigPanel))
     val tabPane = new TabPane {
-      vgrow = Priority.ALWAYS
+      vgrow = Priority.Always
     }
     tabPane.tabs.addAll(pgOptimtabPane, pgNetAccessTabPane)
     new VBox {
@@ -179,7 +179,7 @@ object ServerConfigPanel extends ConfigItemPanel {
       }
     components = Option((adminModelView, serverPgView, jmsModelView, serverJmsView, mountPointsView))
     val tabPane = new TabPane {
-      vgrow = Priority.ALWAYS
+      vgrow = Priority.Always
     }
     tabPane.tabs.addAll(postgresTabPane, jmsServerTabPane, mountPointsTabPane)
     new VBox {
@@ -242,7 +242,7 @@ object PWXConfigPanel extends ConfigItemPanel {
       }
     components = Option((pwxModelView, serverPgView, mountPointsView))
     val tabPane = new TabPane {
-      vgrow = Priority.ALWAYS
+      vgrow = Priority.Always
     }
     tabPane.tabs.addAll(postgresTabPane, mountPointsTabPane)
     new VBox {
@@ -313,7 +313,7 @@ object SeqReposConfigPanel extends ConfigItemPanel {
       }
     components = Option((seqReposModelView, seqReposPgView, jmsModelView, serverJmsView, parsingRulesView))
     val tabPane = new TabPane {
-      vgrow = Priority.ALWAYS
+      vgrow = Priority.Always
     }
     tabPane.tabs.addAll(postgresTabPane, jmsServerTabPane, parsingRulesTabPane)
     new VBox {
@@ -394,8 +394,8 @@ object SummaryConfigPanel extends ConfigItemPanel {
               title = "PostgreSQL Server Configuration ",
               contentNode = new VBox {
                 spacing = 1
-                hgrow = Priority.ALWAYS
-                vgrow = Priority.ALWAYS
+                hgrow = Priority.Always
+                vgrow = Priority.Always
                 children = Seq(
                   new HBox {
                     children = Seq(new BoldLabel("PostgreSQL Server Configuration:\t", upperCase = false),
@@ -422,8 +422,8 @@ object SummaryConfigPanel extends ConfigItemPanel {
               title = "Proline Server Configuration",
               contentNode = new VBox {
                 spacing = 1
-                hgrow = Priority.ALWAYS
-                vgrow = Priority.ALWAYS
+                hgrow = Priority.Always
+                vgrow = Priority.Always
                 children = Seq(
                   new HBox {
                     children = Seq(new BoldLabel("PostgreSQL:\t", upperCase = false),
@@ -455,7 +455,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
         }
       }
 
-      // Proline Web Extension properties 
+      // Proline Web Extension properties
       case PWXConfigPanel => {
         PWXConfigPanel.components match {
           case Some((pwxModelView, serverPgView, mountPointsView)) => {
@@ -463,7 +463,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
               title = "Proline Web Extension Configuration",
               contentNode = new VBox {
                 spacing = 1
-                hgrow = Priority.ALWAYS
+                hgrow = Priority.Always
                 children = Seq(
                   new HBox {
                     children = Seq(new BoldLabel("PostgreSQL:\t", upperCase = false),
@@ -478,7 +478,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
           case _ =>
         }
       }
-      // Sequence repository properties 
+      // Sequence repository properties
       case SeqReposConfigPanel => {
         SeqReposConfigPanel.components match {
           case Some((seqReposModelView, seqReposPgView, jmsModelView, serverJmsView, parsingRulesView)) => {
@@ -486,8 +486,8 @@ object SummaryConfigPanel extends ConfigItemPanel {
               title = "Sequence Repository Configuration",
               contentNode = new VBox {
                 spacing = 1
-                hgrow = Priority.ALWAYS
-                vgrow = Priority.ALWAYS
+                hgrow = Priority.Always
+                vgrow = Priority.Always
                 children = Seq(
                   new HBox {
                     children = Seq(new BoldLabel("PostgreSQL:\t", upperCase = false),

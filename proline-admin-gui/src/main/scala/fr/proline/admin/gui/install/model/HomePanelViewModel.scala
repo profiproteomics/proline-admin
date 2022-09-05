@@ -1,20 +1,15 @@
 package fr.proline.admin.gui.install.model
 
-import com.typesafe.scalalogging.LazyLogging
-
-import fr.proline.repository.DriverType
-import scalafx.scene.control.TextField
-import scalafx.scene.control.Label
-import scalafx.scene.control.CheckBox
-import fr.proline.admin.gui.Install
-import fr.proline.admin.gui.process.config._
-import fr.proline.admin.gui.util.AdminGuide
-import fr.proline.admin.gui.util.ExitPopup
-import fr.proline.admin.gui.util.FxUtils
-import fr.proline.admin.gui.component.configuration.file.ProlineConfigFileChooser
-import com.typesafe.config.Config
-import fr.profi.util.StringUtils
 import java.io.File
+
+import com.typesafe.scalalogging.LazyLogging
+import fr.profi.util.StringUtils
+import fr.proline.admin.gui.Install
+import fr.proline.admin.gui.component.configuration.file.ProlineConfigFileChooser
+import fr.proline.admin.gui.process.config._
+import fr.proline.admin.gui.util.{AdminGuide, ExitPopup, FxUtils}
+import fr.proline.repository.DriverType
+import scalafx.scene.control.{CheckBox, Label, TextField}
 
 /**
  * The view model home panel. Defines UI actions: select Proline items and load configuration files.

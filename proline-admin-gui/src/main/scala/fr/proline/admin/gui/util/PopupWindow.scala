@@ -32,7 +32,7 @@ class PopupWindow(
   val popup = this
 
   title = wTitle
-  initModality(Modality.WINDOW_MODAL)
+  initModality(Modality.WindowModal)
   resizable = isResizable
   if (wParent.isDefined) initOwner(wParent.get)
   popup.getIcons.add(FxUtils.newImageView(IconResource.IDENTIFICATION).image.value)
@@ -49,7 +49,7 @@ class PopupWindow(
         node,
         new Button("OK") {
           graphic = FxUtils.newImageView(IconResource.TICK)
-          onAction = handle { popup.close() }
+          onAction =  _ => { popup.close() }
         })
     }
   }

@@ -3,8 +3,7 @@ package fr.proline.admin.gui.process.config.postgres
 import fr.profi.util.scala.ByteUtils.BytesAmountWrapper
 import fr.proline.admin.gui.process.PhysicalMemory
 
-import PostgresOptimizableConfigParam._
-
+import scala.language.implicitConversions
 /**
  * *************************** *
  * Optimize postgres.conf file *

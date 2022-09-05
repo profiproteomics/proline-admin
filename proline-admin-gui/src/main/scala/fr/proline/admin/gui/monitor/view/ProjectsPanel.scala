@@ -69,7 +69,7 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     text = "Refresh"
     tooltip = "Refresh the table view."
     graphic = FxUtils.newImageView(IconResource.REFERESH)
-    onAction = handle {
+    onAction =  _ => {
       model.onRefresh()
     }
   }
@@ -78,7 +78,7 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     text = " Add "
     graphic = FxUtils.newImageView(IconResource.PLUS)
     tooltip = "Add a new project"
-    onAction = handle {
+    onAction =  _ => {
       model.onAdd()
     }
   }
@@ -87,7 +87,7 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     text = "Disable"
     tooltip = "Disable the selected project."
     graphic = FxUtils.newImageView(IconResource.DISABLE)
-    onAction = handle {
+    onAction =  _ => {
       if (!model.selectedItems.isEmpty) {
         val confirmed = GetConfirmation(s"Are you sure that you want to disable the project with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
         if (confirmed) model.onDisable()
@@ -99,7 +99,7 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     text = "Delete"
     tooltip = "Delete permanently the selected project."
     graphic = FxUtils.newImageView(IconResource.TRASH)
-    onAction = handle {
+    onAction =  _ => {
       if (!model.selectedItems.isEmpty) {
         val confirmed = GetConfirmation(s"Are you sure that you want to delete permanently the project with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
         if (confirmed) model.onDelete()
@@ -110,7 +110,7 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     text = "Activate"
     tooltip = "Activate the selected project."
     graphic = FxUtils.newImageView(IconResource.TICK)
-    onAction = handle {
+    onAction =  _ => {
       if (!model.selectedItems.isEmpty) {
         val confirmed = GetConfirmation(s"Are you sure that you want to activate the project with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
         if (confirmed) model.onActivate()
@@ -121,35 +121,35 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     tooltip = "Change the selected project owner."
     text = "Change owner"
     graphic = FxUtils.newImageView(IconResource.EDITSMALL)
-    onAction = handle {
+    onAction =  _ => {
       if (!model.selectedItems.isEmpty) {
         model.onChangeOwner()
       }
     }
   }
-  val archiveProjButton = new Button {
-    text = "Archive"
-    tooltip = "Archive the selected project."
-    graphic = FxUtils.newImageView(IconResource.SAVE)
-    onAction = handle {
-      if (!model.selectedItems.isEmpty) {
-        model.onArchive()
-      }
-    }
-  }
-  val restoreProjButton = new Button {
-    text = "Restore"
-    tooltip = "Restore a Proline project."
-    graphic = FxUtils.newImageView(IconResource.LOAD)
-    onAction = handle {
-      model.onRestore()
-    }
-  }
+//  val archiveProjButton = new Button {
+//    text = "Archive"
+//    tooltip = "Archive the selected project."
+//    graphic = FxUtils.newImageView(IconResource.SAVE)
+//    onAction =  _ => {
+//      if (!model.selectedItems.isEmpty) {
+//        model.onArchive()
+//      }
+//    }
+//  }
+//  val restoreProjButton = new Button {
+//    text = "Restore"
+//    tooltip = "Restore a Proline project."
+//    graphic = FxUtils.newImageView(IconResource.LOAD)
+//    onAction =  _ => {
+//      model.onRestore()
+//    }
+//  }
   val infosButton = new Button {
     tooltip = "Show more informations about the selected project."
     text = "More Info..."
     graphic = FxUtils.newImageView(IconResource.INFO)
-    onAction = handle {
+    onAction =  _ => {
       if (!model.selectedItems.isEmpty) {
         model.onMoreInfo()
       }
@@ -162,8 +162,8 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     deleteProjButton,
     activeProjButton,
     changeProjOwnerButton,
-    archiveProjButton,
-    restoreProjButton,
+//    archiveProjButton,
+//    restoreProjButton,
     infosButton).foreach { b =>
       b.prefHeight = 20
       b.prefWidth = 140
@@ -171,15 +171,15 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     }
   val buttonsPanel = new HBox {
     spacing = 20
-    alignment_=(Pos.BOTTOM_CENTER)
+    alignment_=(Pos.BottomCenter)
     children = Seq(refreshButton,
       newProjButton,
       activeProjButton,
       disableProjButton,
       changeProjOwnerButton,
       deleteProjButton,
-      archiveProjButton,
-      restoreProjButton,
+//      archiveProjButton,
+//      restoreProjButton,
       infosButton)
   }
 

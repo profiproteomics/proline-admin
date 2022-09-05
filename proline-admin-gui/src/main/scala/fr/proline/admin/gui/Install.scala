@@ -45,7 +45,7 @@ object Install extends LazyLogging {
   lazy val root = new VBox {
     id = "root"
     children = new VBox {
-      alignment = Pos.CENTER
+      alignment = Pos.Center
       vgrow = Priority.Always
       padding = Insets(10)
       children = Seq(mainPanel)

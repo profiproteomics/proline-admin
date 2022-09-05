@@ -106,7 +106,7 @@ object AddProjectDialog extends LazyLogging {
       projectDescTextAraea,
       ownerList).foreach { node =>
         node.prefWidth = 200
-        node.hgrow_=(Priority.ALWAYS)
+        node.hgrow_=(Priority.Always)
       }
 
     Seq(projNameLabel,

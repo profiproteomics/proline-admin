@@ -85,7 +85,7 @@ object RestoreProjectDialog extends LazyLogging {
     val browseBinButton = new Button {
       text = "Browse..."
       graphic = FxUtils.newImageView(IconResource.LOAD)
-      onAction = handle {
+      onAction =  _ => {
         browseBinDir()
       }
     }
@@ -107,7 +107,7 @@ object RestoreProjectDialog extends LazyLogging {
     val browseButton = new Button {
       text = "Browse..."
       graphic = FxUtils.newImageView(IconResource.LOAD)
-      onAction = handle {
+      onAction =  _ => {
         browseArchiveDir()
       }
     }
@@ -162,7 +162,7 @@ object RestoreProjectDialog extends LazyLogging {
       projNameTextFiled,
       ownerList).foreach { node =>
         node.prefWidth = 200
-        node.hgrow_=(Priority.ALWAYS)
+        node.hgrow_=(Priority.Always)
       }
 
     Seq(projectBinDirLabel,

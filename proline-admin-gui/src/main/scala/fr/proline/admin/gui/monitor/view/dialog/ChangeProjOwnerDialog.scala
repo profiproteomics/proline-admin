@@ -75,7 +75,7 @@ object ChangeProjOwnerDialog extends LazyLogging {
     Seq(
       ownerList).foreach { node =>
         node.prefWidth = 200
-        node.hgrow_=(Priority.ALWAYS)
+        node.hgrow_=(Priority.Always)
       }
     val contentPane = new VBox {
       alignment = Pos.Center

@@ -55,7 +55,7 @@ class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane wit
   val rawFilesMpLabel = new BoldLabel("Raw files path:   ", upperCase = false)
   val addRawFilesMpButton = new Button("Add") {
     graphic = FxUtils.newImageView(IconResource.PLUS)
-    onAction = handle { _addRawFilesMountPoint() }
+    onAction = _ => { _addRawFilesMountPoint() }
   }
   val rawFilesMpBox = new VBox { spacing = 10 }
 
@@ -63,7 +63,7 @@ class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane wit
   val mzdbFilesMpLabel = new BoldLabel("mzDB files path: ", upperCase = false)
   val addMzdbFilesMpButton = new Button("Add") {
     graphic = FxUtils.newImageView(IconResource.PLUS)
-    onAction = handle { _addMzdbFilesMountPoint() }
+    onAction = _ => { _addMzdbFilesMountPoint() }
   }
   val mzdbFilesMpBox = new VBox { spacing = 10 }
 
@@ -71,7 +71,7 @@ class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane wit
   val resultFilesMpLabel = new BoldLabel("Result files path: ", upperCase = false)
   val addResultFilesMpButton = new Button("Add") {
     graphic = FxUtils.newImageView(IconResource.PLUS)
-    onAction = handle { _addResultFilesMountPoint() }
+    onAction = _ => { _addResultFilesMountPoint() }
   }
   val resultFilesMpBox = new VBox { spacing = 10 }
 
@@ -290,7 +290,7 @@ class MountPointPane(
     minWidth = 80
     maxWidth = 80
     graphic = FxUtils.newImageView(IconResource.LOAD)
-    onAction = handle {
+    onAction = _ => {
       val dir = FileBrowsing.browseDirectory(
         dcTitle = "Select mount point directory",
         dcInitialDir = valueField.text(),
@@ -302,7 +302,7 @@ class MountPointPane(
     minWidth = 80
     maxWidth = 80
     graphic = FxUtils.newImageView(IconResource.TRASH)
-    onAction = handle { onDeleteAction(thisMountPoint) }
+    onAction = _ => { onDeleteAction(thisMountPoint) }
   }
   /* Layout */
   spacing = 10

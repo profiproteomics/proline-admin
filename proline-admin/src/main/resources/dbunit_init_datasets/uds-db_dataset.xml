@@ -21,7 +21,8 @@
   <QUANT_METHOD ID="5" NAME="iTRAQ 4plex" TYPE="isobaric_tagging" ABUNDANCE_UNIT="reporter_ion_intensity"/>
   <QUANT_METHOD ID="6" NAME="iTRAQ 8plex" TYPE="isobaric_tagging" ABUNDANCE_UNIT="reporter_ion_intensity"/>
   <QUANT_METHOD ID="7" NAME="TMT 6plex" TYPE="isobaric_tagging" ABUNDANCE_UNIT="reporter_ion_intensity"/>
-  <QUANT_METHOD ID="8" NAME="TMT 10plex HCD" TYPE="isobaric_tagging" ABUNDANCE_UNIT="reporter_ion_intensity"/>
+  <QUANT_METHOD ID="8" NAME="TMT 10plex" TYPE="isobaric_tagging" ABUNDANCE_UNIT="reporter_ion_intensity"/>
+  <QUANT_METHOD ID="9" NAME="TMT 11plex" TYPE="isobaric_tagging" ABUNDANCE_UNIT="reporter_ion_intensity"/>
   <OBJECT_TREE_SCHEMA NAME="quantitation.atom_labeling_config" TYPE="JSON" VERSION="0.1" SCHEMA="" IS_BINARY_MODE="false"/>
   <OBJECT_TREE_SCHEMA NAME="quantitation.isobaric_tagging_config" TYPE="JSON" VERSION="0.1" SCHEMA="" IS_BINARY_MODE="false"/>
   <OBJECT_TREE_SCHEMA NAME="quantitation.label_free_config" TYPE="JSON" VERSION="0.1" SCHEMA="" IS_BINARY_MODE="false"/>
@@ -342,4 +343,15 @@
   <QUANT_LABEL ID="31" TYPE="isobaric_tag" NAME="130N" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 130.134825 }" QUANT_METHOD_ID="8" NUMBER="8"/>
   <QUANT_LABEL ID="32" TYPE="isobaric_tag" NAME="130C" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 130.141141 }" QUANT_METHOD_ID="8" NUMBER="9"/>
   <QUANT_LABEL ID="33" TYPE="isobaric_tag" NAME="131" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 131.138176 }" QUANT_METHOD_ID="8" NUMBER="10"/>
+  <QUANT_LABEL ID="34" TYPE="isobaric_tag" NAME="126" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 126.1277261 }" QUANT_METHOD_ID="9" NUMBER="1"/>
+  <QUANT_LABEL ID="35" TYPE="isobaric_tag" NAME="127N" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 127.1247610 }" QUANT_METHOD_ID="9" NUMBER="2"/>
+  <QUANT_LABEL ID="36" TYPE="isobaric_tag" NAME="127C" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 127.1310809 }" QUANT_METHOD_ID="9" NUMBER="3"/>
+  <QUANT_LABEL ID="37" TYPE="isobaric_tag" NAME="128N" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 128.1281158 }" QUANT_METHOD_ID="9" NUMBER="4"/>
+  <QUANT_LABEL ID="38" TYPE="isobaric_tag" NAME="128C" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 128.1344357 }" QUANT_METHOD_ID="9" NUMBER="5"/>
+  <QUANT_LABEL ID="39" TYPE="isobaric_tag" NAME="129N" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 129.1314706 }" QUANT_METHOD_ID="9" NUMBER="6"/>
+  <QUANT_LABEL ID="40" TYPE="isobaric_tag" NAME="129C" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 129.1377905 }" QUANT_METHOD_ID="9" NUMBER="7"/>
+  <QUANT_LABEL ID="41" TYPE="isobaric_tag" NAME="130N" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 130.1348254 }" QUANT_METHOD_ID="9" NUMBER="8"/>
+  <QUANT_LABEL ID="42" TYPE="isobaric_tag" NAME="130C" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 130.1411453 }" QUANT_METHOD_ID="9" NUMBER="9"/>
+  <QUANT_LABEL ID="43" TYPE="isobaric_tag" NAME="131" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 131.1381702 }" QUANT_METHOD_ID="9" NUMBER="10"/>
+  <QUANT_LABEL ID="44" TYPE="isobaric_tag" NAME="131C" SERIALIZED_PROPERTIES="{ &quot;reporter_mz&quot;: 131.144999 }" QUANT_METHOD_ID="9" NUMBER="11"/>																																						
 </dataset>

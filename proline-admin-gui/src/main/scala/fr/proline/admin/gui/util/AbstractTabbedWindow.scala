@@ -27,7 +27,7 @@ abstract class AbstractTabbedWindow extends Stage with LazyLogging {
   /* Stage's properties */
   implicit val thisWindow = this
 
-  initModality(Modality.WINDOW_MODAL)
+  initModality(Modality.WindowModal)
   initOwner(Install.stage)
   width = 1068
   height = 768
@@ -42,14 +42,14 @@ abstract class AbstractTabbedWindow extends Stage with LazyLogging {
   }
 
   protected val okButton = new Button("OK") {
-    onAction = handle {
+    onAction =  _ => {
       try { runOnOkPressed() }
       catch {
         case ade: java.nio.file.AccessDeniedException => System.out.println("[Error] - Access denied, you should have administrator rights to edit configuration files")
       }
     }
   }
-  protected val cancelButton = new Button("Cancel") { onAction = handle { thisWindow.close() } }
+  protected val cancelButton = new Button("Cancel") { onAction =  _ => { thisWindow.close() } }
 
   /*
    * ****** *

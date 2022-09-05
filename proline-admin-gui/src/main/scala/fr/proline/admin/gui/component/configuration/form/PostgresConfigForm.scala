@@ -394,7 +394,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
   /* Buttons */
   val setAllToOptimizedButton = new Button("Set all to optimized value") {
     wrapText = true
-    onAction = handle {
+    onAction = _ => {
       _setAllToOptimized()
       isOptimized = true
 
@@ -402,7 +402,7 @@ class PostgresConfigForm(postgresConfigFilePath: String)(implicit val parentStag
   }
   val setQllToDefaultsButton = new Button("Set all to default value") {
     wrapText = true
-    onAction = handle {
+    onAction = _ => {
       _setAllToDefault()
       isOptimized = false
     }
