@@ -91,7 +91,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
       }
     },
 
-    newHSpacer(110),
+    newHSpacer(105),
 
     new BoldLabel("Database", upperCase = false) {
       tooltip = new Tooltip() {
@@ -102,7 +102,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
       }
     },
 
-    newHSpacer(150),
+    newHSpacer(110),
 
     new BoldLabel("User", upperCase = false) {
       tooltip = new Tooltip() {
@@ -113,18 +113,18 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
       }
     },
 
-    newHSpacer(80),
+    newHSpacer(98),
 
     new BoldLabel("IP address - Host name", upperCase = false) {
       tooltip = new Tooltip() {
         val sb = new StringBuilder()
         sb ++= "IP address:\n\n"
         sb ++= "Specifies the set of hosts the record matches.\n"
-        sb ++= "The IP you must write here is the min IP the server can accept.\n\n"
-        sb ++= "Ex: if you want to authorize all IPs between\n"
-        sb ++= "127.0.0.0 and 127.0.0.4 (5 IPs),\n"
-        sb ++= "write 127.0.0.0 in the IP ADDRESS field and\n"
-        sb ++= "select 8 in the IPs COUNT field, since you need 5 (and 8 is the first choice above 5)."
+        sb ++= "The IP you must write here is the IP address on which mask will be applied to define accepted IP.\n\n"
+        sb ++= "Ex: \n"
+        sb ++= "If you want to authorize the IP 172.20.143.89, use mask 32 \n"
+        sb ++= "If you want to authorize all IPs in 172.20.143.xx use mask 24 \n"
+        sb ++= "See PostgreSQL documentation for more details."
         //TODO: allow hostbnames
 
         if (addressType == AddressType.IPv4) {
@@ -141,17 +141,29 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
 
     newHSpacer(50),
 
-    new BoldLabel("IP count", upperCase = false) {
+//    new BoldLabel("IP count", upperCase = false) {
+//      tooltip = new Tooltip() {
+//        text = "IP count:\n\n" +
+//          "Defines the number of IP that are given permission, starting from the IP\n" +
+//          "written in 'IP address' field. It will automatically compute the CIDR for the IP.\n\n" +
+//          "Ex: if you want to authorize all IPs between\n" +
+//          "127.0.0.0 and 127.0.0.4 (5 IPs),\n" +
+//          "write 127.0.0.0 in the IP ADDRESS field and\n" +
+//          "select 8 in the IPs COUNT field, since you need 5 (and 8 is the first choice above 5)."
+//      }
+//    },
+
+    new BoldLabel("IP Mask Lenght", upperCase = false) {
       tooltip = new Tooltip() {
-        text = "IP count:\n\n" +
-          "Defines the number of IP that are given permission, starting from the IP\n" +
-          "written in 'IP address' field. It will automatically compute the CIDR for the IP.\n\n" +
-          "Ex: if you want to authorize all IPs between\n" +
-          "127.0.0.0 and 127.0.0.4 (5 IPs),\n" +
-          "write 127.0.0.0 in the IP ADDRESS field and\n" +
-          "select 8 in the IPs COUNT field, since you need 5 (and 8 is the first choice above 5)."
+        text = "IP Mask Lenght:\n\n" +
+          "Specify the CIDR mask lenght to apply to defines number of IP that are given permission.\n "+
+          "Ex: \n" +
+          "If you want to authorize the IP 172.20.143.89, use mask 32 \n" +
+          "If you want to authorize all IPs in 172.20.143.xx use mask 24 \n "+
+          "See PostgreSQL documentation for more details."
       }
     },
+
 
     newHSpacer(55),
 
@@ -257,20 +269,20 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
         logger.warn(s"""Address is not of type: IP/CIDR (found: ${line.addressWithCIDR} within line '$line')""")
         // TODO: handle server names and keywords 
         if (line.addressWithCIDR.equals("samenet"))
-          ("samenet", -1)
+          ("samenet", 24)
         else if (line.addressWithCIDR.equals("samehost"))
-          ("samehost", -1)
+          ("samehost",32)
         else if (line.addressWithCIDR.equals("all"))
-          ("all", -1)
+          ("all", 0)
         else ("", -1)
       }
     }
 
     /* IPv4 */
     if (line.addressType == AddressType.IPv4) {
-      val maxIpsCount =
-        if (isAdressOfTypeIpCidr) math.pow(2, (32 - cidr)).toInt
-        else -1 // TODO: handle server names and keywords
+      val maxIpsCount = cidr
+//        if (isAdressOfTypeIpCidr) math.pow(2, (32 - cidr)).toInt
+//        else -1 // TODO: handle server names and keywords
 
       _addIPv4Line(
         line.connectionType,
@@ -281,7 +293,8 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
         line.method,
         line.commented)
     } /* IPv6 */ else {
-      val maxIpsCount = math.pow(2, (128 - cidr)).toInt
+//      val maxIpsCount = math.pow(2, (128 - cidr)).toInt
+      val maxIpsCount = cidr
 
       _addIPv6Line(
         line.connectionType,
@@ -349,7 +362,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
     database: String = "",
     user: String = "",
     address: String = "",
-    maxIPCount: Int = -1,
+    maxIPCount: Int = -1, //Todo change name to masklenght
     method: Method.Value = Method.MD5,
     commented: Boolean = false) = {
     _addLine(
@@ -363,7 +376,7 @@ class PgHbaConfigForm(pgHbaConfigFilePath: String) extends VBox with IConfigFile
     database: String = "",
     user: String = "",
     address: String = "",
-    maxIPCount: Int = -1,
+    maxIPCount: Int = -1, //Todo change name to masklenght
     method: Method.Value = Method.MD5,
     commented: Boolean = false) = {
     _addLine(
@@ -540,12 +553,17 @@ case class PgHbaLine(
       addressField.text = NewAdressDialog(addressField.text())
     }
   }
-  val maxIpCountBox = new ComboBox[Int] {
-    items = (0 to 16).map(math.pow(2, _).toInt)
-    minWidth = 75
-    //disable <== ! commentedBox.selected
-  }
-  if (maxIPCount > 0) maxIpCountBox.selectItem(maxIPCount) //use custom wrapper utility because of select(index: Int) ambiguity
+//  val maxIpCountBox = new ComboBox[Int] {
+//    items = (0 to 16).map(math.pow(2, _).toInt)
+//    minWidth = 75
+//    //disable <== ! commentedBox.selected
+//  }
+//  if (maxIPCount > 0) maxIpCountBox.selectItem(maxIPCount) //use custom wrapper utility because of select(index: Int) ambiguity
+    val maxIpCountBox = new TextField {
+      promptText = "IP Mask Lenght "
+      text = maxIPCount.toString
+      minWidth = 75
+    }
 
   val methodBox = new ComboBox[Method.Value] {
     items = Method.values.toSeq
@@ -612,15 +630,16 @@ case class PgHbaLine(
     val adressPattern = """\d+\.\d+\.\d+\.\d+"""
     val adressPatternIp = """([\da-f]*:*)+"""
     if ((addressField.getText matches adressPattern) || (addressField.getText matches adressPatternIp)) {
-      val maxIpCountIdx = maxIpCountBox.selectionModel().selectedIndex()
-      val cidr: Int =
-        if (addressType == AddressType.IPv4) 32 - maxIpCountIdx
-        else 128 - maxIpCountIdx
-
+      var maskLenght = 0
+      try {
+        maskLenght = maxIpCountBox.getText().toInt
+      } catch {
+        case ex: Exception => addressField
+      }
       // return <adress>/<CIDR>
-      addressField + '/' + cidr
+      addressField + '/' + maskLenght
     } else {
-      return addressField
+      addressField
     }
   }
 
@@ -643,11 +662,16 @@ case class PgHbaLine(
       errorString ++= "The IP address must be specified.\n"
     }
     // val adressPattern = """\d+\.\d+\.\d+\.\d+"""
-    if (addressField.text() matches """(\d+\.\d+\.\d+\.\d+)""") {
-      if (maxIpCountBox.selectionModel().selectedItem() < 1) {
-        errorString ++= "The maximum of accepted IPs must be specified.\n"
-      }
+    try {
+      val maxLenght = maxIpCountBox.getText.toInt
+      if (addressType == AddressType.IPv4 && maxLenght>32)
+          errorString ++= "The IP mask lenght should be less or equal to 32.\n"
+      if (addressType == AddressType.IPv6 && maxLenght>128)
+        errorString ++= "The IP mask lenght should be less or equal to 128.\n"
+    } catch {
+      case ex: NumberFormatException =>     errorString ++= "The IP mask lenght is invalid. should be a number.\n"
     }
+
     if (methodBox.selectionModel().selectedItem() == null) {
       errorString ++= "The method for password encryption must be specified.\n"
     }
