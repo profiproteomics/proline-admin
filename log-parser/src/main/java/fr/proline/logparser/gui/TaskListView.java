@@ -101,6 +101,8 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
             super(tModel);
             this.setColumnControlVisible(true);
             this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            this.setCellSelectionEnabled(false);
+            this.setRowSelectionAllowed(true);
             // highlight one line of two
             addHighlighter(HighlighterFactory.createSimpleStriping());
             setGridColor(Color.lightGray);
@@ -108,6 +110,7 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
 
         @Override
         public void valueChanged(ListSelectionEvent e) {
+            super.valueChanged(e);
             ListSelectionModel lsm = (ListSelectionModel) e.getSource();
             if (!lsm.isSelectionEmpty()) {
                 int sortedIndex = lsm.getMinSelectionIndex();
@@ -243,40 +246,22 @@ public class TaskListView extends JScrollPane implements TaskListInterface {
         @Override
         public Class<?> getColumnClass(int columnIndex) {
             switch (columnIndex) {
-                case COLTYPE_ORDER_ID: {
+                case COLTYPE_ORDER_ID, COLTYPE_PROJECT_ID, COLTYPE_NB_TASK_PARALELLE: {
                     return Integer.class;
                 }
-                case COLTYPE_PROJECT_ID: {
-                    return Integer.class;
-                }
-                case COLTYPE_STATUS: {
+              case COLTYPE_STATUS: {
                     return LogTask.STATUS.class;
                 }
-                case COLTYPE_START_TIME: {
+                case COLTYPE_START_TIME, COLTYPE_STOP_TIME: {
                     return Date.class;
                 }
-                case COLTYPE_STOP_TIME: {
-                    return Date.class;
-                }
-                case COLTYPE_THREAD_NAME: {
+              case COLTYPE_THREAD_NAME, COLTYPE_MESSAGE_ID, COLTYPE_CALL_SERVICE, COLTYPE_META_INFO: {
                     return String.class;
                 }
-                case COLTYPE_MESSAGE_ID: {
-                    return String.class;
-                }
-                case COLTYPE_CALL_SERVICE: {
-                    return String.class;
-                }
-                case COLTYPE_META_INFO: {
-                    return String.class;
-                }
-                case COLTYPE_DURATION: {
+              case COLTYPE_DURATION: {
                     return Long.class;
                 }
-                case COLTYPE_NB_TASK_PARALELLE: {
-                    return Integer.class;
-                }
-                default:
+              default:
                     return null;
             }
         }

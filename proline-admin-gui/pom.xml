@@ -39,7 +39,7 @@
 			<version>18</version>
 		</dependency>
 
-		<!-- Warning automatique classifier is used ! For Linux PF, build on windows, it may have to be changed !-->
+		<!-- Warning automatic classifier is used ! For Linux PF, build on windows, it may have to be changed !-->
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-base</artifactId>
