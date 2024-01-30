@@ -1,10 +1,12 @@
 package fr.proline.admin.service.db.migration
 
-import scala.collection.JavaConverters._
+import fr.profi.util.StringUtils
 import fr.proline.context.DatabaseConnectionContext
+import fr.proline.core.orm.msi.{ObjectTreeSchema, Scoring}
+import fr.proline.core.orm.uds.PeaklistSoftware
 
-import fr.proline.core.orm.msi.ObjectTreeSchema
-import fr.proline.core.orm.msi.Scoring
+import scala.collection.JavaConverters._
+
 
 /**
  * @author David Bouyssie
@@ -17,7 +19,29 @@ class UpgradeMsiDbDefinitions(
   protected def upgradeDefinitions() {
     
     val msiEM = dbCtx.getEntityManager
-    
+
+    /*** Upgrade peaklist software properties ***/
+    // Load existing peaklist software
+    val oldPklSofts = msiEM.createQuery("SELECT s FROM fr.proline.core.orm.uds.PeaklistSoftware s", classOf[PeaklistSoftware]).getResultList
+    val oldPklSoftByName = oldPklSofts.asScala.view.map { soft =>
+      val version = soft.getVersion
+
+      val fullSoftName = if (StringUtils.isEmpty(version)) soft.getName
+      else soft.getName + ' ' + soft.getVersion
+      fullSoftName -> soft
+    }.toMap
+
+    // Index parsing rules by corresponding peaklist software
+    for(nextSoft <-  PeaklistSoftware.SoftwareRelease.values()) {
+      val oldPklSoftOpt = oldPklSoftByName.get(nextSoft.toString)
+      if( oldPklSoftOpt.isDefined && oldPklSoftOpt.get.getSerializedProperties != nextSoft.getProperties) {
+          val oldPklSoft= oldPklSoftOpt.get
+          oldPklSoft.setSerializedProperties(nextSoft.getProperties)
+          logger.info("Updating peaklist software named " + nextSoft.toString)
+          msiEM.merge(oldPklSoft)
+      }
+    }
+
     /*** Upgrade scorings ***/
 
     // Load existing scorings

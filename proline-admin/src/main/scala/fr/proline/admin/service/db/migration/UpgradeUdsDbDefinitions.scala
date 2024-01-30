@@ -28,7 +28,7 @@ class UpgradeUdsDbDefinitions(
     /*** Upgrade peaklist software and spectrum title parsing rules ***/
 
     // Index parsing rules by corresponding peaklist software
-    val parsingRuleByPeaklistSoft = UdsSpectrumTitleParsingRule.ParsingRule.values().view.map { parsingRule =>
+    val parsingRuleByPeaklistSoft = UdsSpectrumTitleParsingRule.ParsingRule.values().map { parsingRule =>
       parsingRule.getPeaklistSoftware -> parsingRule
     }.toMap
     
@@ -57,6 +57,7 @@ class UpgradeUdsDbDefinitions(
         val oldRule = oldPklSoft.getSpecTitleParsingRule
         
         var updateRule = false
+        var updatePeaklistSoft = false
         if (oldRule.getFirstCycle != parsingRule.getFirstCycleRegex) {
           oldRule.setFirstCycle(parsingRule.getFirstCycleRegex)
           updateRule = true
@@ -85,11 +86,20 @@ class UpgradeUdsDbDefinitions(
           oldRule.setRawFileIdentifier(parsingRule.getRawFileIdentifierRegex)
           updateRule = true
         }
+        if(oldPklSoft.getSerializedProperties != softRelease.getProperties){
+          oldPklSoft.setSerializedProperties(softRelease.getProperties)
+          updatePeaklistSoft = true
+        }
         
         if(updateRule) {
           logger.info("Updating parsing rule of peaklist software named " + softRelease.toString)
+          udsEM.merge(oldRule)
         }
-        
+
+        if (updatePeaklistSoft) {
+          logger.info("Updating peaklist software named " + softRelease.toString)
+          udsEM.merge(oldPklSoft)
+        }
       } else {
         logger.info("Inserting new Peaklist Software: " + softRelease.toString)
         
@@ -106,6 +116,7 @@ class UpgradeUdsDbDefinitions(
         val newPklSoft = new UdsPeaklistSoftware()
         newPklSoft.setName(softRelease.getName)
         newPklSoft.setVersion(softRelease.getVersion)
+        newPklSoft.setSerializedProperties(softRelease.getProperties)
         newPklSoft.setSpecTitleParsingRule(newSpecTitleParsingRule)        
         udsEM.persist(newPklSoft)
         
