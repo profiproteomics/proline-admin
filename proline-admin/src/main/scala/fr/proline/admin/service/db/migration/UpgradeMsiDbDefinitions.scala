@@ -3,7 +3,7 @@ package fr.proline.admin.service.db.migration
 import fr.profi.util.StringUtils
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.orm.msi.{ObjectTreeSchema, Scoring}
-import fr.proline.core.orm.uds.PeaklistSoftware
+import fr.proline.core.orm.msi.PeaklistSoftware
 
 import scala.collection.JavaConverters._
 
@@ -22,7 +22,7 @@ class UpgradeMsiDbDefinitions(
 
     /*** Upgrade peaklist software properties ***/
     // Load existing peaklist software
-    val oldPklSofts = msiEM.createQuery("SELECT s FROM fr.proline.core.orm.uds.PeaklistSoftware s", classOf[PeaklistSoftware]).getResultList
+    val oldPklSofts = msiEM.createQuery("SELECT s FROM fr.proline.core.orm.msi.PeaklistSoftware s", classOf[PeaklistSoftware]).getResultList
     val oldPklSoftByName = oldPklSofts.asScala.view.map { soft =>
       val version = soft.getVersion
 
@@ -32,7 +32,7 @@ class UpgradeMsiDbDefinitions(
     }.toMap
 
     // Index parsing rules by corresponding peaklist software
-    for(nextSoft <-  PeaklistSoftware.SoftwareRelease.values()) {
+    for(nextSoft <-  fr.proline.core.orm.uds.PeaklistSoftware.SoftwareRelease.values()) {
       val oldPklSoftOpt = oldPklSoftByName.get(nextSoft.toString)
       if( oldPklSoftOpt.isDefined && oldPklSoftOpt.get.getSerializedProperties != nextSoft.getProperties) {
           val oldPklSoft= oldPklSoftOpt.get
