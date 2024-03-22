@@ -1,35 +1,21 @@
 package fr.proline.admin.gui.install.view
 
 import com.typesafe.scalalogging.LazyLogging
-import scalafx.Includes._
-import scalafx.stage.Stage
-import scalafx.scene.Node
-import scalafx.geometry.{ Pos, Insets }
-import scalafx.scene.layout.{ Priority, VBox, HBox, StackPane }
-import scalafx.scene.control.Label
-import scalafx.scene.control.TextField
-import scalafx.scene.control.Button
-import scalafx.scene.control.CheckBox
-import scalafx.scene.control.Hyperlink
-import scalafx.scene.control.ProgressIndicator
-import javafx.scene.control.ContentDisplay
-import scalafx.scene.text.{ Font, FontWeight }
-import scalafx.beans.property.BooleanProperty
-
-import fr.proline.admin.gui.Install
-import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.task.TaskRunner
-import fr.proline.admin.gui.install.view._
-import fr.proline.admin.gui.install.view.server._
-import fr.proline.admin.gui.install.view.postgres._
-import fr.proline.admin.gui.install.view.modules._
-import fr.proline.admin.gui.install.model._
-import fr.proline.admin.gui.util.GetConfirmation
-import fr.proline.admin.gui.util.FxUtils
-import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scalafx.ScalaFxUtils._
-import fr.profi.util.scalafx.TitledBorderPane
-import fr.profi.util.StringUtils
+import fr.profi.util.scalafx.{ScalaFxUtils, TitledBorderPane}
+import fr.proline.admin.gui.{IconResource, Install}
+import fr.proline.admin.gui.install.model._
+import fr.proline.admin.gui.task.TaskRunner
+import fr.proline.admin.gui.util.{FxUtils, GetConfirmation}
+import javafx.scene.control.ContentDisplay
+import scalafx.Includes._
+import scalafx.beans.property.BooleanProperty
+import scalafx.geometry.{Insets, Pos}
+import scalafx.scene.Node
+import scalafx.scene.control._
+import scalafx.scene.layout.{HBox, Priority, StackPane, VBox}
+import scalafx.scene.text.{Font, FontWeight}
+
 import java.io.File
 
 /**
@@ -41,7 +27,7 @@ import java.io.File
 class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
 
   private val homePanel = this
-  private var isCorruptedFile = BooleanProperty(false)
+  private val isCorruptedFile = BooleanProperty(false)
   private var itemsList: List[Node] = _
   private var nodeIndex = 0
   private var currNode: Node = _
@@ -58,7 +44,6 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   Install.serverConfPath = adminConfigOpt.map(_.serverConfigFilePath.getOrElse("")).get
   Install.seqReposConfPath = adminConfigOpt.map(_.seqRepoConfigFilePath.getOrElse("")).get
   Install.pwxConfPath = adminConfigOpt.map(_.pwxConfigFilePath.getOrElse("")).get
-  Install.pgDataDirPath = adminConfigOpt.map(_.pgsqlDataDir.getOrElse("")).get
 
   /*
    * ********************************
@@ -87,20 +72,14 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     visible = false
     managed <== visible
   }
-  val pwxFileErrorLabel = new Label {
-    graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
-    text = "Please select a valid configuration file to set up Proline web."
-    style = TextStyle.RED_ITALIC
-    visible = false
-    managed <== visible
-  }
-  private val pgDataDirErrorLabel = new Label {
-    graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
-    text = "Please select a valid PostgreSQL data directory to set up PostgreSQL optimization and authorizations. Data directory should contain pg_hba.conf file and postgresql.conf file."
-    style = TextStyle.RED_ITALIC
-    visible = false
-    managed <== visible
-  }
+//  val pwxFileErrorLabel = new Label {
+//    graphic = FxUtils.newImageView(IconResource.EXCLAMATION)
+//    text = "Please select a valid configuration file to set up Proline web."
+//    style = TextStyle.RED_ITALIC
+//    visible = false
+//    managed <== visible
+//  }
+
 
   /*
    * ***********************
@@ -123,6 +102,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     font = Font.font("SanSerif", FontWeight.Bold, 12)
     onAction = _ => {
       checkServerConfigItem()
+      goButton.disable = !isSelectedItemsOk()
     }
   }
   private val serverLabel = new Label {
@@ -137,6 +117,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
         Install.serverConfPath = newText
         getJmsConfFilePath(Install.serverConfPath).foreach { Install.serverJmsPath = _ }
       }
+      goButton.disable = !isSelectedItemsOk()
     }
   }
   private val serverBrowseButton = new Button("Browse...") {
@@ -153,6 +134,9 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     font = Font.font("SanSerif", FontWeight.Bold, 12)
     onAction = _ => {
       bindToChild()
+      checkSeqReposConfigItem()
+      goButton.disable = !isSelectedItemsOk()
+
     }
   }
 
@@ -162,6 +146,8 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     onAction = _ => {
       bindToParent()
       checkSeqReposConfigItem()
+      //checkPwxConfigItem()
+      goButton.disable = !isSelectedItemsOk()
     }
   }
   private val seqReposLabel = new Label {
@@ -177,6 +163,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
         getJmsConfFilePath(Install.seqReposConfPath).foreach { Install.seqReposJmsPath = _ }
         getParsingRulesFilePath(Install.seqReposConfPath).foreach { Install.seqReposParsigRulesPath = _ }
       }
+      goButton.disable = !isSelectedItemsOk()
     }
   }
   private val seqReposBrowseButton = new Button("Browse ...") {
@@ -188,58 +175,33 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   }
 
   // Proline Web Extension
-  private val pwxChBox = new CheckBox("Proline Web Configuration File") {
-    underline = true
-    onAction = _ => {
-      bindToParent()
-      checkPwxConfigItem()
-    }
-  }
-  private val pwxLabel = new Label {
-    disable <== !pwxChBox.selected
-    text = "Select the configuration file application.conf\nIt should be located under </conf>"
-  }
-  private val pwxTxtField = new TextField() {
-    disable <== !pwxChBox.selected
-    text = Install.pwxConfPath
-    text.onChange { (_, oldText, newText) =>
-      if (checkPwxConfigItem()) Install.pwxConfPath = newText
-    }
-  }
-  private val pwxBrowseButton = new Button("Browse...") {
-    graphic = FxUtils.newImageView(IconResource.LOAD)
-    disable <== !pwxChBox.selected
-    onAction = _ => {
-      model.browsePwxConfigFile(pwxTxtField.getText, pwxTxtField)
-    }
-  }
+//  private val pwxChBox = new CheckBox("Proline Web Configuration File") {
+//    underline = true
+//    onAction = _ => {
+//      bindToParent()
+//      checkPwxConfigItem()
+//    }
+//  }
+//  private val pwxLabel = new Label {
+//    disable <== !pwxChBox.selected
+//    text = "Select the configuration file application.conf\nIt should be located under </conf>"
+//  }
+//  private val pwxTxtField = new TextField() {
+//    disable <== !pwxChBox.selected
+//    text = Install.pwxConfPath
+//    text.onChange { (_, oldText, newText) =>
+//      if (checkPwxConfigItem()) Install.pwxConfPath = newText
+//    }
+//  }
+//  private val pwxBrowseButton = new Button("Browse...") {
+//    graphic = FxUtils.newImageView(IconResource.LOAD)
+//    disable <== !pwxChBox.selected
+//    onAction = _ => {
+//      model.browsePwxConfigFile(pwxTxtField.getText, pwxTxtField)
+//    }
+//  }
 
-  // PostgreSQL server data directory
-  private val pgChBox = new CheckBox("PostgreSQL Server Data Directory") {
-    underline = true
-    font = Font.font("SanSerif", FontWeight.Bold, 12)
-    onAction = _ => {
-      checkPgConfigItem()
-    }
-  }
-  private val pgDataDirLabel = new Label {
-    text = "Select the PostgreSQL Data Directory "
-    disable <== !pgChBox.selected
-  }
-  private val pgDataDirTxtField = new TextField {
-    disable <== !pgChBox.selected
-    text = adminConfigOpt.map(_.pgsqlDataDir.getOrElse("")).get
-    text.onChange { (_, oldText, newText) =>
-      if (checkPgConfigItem()) Install.pgDataDirPath = newText
-    }
-  }
-  private val pgDataDirBrowseButton = new Button("Browse...") {
-    graphic = FxUtils.newImageView(IconResource.LOAD)
-    disable <== !pgChBox.selected
-    onAction = _ => {
-      model.browseDataDir(pgDataDirTxtField.getText, pgDataDirTxtField)
-    }
-  }
+
 
   // Task Progress Indicator
   private val glassPane = new VBox {
@@ -298,14 +260,14 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   Seq(
     serverLabel,
     seqReposLabel,
-    pwxLabel,
-    pgDataDirLabel).foreach(_.minWidth = 60)
+//    pwxLabel,
+    ).foreach(_.minWidth = 60)
 
   Seq(
     serverTxtField,
     seqReposTxtField,
-    pwxTxtField,
-    pgDataDirTxtField).foreach {
+//    pwxTxtField,
+    ).foreach {
       f => f.hgrow = Priority.Always
     }
   Seq(
@@ -327,25 +289,26 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
       corruptedFileErrorLabel,
       serverFileErrorLabel,
       seqReposFileErrorLabel,
-      pwxFileErrorLabel,
-      pgDataDirErrorLabel)
+//      pwxFileErrorLabel,
+//      pgDataDirErrorLabel
+     )
   }
 
   private val configItemsPane = new TitledBorderPane(
     title = "Select Configuration Item",
     contentNode = new VBox {
       vgrow = Priority.Always
-      spacing = 15
+      spacing = 5
       children = List(
         notificationPanel,
-        ScalaFxUtils.newVSpacer(minH = 1),
+//        ScalaFxUtils.newVSpacer(minH = 1),
         serverChBox,
         new HBox {
           spacing = 5
           hgrow = Priority.Always
           children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), serverLabel, serverTxtField, serverBrowseButton)
         },
-        ScalaFxUtils.newVSpacer(minH = 1),
+//        ScalaFxUtils.newVSpacer(minH = 1),
         prolineModulesChBox,
         new HBox {
           spacing = 5
@@ -355,7 +318,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
           spacing = 5
           hgrow = Priority.Always
           children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), seqReposLabel, seqReposTxtField, seqReposBrowseButton)
-        }, new HBox {
+        }, /*new HBox {
           spacing = 5
           hgrow = Priority.Always
           children = Seq(ScalaFxUtils.newHSpacer(minW = 30, maxW = 30), pwxChBox)
@@ -363,14 +326,10 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
           spacing = 5
           hgrow = Priority.Always
           children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), pwxLabel, pwxTxtField, pwxBrowseButton)
-        },
-        ScalaFxUtils.newVSpacer(minH = 1),
-        pgChBox,
-        new HBox {
-          spacing = 5
-          hgrow = Priority.Always
-          children = Seq(ScalaFxUtils.newHSpacer(minW = 60, maxW = 60), pgDataDirLabel, pgDataDirTxtField, pgDataDirBrowseButton)
-        }, ScalaFxUtils.newVSpacer(10))
+        },*/
+//        ScalaFxUtils.newVSpacer(minH = 1),
+//        ScalaFxUtils.newVSpacer(10)
+      )
     })
 
   // Help Pane
@@ -395,9 +354,9 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   // Set initial selected CkeckBox
   serverChBox.selected_=(!serverTxtField.getText.isEmpty)
   seqReposChBox.selected_=(!seqReposTxtField.getText.isEmpty)
-  pwxChBox.selected_=(!pwxTxtField.getText.isEmpty)
-  pgChBox.selected_=(!pgDataDirTxtField.getText.isEmpty)
-  prolineModulesChBox.selected_=(seqReposChBox.isSelected || pwxChBox.isSelected)
+//  pwxChBox.selected_=(!pwxTxtField.getText.isEmpty)
+
+  prolineModulesChBox.selected_=(seqReposChBox.isSelected /*|| pwxChBox.isSelected*/)
 
   // Set initial warning/errors notifications and get jms-node.conf path
   if (checkServerConfigItem()) getJmsConfFilePath(Install.serverConfPath).foreach { Install.serverJmsPath = _ }
@@ -405,8 +364,8 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     getJmsConfFilePath(Install.seqReposConfPath).foreach { Install.seqReposJmsPath = _ }
     getParsingRulesFilePath(Install.seqReposConfPath).foreach { Install.seqReposParsigRulesPath = _ }
   }
-  checkPgConfigItem()
-  checkPwxConfigItem()
+
+//  checkPwxConfigItem()
 
   val toRemovePane = new VBox {
     children = Seq(configItemsPane)
@@ -423,14 +382,18 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   /* Install home panel content */
   alignment = Pos.BottomCenter
   alignmentInParent = Pos.BottomCenter
-  spacing = 5
+  spacing = 1
   vgrow = Priority.Always
   children = Seq(
-    ScalaFxUtils.newVSpacer(minH = 5),
+    //ScalaFxUtils.newVSpacer(minH = 5),
     helpPane,
     mainPane,
     statusLabel,
     buttonsPane)
+
+  checkServerConfigItem()
+  checkSeqReposConfigItem()
+  goButton.disable = !isSelectedItemsOk()
 
   // Create task Runner
   Install.taskRunner = new TaskRunner(toRemovePane, glassPane, statusLabel)
@@ -445,24 +408,13 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
 
   /** Indicates whether Proline modules CheckBox is checked */
   private def bindToChild(): Unit = {
-    pwxChBox.selected = prolineModulesChBox.isSelected
+//    pwxChBox.selected = prolineModulesChBox.isSelected
     seqReposChBox.selected = prolineModulesChBox.isSelected
   }
   private def bindToParent(): Unit = {
-    prolineModulesChBox.selected = (pwxChBox.isSelected || seqReposChBox.isSelected)
+    prolineModulesChBox.selected = (/*pwxChBox.isSelected ||*/ seqReposChBox.isSelected)
   }
 
-  /**  Determines whether PostgrSQL data directory configuration item is valid */
-  private def checkPgConfigItem(): Boolean = {
-    if (model.isValidDataDirItem(pgChBox, pgDataDirTxtField, pgDataDirErrorLabel)) {
-      ConfigItemPanel.add(PgServerConfigPanel)
-      true
-    } else {
-      model.isValidDataDirItem(pgChBox, pgDataDirTxtField, pgDataDirErrorLabel)
-      ConfigItemPanel.remove(1)
-      false
-    }
-  }
 
   /**  Determines whether Server configuration item is valid */
   private def checkServerConfigItem(): Boolean = {
@@ -489,16 +441,16 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   }
 
   /** Determines whether Proline web extension configuration item is valid */
-  private def checkPwxConfigItem(): Boolean = {
-    if (model.isValidConfigItem(pwxChBox, pwxTxtField, pwxFileErrorLabel)) {
-      ConfigItemPanel.add(PWXConfigPanel)
-      true
-    } else {
-      model.isValidConfigItem(pwxChBox, pwxTxtField, pwxFileErrorLabel)
-      ConfigItemPanel.remove(3)
-      false
-    }
-  }
+//  private def checkPwxConfigItem(): Boolean = {
+//    if (model.isValidConfigItem(pwxChBox, pwxTxtField, pwxFileErrorLabel)) {
+//      ConfigItemPanel.add(PWXConfigPanel)
+//      true
+//    } else {
+//      model.isValidConfigItem(pwxChBox, pwxTxtField, pwxFileErrorLabel)
+//      ConfigItemPanel.remove(3)
+//      false
+//    }
+//  }
 
   /** Return jms-node.conf file path */
   private def getJmsConfFilePath(path: String): Option[String] = {
@@ -517,7 +469,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
         ScalaFxUtils.newHSpacer(minW = 200),
         new HBox {
           padding = Insets(10)
-          spacing = 10
+          spacing = 5
           children = Seq(
             prevButton,
             nextButton,
@@ -583,9 +535,8 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   private def isSelectedItemsOk(): Boolean = {
     Seq(
       (serverChBox, checkServerConfigItem()),
-      (pgChBox, checkPgConfigItem()),
       (seqReposChBox, checkSeqReposConfigItem()),
-      (pwxChBox, checkPwxConfigItem())).filter(_._1.isSelected)
+      /*(pwxChBox, checkPwxConfigItem())*/ ).filter(_._1.isSelected)
       .forall(_._2 == true)
   }
 }

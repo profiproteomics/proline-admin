@@ -14,7 +14,6 @@ import scalafx.scene.layout.VBox
 import scalafx.stage.Modality
 import scalafx.stage.Stage
 import fr.proline.admin.gui.Install
-import fr.proline.admin.gui.component.configuration.tab._
 import fr.profi.util.scalafx.ScalaFxUtils
 
 /**

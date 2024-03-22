@@ -1,22 +1,16 @@
 package fr.proline.admin.gui.monitor.model
 
 import com.typesafe.scalalogging.LazyLogging
-
-import scalafx.Includes._
-import scalafx.collections.ObservableBuffer
+import fr.proline.admin.gui.Monitor
+import fr.proline.admin.gui.monitor.database.ExternalsDB
+import fr.proline.admin.gui.monitor.model.AdapterModel._
+import fr.proline.admin.gui.monitor.view.dialog.ChangeExtDbParamsDialog
+import fr.proline.admin.gui.task.TaskRunner
 import scalafx.application.Platform
-import scalafx.beans.property.{ BooleanProperty, ObjectProperty }
+import scalafx.beans.property.{BooleanProperty, ObjectProperty}
+import scalafx.collections.ObservableBuffer
 import scalafx.stage.Window
 
-import fr.proline.admin.gui.Monitor
-import fr.proline.admin.gui.util.FxUtils
-import fr.profi.util.scala.ScalaUtils._
-
-import fr.proline.admin.gui.task.TaskRunner
-import fr.proline.admin.gui.monitor.model.AdapterModel._
-import fr.proline.admin.gui.monitor.database.ExternalsDB
-import fr.proline.admin.gui.monitor.view.dialog.ChangeExtDbParamsDialog
-import fr.proline.admin.gui.monitor.view.dialog.ChangeExtDbParamsDialog.Result
 import scala.collection.mutable.Set
 
 /**
@@ -98,15 +92,16 @@ class ExternalDbViewModel extends LazyLogging {
     taskRunner.run(
       caption = s"Checking for Proline updates",
       op = {
-        logger.info("Checking for Proline updates. It could take a while. Please wait...")
-        val (checkForUpdates, sriptsToApply) = externalsDB.checkForUpdates()
+        logger.info("Checking for Proline updates. It could take a while. Please wait...\n")
+        logger.info(" ----------------------------------------------------------------- \n")
+        val (checkForUpdates, scriptsToApply,dbObjectNeedUpgrade) = externalsDB.checkForUpdates()
         // Return items from database
         val updatedItems = externalsDB.queryExternalDbsAsView()
         // Update items on FX thread
         Platform.runLater {
           updateItems(updatedItems)
         }
-        (checkForUpdates, sriptsToApply)
+        (checkForUpdates, scriptsToApply,dbObjectNeedUpgrade)
       })
 
   }

@@ -160,4 +160,102 @@ class UpgradeUdsDbDefinitions(
 
   }
 
+  protected def checkUpgradeNeeded(): Boolean = {
+
+    val udsEM = dbCtx.getEntityManager
+
+    /** * Check Upgrade peaklist software and spectrum title parsing rules ** */
+
+    // Index parsing rules by corresponding peaklist software
+    val parsingRuleByPeaklistSoft = UdsSpectrumTitleParsingRule.ParsingRule.values().map { parsingRule =>
+      parsingRule.getPeaklistSoftware -> parsingRule
+    }.toMap
+
+    // Load existing peaklist software
+    val oldPklSofts = udsEM.createQuery("SELECT s FROM fr.proline.core.orm.uds.PeaklistSoftware s", classOf[UdsPeaklistSoftware]).getResultList
+
+    // Index existing peaklist software by their name
+    val oldPklSoftByName = oldPklSofts.asScala.view.map { soft =>
+      val version = soft.getVersion
+
+      val fullSoftName = if (StringUtils.isEmpty(version)) soft.getName
+      else soft.getName + ' ' + soft.getVersion
+
+      fullSoftName -> soft
+    }.toMap
+
+    // Iterate over the enumeration of Scoring Types
+    for (softRelease <- UdsPeaklistSoftware.SoftwareRelease.values()) {
+      val oldPklSoftOpt = oldPklSoftByName.get(softRelease.toString)
+
+      // Retrieve the last parsing rule definition from the ORM to update id
+      val parsingRule = parsingRuleByPeaklistSoft(softRelease)
+
+      if (oldPklSoftOpt.isDefined) {
+        val oldPklSoft = oldPklSoftOpt.get
+        val oldRule = oldPklSoft.getSpecTitleParsingRule
+
+        if (oldRule.getFirstCycle != parsingRule.getFirstCycleRegex) {
+          logger.info("Incorrect parsingRule: " + parsingRule.toString)
+          return true
+        }
+        if (oldRule.getLastCycle != parsingRule.getLastCycleRegex) {
+          logger.info("Incorrect parsingRule: " + parsingRule.toString)
+          return true
+        }
+        if (oldRule.getFirstScan != parsingRule.getFirstScanRegex) {
+          logger.info("Incorrect parsingRule: " + parsingRule.toString)
+          return true
+        }
+        if (oldRule.getLastScan != parsingRule.getLastScanRegex) {
+          logger.info("Incorrect parsingRule: " + parsingRule.toString)
+          return true
+        }
+        if (oldRule.getFirstTime != parsingRule.getFirstTimeRegex) {
+          logger.info("Incorrect parsingRule: " + parsingRule.toString)
+          return true
+        }
+        if (oldRule.getLastTime != parsingRule.getLastTimeRegex) {
+          logger.info("Incorrect parsingRule: " + parsingRule.toString)
+          return true
+        }
+        if (oldRule.getRawFileIdentifier != parsingRule.getRawFileIdentifierRegex) {
+          logger.info("Incorrect parsingRule: " + parsingRule.toString)
+          return true
+        }
+        if (oldPklSoft.getSerializedProperties != softRelease.getProperties) {
+          logger.info("Incorrect peaklist software: " + softRelease.getName)
+          return true
+        }
+
+      } else {
+        logger.info("Undefined Peaklist Software: " + softRelease.toString)
+        return true
+      }
+
+    }
+
+    /** * Check missing object tree schemas ** */
+
+    // Load existing schemas
+    val oldSchemas = udsEM.createQuery("SELECT s FROM fr.proline.core.orm.uds.ObjectTreeSchema s", classOf[UdsObjectTreeSchema]).getResultList
+
+    // Index schemas by their name
+    val oldSchemaByName = oldSchemas.asScala.view.map { schema =>
+      schema.getName -> schema
+    }.toMap
+
+    // Iterate over the enumeration of ObjectTree SchemaNames
+    for (schemaName <- UdsObjectTreeSchema.SchemaName.values()) {
+      val schemaNameAsStr = schemaName.toString()
+
+      if (!oldSchemaByName.contains(schemaNameAsStr)) {
+        logger.info(" Undefined schemaName  " + schemaNameAsStr)
+        return true
+      }
+
+    }
+
+    false
+  }
 }

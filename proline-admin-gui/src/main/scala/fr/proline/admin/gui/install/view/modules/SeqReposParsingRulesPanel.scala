@@ -1,17 +1,14 @@
 package fr.proline.admin.gui.install.view.modules
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scalafx.Includes._
 import scalafx.stage.Stage
-import scalafx.geometry.{ Pos, Insets }
+import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control.Button
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
-import scalafx.scene.layout.HBox
-import scalafx.scene.layout.VBox
+import scalafx.scene.layout.{HBox, Priority, VBox}
 import scalafx.scene.control.Tooltip
-
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.install.model.SeqReposModelView
@@ -21,7 +18,6 @@ import fr.profi.util.scalafx.FileBrowsing
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.SimpleBorderPane
 import fr.profi.util.scalafx.TitledBorderPane
-
 import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scalafx.CustomScrollPane
 
@@ -43,6 +39,10 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
 
   var defaultProteinAccession = parsingRule.defaultProteinAccession.get
 
+  //VBox & HBox spacing
+  private val V_SPACING = 5
+  private val H_SPACING = 5
+
   /*
    * ********** *
    * COMPONENTS *
@@ -50,8 +50,8 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
    */
 
   /* Default accession protein */
-  val fastaDirBox = new VBox { spacing = 10 }
-  val RulesBox = new VBox { spacing = 10 }
+  val fastaDirBox = new VBox { spacing = V_SPACING }
+  val RulesBox = new VBox { spacing = V_SPACING }
   val defaultProteinAccessionTip = "Default Java Regex with capturing group for protein accession if fasta file name doesn't match parsing_rules RegEx \n >(\\S+) :  String after '>' and before first space"
   val defaultProteinAccessionLabel = new BoldLabel("Default Protein Accession: ", upperCase = false)
   val defaultProteinAccessionField = new TextField {
@@ -72,7 +72,7 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
     }
   }
   val accessionAndResetBox = new HBox {
-    spacing = 10
+    spacing = H_SPACING
     children = Seq(defaultProteinAccessionField, resetAccessionButton)
   }
   val defaultAccessionBox = new VBox {
@@ -127,32 +127,35 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
 
   // VBox & HBox spacing
 
-  private val V_SPACING = 10
-  private val H_SPACING = 5
+
 
   /* Parsing rules panel */
   val parsingRules = new TitledBorderPane(
     title = "Parsing Rules",
     titleTooltip = "Extract accession numbers from Fasta files",
     contentNode = new VBox {
-      prefHeight <== stage.height - 200
-      prefWidth <== stage.width - 100
+      prefHeight <== stage.height - 350
+      prefWidth <== stage.width - 80
+      hgrow = Priority.Always
+      vgrow = Priority.Always
       spacing = V_SPACING
       children = List(
         new VBox {
-          spacing = 0.5
+          hgrow = Priority.Always
+          spacing = V_SPACING
           children = List(
             emptyFastaWarningLabel,
             emptyRulesWarningLabel)
         },
         defaultAccessionBox,
         new HBox {
-          spacing = H_SPACING * 3
+          hgrow = Priority.Always
+          spacing = H_SPACING // * 3
           children = List(localFastaDirLablel, addLocalFastaDirectory)
         },
         fastaDirBox,
         new HBox {
-          spacing = H_SPACING * 3
+          spacing = H_SPACING // * 3
           children = List(parsingRulesLablel, addRuleButton)
         },
         RulesBox)
@@ -236,20 +239,21 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
     warningParsingRules
   }
   val parsingRulesPane = new VBox {
+    spacing = V_SPACING*2
     children = Seq(parsingRules)
   }
 
   /* Set panel content */
   setContentNode(
     new VBox {
-      alignment = Pos.Center
-      alignmentInParent = Pos.Center
-      prefWidth <== stage.width - 90
-      prefHeight <== stage.height - 45
-      padding = Insets(0, 0, 5, 5)
+//      alignment = Pos.Center
+      alignmentInParent = Pos.TopLeft
+//      prefWidth <== stage.width - 90
+//      prefHeight <== stage.height - 45
+      padding = Insets(10, 0, 5, 5)
       children = List(parsingRulesPane)
     })
-
+  this.padding = Insets(20, 5, 5, 0)
   /** Return default protein accession **/
   private def _getDefaultProteinAccesion(): Option[String] = {
     Some(defaultProteinAccession)

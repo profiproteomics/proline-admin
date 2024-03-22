@@ -18,14 +18,15 @@ import scalafx.scene.control.Tab
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.task.TaskRunner
 import fr.proline.admin.gui.IconResource
-import fr.proline.admin.gui.util.FxUtils
-import fr.proline.admin.gui.util.WindowSize
+import fr.proline.admin.gui.util.{FxUtils, ShowPopupWindow, WindowSize}
 import fr.proline.admin.gui.monitor.model.HomePanelViewModel
 import fr.proline.admin.gui.process.config.{AdminConfig, AdminConfigFile}
 import fr.profi.util.scalafx.{BoldLabel, TitledBorderPane}
 import fr.profi.util.scalafx.ScalaFxUtils._
 import fr.profi.util.scalafx.ScalaFxUtils
 import fr.profi.util.scala.ScalaUtils._
+import fr.proline.admin.service.db.setup.DatabaseSetupConfig
+import scalafx.application.Platform
 
 import java.io.File
 
@@ -38,12 +39,27 @@ import java.io.File
 class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
 
   // Load initial configurations
-  model.setNewConfig()
+  val readCfgSuccess = model.setNewConfig()
+  val resultCfg = model.adminConfigOpt()
+  if(!readCfgSuccess && resultCfg.isEmpty){
+    ShowPopupWindow(
+      node = new Label("Error reading configuration file... Please correct it before running Monitor. \n  Verify Path format (using \\\\) ... "),
+      wTitle = "Configuration File Error",
+      wParent = Some(Monitor.stage))
+  }
+
 
   /* Proline error and warning labels */
-
+  var isUdsDbSetupError = BooleanProperty(false)
+  var isConnectionTestError =  BooleanProperty(false)
+  val InfoMonitorLabel = new Label {
+    text = "The following parameters will be used to connect to Proline server and databases for further tasks. Be sure everything is correct. "
+    graphic = ScalaFxUtils.newImageView(IconResource.INFORMATION)
+//    style = TextStyle.GREY
+    managed <== visible
+  }
   val udsDbErrorLabel = new Label {
-    text = "Error Proline databases are not set up. Make sure that you have already setup Proline."
+    text = "Error:  Proline databases are not set up. Make sure that you have already setup Proline."
     graphic = ScalaFxUtils.newImageView(IconResource.EXCLAMATION)
     style = TextStyle.RED_ITALIC
     managed <== visible
@@ -54,25 +70,18 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     style = TextStyle.RED_ITALIC
     managed <== visible
   }
-  val serverConfigWarningLabel = new Label {
-    text = "Proline server configuration file path is invalid."
-    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
-    style = TextStyle.ORANGE_ITALIC
-    managed <== visible
-  }
-  val seqReposWarningLabel = new Label {
-    text = "Proline sequence repository configuration file path is invalid."
-    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
-    style = TextStyle.ORANGE_ITALIC
-    managed <== visible
-  }
-
-  val dataDirWarningLabel = new Label {
-    text = "PostgreSQL data path is invalid."
-    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
-    style = TextStyle.ORANGE_ITALIC
-    managed <== visible
-  }
+//  val serverConfigWarningLabel = new Label {
+//    text = "Proline server configuration file path is invalid."
+//    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+//    style = TextStyle.ORANGE_ITALIC
+//    managed <== visible
+//  }
+//  val seqReposWarningLabel = new Label {
+//    text = "Proline sequence repository configuration file path is invalid."
+//    graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+//    style = TextStyle.ORANGE_ITALIC
+//    managed <== visible
+//  }
 
   // Help icon
   val headerHelpIcon = new Hyperlink {
@@ -313,11 +322,12 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   val notificationsPane = new VBox {
     spacing = 0.5
     children = Seq(
+      InfoMonitorLabel,
       udsDbErrorLabel,
-      connectionErrorLabel,
+      connectionErrorLabel/*,
       serverConfigWarningLabel,
-      seqReposWarningLabel,
-      dataDirWarningLabel)
+      seqReposWarningLabel*/
+    )
   }
   val propertiesPane = new VBox {
     spacing = V_SPACING
@@ -350,15 +360,21 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   children = Seq(
     mainPane)
 
-  // Show error and warning labels 
-  val isConnectionEstablished = BooleanProperty(!model.isConnectionEstablished(model.adminConfigOpt()))
-  connectionErrorLabel.visible <== isConnectionEstablished
-  val isUdsDbSetupError = BooleanProperty(!model.isUdsDbReachable())
-  udsDbErrorLabel.visible <== isUdsDbSetupError
-  serverConfigWarningLabel.visible <== !BooleanProperty(model.isServerConfigFileOK())
-  seqReposWarningLabel.visible <== !BooleanProperty(model.isSeqRepoConfigFileOK())
-  dataDirWarningLabel.visible <== !BooleanProperty(model.isPgSQLDataDirOK())
+
+  def showErrors(): Unit = {
+
+    // Show error and warning labels
+    isConnectionTestError = BooleanProperty(!model.isConnectionEstablished(model.adminConfigOpt()))
+    connectionErrorLabel.visible <== isConnectionTestError
+
+    isUdsDbSetupError = BooleanProperty(!model.isUdsDbReachable())
+    udsDbErrorLabel.visible <== isUdsDbSetupError && !isConnectionTestError
+//    serverConfigWarningLabel.visible <== !BooleanProperty(model.isServerConfigFileOK())
+//    seqReposWarningLabel.visible <== !BooleanProperty(model.isSeqRepoConfigFileOK())
+  }
   // Enable properties
+
+  showErrors()
 
   def enableServerConfig() {
     Seq(pgHostField, pgPortField, pgUserField, pgPasswordField).foreach { b =>
@@ -386,7 +402,11 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
       adminConfig.dbPort = Option(pgPortField.getText.toInt)
       val adminConfigFile = new AdminConfigFile(configFilePath)
       adminConfigFile.write(adminConfig)
-      isConnectionEstablished.setValue(!model.isConnectionEstablished(Option(adminConfig)))
+      model.setNewConfig() //reread saved params ...  todo directly in model...
+      showErrors()
+      //retest button status
+      goButton.disable <== BooleanProperty(isConnectionTestError.value || isUdsDbSetupError.value)
+
       true
     } catch {
       case e: Throwable =>
@@ -400,8 +420,8 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   def go() {
     val stckPane = new StackPane {
       children = Seq(
-        TabsPanel,
-        glassPane)
+        TabsPanel/*,
+        glassPane*/)//VDS TODO verify ??
     }
     val bottomPane = new VBox {
       children = Seq(
@@ -433,6 +453,6 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   }
 
   // Disable go button when connection to UDS database failed or UDS database is not setup.
-  goButton.disable <== BooleanProperty(isConnectionEstablished.value || isUdsDbSetupError.value)
+  goButton.disable <== BooleanProperty(isConnectionTestError.value || isUdsDbSetupError.value)
 
 }

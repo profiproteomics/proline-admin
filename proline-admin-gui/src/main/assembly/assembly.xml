@@ -5,17 +5,8 @@
   <formats>
     <format>zip</format>
   </formats>
-  <fileSets>
 
-    <fileSet>
-      <directory>${project.basedir}</directory>
-      <outputDirectory></outputDirectory>
-      <includes>
-        <include>README*</include>
-        <include>LICENSE*</include>
-        <include>NOTICE*</include>
-      </includes>
-    </fileSet>
+  <fileSets>
 
     <fileSet>
       <directory>${project.build.directory}/config</directory>
@@ -25,6 +16,11 @@
     <fileSet>
       <directory>${project.build.directory}/lib</directory>
       <outputDirectory>lib</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.build.directory}/java</directory>
+      <outputDirectory>java</outputDirectory>
     </fileSet>
 
     <fileSet>

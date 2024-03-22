@@ -92,39 +92,39 @@ class UserViewModel extends LazyLogging {
     }
   }
 
-  /** Disable Proline user */
-  def onDisable(): Unit = {
-    taskRunner.run(
-      caption = s"Disabling the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}",
-      op = {
-        //disable user 
-        logger.info(s"Disabling the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}")
-        usersDB.changeState(selectedItems.toSet, false)
-        // Return items from database
-        val updatedItems = usersDB.queryUsersAsView()
-        // Update items on FX thread
-        Platform.runLater {
-          updateItems(updatedItems)
-        }
-      })
-  }
+//  /** Disable Proline user */
+//  def onDisable(): Unit = {
+//    taskRunner.run(
+//      caption = s"Disabling the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}",
+//      op = {
+//        //disable user
+//        logger.info(s"Disabling the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}")
+//        usersDB.changeState(selectedItems.toSet, false)
+//        // Return items from database
+//        val updatedItems = usersDB.queryUsersAsView()
+//        // Update items on FX thread
+//        Platform.runLater {
+//          updateItems(updatedItems)
+//        }
+//      })
+//  }
 
-  /** Activate Proline user */
-  def onActivate(): Unit = {
-    taskRunner.run(
-      caption = s"Activating the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}",
-      op = {
-        logger.info(s"Activating the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}")
-        usersDB.changeState(selectedItems.toSet, true)
-
-        // Return items from database
-        val updatedItems = usersDB.queryUsersAsView()
-        // Update items on FX thread
-        Platform.runLater {
-          updateItems(updatedItems)
-        }
-      })
-  }
+//  /** Activate Proline user */
+//  def onActivate(): Unit = {
+//    taskRunner.run(
+//      caption = s"Activating the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}",
+//      op = {
+//        logger.info(s"Activating the user with id= #${selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}")
+//        usersDB.changeState(selectedItems.toSet, true)
+//
+//        // Return items from database
+//        val updatedItems = usersDB.queryUsersAsView()
+//        // Update items on FX thread
+//        Platform.runLater {
+//          updateItems(updatedItems)
+//        }
+//      })
+//  }
 
   /** Add user to user group */
   def onAddToUserGrp(): Unit = {

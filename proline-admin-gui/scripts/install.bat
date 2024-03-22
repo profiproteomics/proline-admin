@@ -1,1 +1,1 @@
-java -cp "lib/*;proline-admin-gui-${pom.version}.jar;config" -Dlogback.configurationFile=config/logback.xml fr.proline.admin.gui.Install %*
+.\java\jdk\bin\java -cp "lib/*;proline-admin-gui-${pom.version}.jar;config" -Dlogback.configurationFile=config/logback.xml fr.proline.admin.gui.Install %*

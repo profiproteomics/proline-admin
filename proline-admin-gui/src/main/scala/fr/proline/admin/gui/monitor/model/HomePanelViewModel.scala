@@ -1,6 +1,7 @@
 package fr.proline.admin.gui.monitor.model
 
 import com.typesafe.scalalogging.LazyLogging
+import fr.profi.util.StringUtils
 import scalafx.Includes._
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.process.config.AdminConfig
@@ -22,7 +23,8 @@ class HomePanelViewModel(monitorConfPath: String) extends LazyLogging {
   /** Return Proline-Admin Config */
   def adminConfigOpt(): Option[AdminConfig] = {
     try {
-      if (Monitor.adminConfPathIsEmpty()) return None
+      if (StringUtils.isEmpty(monitorConfPath) )
+        None
       else {
         val adminConfFile = new AdminConfigFile(monitorConfPath)
         adminConfFile.read()
@@ -60,11 +62,16 @@ class HomePanelViewModel(monitorConfPath: String) extends LazyLogging {
   }
 
   /** Reload Proline-Admin Config */
-  def setNewConfig() {
+  def setNewConfig() : Boolean = {
     try {
       ProlineAdminConnection.setNewProlineInstallConfig(monitorConfPath)
+      true
     } catch {
-      case t: Throwable => logger.error("Error while trying to set the new configurations", t.getMessage())
+      case t: Throwable => {
+        logger.error ("Error while trying to set the new configurations", t.getMessage () )
+        false
+      }
+      case _ => false
     }
   }
 
@@ -74,15 +81,15 @@ class HomePanelViewModel(monitorConfPath: String) extends LazyLogging {
   /** Check Proline-Admin GUI initial configurations */
 
   def isServerConfigFileOK(): Boolean = adminConfigOpt() match {
-    case Some(AdminConfig(_, serverConfigFilePath, _, _, _, _, _, _, _, _, _)) if (serverConfigFilePath.isDefined && (new File(serverConfigFilePath.get).exists)) => true
+    case Some(AdminConfig(_, serverConfigFilePath,  _, _, _, _, _, _, _, _)) if (serverConfigFilePath.isDefined && (new File(serverConfigFilePath.get).exists)) => true
     case _ => false
   }
   def isPgSQLDataDirOK(): Boolean = adminConfigOpt() match {
-    case Some(AdminConfig(_, _, _, pgsqlDataDir, _, _, _, _, _, _, _)) if (pgsqlDataDir.isDefined && (new File(pgsqlDataDir.get).exists)) => true
+    case Some(AdminConfig(_,  _, pgsqlDataDir, _, _, _, _, _, _, _)) if (pgsqlDataDir.isDefined && (new File(pgsqlDataDir.get).exists)) => true
     case _ => false
   }
   def isSeqRepoConfigFileOK(): Boolean = adminConfigOpt() match {
-    case Some(AdminConfig(_, _, _, _, seqRepoConfigFilePath, _, _, _, _, _, _)) if (seqRepoConfigFilePath.isDefined && (new File(seqRepoConfigFilePath.get).exists)) => true
+    case Some(AdminConfig(_,  _, _, seqRepoConfigFilePath, _, _, _, _, _, _)) if (seqRepoConfigFilePath.isDefined && (new File(seqRepoConfigFilePath.get).exists)) => true
     case _ => false
   }
 

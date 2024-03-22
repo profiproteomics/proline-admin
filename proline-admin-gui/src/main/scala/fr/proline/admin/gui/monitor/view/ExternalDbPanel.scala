@@ -71,7 +71,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
 
   /* Change database parameters button */
   val editDbEntry = new Button {
-    text = "Change database parameters"
+    text = "Edit DB parameters"
     tooltip = "Change external database configuration parameters."
     graphic = FxUtils.newImageView(IconResource.EDITSMALL)
     onAction =  _ => {
@@ -81,7 +81,7 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
 
   /* Upgrade all Proline databases button */
   val upgradeButton = new Button {
-    text = "Upgrade all databases"
+    text = "Upgrade all DBs"
     tooltip = "Upgrade all Proline databases to the last version. This action can take a while."
     graphic = FxUtils.newImageView(IconResource.UPGRADE)
     onAction =  _ => {
@@ -96,36 +96,36 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
     tooltip = "Check for updates for all Proline databases."
     graphic = FxUtils.newImageView(IconResource.TICK)
     onAction =  _ => {
-      val confirmed = GetConfirmation(s"Are you sure that you want to check for updates. This action can take a while.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
+      val confirmed = GetConfirmation(s"Are you sure that you want to check for updates. If there is a significant gap in version numbers, this action can take a while.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
       if (confirmed) model.onCheckForUpdates()
     }
   }
   /* Check for updates button */
-  val deleteObsoleDbsButton = new Button {
-    text = "Delete obsolete databases"
-    tooltip = "Delete obsolete Proline databases. Make sure that all Proline databases are upgraded before to procede!"
-    graphic = FxUtils.newImageView(IconResource.TRASH)
-    disable = true
-    onAction =  _ => {
-      val confirmed = GetConfirmation(s"Are you sure that you want to delete obsolete Proline databases. Make sure that all databases are upgraded before to procede.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
-      if (confirmed) model.onDeleteObsoleteDbs()
-    }
-  }
+//  val deleteObsoleDbsButton = new Button {
+//    text = "Delete obsolete databases"
+//    tooltip = "Delete obsolete Proline databases. Make sure that all Proline databases are upgraded before to procede!"
+//    graphic = FxUtils.newImageView(IconResource.TRASH)
+//    disable = true
+//    onAction =  _ => {
+//      val confirmed = GetConfirmation(s"Are you sure that you want to delete obsolete Proline databases. Make sure that all databases are upgraded before to procede.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
+//      if (confirmed) model.onDeleteObsoleteDbs()
+//    }
+//  }
   //Layout & Style
   Seq(
     refreshButton,
     editDbEntry,
     upgradeButton,
     checkUpdatesButton,
-    deleteObsoleDbsButton).foreach { b =>
+    /*deleteObsoleDbsButton*/).foreach { b =>
       b.prefHeight = 20
-      b.prefWidth = 200
+      b.prefWidth = 140
       b.styleClass += ("mainButtons")
     }
   val buttonsPanel = new HBox {
-    spacing = 40
-    alignment_=(Pos.BottomCenter)
-    children = Seq(refreshButton, editDbEntry, deleteObsoleDbsButton, checkUpdatesButton, upgradeButton)
+    spacing = 15
+    alignment_=(Pos.BottomLeft)
+    children = Seq(refreshButton, editDbEntry, /*deleteObsoleDbsButton,*/ checkUpdatesButton, upgradeButton)
   }
   val contentNode = new VBox {
     spacing = 10

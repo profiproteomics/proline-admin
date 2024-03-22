@@ -29,7 +29,7 @@ object ChangeExtDbParamsDialog extends LazyLogging {
     val dialog = new Dialog[Result]() {
       initOwner(parentWindow)
       title = "Change parameters"
-      headerText = "Enter External database parameters"
+      headerText = "Enter External database parameters \nWarning !! If incorrect values specified, this may lead to inaccessible project !"
       graphic = FxUtils.newImageView(IconResource.EDITSMALL)
     }
 

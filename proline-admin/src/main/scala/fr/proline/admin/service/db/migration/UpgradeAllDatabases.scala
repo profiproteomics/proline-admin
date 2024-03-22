@@ -1,20 +1,19 @@
 package fr.proline.admin.service.db.migration
 
 import com.typesafe.scalalogging.StrictLogging
-import javax.persistence.{ EntityManager, EntityTransaction }
 import fr.profi.util.security._
 import fr.proline.admin.service.ICommandWork
 import fr.proline.context.DatabaseConnectionContext
 import fr.proline.core.dal.ProlineEzDBC
-import fr.proline.core.orm.uds.repository.ExternalDbRepository
-import fr.proline.core.orm.uds.repository.ProjectRepository
-import fr.proline.core.orm.uds.{ UserAccount => UdsUser }
+import fr.proline.core.orm.uds.repository.{ExternalDbRepository, ProjectRepository}
+import fr.proline.core.orm.uds.{UserAccount => UdsUser}
 import fr.proline.repository._
-import scala.collection.mutable.Set
-import scala.collection.mutable.Map
-import scala.collection.JavaConverters._
-import java.io.{ ByteArrayOutputStream, PrintStream }
+
+import java.io.{ByteArrayOutputStream, PrintStream}
 import java.sql.Connection
+import javax.persistence.{EntityManager, EntityTransaction}
+import scala.collection.JavaConverters._
+import scala.collection.mutable.{Map, Set}
 
 /**
  *
@@ -48,37 +47,41 @@ class UpgradeAllDatabases(
       if ((projectIds != null) && !projectIds.isEmpty) {
 
         for (projectId <- projectIds.asScala) {
-          logger.debug(s"Upgrading databases of Project #$projectId")
+          logger.info(s" ---- Upgrading databases of Project #$projectId")
 
-          /* Upgrade MSI Db */
-          val msiDbConnector = dsConnectorFactory.getMsiDbConnector(projectId)
-          val msiVersion = UpgradeDatabase(
-            msiDbConnector,
-            s"MSIdb (project #$projectId)",
-            upgradeCallback = { msiVersion =>
 
-              /* Update MSI Db version */
-              _updateExternalDbVersion(msiVersion, udsEM, ProlineDatabaseType.MSI, Some(projectId))
+            /* Upgrade MSI Db */
+            val msiDbConnector = dsConnectorFactory.getMsiDbConnector(projectId)
+            UpgradeDatabase(
+              msiDbConnector,
+              s"MSIdb (project #$projectId)",
+              upgradeCallback = { msiVersion =>
 
-              /* Upgrade MSI Db definitions */
-              val msiDbCtx = new DatabaseConnectionContext(msiDbConnector)
+                /* Update MSI Db version */
+                _updateExternalDbVersion(msiVersion, udsEM, ProlineDatabaseType.MSI, Some(projectId))
 
-              try {
-                // Executed inside a local transaction (see IUpgradeDb)
-                new UpgradeMsiDbDefinitions(msiDbCtx).run()
-              } finally {
-                msiDbCtx.close()
-              }
-            })
+                /* Upgrade MSI Db definitions */
+                val msiDbCtx = new DatabaseConnectionContext(msiDbConnector)
 
-          /* Upgrade LCMS Db */
-          val lcMsDbConnector = dsConnectorFactory.getLcMsDbConnector(projectId)
-          UpgradeDatabase(lcMsDbConnector, s"LCMSdb (project #$projectId)", upgradeCallback = { lcMsVersion =>
-            /* Update LCMS Db version */
-            _updateExternalDbVersion(lcMsVersion, udsEM, ProlineDatabaseType.LCMS, Some(projectId))
-          })
+                try {
+                  // Executed inside a local transaction (see IUpgradeDb)
+                  new UpgradeMsiDbDefinitions(msiDbCtx).run()
+                } finally {
+                  msiDbCtx.close()
+                }
+              })
 
-        }
+            /* Upgrade LCMS Db */
+            val lcMsDbConnector = dsConnectorFactory.getLcMsDbConnector(projectId)
+            UpgradeDatabase(
+              lcMsDbConnector,
+              s"LCMSdb (project #$projectId)",
+              upgradeCallback = { lcMsVersion =>
+                /* Update LCMS Db version */
+                _updateExternalDbVersion(lcMsVersion, udsEM, ProlineDatabaseType.LCMS, Some(projectId))
+              })
+            logger.info(s" ---- Finish upgrading databases of Project #$projectId")
+          }
 
       }
       udsEM.flush()
@@ -88,10 +91,12 @@ class UpgradeAllDatabases(
 
       /* Upgrade UDS Db */
       // Note: was moved after MSI/LCMS databases to handle migration of core V2
+      logger.info(s" ---- Upgrading global database for UDSdb ")
       UpgradeDatabase(udsDbConnector, "UDSdb", closeConnector = false, upgradeCallback = { udsDbVersion =>
         /* Upgrade UDS Db definitions */
         new UpgradeUdsDbDefinitions(udsDbCtx).run()
       })
+      logger.info(s" ---- Finish upgrading global database for UDSdb")
 
       udsEM.flush()
       udsTx.commit()
@@ -100,9 +105,10 @@ class UpgradeAllDatabases(
       _createDefaultAdmin(udsEM, udsDbConnector.getDriverType)
       // Check wether ps_db migration has finished successfully for all databases.
       _isPsDbMigrationOk()
-      if (failedDbSet.isEmpty) { logger.info("Proline databases upgrade has finished successfully!") }
+      if (failedDbSet.isEmpty) {
+        logger.info("Proline databases upgrade has finished successfully!") }
       else {
-        logger.warn(s"--- Proline databases upgrade has finished, but some databases cannot migrate: ${failedDbSet.mkString(",")}")
+        logger.info(s"--- Warning: Proline databases upgrade has finished, but some databases cannot migrate: ${failedDbSet.mkString(",")}")
       }
     } finally {
       // Close UDSdb connection context

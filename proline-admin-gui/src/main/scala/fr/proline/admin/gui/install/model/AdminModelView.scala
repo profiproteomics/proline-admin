@@ -63,7 +63,7 @@ class AdminModelView(serverConfigFilePath: String) extends LazyLogging {
   }
 
   /** Save Proline server configurations */
-  def onSaveServerConfig(adminConfig: AdminConfig, serverConfig: ServerConfig): Unit = {
+  def onSaveServerConfig(adminConfig: AdminConfig, serverConfig: ServerMountPointsConfig): Unit = {
     try {
       logger.debug("Update Proline server configurations...")
       serverConfigFileOpt().get.write(serverConfig, adminConfig)

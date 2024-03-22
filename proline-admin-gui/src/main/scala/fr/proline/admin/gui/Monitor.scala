@@ -1,15 +1,11 @@
 package fr.proline.admin.gui
 
 import com.typesafe.scalalogging.LazyLogging
-
 import javafx.application.Application
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
-import scalafx.scene.layout.HBox
-import scalafx.scene.layout.VBox
-import scalafx.scene.layout.Priority
+import scalafx.scene.layout.{BorderPane, HBox, Priority, VBox}
 import scalafx.stage.Stage
-
 import fr.proline.admin.gui.monitor.view.HomePanel
 import fr.proline.admin.gui.monitor.model.HomePanelViewModel
 import fr.proline.admin.gui.monitor.database._
@@ -17,6 +13,7 @@ import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.task.TaskRunner
 import fr.proline.admin.gui.util.FxUtils
 import fr.profi.util.StringUtils
+
 import java.io.File
 
 /**
@@ -46,8 +43,6 @@ object Monitor extends LazyLogging {
   }
   var stage: scalafx.stage.Stage = null
 
-  /** utilities */
-  def adminConfPathIsEmpty(): Boolean = StringUtils.isEmpty(adminConfPath)
 
   /** Launch application and display main window. */
   def main(args: Array[String]) = {
@@ -83,7 +78,11 @@ class Monitor extends Application with LazyLogging {
       minWidth = 700
       height = 750
       minHeight = 700
-      scene = new Scene(Monitor.root)
+      scene = new Scene() {
+        val border = new BorderPane()
+        border.top = Monitor.root
+        root = border
+      }
       title = s"${admin.getModuleName} ${admin.getVersion.split("_").apply(0)}"
     }
 
@@ -99,9 +98,10 @@ class Monitor extends Application with LazyLogging {
 
   /** Close UDSdb context on close application **/
   override def stop() {
-    if (UdsRepository.getUdsDbContext() != null) UdsRepository.getUdsDbContext().close()
-    if (UdsRepository.getDataStoreConnFactory() != null) UdsRepository.getDataStoreConnFactory().closeAll()
+    // Close UDS db context
+    UdsRepository.closeAll()
     super.stop()
+    System.exit(0)
   }
 
 }

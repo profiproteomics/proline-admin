@@ -16,6 +16,8 @@ trait IUpgradeDB extends LazyLogging {
   // Interface
   protected def upgradeDefinitions(): Unit
 
+  protected def checkUpgradeNeeded() : Boolean
+
   /** Execution state. */
   def isExecuted: Boolean = _executed
 
@@ -32,6 +34,14 @@ trait IUpgradeDB extends LazyLogging {
       _executed = true
     }
    
+  }
+
+  def needUpgrade() : Boolean ={
+    if(_executed) {
+      logger.info("upgrade already executed")
+      return false
+    }
+    this.checkUpgradeNeeded()
   }
 
 }

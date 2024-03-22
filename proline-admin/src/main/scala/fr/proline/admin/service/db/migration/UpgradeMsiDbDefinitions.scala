@@ -6,8 +6,6 @@ import fr.proline.core.orm.msi.{ObjectTreeSchema, Scoring}
 import fr.proline.core.orm.msi.PeaklistSoftware
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable.Map
 
 
 /**
@@ -24,21 +22,15 @@ class UpgradeMsiDbDefinitions(
 
     /*** Upgrade peaklist software properties ***/
     // Load existing peaklist software
-    val oldPklSofts = msiEM.createNativeQuery("SELECT id, name, version, serialized_properties FROM peaklist_software").getResultList
-    val softList = new ArrayBuffer[PeaklistSoftware]()
-    val oldPklSoftByName = Map.empty[String, PeaklistSoftware]
-    oldPklSofts.forEach( aRow => {
-      val aSoft = new PeaklistSoftware()
-      aSoft.setId(aRow.asInstanceOf[Array[Any]].apply(0).asInstanceOf[Long])
-      aSoft.setName(aRow.asInstanceOf[Array[Any]].apply(1).toString)
-      val aVersion = aRow.asInstanceOf[Array[Any]].apply(2)
-      if(aVersion !=null)
-        aSoft.setVersion(aVersion.toString)
-      aSoft.setSerializedProperties( aRow.asInstanceOf[Array[Any]].apply(3).toString)
-      val fullSoftName = if (aVersion ==null || StringUtils.isEmpty(aVersion.toString)) aSoft.getName
-        else aSoft.getName + ' ' + aSoft.getVersion
-      oldPklSoftByName += (fullSoftName -> aSoft)
-    })
+    val oldPklSofts = msiEM.createQuery("SELECT s FROM fr.proline.core.orm.msi.PeaklistSoftware s", classOf[PeaklistSoftware]).getResultList
+    val oldPklSoftByName = oldPklSofts.asScala.view.map { soft =>
+      val version = soft.getVersion
+
+      val fullSoftName = if (StringUtils.isEmpty(version)) soft.getName
+        else soft.getName + ' ' + soft.getVersion
+      fullSoftName -> soft
+    }.toMap
+
 
 
     // Index parsing rules by corresponding peaklist software
@@ -100,7 +92,7 @@ class UpgradeMsiDbDefinitions(
     for (schemaName <- ObjectTreeSchema.SchemaName.values()) {
       val schemaNameAsStr = schemaName.toString()
       
-      val schema = if( oldSchemaByName.contains(schemaNameAsStr) == false ) {
+      if( !oldSchemaByName.contains(schemaNameAsStr) ) {
         logger.info("Inserting new object tree schema: " + schemaNameAsStr)
         
         // Create new schema
@@ -120,4 +112,74 @@ class UpgradeMsiDbDefinitions(
     msiEM.flush()
   }
 
+  protected def checkUpgradeNeeded() : Boolean = {
+
+    val msiEM = dbCtx.getEntityManager
+
+    /** * Check Upgrade peaklist software properties ** */
+    val oldPklSofts = msiEM.createQuery("SELECT s FROM fr.proline.core.orm.msi.PeaklistSoftware s", classOf[PeaklistSoftware]).getResultList
+    val oldPklSoftByName = oldPklSofts.asScala.view.map { soft =>
+      val version = soft.getVersion
+
+      val fullSoftName = if (StringUtils.isEmpty(version)) soft.getName
+      else soft.getName + ' ' + soft.getVersion
+      fullSoftName -> soft
+    }.toMap
+
+    // Index parsing rules by corresponding peaklist software
+    for (nextSoft <- fr.proline.core.orm.uds.PeaklistSoftware.SoftwareRelease.values()) {
+      val oldPklSoftOpt = oldPklSoftByName.get(nextSoft.toString)
+      if (oldPklSoftOpt.isDefined && oldPklSoftOpt.get.getSerializedProperties != nextSoft.getProperties) {
+        logger.info(" Incorrect PeakList Software properties "+oldPklSoftOpt.get.getName )
+        return true
+      }
+    }
+
+    /** * Check Upgrade scorings ** */
+
+    // Load existing scorings
+    val oldScorings = msiEM.createQuery("SELECT s FROM fr.proline.core.orm.msi.Scoring s", classOf[Scoring]).getResultList
+
+    // Index scorings by their type
+    val oldScoringByType = oldScorings.asScala.view.map { scoring =>
+      scoring.getSearchEngine + ':' + scoring.getName -> scoring
+    }.toMap
+
+    // Iterate over the enumeration of Scoring Types
+    for (scoringType <- Scoring.Type.values()) {
+      val oldScoringOpt = oldScoringByType.get(scoringType.toString())
+
+      val scoring = if (oldScoringOpt.isDefined) {
+        if(oldScoringOpt.get.getDescription != scoringType.getDescription) {
+          logger.info(" Incorrect Scoring description "+oldScoringOpt.get.getName )
+          return true
+        }
+      } else {
+        logger.info(" Undefined Scoring  "+scoringType.toString() )
+        return true
+      }
+    }
+
+    /** * Check missing object tree schemas ** */
+
+    // Load existing schemas
+    val oldSchemas = msiEM.createQuery("SELECT s FROM fr.proline.core.orm.msi.ObjectTreeSchema s", classOf[ObjectTreeSchema]).getResultList
+
+    // Index schemas by their name
+    val oldSchemaByName = oldSchemas.asScala.view.map { schema =>
+      schema.getName -> schema
+    }.toMap
+
+    // Iterate over the enumeration of ObjectTree SchemaNames
+    for (schemaName <- ObjectTreeSchema.SchemaName.values()) {
+      val schemaNameAsStr = schemaName.toString()
+
+      if (!oldSchemaByName.contains(schemaNameAsStr)) {
+        logger.info(" Undefined schemaName  "+schemaNameAsStr )
+        return true
+      }
+    }
+
+    false
+  }
 }

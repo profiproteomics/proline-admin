@@ -16,49 +16,49 @@ import fr.proline.repository.DriverType
 class PwxModelView(pwxConfigFilePath: String) extends LazyLogging {
 
   /** Return PWX database connection parameters  */
-  def pwxConfigOpt(): Option[SimpleConfig] = {
-    try {
-      val pwxConfigFile = new PwxConfigFile(pwxConfigFilePath)
-      pwxConfigFile.simpleConfig()
-    } catch {
-      case ex: Exception =>
-        logger.error("Error while trying to retrieve PWX properties from configuartion file!", ex.getMessage())
-        None
-    }
-  }
-
-  /** Return Pwx mount points  */
-  def pwxConfigFileOpt(): Option[PwxConfigFile] = {
-    try {
-      Option(new PwxConfigFile(pwxConfigFilePath))
-    } catch {
-      case ex: Exception =>
-        logger.error("Error while trying to retrieve Proline web extension mount points", ex.getMessage())
-        None
-    }
-  }
-
-  /** Test database connection parameters from GUI fields */
-  def onTestDbConn(driverType: DriverType, user: String, password: String, host: String, port: Int) = {
-    DatabaseConnection.testDbConnection(
-      driverType,
-      user,
-      password,
-      host,
-      port,
-      showSuccessPopup = true,
-      showFailurePopup = true,
-      Option(Install.stage))
-  }
-
-  /** Save PWX configurations */
-  def onSavePwxConfig(simpleConfig: SimpleConfig, serverConfig: ServerConfig): Unit = {
-    try {
-      logger.debug("Update PWX configurations...")
-      pwxConfigFileOpt().get.write(simpleConfig, serverConfig)
-    } catch {
-      case ex: Exception => logger.error("Error while trying to update Proline web extension configurations", ex.getMessage)
-    }
-  }
+//  def pwxConfigOpt(): Option[SimpleConfig] = {
+//    try {
+//      val pwxConfigFile = new PwxConfigFile(pwxConfigFilePath)
+//      pwxConfigFile.simpleConfig()
+//    } catch {
+//      case ex: Exception =>
+//        logger.error("Error while trying to retrieve PWX properties from configuartion file!", ex.getMessage())
+//        None
+//    }
+//  }
+//
+//  /** Return Pwx mount points  */
+//  def pwxConfigFileOpt(): Option[PwxConfigFile] = {
+//    try {
+//      Option(new PwxConfigFile(pwxConfigFilePath))
+//    } catch {
+//      case ex: Exception =>
+//        logger.error("Error while trying to retrieve Proline web extension mount points", ex.getMessage())
+//        None
+//    }
+//  }
+//
+//  /** Test database connection parameters from GUI fields */
+//  def onTestDbConn(driverType: DriverType, user: String, password: String, host: String, port: Int) = {
+//    DatabaseConnection.testDbConnection(
+//      driverType,
+//      user,
+//      password,
+//      host,
+//      port,
+//      showSuccessPopup = true,
+//      showFailurePopup = true,
+//      Option(Install.stage))
+//  }
+//
+//  /** Save PWX configurations */
+//  def onSavePwxConfig(simpleConfig: SimpleConfig, serverConfig: ServerConfig): Unit = {
+//    try {
+//      logger.debug("Update PWX configurations...")
+//      pwxConfigFileOpt().get.write(simpleConfig, serverConfig)
+//    } catch {
+//      case ex: Exception => logger.error("Error while trying to update Proline web extension configurations", ex.getMessage)
+//    }
+//  }
 }
 

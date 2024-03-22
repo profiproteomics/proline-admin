@@ -45,11 +45,11 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
       new TableColumn[User, String] {
         text = "User group"
         cellValueFactory = { _.value.group }
-      },
+      }/*,
       new TableColumn[User, String]() {
         text = "State"
         cellValueFactory = { _.value.isActivated }
-      })
+      }*/)
   }
 
   //resize columns
@@ -76,33 +76,33 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
     }
   }
 
-  private val disableButton = new Button {
-    text = "Disable"
-    tooltip = "Disable the selected user."
-    graphic = FxUtils.newImageView(IconResource.DISABLE)
-    onAction =  _ => {
-      if (!model.selectedItems.isEmpty) {
-        val confirmed = GetConfirmation(s"Are you sure that you want to disable the user with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ",
-          "Confirm your action",
-          " Yes ",
-          "Cancel",
-          Monitor.stage)
-        if (confirmed) model.onDisable()
-      }
-    }
-  }
+//  private val disableButton = new Button {
+//    text = "Disable"
+//    tooltip = "Disable the selected user."
+//    graphic = FxUtils.newImageView(IconResource.DISABLE)
+//    onAction =  _ => {
+//      if (!model.selectedItems.isEmpty) {
+//        val confirmed = GetConfirmation(s"Are you sure that you want to disable the user with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ",
+//          "Confirm your action",
+//          " Yes ",
+//          "Cancel",
+//          Monitor.stage)
+//        if (confirmed) model.onDisable()
+//      }
+//    }
+//  }
 
-  private val activateButton = new Button {
-    text = "Activate"
-    tooltip = "Activate the selected user."
-    graphic = FxUtils.newImageView(IconResource.TICK)
-    onAction =  _ => {
-      if (!model.selectedItems.isEmpty) {
-        val confirmed = GetConfirmation(s"Are you sure that you want to activate the user with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
-        if (confirmed) model.onActivate()
-      }
-    }
-  }
+//  private val activateButton = new Button {
+//    text = "Activate"
+//    tooltip = "Activate the selected user."
+//    graphic = FxUtils.newImageView(IconResource.TICK)
+//    onAction =  _ => {
+//      if (!model.selectedItems.isEmpty) {
+//        val confirmed = GetConfirmation(s"Are you sure that you want to activate the user with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
+//        if (confirmed) model.onActivate()
+//      }
+//    }
+//  }
 
   private val changePwdButton = new Button {
     text = "Reset Password"
@@ -139,9 +139,9 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
   Seq(
     refreshButton,
     addUserButton,
-    activateButton,
+//    activateButton,
     changePwdButton,
-    disableButton,
+//    disableButton,
     addToUserGrpButton,
     addToAdminGrpButton).foreach { b =>
       b.prefHeight = 20
@@ -149,13 +149,13 @@ class UsersPanel(val model: UserViewModel) extends VBox with LazyLogging {
       b.styleClass += ("mainButtons")
     }
   val buttonsPanel = new HBox {
-    spacing = 20
-    alignment_=(Pos.BottomCenter)
+    spacing = 15
+    alignment_=(Pos.BottomLeft)
     children = Seq(
       refreshButton,
       addUserButton,
-      activateButton,
-      disableButton,
+//      activateButton,
+//      disableButton,
       addToUserGrpButton,
       addToAdminGrpButton,
       changePwdButton)

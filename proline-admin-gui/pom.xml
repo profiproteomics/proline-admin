@@ -19,6 +19,21 @@
 
 	<dependencies>
 
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>jdk</artifactId>
+			<version>17.0.3.1</version>
+			<type>zip</type>
+			<classifier>windows-x64</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>javafx-sdk</artifactId>
+			<version>17.0.10</version>
+			<type>zip</type>
+		</dependency>
+
 		<!-- Scala -->
 		<dependency>
 			<groupId>org.scala-lang</groupId>
@@ -268,7 +283,19 @@
 							<overWriteIfNewer>true</overWriteIfNewer>
 						</configuration>
 					</execution>
-
+					<execution>
+						<id>copy-zip</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/java</outputDirectory>
+							<includeTypes>zip</includeTypes>
+							<stripVersion>true</stripVersion>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 
@@ -282,6 +309,7 @@
 					<finalName>${project.name}-${project.version}</finalName>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>com.google.code.maven-replacer-plugin</groupId>
 				<artifactId>replacer</artifactId>

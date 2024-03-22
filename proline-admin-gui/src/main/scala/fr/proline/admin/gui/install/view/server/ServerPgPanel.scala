@@ -150,7 +150,7 @@ class ServerPgPanel(model: AdminModelView) extends VBox {
     contentNode = new VBox {
       vgrow = Priority.Always
       hgrow = Priority.Always
-      prefHeight <== (Install.stage.height - 150)
+      prefHeight <== (Install.stage.height - 350)
       spacing = V_SPACING
       children = Seq(
         hostLabel,
@@ -166,26 +166,27 @@ class ServerPgPanel(model: AdminModelView) extends VBox {
             }, hostWarningLabel)
           })
         },
-        ScalaFxUtils.newVSpacer(minH = 5),
+        ScalaFxUtils.newVSpacer(V_SPACING),
         portLabel,
         new HBox {
           hgrow = Priority.Always
           spacing = H_SPACING
           children = Seq(portField)
         },
-        ScalaFxUtils.newVSpacer(minH = 1),
+        ScalaFxUtils.newVSpacer(V_SPACING),
         userLabel,
         new HBox {
           hgrow = Priority.Always
           spacing = H_SPACING
           children = Seq(userField)
         },
-        ScalaFxUtils.newVSpacer(minH = 1),
+       ScalaFxUtils.newVSpacer(V_SPACING),
         passwordLabel,
         new HBox {
           spacing = H_SPACING
           children = List(dbPwdPane, showPwdBox)
-        }, ScalaFxUtils.newVSpacer(minH = 5),
+        },
+        ScalaFxUtils.newVSpacer(V_SPACING),
         new HBox {
           children = List(ScalaFxUtils.newHSpacer(minW = 100), testDbConnectionButton)
         })
@@ -210,7 +211,7 @@ class ServerPgPanel(model: AdminModelView) extends VBox {
       filePath = Install.adminConfPath,
       serverConfigFilePath = Option(Install.serverConfPath).map(doubleBackSlashes), //FIXME: windows-specific
       pwxConfigFilePath = Option(Install.pwxConfPath).map(doubleBackSlashes), //FIXME: windows-specific
-      pgsqlDataDir = Option(Install.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
+//      pgsqlDataDir = Option(Install.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
       seqRepoConfigFilePath = Option(Install.seqReposConfPath).map(doubleBackSlashes),
       driverType = Option(driverType),
       prolineDataDir = None, //FIXME: windows-specific

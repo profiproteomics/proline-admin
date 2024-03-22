@@ -1,31 +1,24 @@
 package fr.proline.admin.gui.install.view.server
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scalafx.Includes._
 import scalafx.stage.Stage
-import scalafx.geometry.{ Insets, Pos }
+import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control.Button
 import scalafx.scene.control.Label
 import scalafx.scene.control.TextField
-import scalafx.scene.layout.VBox
-import scalafx.scene.layout.HBox
+import scalafx.scene.layout.{HBox, Priority, VBox}
 import scalafx.collections.ObservableBuffer
-
 import fr.proline.admin.gui.Install
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.install.model.AdminModelView
 import fr.proline.admin.gui.process.config._
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.repository.DriverType
-
 import fr.profi.util.scala.ScalaUtils.doubleBackSlashes
 import fr.profi.util.scala.ScalaUtils.isEmpty
-import fr.profi.util.scalafx.BoldLabel
-import fr.profi.util.scalafx.FileBrowsing
+import fr.profi.util.scalafx.{BoldLabel, CustomScrollPane, FileBrowsing, ScalaFxUtils, TitledBorderPane}
 import fr.profi.util.scalafx.ScalaFxUtils._
-import fr.profi.util.scalafx.TitledBorderPane
-import fr.profi.util.scalafx.CustomScrollPane
 import fr.proline.admin.gui.wizard.process.config._
 
 import scala.collection.mutable.ArrayBuffer
@@ -36,6 +29,11 @@ import scala.collection.mutable.ArrayBuffer
  *
  */
 class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane with LazyLogging {
+
+
+  //VBox & HBox spacing
+  private val V_SPACING = 5
+  private val H_SPACING = 5
 
   /* Configuration files */
   private val serverConfigOpt = model.serverConfigFileOpt().map(_.read()).flatten
@@ -57,7 +55,7 @@ class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane wit
     graphic = FxUtils.newImageView(IconResource.PLUS)
     onAction = _ => { _addRawFilesMountPoint() }
   }
-  val rawFilesMpBox = new VBox { spacing = 10 }
+  val rawFilesMpBox = new VBox { spacing = V_SPACING }
 
   val mzdbFilesMountPoints = ArrayBuffer[MountPointPane]()
   val mzdbFilesMpLabel = new BoldLabel("mzDB files path: ", upperCase = false)
@@ -65,7 +63,7 @@ class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane wit
     graphic = FxUtils.newImageView(IconResource.PLUS)
     onAction = _ => { _addMzdbFilesMountPoint() }
   }
-  val mzdbFilesMpBox = new VBox { spacing = 10 }
+  val mzdbFilesMpBox = new VBox { spacing = V_SPACING }
 
   val resultFilesMountPoints = ArrayBuffer[MountPointPane]()
   val resultFilesMpLabel = new BoldLabel("Result files path: ", upperCase = false)
@@ -73,7 +71,7 @@ class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane wit
     graphic = FxUtils.newImageView(IconResource.PLUS)
     onAction = _ => { _addResultFilesMountPoint() }
   }
-  val resultFilesMpBox = new VBox { spacing = 10 }
+  val resultFilesMpBox = new VBox { spacing = V_SPACING }
 
   /*
    * ****** *
@@ -84,29 +82,32 @@ class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane wit
   Seq(
     rawFilesMpLabel, mzdbFilesMpLabel, resultFilesMpLabel).foreach(_.minHeight = 25)
 
-  //VBox & HBox spacing
-  private val V_SPACING = 10
-  private val H_SPACING = 5
   /* Mount points */
-  val mountPointsSettings = new TitledBorderPane(
+  val mountPointsSettingsPane = new TitledBorderPane(
     title = "File Locations",
     titleTooltip = "Mount points as defined in Proline server configuration",
     contentNode = new VBox {
-      prefHeight <== Install.stage.height - 300
-      prefWidth <== Install.stage.width - 95
-      spacing = 2 * V_SPACING
+      prefHeight <== Install.stage.height - 350
+      prefWidth <== Install.stage.width - 80
+      hgrow = Priority.Always
+      vgrow = Priority.Always
+      spacing = V_SPACING
+
       children = List(
         new HBox {
+          hgrow = Priority.Always
           spacing = H_SPACING
           children = List(rawFilesMpLabel, addRawFilesMpButton)
         },
         rawFilesMpBox,
-
+        ScalaFxUtils.newVSpacer(V_SPACING),
         new HBox {
+          hgrow = Priority.Always
           spacing = H_SPACING
           children = List(mzdbFilesMpLabel, addMzdbFilesMpButton)
         },
         mzdbFilesMpBox,
+        ScalaFxUtils.newVSpacer(V_SPACING),
         new HBox {
           spacing = H_SPACING
           children = List(resultFilesMpLabel, addResultFilesMpButton)
@@ -115,17 +116,17 @@ class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane wit
     })
 
   val mountPointsWithDisableNote = new VBox {
-    spacing = 15
-    children = Seq(disableMpNoteLabel, mountPointsSettings)
+    spacing = V_SPACING*2
+    children = Seq(disableMpNoteLabel, mountPointsSettingsPane)
   }
 
   /* Set panel content */
   setContentNode(
     new VBox {
-      alignmentInParent = Pos.Center
-      prefWidth <== Install.stage.width - 85
-      prefHeight <== Install.stage.height - 45
-      padding = Insets(5, 0, 5, 5)
+      alignmentInParent = Pos.TopLeft
+//      prefWidth <== Install.stage.width - 85
+//      prefHeight <== Install.stage.height - 45
+//      padding = Insets(5, 0, 5, 5)
       children = List(mountPointsWithDisableNote)
     })
 
@@ -141,14 +142,14 @@ class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane wit
 
     /* Disable mount points if server config is undefined */
     disableMpNoteLabel.visible = true
-    mountPointsSettings.disable = true
+    mountPointsSettingsPane.disable = true
 
     //Don't screw up layout
     disableMpNoteLabel.minHeight = 34
     disableMpNoteLabel.maxHeight = 34
-
+    this.padding = Insets(10, 5, 5, 0)
   } else {
-
+    this.padding = Insets(20, 5, 5, 0)
     //Don't screw up layout
     disableMpNoteLabel.minHeight = 0
     disableMpNoteLabel.maxHeight = 0
@@ -186,7 +187,7 @@ class ServerMountPointsPanel(model: AdminModelView) extends CustomScrollPane wit
   }
 
   /** Return entred Proline mount points as ServerConfig */
-  def toServerConfig() = ServerConfig(
+  def toServerConfig() = ServerMountPointsConfig(
     rawFilesMountPoints = _getMountPointsMap(rawFilesMountPoints),
     mzdbFilesMountPoints = _getMountPointsMap(mzdbFilesMountPoints),
     resultFilesMountPoints = _getMountPointsMap(resultFilesMountPoints))
