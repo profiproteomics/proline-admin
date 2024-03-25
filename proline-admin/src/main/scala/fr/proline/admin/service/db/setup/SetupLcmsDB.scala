@@ -31,7 +31,7 @@ class SetupLcmsDB(
     try {
       
       lcMsSqlContext.tryInTransaction {
-        DoJDBCWork.withEzDBC(lcMsSqlContext, { ezDBC =>
+        DoJDBCWork.withEzDBC(lcMsSqlContext){ ezDBC =>
   
           val lcmsFtScoring = new FeatureScoring(
             id = 1,
@@ -78,7 +78,7 @@ class SetupLcmsDB(
             )
           }
   
-        })
+        } // Enf DoJDBCWork
       }
       
     } finally {

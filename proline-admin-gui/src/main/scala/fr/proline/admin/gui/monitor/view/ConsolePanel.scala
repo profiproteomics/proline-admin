@@ -1,5 +1,7 @@
 package fr.proline.admin.gui.monitor.view
 
+import fr.proline.admin.gui.Monitor
+
 import java.io.OutputStream
 import java.io.PrintStream
 import scalafx.application.Platform
@@ -17,20 +19,21 @@ object ConsolePanel {
    * ********** *
    */
   /** Webview : console displayer */
-  val consoleDisp = new WebView {
+  private val consoleDisp = new WebView {
     //    margin = Insets(10)
     hgrow = Priority.Always
     vgrow = Priority.Always
+    prefHeight <== (Monitor.stage.height /2)-100
     //TODO: wrap text, forbid horizontal scrollbar
     //val scrolls = consoleDisp.lookupAll(".scroll-bar")
   }
   /** Provide the webview a grey border */
-  val consoleArea = new StackPane {
+  private val consoleArea = new StackPane {
     children = Seq(consoleDisp)
-    margin = Insets(10)
+    margin = Insets(5)
     style = "-fx-border-color: #C0C0C0; -fx-border-width: 1; -fx-border-radius:2;"
     hgrow = Priority.Always
-    vgrow = Priority.Always
+//    vgrow = Priority.Always
   }
   /**
    * ******** *
@@ -69,7 +72,7 @@ class Console(
   private val _htmlFooter = """</body></html>"""
   private val _consoleBuffer = new StringBuilder(_htmlHeader)
   /** Add formatted text to webView content */
-  private def _addTextToWebView(newLines: String, htmlWebView: WebView = this.consoleDisp) = synchronized {
+  private def _addTextToWebView(newLines: String): Unit = synchronized {
     _consoleBuffer ++= _formatText(newLines)
     Platform.runLater(consoleDisp.engine.loadContent(_consoleBuffer.result()))
   }
@@ -93,15 +96,15 @@ class Console(
   /**
    *  Override OutputStream write methods
    */
-  override def write(byte: Int) = {
+  override def write(byte: Int): Unit = {
     _addTextToWebView(byte.toChar.toString())
   }
-  override def write(byteArr: Array[Byte]) = {
+  override def write(byteArr: Array[Byte]): Unit = {
     val asString = new String(byteArr, "UTF-8")
     val corrString = asString.replaceAll("\n", "<br>") //.replaceAll("\r", "<br>")
     _addTextToWebView(corrString)
   }
-  override def write(byteArr: Array[Byte], off: Int, len: Int) = {
+  override def write(byteArr: Array[Byte], off: Int, len: Int): Unit = {
     val asString = new String(byteArr, off, len)
     val corrString = asString.replaceAll("\n", "<br>") //.replaceAll("\r", "<br>")
     _addTextToWebView(corrString)

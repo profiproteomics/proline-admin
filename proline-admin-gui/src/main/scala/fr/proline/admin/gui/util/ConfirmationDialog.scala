@@ -41,7 +41,7 @@ class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog ex
       title = dTitle
       initOwner(dInitOwner)
       //      initStyle(StageStyle.UTILITY)
-      initModality(Modality.WINDOW_MODAL)
+      initModality(Modality.WindowModal)
       centerOnScreen()
       //      this.x = Util.getStartX(mainStage = confirmDialog)
       //      this.y = Util.getStartY(mainStage = confirmDialog)
@@ -60,7 +60,7 @@ class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog ex
         val yesButton = new Button(_yesButtonText) {
           //styleClass += ("minorButtons")
           onKeyPressed = (ke: KeyEvent) => { ScalaFxUtils.fireIfEnterPressed(this, ke) }
-          onAction = handle {
+          onAction =  _ => {
             isActionConfirmed = true
             confirmDialog.close()
           }
@@ -69,7 +69,7 @@ class ConfirmationDialog( //TODO: finish ChoiceDialog then ConfirmationDialog ex
 
         val cancelButton = new Button(_cancelButtonText) { //No
           //styleClass += ("minorButtons")
-          onAction = handle { confirmDialog.close() } //isActionConfirmed = false
+          onAction =  _ => { confirmDialog.close() } //isActionConfirmed = false
           graphic = FxUtils.newImageView(IconResource.CANCEL)
         }
 

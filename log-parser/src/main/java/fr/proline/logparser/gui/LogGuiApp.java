@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -65,7 +66,7 @@ public class LogGuiApp extends JFrame {
         m_dateFormat = DATE_FORMAT.SHORT;
         m_path = initParameters();//load path
         File defaultFile = new File(m_path);
-        m_fileList = new ArrayList();
+        m_fileList = new ArrayList<>();
         m_fileChooser.setSelectedFile(defaultFile);
         m_fileList.add(defaultFile);
 

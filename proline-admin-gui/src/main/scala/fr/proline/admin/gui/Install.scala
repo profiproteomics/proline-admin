@@ -3,19 +3,16 @@
 package fr.proline.admin.gui
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scalafx.stage.Stage
 import scalafx.scene.Scene
 import javafx.application.Application
-import scalafx.geometry.{ Insets, Pos }
-import scalafx.scene.layout.{ HBox, VBox, Priority }
-
+import scalafx.geometry.{Insets, Pos}
+import scalafx.scene.layout.{BorderPane, HBox, Priority, VBox}
 import fr.proline.admin.gui.install.view.HomePanel
 import fr.proline.admin.gui.install.model.HomePanelViewModel
 import fr.proline.admin.gui.process.UdsRepository
 import fr.proline.admin.gui.util.FxUtils
 import fr.proline.admin.gui.task.TaskRunner
-
 import fr.profi.util.StringUtils
 import java.io.File
 
@@ -37,7 +34,7 @@ object Install extends LazyLogging {
   var seqReposParsigRulesPath: String = _
   var seqReposJmsPath: String = _
   var pwxConfPath: String = _
-  var pgDataDirPath: String = _
+//  var pgDataDirPath: String = _
   /* Task runner */
   var taskRunner: TaskRunner = _
 
@@ -45,9 +42,9 @@ object Install extends LazyLogging {
   lazy val root = new VBox {
     id = "root"
     children = new VBox {
-      alignment = Pos.CENTER
+      alignment = Pos.TopCenter
       vgrow = Priority.Always
-      padding = Insets(10)
+      padding = Insets(5)
       children = Seq(mainPanel)
     }
   }
@@ -88,8 +85,12 @@ class Install extends Application {
       width = 1040
       minWidth = 700
       height = 750
-      minHeight = 700
-      scene = new Scene(Install.root)
+      minHeight = 300
+      scene = new Scene(){
+        val border = new BorderPane
+        border.top = Install.root
+        root = border
+      }
       title = s"${admin.getModuleName} ${admin.getVersion.split("_").apply(0)}"
     }
     // Set icon and style
@@ -102,8 +103,8 @@ class Install extends Application {
 
   override def stop() {
     // Close UDS db context
-    if (UdsRepository.getUdsDbContext() != null) UdsRepository.getUdsDbContext().close()
-    if (UdsRepository.getDataStoreConnFactory() != null) UdsRepository.getDataStoreConnFactory().closeAll()
+    UdsRepository.closeAll()
     super.stop()
+    System.exit(0)
   }
 }

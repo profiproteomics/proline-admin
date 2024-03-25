@@ -94,35 +94,37 @@ class ServerJmsPanel(model: JmsModelView) extends VBox {
   Seq(hostField, portField, queueNameField).foreach {
     f => { f.hgrow = Priority.Always; f.vgrow = Priority.Always }
   }
-
+  private val V_SPACING = 5
+  private val H_SPACING = 5
   val jmsServerPane = new TitledBorderPane(
     title = "JMS Server",
     contentNode = new VBox {
-      prefHeight <== (Install.stage.height)
+      prefHeight <== (Install.stage.height -350)
       hgrow = Priority.Always
-      spacing = 3
+      vgrow = Priority.Always
+      spacing = V_SPACING
       children = Seq(
-        hostLabel, new HBox {
-          vgrow = Priority.Always
+        hostLabel,
+        new HBox {
           hgrow = Priority.Always
-          spacing = 5
+          spacing = H_SPACING
           children = Seq(hostField)
         },
-        ScalaFxUtils.newVSpacer(minH = 5), portLabel,
+        ScalaFxUtils.newVSpacer(V_SPACING),
+        portLabel,
         new HBox {
-          vgrow = Priority.Always
           hgrow = Priority.Always
-          spacing = 5
+          spacing = H_SPACING
           children = Seq(portField)
         },
-        ScalaFxUtils.newVSpacer(minH = 5), queueNameLabel,
+        ScalaFxUtils.newVSpacer(V_SPACING),
+        queueNameLabel,
         new HBox {
-          vgrow = Priority.Always
           hgrow = Priority.Always
-          spacing = 5
+          spacing = H_SPACING
           children = Seq(queueNameField)
         },
-        ScalaFxUtils.newVSpacer(minH = 5))
+        ScalaFxUtils.newVSpacer(V_SPACING))
     })
 
   // Radio Button panel
@@ -142,9 +144,9 @@ class ServerJmsPanel(model: JmsModelView) extends VBox {
   spacing = 10
   padding = Insets(15, 5, 5, 5)
   children = List(
-    ScalaFxUtils.newVSpacer(minH = 5),
+    ScalaFxUtils.newVSpacer(V_SPACING),
     rdButtonPane,
-    ScalaFxUtils.newVSpacer(minH = 5),
+    ScalaFxUtils.newVSpacer(V_SPACING),
     jmsServerPane)
 
   /** Return jms-node config  */

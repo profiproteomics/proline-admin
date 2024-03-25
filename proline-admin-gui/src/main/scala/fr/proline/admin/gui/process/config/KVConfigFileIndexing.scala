@@ -5,7 +5,6 @@ import java.io.File
 import scala.collection.mutable.HashMap
 import scala.io.Source
 
-import fr.proline.admin.gui.process.config.postgres._
 import fr.profi.util.StringUtils.LINE_SEPARATOR
 
 /**

@@ -70,7 +70,7 @@ class TaskRunner(
       // Task succeeded
       override def succeeded(): Unit = {
         showProgress(false)
-        mainView.getScene().setCursor(Cursor.DEFAULT)
+        mainView.getScene().setCursor(Cursor.Default)
 
         if (showPopup)
           this.get match {
@@ -107,7 +107,7 @@ class TaskRunner(
                 true)
             }
             // Check for updates task : database name => list of scripts to apply: state
-            case (checkDbs, scriptsToApply) if (checkDbs.isInstanceOf[CheckForUpdates]) => {
+            case (checkDbs, scriptsToApply,dbObjectNeedUpgrade) if (checkDbs.isInstanceOf[CheckForUpdates]) => {
               var title = new Label {
                 text = caption + " - Finished successfully."
                 style = TextStyle.GREEN_ITALIC
@@ -117,7 +117,7 @@ class TaskRunner(
               statusLabel.setStyle(TextStyle.GREEN_ITALIC)
 
               if (!scriptsToApply.asInstanceOf[Map[String, Map[String, String]]].isEmpty) {
-                var str = new StringBuilder()
+                val str = new StringBuilder()
                 str.append("Some updates are available:\n")
                 scriptsToApply.asInstanceOf[Map[String, Map[String, String]]].foreach {
                   case (k, v) => {
@@ -134,6 +134,16 @@ class TaskRunner(
                 statusLabel.setStyle(TextStyle.ORANGE_ITALIC)
                 statusLabel.text = caption + " - Finished . Some updates are available."
 
+              } else if(dbObjectNeedUpgrade.asInstanceOf[Boolean]) {
+                val message = "Some Proline Datastore data need update."
+                title = new Label {
+                  text = caption + " - Finished . Datastore data need update."
+                  graphic = ScalaFxUtils.newImageView(IconResource.WARNING)
+                  style = TextStyle.ORANGE_ITALIC
+                }
+                scriptsText = message
+                statusLabel.setStyle(TextStyle.ORANGE_ITALIC)
+                statusLabel.text = caption + " - Finished . Some updates are available."
               }
 
               val textArea = new TextArea {
@@ -165,7 +175,7 @@ class TaskRunner(
       // Task is running
       override def running(): Unit = {
         showProgress(true)
-        mainView.getScene().setCursor(Cursor.WAIT)
+        mainView.getScene().setCursor(Cursor.Wait)
         statusLabel.setStyle(TextStyle.BLUE_ITALIC)
         statusLabel.text = caption + " - In progress, please wait... "
         //TODO callback
@@ -175,7 +185,7 @@ class TaskRunner(
       override def failed(): Unit = {
 
         showProgress(false)
-        mainView.getScene().setCursor(Cursor.DEFAULT)
+        mainView.getScene().setCursor(Cursor.Default)
         statusLabel.setStyle(TextStyle.RED_ITALIC)
         statusLabel.text = caption + " - Failed."
         val t = Option(getException)
@@ -198,7 +208,7 @@ class TaskRunner(
       // Task cancelled
       override def cancelled(): Unit = {
         showProgress(false)
-        mainView.getScene().setCursor(Cursor.DEFAULT)
+        mainView.getScene().setCursor(Cursor.Default)
         statusLabel.setStyle(TextStyle.RED_ITALIC)
         statusLabel.text = caption + " - Cancelled."
         // Show dialog 

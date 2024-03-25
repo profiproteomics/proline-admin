@@ -31,7 +31,7 @@ class InstallTest extends LazyLogging {
   @Test
   def writeAdminConfFile() {
     val adminConfig = new AdminConfigFile(confFile.getAbsolutePath)
-    val adminConfigModel = AdminConfig(confFile.getAbsolutePath, Some(""), Some(""), Some(""), Some(""), Some(fr.proline.repository.DriverType.POSTGRESQL), Some(dataDir.getAbsolutePath), Some("proline"), Some("proline"), Some("localhost"), Some(5432))
+    val adminConfigModel = AdminConfig(confFile.getAbsolutePath,  Some(""), Some(""), Some(""), Some(fr.proline.repository.DriverType.POSTGRESQL), Some(dataDir.getAbsolutePath), Some("proline"), Some("proline"), Some("localhost"), Some(5432))
 
   }
 }

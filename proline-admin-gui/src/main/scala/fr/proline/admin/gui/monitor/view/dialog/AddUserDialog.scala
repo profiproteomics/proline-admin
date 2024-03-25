@@ -101,7 +101,7 @@ object AddUserDialog extends LazyLogging {
       secondPwTextField,
       loginTextField).foreach { node =>
         node.prefWidth = 200
-        node.hgrow_=(Priority.ALWAYS)
+        node.hgrow_=(Priority.Always)
       }
 
     Seq(

@@ -9,7 +9,7 @@ import fr.profi.util.scala.ScalaUtils
 import fr.profi.util.scala.TypesafeConfigWrapper._
 import fr.proline.repository.DriverType
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable.StringBuilder
 import scala.io.Source
 
@@ -29,7 +29,6 @@ case class AdminConfig(
   filePath: String,
   var serverConfigFilePath: Option[String] = None,
   var pwxConfigFilePath: Option[String] = None,
-  var pgsqlDataDir: Option[String] = None,
   var seqRepoConfigFilePath: Option[String] = None,
   var driverType: Option[DriverType] = None,
   var prolineDataDir: Option[String] = None,
@@ -42,7 +41,7 @@ case class AdminConfig(
 class AdminConfigFile(val path: String) extends LazyLogging {
   //TODO: object?
 
-  require(path != null && path.isEmpty() == false, "Configuration file path must not be null nor empty.")
+  require(path != null && path.nonEmpty, "Configuration file path must not be null nor empty.")
   private val adminConfigFile = new File(path)
 
   /** Get Config object from file **/
@@ -57,7 +56,7 @@ class AdminConfigFile(val path: String) extends LazyLogging {
           filePath = path,
           serverConfigFilePath = config.getStringOpt("server-config-file"),
           pwxConfigFilePath = config.getStringOpt("pwx-config-file"),
-          pgsqlDataDir = config.getStringOpt("postgresql-data-dir"),
+          //pgsqlDataDir = config.getStringOpt("postgresql-data-dir"),
           seqRepoConfigFilePath = config.getStringOpt("seq-repo-config-file"),
           driverType = config.getStringOpt("proline-config.driver-type").map(dt => DriverType.valueOf(dt.toUpperCase())),
           prolineDataDir = config.getStringOpt("proline-config.data-directory"),
@@ -80,16 +79,11 @@ class AdminConfigFile(val path: String) extends LazyLogging {
   }
 
   /** Look for pwx-config-file only **/
-  def getPwxConfigPath(): Option[String] = {
-    //Reload config in case there are some (hand-made) changes
-    getTypesafeConfig().getStringOpt("pwx-config-file")
-  }
+//  def getPwxConfigPath(): Option[String] = {
+//    //Reload config in case there are some (hand-made) changes
+//    getTypesafeConfig().getStringOpt("pwx-config-file")
+//  }
 
-  /** Look for postgresql-data-dir only **/
-  def getPostgreSqlDataDir(): Option[String] = {
-    //Reload config in case there are some (hand-made) changes
-    getTypesafeConfig().getStringOpt("postgresql-data-dir")
-  }
 
   /** Look for seq-repo-config-file only **/
   def getSeqRepoConfigPath(): Option[String] = {
@@ -106,20 +100,13 @@ class AdminConfigFile(val path: String) extends LazyLogging {
   }
 
   /** Set pwx-config-file only **/
-  def setPwxConfigPath(newPath: String) = {
-    /* Don't change if it's the same as the old one */
-    if (Option(newPath) != getPwxConfigPath()) {
-      _updateKey(configKey = "pwx-config-file", configValue = newPath)
-    }
-  }
+//  def setPwxConfigPath(newPath: String) = {
+//    /* Don't change if it's the same as the old one */
+//    if (Option(newPath) != getPwxConfigPath()) {
+//      _updateKey(configKey = "pwx-config-file", configValue = newPath)
+//    }
+//  }
 
-  /** Set postgresql-data-dir only **/
-  def setPostgreSqlDataDir(newPath: String) = {
-    /* Don't change if it's the same as the old one */
-    if (Option(newPath) != getPostgreSqlDataDir()) {
-      _updateKey(configKey = "postgresql-data-dir", configValue = newPath)
-    }
-  }
 
   /** Set seq-repo-config-file only **/
   def setSeqRepoConfigPath(newPath: String) = {
@@ -157,12 +144,15 @@ class AdminConfigFile(val path: String) extends LazyLogging {
   def write(adminConfig: AdminConfig): Unit = synchronized {
 
     /* Fill template */
+//    postgresql-data-dir = "${adminConfig.pgsqlDataDir.getOrElse("")}"
     //TODO: write ConfigObject
+    val serverPath = ScalaUtils.doubleBackSlashes(adminConfig.serverConfigFilePath.getOrElse(""))
+    val pwxServerPath = ScalaUtils.doubleBackSlashes(adminConfig.pwxConfigFilePath.getOrElse(""))
+    val seqRepoServerPath = ScalaUtils.doubleBackSlashes(adminConfig.seqRepoConfigFilePath.getOrElse(""))
     val adminConfigTemplate = s"""
-server-config-file = "${adminConfig.serverConfigFilePath.getOrElse("")}"
-pwx-config-file = "${adminConfig.pwxConfigFilePath.getOrElse("")}"
-postgresql-data-dir = "${adminConfig.pgsqlDataDir.getOrElse("")}"
-seq-repo-config-file = "${adminConfig.seqRepoConfigFilePath.getOrElse("")}"
+server-config-file = "${serverPath}"
+pwx-config-file = "${pwxServerPath}"
+seq-repo-config-file = "${seqRepoServerPath}"
 
 proline-config {
   driver-type = "${adminConfig.driverType.map(_.getJdbcURLProtocol()).getOrElse("")}" // valid values are: h2, postgresql or sqlite
@@ -242,7 +232,7 @@ case class SimpleConfig(
   var dbHost: Option[String] = None,
   var dbPort: Option[Int] = None)
 /** Model what is in the Proline server configuration file(mount points), corresponding to GUI fields **/
-case class ServerConfig(
+case class ServerMountPointsConfig(
     //serverConfFilePath: String,
     rawFilesMountPoints: Map[String, String] = Map(),
     mzdbFilesMountPoints: Map[String, String] = Map(),
@@ -301,7 +291,7 @@ case class ServerConfig(
     mpStrBuilder ++= s"  }$DOUBLE_LINE_SEPARATOR  mzdb_files = {$LINE_SEPARATOR"
     _addMountPointsToStringBuilder(mzdbFilesMountPoints)
 
-    mpStrBuilder ++= """    #mzdb_root = "\\\\haldir\\d$\\raw_files" 
+    mpStrBuilder ++= """    #mzdb_root = "\\\\haldir\\d$\\raw_files"
     }"""
 
     //return mount points as a string
@@ -342,14 +332,14 @@ class ServerConfigFile(val path: String) extends LazyLogging {
   }
 
   /** Read config file **/
-  def read(): Option[ServerConfig] = {
+  def read(): Option[ServerMountPointsConfig] = {
     try {
       /* Create config */
       val config = ConfigFactory.parseFile(serverConfigFile)
 
       /* Retrieve mount points */
       def getMountPoints(key: String): Map[String, String] = {
-        config.getObject(s"mount_points.$key").map { case (k, v) => k -> v.unwrapped().toString() }.toMap
+        config.getObject(s"mount_points.$key").asScala.map { case (k, v) => k -> v.unwrapped().toString() }.toMap
       }
 
       val rawFilesMp = getMountPoints("raw_files")
@@ -358,7 +348,7 @@ class ServerConfigFile(val path: String) extends LazyLogging {
 
       /* Return ServerConfig */
       Some(
-        ServerConfig(
+        ServerMountPointsConfig(
           rawFilesMountPoints = rawFilesMp,
           mzdbFilesMountPoints = mzdbFilesMp,
           resultFilesMountPoints = resultFilesMp))
@@ -372,7 +362,7 @@ class ServerConfigFile(val path: String) extends LazyLogging {
   }
 
   /** Overwrite Proline server configuration file **/
-  def write(serverConfig: ServerConfig, adminConfig: AdminConfig): Unit = {
+  def write(serverConfig: ServerMountPointsConfig, adminConfig: AdminConfig): Unit = {
     //TODO: write ConfigObject, use from config
 
     /* Fill template */
@@ -455,143 +445,143 @@ authentication {
  */
 
 /** Parse and write PWX configuration file */
-class PwxConfigFile(val path: String) extends LazyLogging {
-
-  require(path != null && path.isEmpty() == false, "Configuration file path must not be null nor empty.")
-  val pwxConfigFile = new File(path)
-
-  /** Return config object from file **/
-  def getTypesafeConfig(): Config = ConfigFactory.parseFile(pwxConfigFile)
-
-  /** Read and Return database connection parameters */
-  def simpleConfig(): Option[SimpleConfig] = {
-    try {
-      /* Create config */
-      val config = getTypesafeConfig()
-      Some(
-        SimpleConfig(
-          driverType = config.getStringOpt("proline-config.driver-type").map(dt => DriverType.valueOf(dt.toUpperCase())),
-          prolineDataDir = config.getStringOpt("proline-config.data-directory"),
-          dbUserName = config.getStringOpt("auth-config.user"),
-          dbPassword = config.getStringOpt("auth-config.password"),
-          dbHost = config.getStringOpt("host-config.host"),
-          dbPort = config.getIntOpt("host-config.port")))
-    } catch {
-      case t: Throwable => {
-        logger.error("Error occured while trying to read Proline server configuration file", t.getMessage())
-        None
-      }
-    }
-  }
-
-  /** Read PWX configuration file and return mount points **/
-  def read(): Option[ServerConfig] = {
-    try {
-      /* Create config */
-      val config = ConfigFactory.parseFile(pwxConfigFile)
-
-      /* Retrieve mount points */
-      def getMountPoints(key: String): Map[String, String] = {
-        config.getObject(s"mount_points.$key").map { case (k, v) => k -> v.unwrapped().toString() }.toMap
-      }
-
-      val rawFilesMp = getMountPoints("raw_files")
-      val mzdbFilesMp = getMountPoints("mzdb_files")
-      val resultFilesMp = getMountPoints("result_files")
-
-      /* Return ServerConfig */
-      Some(
-        ServerConfig(
-          rawFilesMountPoints = rawFilesMp,
-          mzdbFilesMountPoints = mzdbFilesMp,
-          resultFilesMountPoints = resultFilesMp))
-    } catch {
-      case t: Throwable => {
-        logger.error("Error occured while reading PWX configuration file", t.getMessage())
-        None
-      }
-    }
-  }
-
-  /** Overwrite PWX configuration file **/
-  def write(simpleConfig: SimpleConfig, serverConfig: ServerConfig): Unit = {
-    //TODO: write ConfigObject, use from config
-
-    /* Fill template */
-    //TODO: improve (write config)
-    val pwxConfigTemplate =
-      s"""# JMS server access
-# Mandatory
-jms-server = {
-  host = "localhost" 
-  port = 5445
-}
-
-# Proline database type
-# Mandatory
-proline-config {
-  driver-type = "${simpleConfig.driverType.map(_.getJdbcURLProtocol()).getOrElse("")}" # valid values are: h2, postgresql or sqlite
-  data-directory = "${simpleConfig.prolineDataDir.getOrElse("./data/proline")}"
-}
-
-# Proline database authentication
-# Mandatory
-auth-config {
-  user = "${simpleConfig.dbUserName.getOrElse("postgres")}"
-  password = "${simpleConfig.dbPassword.getOrElse("postgres")}"
-}
-
-
-# Proline database connection
-# For embedded Cortex mode only
-host-config {
-  host = "${simpleConfig.dbHost.getOrElse("localhost")}"
-  port = "${simpleConfig.dbPort.getOrElse("5432")}"
-}
-
-# h2 -specific configuration
-# For embedded Cortex mode only
-### TODO: embed in code
-h2-config {
-  script-directory = "/h2" 
-  connection-properties {
-    connectionMode = "FILE" 
-    driver = "org.h2.Driver" 
-  }
-}
-
-# PostgreSQL -specific configuration
-# For embedded Cortex mode only
-### TODO: embed in code
-postgresql-config {
-  script-directory = "/postgresql" 
-  connection-properties {
-    connectionMode = "HOST" 
-    driver = "org.postgresql.Driver" 
-  }
-}
-
-# SQLite -specific configuration
-# For embedded Cortex mode only
-### TODO: embed in code
-sqlite-config {
-  script-directory = "/sqlite" 
-  connection-properties {
-    connectionMode = "FILE" 
-    driver = "org.sqlite.JDBC" 
-  }
-}
-
-${serverConfig.toTypeSafePwxConfigString()}
-"""
-    /* Overwrite old config */
-    synchronized {
-      val out = new FileWriter(pwxConfigFile)
-      try { out.write(pwxConfigTemplate) }
-      finally { out.close }
-    }
-  }
-}
+//class PwxConfigFile(val path: String) extends LazyLogging {
+//
+//  require(path != null && path.isEmpty() == false, "Configuration file path must not be null nor empty.")
+//  val pwxConfigFile = new File(path)
+//
+//  /** Return config object from file **/
+//  def getTypesafeConfig(): Config = ConfigFactory.parseFile(pwxConfigFile)
+//
+//  /** Read and Return database connection parameters */
+//  def simpleConfig(): Option[SimpleConfig] = {
+//    try {
+//      /* Create config */
+//      val config = getTypesafeConfig()
+//      Some(
+//        SimpleConfig(
+//          driverType = config.getStringOpt("proline-config.driver-type").map(dt => DriverType.valueOf(dt.toUpperCase())),
+//          prolineDataDir = config.getStringOpt("proline-config.data-directory"),
+//          dbUserName = config.getStringOpt("auth-config.user"),
+//          dbPassword = config.getStringOpt("auth-config.password"),
+//          dbHost = config.getStringOpt("host-config.host"),
+//          dbPort = config.getIntOpt("host-config.port")))
+//    } catch {
+//      case t: Throwable => {
+//        logger.error("Error occured while trying to read Proline server configuration file", t.getMessage())
+//        None
+//      }
+//    }
+//  }
+//
+//  /** Read PWX configuration file and return mount points **/
+//  def read(): Option[ServerConfig] = {
+//    try {
+//      /* Create config */
+//      val config = ConfigFactory.parseFile(pwxConfigFile)
+//
+//      /* Retrieve mount points */
+//      def getMountPoints(key: String): Map[String, String] = {
+//        config.getObject(s"mount_points.$key").asScala.map { case (k, v) => k -> v.unwrapped().toString() }.toMap
+//      }
+//
+//      val rawFilesMp = getMountPoints("raw_files")
+//      val mzdbFilesMp = getMountPoints("mzdb_files")
+//      val resultFilesMp = getMountPoints("result_files")
+//
+//      /* Return ServerConfig */
+//      Some(
+//        ServerConfig(
+//          rawFilesMountPoints = rawFilesMp,
+//          mzdbFilesMountPoints = mzdbFilesMp,
+//          resultFilesMountPoints = resultFilesMp))
+//    } catch {
+//      case t: Throwable => {
+//        logger.error("Error occured while reading PWX configuration file", t.getMessage())
+//        None
+//      }
+//    }
+//  }
+//
+//  /** Overwrite PWX configuration file **/
+//  def write(simpleConfig: SimpleConfig, serverConfig: ServerConfig): Unit = {
+//    //TODO: write ConfigObject, use from config
+//
+//    /* Fill template */
+//    //TODO: improve (write config)
+//    val pwxConfigTemplate =
+//      s"""# JMS server access
+//# Mandatory
+//jms-server = {
+//  host = "localhost"
+//  port = 5445
+//}
+//
+//# Proline database type
+//# Mandatory
+//proline-config {
+//  driver-type = "${simpleConfig.driverType.map(_.getJdbcURLProtocol()).getOrElse("")}" # valid values are: h2, postgresql or sqlite
+//  data-directory = "${simpleConfig.prolineDataDir.getOrElse("./data/proline")}"
+//}
+//
+//# Proline database authentication
+//# Mandatory
+//auth-config {
+//  user = "${simpleConfig.dbUserName.getOrElse("postgres")}"
+//  password = "${simpleConfig.dbPassword.getOrElse("postgres")}"
+//}
+//
+//
+//# Proline database connection
+//# For embedded Cortex mode only
+//host-config {
+//  host = "${simpleConfig.dbHost.getOrElse("localhost")}"
+//  port = "${simpleConfig.dbPort.getOrElse("5432")}"
+//}
+//
+//# h2 -specific configuration
+//# For embedded Cortex mode only
+//### TODO: embed in code
+//h2-config {
+//  script-directory = "/h2"
+//  connection-properties {
+//    connectionMode = "FILE"
+//    driver = "org.h2.Driver"
+//  }
+//}
+//
+//# PostgreSQL -specific configuration
+//# For embedded Cortex mode only
+//### TODO: embed in code
+//postgresql-config {
+//  script-directory = "/postgresql"
+//  connection-properties {
+//    connectionMode = "HOST"
+//    driver = "org.postgresql.Driver"
+//  }
+//}
+//
+//# SQLite -specific configuration
+//# For embedded Cortex mode only
+//### TODO: embed in code
+//sqlite-config {
+//  script-directory = "/sqlite"
+//  connection-properties {
+//    connectionMode = "FILE"
+//    driver = "org.sqlite.JDBC"
+//  }
+//}
+//
+//${serverConfig.toTypeSafePwxConfigString()}
+//"""
+//    /* Overwrite old config */
+//    synchronized {
+//      val out = new FileWriter(pwxConfigFile)
+//      try { out.write(pwxConfigTemplate) }
+//      finally { out.close }
+//    }
+//  }
+//}
 
 /**
  * *******************************************

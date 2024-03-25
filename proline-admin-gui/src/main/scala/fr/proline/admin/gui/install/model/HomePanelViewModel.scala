@@ -1,19 +1,14 @@
 package fr.proline.admin.gui.install.model
 
 import com.typesafe.scalalogging.LazyLogging
-
-import fr.proline.repository.DriverType
-import scalafx.scene.control.TextField
-import scalafx.scene.control.Label
-import scalafx.scene.control.CheckBox
-import fr.proline.admin.gui.Install
-import fr.proline.admin.gui.process.config._
-import fr.proline.admin.gui.util.AdminGuide
-import fr.proline.admin.gui.util.ExitPopup
-import fr.proline.admin.gui.util.FxUtils
-import fr.proline.admin.gui.component.configuration.file.ProlineConfigFileChooser
-import com.typesafe.config.Config
 import fr.profi.util.StringUtils
+import fr.proline.admin.gui.Install
+import fr.proline.admin.gui.component.configuration.file.ProlineConfigFileChooser
+import fr.proline.admin.gui.process.config._
+import fr.proline.admin.gui.util.{AdminGuide, ExitPopup}
+import fr.proline.repository.DriverType
+import scalafx.scene.control.{CheckBox, Label, TextField}
+
 import java.io.File
 
 /**
@@ -60,37 +55,21 @@ class HomePanelViewModel(adminConfigFilePath: String) extends LazyLogging {
   }
 
   /** Browse PWX configuration file */
-  def browsePwxConfigFile(path: String, txtField: TextField) {
-    try {
-      ProlineConfigFileChooser.setForPwxConf(path)
-      val filePath = ProlineConfigFileChooser.showIn(Install.stage)
-      if (filePath != null) txtField.text = filePath
-    } catch {
-      case ex: Exception => logger.error("Error while trying to browse PWX configuration file", ex.getMessage)
-    }
-  }
+//  def browsePwxConfigFile(path: String, txtField: TextField) {
+//    try {
+//      ProlineConfigFileChooser.setForPwxConf(path)
+//      val filePath = ProlineConfigFileChooser.showIn(Install.stage)
+//      if (filePath != null) txtField.text = filePath
+//    } catch {
+//      case ex: Exception => logger.error("Error while trying to browse PWX configuration file", ex.getMessage)
+//    }
+//  }
 
-  /** Browse PostgreSQL data directory */
-  def browseDataDir(path: String, txtField: TextField) {
-    try {
-      val file = FxUtils.browseDirectory(
-        dcTitle = "Select PostgreSQL data directory",
-        dcInitialDir = path,
-        dcInitOwner = Install.stage)
-      val newPath = file.getPath()
-      if (file != null) {
-        txtField.text = newPath
-      }
-    } catch {
-      case ex: Exception => logger.error("Error while trying to browse PostgrSQL data directory", ex.getMessage)
-    }
-  }
 
   /** Reset and write default Proline Admin configuration values */
   def defaultAdminConfig(): Option[AdminConfig] = {
     val defaultAdminConfig = AdminConfig(
       adminConfigFilePath,
-      Some(""),
       Some(""),
       Some(""),
       Some(""),
@@ -121,27 +100,6 @@ class HomePanelViewModel(adminConfigFilePath: String) extends LazyLogging {
     isValidItem
   }
 
-  /** Check selected data directory item */
-  def isValidDataDirItem(chBox: CheckBox, txtField: TextField, label: Label): Boolean = {
-    var isValidItem = if (chBox.isSelected) {
-      if (isvalidDataDir(txtField.text())) { label.visible = false; true }
-      else { label.visible = true; false }
-    } else {
-      label.visible = false;
-      false
-    }
-    isValidItem
-  }
-
-  /** Determines whether postgreSQL data directory is valid directory */
-  def isvalidDataDir(path: String): Boolean = {
-    if (findFile(path, "^postgresql.conf$").isDefined && findFile(path, "^pg_hba.conf$").isDefined) true else false
-  }
-
-  /** Search file by name pattern in some path */
-  def findFile(path: String, name: String): Option[File] = {
-    if (!StringUtils.isEmpty(path) && new File(path).exists) { new File(path).listFiles().find(_.getName.matches(name)) } else None
-  }
 
   /** Open Proline-Admin GUI guide */
   def openAdminGuide() {

@@ -67,6 +67,14 @@ object UdsRepository extends LazyLogging {
     }
   }
 
+  def closeAll() {
+    if (_udsDbContext != null)
+      _udsDbContext.close()
+
+    if (_dsConnectorFactory != null)
+      _dsConnectorFactory.closeAll()
+  }
+
   /**
    * Get UDS database CONNECTOR
    */
@@ -118,6 +126,13 @@ object UdsRepository extends LazyLogging {
         udsConn = getUdsDbConnector().createUnmanagedConnection()
         stmt = udsConn.createStatement
         val jdbcRS = stmt.executeQuery(s"SELECT count(*) FROM public.user_account")
+//        if(jdbcRS.next()){
+//          val c = jdbcRS.getInt(1)
+//          if(c ==0)
+//            return false
+//          return true
+//        }
+//        return false
         if (jdbcRS.next() && jdbcRS.getInt(1) == 0) false else true
       } catch {
         case t: Throwable => logger.error("Error while trying to check uds_db exists", t.getMessage); false

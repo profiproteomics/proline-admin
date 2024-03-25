@@ -1,8 +1,7 @@
 package fr.profi.util.scala
 
 import java.io.File
-import scala.runtime.ScalaRunTime
-import java.nio.file.Files
+import scala.language.implicitConversions
 
 /**
  * ********************************* *

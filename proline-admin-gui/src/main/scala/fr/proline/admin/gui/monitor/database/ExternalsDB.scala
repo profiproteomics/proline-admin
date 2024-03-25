@@ -83,11 +83,11 @@ object ExternalsDB extends LazyLogging {
   }
 
   /** Check for updates */
-  def checkForUpdates(): Tuple2[Object, Map[String, Map[String, String]]] = {
+  def checkForUpdates(): Tuple3[Object, Map[String, Map[String, String]],Boolean] = {
     run {
       val checkDbs = new CheckForUpdates(dsConnectorFactory)
       checkDbs.doWork()
-      (checkDbs, checkDbs.undoneMigrationsByDb)
+      (checkDbs, checkDbs.undoneMigrationsByDb, checkDbs.dbObjectNeedUpgrade)
     }
   }
 

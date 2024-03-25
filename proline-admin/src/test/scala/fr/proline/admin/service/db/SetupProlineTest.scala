@@ -7,7 +7,7 @@ import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
 import org.junit.{Before, Test}
 
-import scala.collection.JavaConversions.mapAsJavaMap
+import scala.collection.JavaConverters._
 
 class SetupProlineTest extends LazyLogging {
 
@@ -36,7 +36,7 @@ class SetupProlineTest extends LazyLogging {
         "proline-config.driver-type" -> "h2",
         "proline-config.data-directory" -> dataTmpDir,
         "h2-config.connection-properties.connectionMode" -> "MEMORY"
-      )
+      ).asJava
     )
 
     // Load application config and replace some properties values with the previous ones

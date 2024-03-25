@@ -30,7 +30,7 @@ class CreateProjectDBs(
     // Prepare LCMSdb creation
     val lcmsDBConfig = this._prepareDBCreation(config.lcmsDBConfig)
 
-    DoJDBCWork.withEzDBC(udsDbContext, { udsEzDBC =>
+    DoJDBCWork.withEzDBC(udsDbContext) { udsEzDBC =>
       
       // Check that there are no external DBs attached to this project
       val nbExtDbs = udsEzDBC.selectInt(
@@ -48,7 +48,7 @@ class CreateProjectDBs(
       // Store LCMSdb connection settings
       this._insertExtDb(udsEzDBC, lcmsDBConfig.toUdsExternalDb)
 
-    })
+    } //End of DoJDBCWork
 
     val connectorFactory = DataStoreConnectorFactory.getInstance()
 

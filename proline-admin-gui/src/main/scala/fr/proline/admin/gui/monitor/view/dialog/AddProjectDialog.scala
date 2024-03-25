@@ -78,7 +78,12 @@ object AddProjectDialog extends LazyLogging {
 
     val ownerLabel = new Label("Project Owner")
     val ownerList = new ComboBox[UserAccount](UdsRepository.getAllUserAccounts()) {
-      converter = StringConverter.toStringConverter((user: UserAccount) => user.getLogin)
+      converter = StringConverter.toStringConverter((user: UserAccount) => {
+        if(user != null)
+          user.getLogin
+        else
+          ""
+      })
     }
 
     // Layout
@@ -106,7 +111,7 @@ object AddProjectDialog extends LazyLogging {
       projectDescTextAraea,
       ownerList).foreach { node =>
         node.prefWidth = 200
-        node.hgrow_=(Priority.ALWAYS)
+        node.hgrow_=(Priority.Always)
       }
 
     Seq(projNameLabel,

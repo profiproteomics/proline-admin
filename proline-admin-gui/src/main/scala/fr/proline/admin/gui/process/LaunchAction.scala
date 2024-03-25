@@ -96,7 +96,7 @@ object LaunchAction extends LazyLogging {
       Platform.runLater {
         actionButton.graphic = new ImageView()
         if (disableNode != null) disableNode.disable = false
-        Install.stage.scene().setCursor(Cursor.DEFAULT)
+        Install.stage.scene().setCursor(Cursor.Default)
       }
       //ButtonsPanel.computeButtonsAvailability()
       // if (reloadConfig) ProlineAdminConnection.loadProlineConf(verbose = false, Option(Main.stage)) //workaround => correctly compute buttons' availability for SQLite (FIXME)

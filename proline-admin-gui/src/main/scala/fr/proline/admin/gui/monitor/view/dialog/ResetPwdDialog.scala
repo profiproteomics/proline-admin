@@ -74,7 +74,7 @@ object ResetPwdDialog extends LazyLogging {
     Seq(firstPwTextField,
       secondPwTextField).foreach { component =>
         component.prefWidth = 200
-        component.hgrow_=(Priority.ALWAYS)
+        component.hgrow_=(Priority.Always)
       }
 
     Seq(firstPwLabel,

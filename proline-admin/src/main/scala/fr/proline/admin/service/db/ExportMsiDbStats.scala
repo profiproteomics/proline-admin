@@ -3,7 +3,7 @@ package fr.proline.admin.service.db.maintenance
 import java.io.File
 import java.io.PrintWriter
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -37,7 +37,7 @@ class ExportMsiDbStats( dsConnectorFactory: IDataStoreConnectorFactory, dirPath:
     
     if ((projectIds != null) && projectIds.isEmpty() == false) {
 
-      for (projectId <- projectIds) {
+      for (projectId <- projectIds.asScala) {
         logger.info(s"Connecting to MSIdb of Project #$projectId")
 
         /* Upgrade MSI Db */

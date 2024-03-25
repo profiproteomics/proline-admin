@@ -1,28 +1,26 @@
 package fr.proline.admin.service.user
 
-import com.typesafe.scalalogging.LazyLogging
-import fr.proline.core.orm.util.DataStoreConnectorFactory
-import fr.proline.context.DatabaseConnectionContext
-import fr.proline.admin.service.db.SetupProline
-import fr.proline.core.dal.context._
-import fr.proline.core.dal.DoJDBCWork
-import fr.proline.core.dal.DoJDBCReturningWork
-import fr.proline.core.orm.uds.{ Project, Dataset, UserAccount, ExternalDb }
-import fr.proline.core.orm.uds.repository.ExternalDbRepository
-
-import java.io.{ File, FileWriter, BufferedWriter }
-import java.nio.file.{ Files, Paths }
+import java.io.{BufferedWriter, File, FileWriter}
+import java.nio.file.{Files, Paths}
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import scala.sys.process.Process
-import scala.sys.process.ProcessLogger
-import scala.collection.mutable.{ ListBuffer, Map }
-import scala.util.{ Try, Success, Failure }
-import com.google.gson.{ JsonObject, JsonParser }
-import play.api.libs.json._
+import com.google.gson.{JsonObject, JsonParser}
+import com.typesafe.scalalogging.LazyLogging
+import fr.proline.admin.service.db.SetupProline
+import fr.proline.context.DatabaseConnectionContext
+import fr.proline.core.dal.DoJDBCWork
+import fr.proline.core.dal.context._
+import fr.proline.core.orm.uds.repository.ExternalDbRepository
+import fr.proline.core.orm.uds.{ExternalDb, Project}
+import fr.proline.core.orm.util.DataStoreConnectorFactory
 import org.apache.commons.io.FileUtils
 import org.zeroturnaround.zip.ZipUtil
+import play.api.libs.json._
+
+import scala.collection.mutable.{ListBuffer, Map}
+import scala.sys.process.{Process, ProcessLogger}
+import scala.util.{Failure, Success, Try}
 
 /**
  * Archive a Proline project. It makes pg_dump of msi_db and lcms_db databases.
@@ -30,7 +28,7 @@ import org.zeroturnaround.zip.ZipUtil
  *
  * @author aromdhani
  *
- * @param udsDbContext The connection context to UDSDb to archive project into.
+ * @param udsDbCtx The connection context to UDSDb to archive project into.
  * @param projectId The project id.
  * @param binDirPath The PostgreSQL bin directory path. It should contains pg_dump file.
  * @param archiveDirPath The archive directory path.
@@ -83,8 +81,11 @@ class ArchiveProject(
           val isTxOk = udsDbCtx.tryInTransaction {
             val udsEM = udsDbCtx.getEntityManager
             val properties = project.getSerializedProperties()
-            var parser = new JsonParser()
-            var array: JsonObject = Try { parser.parse(properties).getAsJsonObject() } getOrElse { parser.parse("{}").getAsJsonObject() }
+            val array: JsonObject = Try {
+              JsonParser.parseString(properties).getAsJsonObject()
+            } getOrElse {
+              JsonParser.parseString("{}").getAsJsonObject()
+            }
             val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
             array.addProperty("archive_date", sdf.format(new Date()).toString())
             array.addProperty("is_active", false)
@@ -127,7 +128,7 @@ class ArchiveProject(
 
   /**
    * Compresses the given directory and all its sub-directories into a ZIP file.
-   * @param the file to ZIP path
+   * @param zipFilePath the file to ZIP path
    *
    */
   def zipFile(zipFilePath: String): Try[Unit] = Try {
@@ -136,7 +137,7 @@ class ArchiveProject(
 
   /**
    * Write project properties in json file.
-   * @param the project properties file.
+   * @param file the project properties file.
    * @param data the JsObject to write
    * @return <code>true</code> if writing json data is finished withh success.
    */
@@ -295,8 +296,8 @@ class ArchiveProject(
    * @param user The user name.
    * @param msiDb The Msi database name.
    * @param lcmsDb The Lcms database name.
-   * @param archivepath the archive path where the project will archived.
-   * @param binPath The bin directory path.
+   * @param archiveDirPath the archive path where the project will archived.
+   * @param binDirPath The bin directory path.
    * @param projectId The project id.
    * @return <code>Success(True)</code> if the pg_dump finished with success.
    *
@@ -320,7 +321,7 @@ class ArchiveProject(
    * @param archivePath The path of archive path where the project will be archived.
    * @param binDirPath The bin directory of PostgreSQL should contains pg_dump.exe.
    * @param msiDb The name of msiDb.
-   * @param lcsmDb The name of lcmsDb.
+   * @param lcmsDb The name of lcmsDb.
    * @return <code>Success(String, File, File)</code> tuple of the eventual created files.
    */
   def createFiles(archivePath: String, binDirPath: String, msiDb: String, lcmsDb: String): Try[(String, File, File)] = Try {
@@ -335,7 +336,7 @@ class ArchiveProject(
 
   /**
    * logger debug
-   * @param err
+   * @param out
    */
   def stdout(out: String) {
     logger.debug(out)
