@@ -58,7 +58,12 @@ object ChangeProjOwnerDialog extends LazyLogging {
     // Dialog pane
     val ownerLabel = new Label("Project owner")
     val ownerList = new ComboBox[UserAccount](UdsRepository.getAllUserAccounts()) {
-      converter = StringConverter.toStringConverter((user: UserAccount) => user.getLogin)
+      converter = StringConverter.toStringConverter((user: UserAccount) => {
+        if (user != null)
+          user.getLogin
+        else
+          ""
+      })
     }
     val projOwnerPanel = new HBox {
       spacing = 30

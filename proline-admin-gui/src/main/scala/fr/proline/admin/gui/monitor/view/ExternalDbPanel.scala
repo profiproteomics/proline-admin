@@ -82,10 +82,10 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
   /* Upgrade all Proline databases button */
   val upgradeButton = new Button {
     text = "Upgrade all DBs"
-    tooltip = "Upgrade all Proline databases to the last version. This action can take a while."
+    tooltip = "Upgrade all Proline databases to the last version..."
     graphic = FxUtils.newImageView(IconResource.UPGRADE)
     onAction =  _ => {
-      val confirmed = GetConfirmation(s"Are you sure that you want to upgrade all Proline databases to the last version. This action can take a while.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
+      val confirmed = GetConfirmation(s"Are you sure that you want to upgrade all Proline databases to the last version. If there is a significant gap in version numbers, this action can take a while.", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
       if (confirmed) model.onUpgradeAllDbs()
     }
   }
