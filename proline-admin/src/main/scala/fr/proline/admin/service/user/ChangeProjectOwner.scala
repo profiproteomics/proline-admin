@@ -32,8 +32,12 @@ class ChangeProjectOwner(
       require(udsUser != null, s"The user with id= ${userId} does not exist!")
       val oldOwner = udsProject.getOwner()
       udsProject.setOwner(udsUser)
-      udsProject.removeMember(oldOwner)
+      val userMap = udsProject.removeMember(oldOwner)
+      if (userMap != null) {
+        udsEM.remove(userMap)
+      }
       udsEM.merge(udsProject)
+
     }
     if (isTxOk) {
       logger.info(s"The project with id= #${projectId} has been assigned to the owner with id= #${userId} successfully.")

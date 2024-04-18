@@ -96,62 +96,62 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   val infoMessage = new BoldLabel("(By default, same server as Proline Server Cortex)")
   private val V_SPACING = 10
   private val H_SPACING = 5
-  val jmsServerLabel = new HBox {
-    vgrow = Priority.Always
-    children = List(new Label {
-      text = "JMS Server"
-      font = Font.font("SanSerif", FontWeight.Bold, 12)
-    })
-  }
+//  val jmsServerLabel = new HBox {
+//    vgrow = Priority.Always
+//    children = List(new Label {
+//      text = "JMS Server"
+//      font = Font.font("SanSerif", FontWeight.Bold, 12)
+//    })
+//  }
+//
+//  val jmsHostLabel = new Label("Host: ")
+//  val jmsHostField = new TextField() {
+//    disable = true
+//    text = model.serverNodeConfigOpt.map(_.jmsServerHost.getOrElse("localhost")).getOrElse("localhost")
+//  }
+//
+//  val jmsPortLabel = new Label("Port: ")
+//  val jmsPortField = new TextField() {
+//    disable = true
+//    text = model.serverNodeConfigOpt.map(_.jmsServePort.getOrElse(5442).toString()).getOrElse(5442).toString()
+//  }
+//
+//  val jmsProlineQueueLabel = new Label("Proline Queue Name:")
+//  val jmsProlineQueueField = new TextField {
+//    disable = true
+//    text = model.serverNodeConfigOpt.map(_.requestQueueName.getOrElse("ProlineServiceRequestQueue")).getOrElse("ProlineServiceRequestQueue")
+//  }
+//
+//  val jmsTitledPane = new HBox {
+//    hgrow = Priority.Always
+//    children = new TitledBorderPane(
+//      title = "",
+//      titleTooltip = "JMS Server properties",
+//      contentNode = new VBox {
+//        prefWidth = WindowSize.prefWitdh
+//        spacing = V_SPACING * 2
+//        children = List(infoMessage, new HBox {
+//          spacing = H_SPACING * 3
+//          children = List(jmsHostLabel, jmsHostField)
+//        }, new HBox {
+//          spacing = H_SPACING * 3
+//          children = List(jmsPortLabel, jmsPortField)
+//        },
+//          new HBox {
+//            spacing = H_SPACING * 3
+//            children = List(jmsProlineQueueLabel, jmsProlineQueueField)
+//          })
+//      })
+//  }
 
-  val jmsHostLabel = new Label("Host: ")
-  val jmsHostField = new TextField() {
-    disable = true
-    text = model.serverNodeConfigOpt.map(_.jmsServerHost.getOrElse("localhost")).getOrElse("localhost")
-  }
-
-  val jmsPortLabel = new Label("Port: ")
-  val jmsPortField = new TextField() {
-    disable = true
-    text = model.serverNodeConfigOpt.map(_.jmsServePort.getOrElse(5442).toString()).getOrElse(5442).toString()
-  }
-
-  val jmsProlineQueueLabel = new Label("Proline Queue Name:")
-  val jmsProlineQueueField = new TextField {
-    disable = true
-    text = model.serverNodeConfigOpt.map(_.requestQueueName.getOrElse("ProlineServiceRequestQueue")).getOrElse("ProlineServiceRequestQueue")
-  }
-
-  val jmsTitledPane = new HBox {
-    hgrow = Priority.Always
-    children = new TitledBorderPane(
-      title = "",
-      titleTooltip = "JMS Server properties",
-      contentNode = new VBox {
-        prefWidth = WindowSize.prefWitdh
-        spacing = V_SPACING * 2
-        children = List(infoMessage, new HBox {
-          spacing = H_SPACING * 3
-          children = List(jmsHostLabel, jmsHostField)
-        }, new HBox {
-          spacing = H_SPACING * 3
-          children = List(jmsPortLabel, jmsPortField)
-        },
-          new HBox {
-            spacing = H_SPACING * 3
-            children = List(jmsProlineQueueLabel, jmsProlineQueueField)
-          })
-      })
-  }
-
-  // JMS server pane
-  val jmsServerPane = new HBox {
-    spacing = H_SPACING * 2
-    vgrow = Priority.Always
-    hgrow = Priority.Always
-    fillWidth = true
-    children = List(jmsServerLabel, jmsTitledPane)
-  }
+//  // JMS server pane
+//  val jmsServerPane = new HBox {
+//    spacing = H_SPACING * 2
+//    vgrow = Priority.Always
+//    hgrow = Priority.Always
+//    fillWidth = true
+//    children = List(jmsServerLabel, jmsTitledPane)
+//  }
 
   // postgreSQL server components
   val pgServerLabel = new HBox {
@@ -294,23 +294,24 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
     }
 
   Seq(pgServerLabel,
-    jmsServerLabel,
+//    jmsServerLabel,
     pgPortLabel,
     pgHostLabel,
     pgUserLabel,
     pgPasswordLabel,
-    jmsHostLabel,
-    jmsPortLabel,
-    jmsProlineQueueLabel).foreach(_.minWidth = 150)
+//    jmsHostLabel,
+//    jmsPortLabel,
+//    jmsProlineQueueLabel
+    ).foreach(_.minWidth = 150)
 
   Seq(
     pgPortField,
     pgUserField,
     pgPasswordField,
     pgHostField,
-    jmsHostField,
+    /*jmsHostField,
     jmsProlineQueueField,
-    jmsPortField).foreach {
+    jmsPortField*/).foreach {
       f => f.hgrow = Priority.Always
     }
   // Layout
@@ -332,7 +333,7 @@ class HomePanel(model: HomePanelViewModel) extends VBox with LazyLogging {
   val propertiesPane = new VBox {
     spacing = V_SPACING
     children = Seq(
-      jmsServerPane,
+//      jmsServerPane,
       ScalaFxUtils.newVSpacer(5),
       pgServerPane)
   }
