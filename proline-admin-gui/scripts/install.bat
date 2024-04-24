@@ -1,1 +1,1 @@
-.\java\jdk\bin\java -cp "lib/*;proline-admin-gui-${pom.version}.jar;config" -Dlogback.configurationFile=config/logback.xml fr.proline.admin.gui.Install %*
+.\java\jdk\bin\java  --module-path "./java/javafx-sdk/lib" --add-modules=javafx.swing,javafx.fxml,javafx.media,javafx.web --add-modules=javafx.controls --add-modules=javafx.swing -cp "lib/*;proline-admin-gui-${pom.version}.jar;config" -Dlogback.configurationFile=config/logback.xml fr.proline.admin.gui.Install %*
