@@ -88,6 +88,16 @@ object RunCommand extends App with LazyLogging {
     var filePath: String = ""
   }
 
+  /** dump lcms db  command */
+  @Parameters(commandNames = Array("dump_lcms_db"), commandDescription = "Dump LCMSdb content into an XML file", separators = "=")
+  private object DumpLcmsDbCommand extends JCommandReflection {
+    @Parameter(names = Array("--project_id", "-p"), description = "The id of the project corresponding to this MSIdb", required = true)
+    var projectId: Int = 0
+
+    @Parameter(names = Array("--file_path", "-f"), description = "The path of the XML file to be generated", required = true)
+    var filePath: String = ""
+  }
+
   /** dump uds db  command */
   @Parameters(commandNames = Array("dump_uds_db"), commandDescription = "Dump UDSdb content into an XML file", separators = "=")
   private object DumpUdsDbCommand extends JCommandReflection {
@@ -224,6 +234,7 @@ object RunCommand extends App with LazyLogging {
     jCmd.addCommand(ChangeUserStateCommand)
     jCmd.addCommand(DumpMsiDbCommand)
     jCmd.addCommand(DumpUdsDbCommand)
+    jCmd.addCommand(DumpLcmsDbCommand)
     //jCmd.addCommand(DeleteObsoleteDatabasesCommand)
     jCmd.addCommand(ExportDbUnitDTDsCommand)
     jCmd.addCommand(ExportMsiDbStatsCommand)
@@ -313,6 +324,10 @@ object RunCommand extends App with LazyLogging {
         case DumpUdsDbCommand.Parameters.firstName => {
           import fr.proline.admin.service.db.maintenance.DumpDatabase
           DumpDatabase(dsConnectorFactory.getUdsDbConnector, DumpUdsDbCommand.filePath)
+        }
+        case DumpLcmsDbCommand.Parameters.firstName => {
+          import fr.proline.admin.service.db.maintenance.DumpDatabase
+          DumpDatabase(dsConnectorFactory.getLcMsDbConnector(DumpLcmsDbCommand.projectId), DumpLcmsDbCommand.filePath)
         }
         case DeleteObsoleteDatabasesCommand.Parameters.firstName => {
           if (dsConnectorFactory.isInitialized) {
