@@ -209,12 +209,12 @@ class ServerPgPanel(model: AdminModelView) extends VBox {
   def toAdminConfig(): AdminConfig = {
     AdminConfig(
       filePath = Install.adminConfPath,
-      serverConfigFilePath = Option(Install.serverConfPath).map(doubleBackSlashes), //FIXME: windows-specific
-      pwxConfigFilePath = Option(Install.pwxConfPath).map(doubleBackSlashes), //FIXME: windows-specific
-//      pgsqlDataDir = Option(Install.pgDataDirPath).map(doubleBackSlashes), //FIXME: windows-specific
-      seqRepoConfigFilePath = Option(Install.seqReposConfPath).map(doubleBackSlashes),
+      serverConfigFilePath = Option(Install.serverConfPath),//.map(doubleBackSlashes), //FIXME: windows-specific
+      pwxConfigFilePath = Option(Install.pwxConfPath),//.map(doubleBackSlashes), //FIXME: windows-specific
+//      pgsqlDataDir = Option(Install.pgDataDirPath),//.map(doubleBackSlashes), //FIXME: windows-specific
+      seqRepoConfigFilePath = Option(Install.seqReposConfPath),//.map(doubleBackSlashes),
       driverType = Option(driverType),
-      prolineDataDir = None, //FIXME: windows-specific
+      prolineDataDir = this.dbConfig.prolineDataDir,//.map(doubleBackSlashes), //FIXME: windows-specific
       dbUserName = Option(this.user),
       dbPassword = Option(this.password),
       dbHost = Option(this.host),
