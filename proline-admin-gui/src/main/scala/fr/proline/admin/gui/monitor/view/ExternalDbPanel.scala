@@ -1,23 +1,17 @@
 package fr.proline.admin.gui.monitor.view
 
 import com.typesafe.scalalogging.LazyLogging
-
 import scalafx.Includes._
 import scalafx.geometry.Pos
-import scalafx.scene.control.{ TableColumn, TableView }
+import scalafx.scene.control.{Button, Label, TableColumn, TableView, TitledPane}
 import scalafx.scene.control.TableColumn._
-import scalafx.scene.control.TitledPane
-import scalafx.scene.control.Button
-import scalafx.scene.layout.{ VBox, HBox }
-
-import javafx.scene.{ control => jfxsc }
-
+import scalafx.scene.layout.{HBox, VBox}
+import javafx.scene.{control => jfxsc}
 import fr.proline.admin.gui.Monitor
 import fr.proline.admin.gui.IconResource
 import fr.proline.admin.gui.monitor.model.AdapterModel._
 import fr.proline.admin.gui.monitor.model.ExternalDbViewModel
-import fr.proline.admin.gui.util.GetConfirmation
-import fr.proline.admin.gui.util.FxUtils
+import fr.proline.admin.gui.util.{FxUtils, GetConfirmation, ShowPopupWindow}
 import fr.profi.util.scala.ScalaUtils._
 
 /**
@@ -75,7 +69,14 @@ class ExternalDbPanel(val model: ExternalDbViewModel) extends VBox with LazyLogg
     tooltip = "Change external database configuration parameters."
     graphic = FxUtils.newImageView(IconResource.EDITSMALL)
     onAction =  _ => {
-      model.onChange()
+      if (!model.selectedItems.isEmpty) {
+        model.onChange()
+      } else {
+        ShowPopupWindow(
+          node = new Label( "Select a External DB first"),
+          wTitle = "DB Parameters",
+          wParent = Some(Monitor.stage))
+      }
     }
   }
 
