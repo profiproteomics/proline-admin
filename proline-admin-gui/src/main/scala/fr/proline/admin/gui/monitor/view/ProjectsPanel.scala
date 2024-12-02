@@ -87,17 +87,17 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     }
   }
 
-  lazy val deleteProjButton = new Button {
-    text = "Delete"
-    tooltip = "Delete PERMANENTLY the selected project."
-    graphic = FxUtils.newImageView(IconResource.TRASH)
-    onAction =  _ => {
-      if (!model.selectedItems.isEmpty) {
-        val confirmed = GetConfirmation(s"Are you sure that you want to delete PERMANENTLY the project with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? \n Warning : This is not reversible ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
-        if (confirmed) model.onDelete()
-      }
-    }
-  }
+//  lazy val deleteProjButton = new Button {
+//    text = "Delete"
+//    tooltip = "Delete PERMANENTLY the selected project."
+//    graphic = FxUtils.newImageView(IconResource.TRASH)
+//    onAction =  _ => {
+//      if (!model.selectedItems.isEmpty) {
+//        val confirmed = GetConfirmation(s"Are you sure that you want to delete PERMANENTLY the project with id= #${model.selectedItems.headOption.map(_.id.value).getOrElse("no item was selected")}? \n Warning : This is not reversible ", "Confirm your action", " Yes ", "Cancel", Monitor.stage)
+//        if (confirmed) model.onDelete()
+//      }
+//    }
+//  }
   val activeProjButton = new Button {
     text = "Activate"
     tooltip = "Activate the selected project."
@@ -151,7 +151,7 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
     refreshButton,
     newProjButton,
     disableProjButton,
-    deleteProjButton,
+//    deleteProjButton,
     activeProjButton,
     changeProjOwnerButton,
 //    archiveProjButton,
@@ -169,7 +169,7 @@ class ProjectsPanel(val model: ProjectViewModel) extends VBox with LazyLogging {
       activeProjButton,
       disableProjButton,
       changeProjOwnerButton,
-      deleteProjButton,
+//      deleteProjButton,
 //      archiveProjButton,
 //      restoreProjButton,
       infosButton)
