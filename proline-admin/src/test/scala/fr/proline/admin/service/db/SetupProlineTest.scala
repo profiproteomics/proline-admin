@@ -45,7 +45,7 @@ class SetupProlineTest extends LazyLogging {
 
     SetupProline.setConfigParams(appConf)
     
-    SetupProline()
+    SetupProline("/dbunit_init_datasets/uds-db_dataset-h2.xml")
   }
 
 }

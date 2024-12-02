@@ -16,13 +16,25 @@ import fr.profi.util.security._
  * @author David Bouyssie
  *
  */
-class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseConnector) extends LazyLogging {
+class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseConnector, initUdsPath : String) extends LazyLogging {
   
   private var localConnector = false
   
   def this(prolineConfig: ProlineSetupConfig) = {
-    this(prolineConfig, prolineConfig.udsDBConfig.toNewConnector)
+    this(prolineConfig, prolineConfig.udsDBConfig.toNewConnector, SetupProline.defaultUdsInitPath)
     
+    localConnector = true
+  }
+
+  def this(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseConnector) = {
+    this(prolineConfig, prolineConfig.udsDBConfig.toNewConnector, SetupProline.defaultUdsInitPath)
+
+    localConnector = true
+  }
+
+  def this(prolineConfig: ProlineSetupConfig, newUdsInitPath : String) = {
+    this(prolineConfig, prolineConfig.udsDBConfig.toNewConnector, newUdsInitPath)
+
     localConnector = true
   }
 
@@ -36,8 +48,8 @@ class SetupProline(prolineConfig: ProlineSetupConfig, udsDbConnector: IDatabaseC
     
     try {
       // Set Up the UDSdb
-      logger.info("setting up the 'User Data Set' database...")
-      setupDbFromDataset( udsDbConnector, prolineConfig.udsDBConfig, "/dbunit_init_datasets/uds-db_dataset.xml" )
+      logger.info("setting up the 'User Data Set' database... using "+initUdsPath)
+      setupDbFromDataset( udsDbConnector, prolineConfig.udsDBConfig, initUdsPath )
       
       //create default admin user 
        tryInTransaction(udsDbConnector, { udsEM =>
@@ -83,6 +95,7 @@ object SetupProline {
 
   var classLoader = SetupProline.getClass().getClassLoader()
   //ClassLoadergetSystemClassLoader()
+  val defaultUdsInitPath = "/dbunit_init_datasets/uds-db_dataset.xml"
 
   private var _appConfParams: Config = null
   
@@ -90,6 +103,11 @@ object SetupProline {
   def apply() {
     new SetupProline(config).run()
   }
+
+  def apply( pathUdsInit : String) : Unit = {
+    new SetupProline(config,pathUdsInit).run()
+  }
+
 
   def getConfigParams(): Config = {
 
