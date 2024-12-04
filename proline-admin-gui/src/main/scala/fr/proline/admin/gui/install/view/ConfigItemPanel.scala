@@ -419,7 +419,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
               },
               true,
               Some(Install.stage))
-          } else {
+          } //else {
             // Upgrade all Proline databases task
             Install.taskRunner.run("Upgrading Proline databases",
               {
@@ -430,7 +430,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
               },
               true,
               Some(Install.stage))
-          }
+//          }
         }
       }
     }
