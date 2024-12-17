@@ -413,13 +413,17 @@ object SummaryConfigPanel extends ConfigItemPanel {
 
           if (!prolineIsSetUp) {
             // Setup Proline databases task
-            Install.taskRunner.run("Setup Proline databases",
+            Install.taskRunner.run("Setup & Update Proline databases",
               {
                 new SetupProline(SetupProline.getUpdatedConfig(), UdsRepository.getUdsDbConnector()).run()
+                val dsConnectorFactory = UdsRepository.getDataStoreConnFactory()
+                val upgradeDbsTask = new UpgradeAllDatabases(dsConnectorFactory)
+                upgradeDbsTask.doWork()
+                upgradeDbsTask.failedDbSet
               },
               true,
               Some(Install.stage))
-          } //else {
+          } else {
             // Upgrade all Proline databases task
             Install.taskRunner.run("Upgrading Proline databases",
               {
@@ -430,7 +434,7 @@ object SummaryConfigPanel extends ConfigItemPanel {
               },
               true,
               Some(Install.stage))
-//          }
+          }
         }
       }
     }
