@@ -33,8 +33,9 @@
             <!-- Configuration -->
             <dependency>
                 <groupId>fr.profi.util</groupId>
-                <artifactId>profi-commons-scala_${scala.compat.version}</artifactId>
-                <version>${commons.version}</version> <!-- Snapshot Trunk version -->
+                <artifactId>profi-commons-scala</artifactId>
+                <version>${commons.version}</version>
+                <classifier>${scala.compat.version}</classifier>
             </dependency>
             <dependency>
                 <groupId>fr.profi.util</groupId>
@@ -50,7 +51,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <!-- Version inherited from ProFI-Pom -->
             <scope>test</scope>
         </dependency>
 

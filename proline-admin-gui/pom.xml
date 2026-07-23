@@ -93,7 +93,8 @@
 		<!-- Proline -->
 		<dependency>
 			<groupId>fr.profi.util</groupId>
-			<artifactId>profi-commons-scala_${scala.compat.version}</artifactId>
+			<artifactId>profi-commons-scala</artifactId>
+			<classifier>${scala.compat.version}</classifier>
 		</dependency>
 
 		<dependency>
@@ -110,8 +111,9 @@
 
 		<dependency>
 			<groupId>fr.proline</groupId>
-			<artifactId>proline-dal_${scala.compat.version}</artifactId>
+			<artifactId>proline-dal</artifactId>
 			<version>${core.version}</version>
+			<classifier>${scala.compat.version}</classifier>
 		</dependency>
 
 		<dependency>
