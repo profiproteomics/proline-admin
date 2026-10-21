@@ -12,4 +12,4 @@ before_install:
   - git clone --depth 1 --branch $BRANCH_NAME https://github.com/profiproteomics/proline-core.git $HOME/proline-core
   - (cd $HOME/proline-core && mvn -q install -Dmaven.test.skip.exec=true)
 install:
-  - mvn install -Dmaven.test.skip.exec=true
+  - mvn install -Dmaven.test.skip.exec=true -pl proline-admin -am
