@@ -86,10 +86,10 @@ object ByteUtils {
 
     val bytesAmountAsDouble = unit match {
       case ByteUnit.B  => value
-      case ByteUnit.KB => value kB
-      case ByteUnit.MB => value MB
-      case ByteUnit.GB => value GB
-      case ByteUnit.TB => value TB
+      case ByteUnit.KB => value.kB()
+      case ByteUnit.MB => value.MB()
+      case ByteUnit.GB => value.GB()
+      case ByteUnit.TB => value.TB()
       case _           => throw new Exception("Unknown unit: " + unit)
     }
     

@@ -58,14 +58,14 @@ object ScalaFxUtils extends LazyLogging {
   }
 
   /** Grid content formatting utilities **/
-  def getFormattedGridContent3(seq: Seq[Tuple3[scalafx.scene.Node, Int, Int]]): Seq[scalafx.scene.Node] = {
+  def getFormattedGridContent3(seq: collection.Seq[Tuple3[scalafx.scene.Node, Int, Int]]): collection.Seq[scalafx.scene.Node] = {
     seq.map {
       case (child, col, row) =>
         GridPane.setConstraints(child, col, row)
         child
     }.distinct
   }
-  def getFormattedGridContent5(seq: Seq[Tuple5[scalafx.scene.Node, Int, Int, Int, Int]]): Seq[scalafx.scene.Node] = {
+  def getFormattedGridContent5(seq: collection.Seq[Tuple5[scalafx.scene.Node, Int, Int, Int, Int]]): collection.Seq[scalafx.scene.Node] = {
     seq.map {
       case (child, col, row, colSpan, rowSpan) =>
         GridPane.setConstraints(child, col, row, colSpan, rowSpan)
@@ -112,22 +112,21 @@ object ScalaFxUtils extends LazyLogging {
   }
 
   /** Conversions from/to ObservableBuffer **/
-  implicit def seq2obsBuff[T](seq: Seq[T]): ObservableBuffer[T] = {
+  implicit def seq2obsBuff[T](seq: collection.Seq[T]): ObservableBuffer[T] = {
     if (seq == null) null
     else ObservableBuffer.from(seq)
   }
-  implicit def seq2array[T: ClassTag](seq: Seq[T]): Array[T] = {
-    Array[T](seq: _*)
+  implicit def seq2array[T: ClassTag](seq: collection.Seq[T]): Array[T] = {
+    seq.toArray[T]
   }
-  implicit def array2seq[T: ClassTag](arr: Array[T]): Seq[T] = {
-    val s = Seq.empty[T]
-    s ++= (arr: scala.collection.mutable.ArrayOps[T]).toSeq
+  implicit def array2seq[T: ClassTag](arr: Array[T]): collection.Seq[T] = {
+    collection.immutable.ArraySeq.unsafeWrapArray(arr.clone())
 
   }
   implicit def array2obsBuff[T: ClassTag](arr: Array[T]): ObservableBuffer[T] = {
     array2seq(arr) //array to seq to obs buff
   }
-  implicit def iterable2seq[T: ClassTag](it: Iterable[T]): Seq[T] = {
+  implicit def iterable2seq[T: ClassTag](it: Iterable[T]): collection.Seq[T] = {
     it.toSeq
   }
 

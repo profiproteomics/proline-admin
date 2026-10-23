@@ -219,7 +219,7 @@ class ProjectViewModel extends LazyLogging {
   }
 
   /** Update items in table view */
-  private def updateItems(updatedItems: Seq[Project]): Unit = {
+  private def updateItems(updatedItems: collection.Seq[Project]): Unit = {
     val toAdd = updatedItems.diff(items)
     val toRemove = items.diff(updatedItems)
 

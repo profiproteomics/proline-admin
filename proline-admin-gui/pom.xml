@@ -19,20 +19,7 @@
 
 	<dependencies>
 
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>jdk</artifactId>
-			<version>17.0.3.1</version>
-			<type>zip</type>
-			<classifier>windows-x64</classifier>
-		</dependency>
-
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>javafx-sdk</artifactId>
-			<version>17.0.10</version>
-			<type>zip</type>
-		</dependency>
+		<!-- The Oracle JDK and JavaFX SDK zips are only needed to build the distribution: see the 'bundle-jdk' profile -->
 
 		<!-- Scala -->
 		<dependency>
@@ -285,19 +272,6 @@
 							<overWriteIfNewer>true</overWriteIfNewer>
 						</configuration>
 					</execution>
-					<execution>
-						<id>copy-zip</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>unpack-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/java</outputDirectory>
-							<includeTypes>zip</includeTypes>
-							<stripVersion>true</stripVersion>
-							<overWriteIfNewer>true</overWriteIfNewer>
-						</configuration>
-					</execution>
 				</executions>
 			</plugin>
 
@@ -330,5 +304,55 @@
 
 		</plugins>
 	</build>
+
+	<profiles>
+		<!--
+			Opt-in profile (mvn -Pbundle-jdk ...): bundles a Windows JDK and the JavaFX SDK into the distribution
+			(the unpacked zips are copied by src/main/assembly/assembly.xml). Not needed to compile, test or install.
+		-->
+		<profile>
+			<id>bundle-jdk</id>
+
+			<dependencies>
+				<dependency>
+					<groupId>com.oracle</groupId>
+					<artifactId>jdk</artifactId>
+					<version>17.0.3.1</version>
+					<type>zip</type>
+					<classifier>windows-x64</classifier>
+				</dependency>
+
+				<dependency>
+					<groupId>com.oracle</groupId>
+					<artifactId>javafx-sdk</artifactId>
+					<version>17.0.10</version>
+					<type>zip</type>
+				</dependency>
+			</dependencies>
+
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-zip</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>unpack-dependencies</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.build.directory}/java</outputDirectory>
+									<includeTypes>zip</includeTypes>
+									<stripVersion>true</stripVersion>
+									<overWriteIfNewer>true</overWriteIfNewer>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>

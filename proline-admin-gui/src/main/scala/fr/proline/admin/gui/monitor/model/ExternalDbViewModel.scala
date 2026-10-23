@@ -133,7 +133,7 @@ class ExternalDbViewModel extends LazyLogging {
   }
 
   /** update items in table view */
-  private def updateItems(updatedItems: Seq[ExternalDb]): Unit = {
+  private def updateItems(updatedItems: collection.Seq[ExternalDb]): Unit = {
     val toAdd = updatedItems.diff(items)
     val toRemove = items.diff(updatedItems)
     items ++= toAdd

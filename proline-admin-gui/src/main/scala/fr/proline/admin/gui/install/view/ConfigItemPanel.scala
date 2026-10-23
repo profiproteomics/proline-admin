@@ -18,7 +18,7 @@ import scalafx.scene.Node
 import scalafx.scene.control.{CheckBox, Label, Tab, TabPane}
 import scalafx.scene.layout.{HBox, Priority, VBox}
 
-import scala.collection.SortedMap
+import scala.collection.immutable.SortedMap
 
 /**
  *  All configuration items must be defined here.

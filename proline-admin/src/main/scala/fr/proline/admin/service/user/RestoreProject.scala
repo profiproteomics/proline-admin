@@ -113,7 +113,7 @@ class RestoreProject(
         val externalDbsAsMap = loadExetrnalDbData(jsValuesMap, udsProject)
         require(externalDbsAsMap.values.forall(_.!=(null)), "Error could not create external db!")
         externalDbsAsMap.values.foreach { extDb => { udsEM.persist(extDb); udsProject.addExternalDatabase(extDb) } }
-        JsMsiDbName = externalDbsAsMap("MSI").asInstanceOf[ExternalDb] getDbName ()
+        JsMsiDbName = externalDbsAsMap("MSI").asInstanceOf[ExternalDb].getDbName()
         JsLcmsDbName = externalDbsAsMap("LCMS").asInstanceOf[ExternalDb].getDbName()
         JsHost = externalDbsAsMap("MSI").asInstanceOf[ExternalDb].getHost()
         JsPort = externalDbsAsMap("MSI").asInstanceOf[ExternalDb].getPort()

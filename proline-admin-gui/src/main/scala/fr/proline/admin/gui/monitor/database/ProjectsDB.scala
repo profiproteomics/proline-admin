@@ -28,12 +28,12 @@ object ProjectsDB extends LazyLogging {
   }
 
   /** Return a sequence of projects from UDS database to initialize the table View */
-  def initialize(): Seq[Project] = {
+  def initialize(): collection.Seq[Project] = {
     queryProjectsAsView()
   }
 
   /** Return a sequence of project from UDS database as User adapted to table view */
-  def queryProjectsAsView(): Seq[Project] = {
+  def queryProjectsAsView(): collection.Seq[Project] = {
     queryProjects().toBuffer[UdsProject].sortBy(_.getId).map(Project(_))
   }
 

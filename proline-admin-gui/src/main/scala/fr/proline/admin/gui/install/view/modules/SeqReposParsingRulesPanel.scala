@@ -261,7 +261,7 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
 
   /** Return Fasta data directories list **/
   private def _getFastaDirectories(fastaDirArray: ArrayBuffer[FastaDirectory]): ListBuffer[String] = {
-    (fastaDirArray.view.map(_.getValue)).to[ListBuffer]
+    (fastaDirArray.view.map(_.getValue)).to(ListBuffer)
   }
 
   /** Create a parsing rule  **/
@@ -269,7 +269,7 @@ class SeqReposParsingRulesPanel(model: SeqReposModelView, stage: Stage) extends 
     val listRules: ListBuffer[Rule] = new ListBuffer()
     ruleArray.foreach(rule => {
       if ((!rule.getName.isEmpty) && (!rule.getFastaName.isEmpty) && (!rule.getFastaVersion.isEmpty) && (!rule.getproteinAccession.isEmpty)) {
-        val fastNamesList = rule.getFastaName.split(",").map(_.trim).to[ListBuffer]
+        val fastNamesList = rule.getFastaName.split(",").map(_.trim).to(ListBuffer)
         listRules += Rule(rule.getName, fastNamesList, rule.getFastaVersion, rule.getproteinAccession)
       } else {
         logger.error("Parsing rule fields must not be empty")

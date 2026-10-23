@@ -27,12 +27,12 @@ object UsersDB extends LazyLogging {
 
   }
   /** Return a sequence of users to initialize the table view */
-  def initialize(): Seq[User] = {
+  def initialize(): collection.Seq[User] = {
     queryUsersAsView()
   }
 
   /** Wrap a sequence of usersAcount as sequence of User */
-  def queryUsersAsView(): Seq[User] = {
+  def queryUsersAsView(): collection.Seq[User] = {
     queryUsers().toBuffer[UserAccount].sortBy(_.getId).map(User(_))
   }
 

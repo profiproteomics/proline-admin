@@ -33,12 +33,12 @@ object ExternalsDB extends LazyLogging {
   def clear(): Unit = {}
 
   /** Return a sequence of ExternalDb from UDS database to initialize the table View */
-  def initialize(): Seq[ExternalDb] = {
+  def initialize(): collection.Seq[ExternalDb] = {
     queryExternalDbsAsView()
   }
 
   /** Return a sequence of ExternalDb from UDS database as ExternalDb adapted to table view */
-  def queryExternalDbsAsView(): Seq[ExternalDb] = {
+  def queryExternalDbsAsView(): collection.Seq[ExternalDb] = {
     queryExternalDbs().toBuffer[UdsExternalDb].sortBy(_.getId).map(ExternalDb(_))
   }
 
